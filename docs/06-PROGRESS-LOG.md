@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — ⌘K komut paleti veri araması
+- ✅ `core/admin-search` (normalleştirme + sıralama, test edilir), `AdminSearchRepository` (yalnızca başlık düzeyi sütunlar, kiracı ve rol kapsamlı), `GET /api/admin/search`, yeni `CommandPalette` (sayfalar + veri grupları, combobox/listbox ARIA, klavye, odak iadesi, hata durumu). Gerçek derlemede denendi: "iletisim" → "İletişim formu"; kısayol ve sonuçlar çalışıyor. DB testi iki motorda.
+
 ### [2026-10-28] — Bildirim merkezi
 - ✅ `notifications` + `notification_reads` (göç `0012`, iki motor), `core/notifications` (türetilmiş uyarılar: sağlık, yedek hatırlatması, giriş hatası), `NotificationRepository` (tekrar toplama penceresi/"open", kullanıcıya özel okundu, kitle, çözme, budama).
 - ✅ Kaynaklar: form yeni gönderim / e-posta hatası, zamanlanmış yayın, IndexNow hatası, WordPress içe aktarma, sistem sağlığı (10 dk'da bir `syncSystemNotifications`; zamanlayıcıdan ve sayfadan). Zil + açılır panel + `/admin/notifications`, nav "Bildirimler" (G U).

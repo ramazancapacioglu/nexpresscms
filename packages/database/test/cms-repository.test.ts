@@ -760,3 +760,28 @@ test("bildirim merkezi: tekrar toplama (pencere/açık), kullanıcıya özel oku
   assert.equal(await a.purge(new Date(now.getTime() + 90 * 24 * hour)) > 0, true);
   assert.equal((await a.list("u_admin", "admin", { now: new Date(now.getTime() + 90 * 24 * hour) })).length, 0);
 });
+
+test("yönetim araması: içerik/form/taksonomi/medya bulunur, çöp ve başka kiracı hariç, editöre yönlendirme-kullanıcı görünmez, Türkçe duyarlı", async () => {
+  const { getAdminSearchRepository } = await import("../src/admin-search-repository");
+  const { getFormDefinitionRepository } = await import("../src/form-definition-repository");
+  const kept = await repo.saveContent(baseInput({ slug: "aranabilir-sayfa", title: "Işıklı Aranabilir Sayfa", status: "published" }));
+  const gone = await repo.saveContent(baseInput({ slug: "cop-aranan", title: "Çöpteki Aranabilir", status: "published" }));
+  await repo.trashContents([gone.contentId]);
+  await getFormDefinitionRepository("default").create({ name: "Aranabilir iletişim formu", spec: { fields: [{ name: "a", label: "A", type: "text" }] } });
+  await repo.saveMediaAsset({ id: "med_aranabilir", filename: "aranabilir-gorsel.webp", url: "/media/med_aranabilir", altText: "kapak" });
+  const s = getAdminSearchRepository("default");
+  const hits = await s.search("isikli aranabilir", "editor");
+  assert.ok(hits.some((h) => h.group === "content" && h.href.includes(encodeURIComponent(kept.contentId))));
+  assert.equal(hits.some((h) => h.title.includes("Çöpteki")), false, "çöpteki içerik aranmaz");
+  const all = await s.search("aranabilir", "editor");
+  assert.deepEqual([...new Set(all.map((h) => h.group))].sort(), ["content", "form", "media"]);
+  assert.equal(all.some((h) => h.group === "user" || h.group === "redirect"), false);
+  const { getUserRepository } = await import("../src/user-repository");
+  await getUserRepository("default").create({ email: "arama.kullanicisi@example.com", name: "Arama Kullanıcısı", passwordHash: "x", role: "editor" });
+  const admin = await s.search("arama kullanicisi", "admin");
+  assert.ok(admin.some((h) => h.group === "user"), "yönetici kullanıcıları arayabilir");
+  assert.equal((await getAdminSearchRepository("baska-site").search("aranabilir", "admin")).length, 0, "başka kiracı görmez");
+  assert.equal((await s.search("arama kullanicisi", "editor")).some((h) => h.group === "user"), false, "editör kullanıcı arayamaz");
+  assert.equal(JSON.stringify(admin).includes("passwordHash") || JSON.stringify(admin).includes('"x"'), false);
+  assert.deepEqual(await s.search("a", "admin"), []);
+});

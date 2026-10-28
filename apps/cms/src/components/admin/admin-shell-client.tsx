@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { createTranslator } from "@nexpress/i18n";
 import { NotificationBell } from "./notification-bell";
-import { NAV_LABEL_KEYS, QUICK_COMMANDS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
+import { CommandPalette } from "./command-palette";
+import { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
 
 interface AdminShellClientProps {
   children: React.ReactNode;
@@ -52,7 +53,6 @@ export function AdminShellClient({
   const { theme, setTheme } = useTheme();
   const [cmdOpen, setCmdOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -72,12 +72,6 @@ export function AdminShellClient({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
-
-  const filteredCommands = QUICK_COMMANDS.filter(
-    (c) =>
-      c.title.toLowerCase().includes(query.toLowerCase()) ||
-      c.subtitle.toLowerCase().includes(query.toLowerCase())
-  );
 
   const studioOpen = pathname.startsWith("/admin/contents");
   const studioType = searchParams.get("type") ?? "";
@@ -342,60 +336,7 @@ export function AdminShellClient({
         <main className="flex-1 p-3 w-full">{children}</main>
       </div>
 
-      {/* ATTIO CRM TARZI KOMUT PALETİ MODAL (Cmd+K / Ctrl+K) */}
-      {cmdOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-[1px] pt-20 px-4"
-          onClick={() => setCmdOpen(false)}
-        >
-          <div
-            className="w-full max-w-lg rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center border-b border-[#E6E7EA] dark:border-[#23262E] px-3.5 py-2.5 gap-2.5">
-              <Search className="h-4 w-4 text-[#8C9099]" strokeWidth={1.75} />
-              <input
-                type="text"
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Nesne, görünüm, tema veya Agentic uç nokta ara..."
-                className="w-full bg-transparent text-[13px] outline-none placeholder:text-[#8C9099]"
-              />
-              <button
-                type="button"
-                onClick={() => setCmdOpen(false)}
-                className="rounded border border-[#E6E7EA] dark:border-[#23262E] px-1.5 py-0.5 text-[10px] font-mono text-[#8C9099]"
-              >
-                ESC
-              </button>
-            </div>
-            <div className="max-h-72 overflow-y-auto p-1.5 space-y-0.5">
-              {filteredCommands.map((cmd) => (
-                <button
-                  key={cmd.href}
-                  type="button"
-                  onClick={() => {
-                    setCmdOpen(false);
-                    router.push(cmd.href);
-                  }}
-                  className="w-full flex items-center justify-between rounded-md px-3 py-2 text-left hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] transition"
-                >
-                  <div>
-                    <div className="text-[12px] font-medium text-[#14151A] dark:text-[#F3F4F6]">
-                      {cmd.title}
-                    </div>
-                    <div className="text-[11px] text-[#8C9099]">
-                      {cmd.subtitle}
-                    </div>
-                  </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-[#8C9099]" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} role={role} />
     </div>
   );
 }
