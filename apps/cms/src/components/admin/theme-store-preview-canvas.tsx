@@ -16,6 +16,7 @@ export function ThemeStorePreviewCanvas({ s }: { s: ThemeStoreState }) {
                 ? "max-w-[720px]"
                 : "w-full"
           }`}
+          data-axe-skip="tema önizlemesi: renkler kullanıcı tasarım token'larından gelir"
           style={{
             backgroundColor: tokens.colors.background,
             color: tokens.colors.foreground,

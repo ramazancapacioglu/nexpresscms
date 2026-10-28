@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Erişilebilirlik taraması CI'da
+- ✅ `apps/cms/scripts/a11y-audit.mjs` (axe-core 4.10 + playwright-core 1.49, devDependency) ve CI işi `a11y` (tohumlu SQLite, üretim derlemesi, Chromium önbelleği, rapor çıktısı). Yerel CI benzeri koşuda ilk tarama gerçek bulgular çıkardı (tohum verisinde yorum durumu seçicileri etiketsiz, yıldız metni kontrastı, okunmamış noktası geçersiz `aria-label`) ve düzeltildi; sonunda 60 tarama (30 sayfa × 2 görünüm) 0 hata.
+- ✅ Betik düzeltmesi: `axe.run` hariç tutma bağlamı (`data-axe-skip`) ilk sürümde seçenek olarak geçilip yok sayılıyordu.
+- ⚠️ Yeni CI işi ilk kez gerçek CI ortamında çalışıyor (Chromium kurulumu, ubuntu-latest); sonucu bu satırın altındaki kayıtla birlikte izleyin.
+
 ### [2026-10-28] — Mobil ve erişilebilirlik turu
 - ✅ Panel kabuğu: dar ekranda kenar çubuğu çekmece (arka plan, Esc, sayfa değişince kapanır), üst çubuk sıkışması giderildi, "İçeriğe geç" + `main#main-content`.
 - ✅ Ölçülen: axe-core (4.10) ile 31 sayfa × mobil/masaüstü (yerel Chromium + `playwright-core`, test sitesi): başlangıçta kritik `button-name`/`label`/`select-name` ve ~30 sayfada renk kontrastı; sonunda kritik 0, ciddi yalnızca tema önizleme çipi (kullanıcı rengi) ve içerik kaynaklı başlık sırası. Yatay taşma tüm sayfalarda 0.

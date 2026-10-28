@@ -37,6 +37,62 @@ jobs:
       - name: Ziyaretçi JS bütçesi
         run: pnpm --filter @nexpress/cms budget
 
+  a11y:
+    name: Erişilebilirlik ve duyarlılık taraması (axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Bu işe özel: üretim kipinde başlatıldığı için güçlü sır ve politikaya uyan yönetici parolası gerekir
+      DB_DIALECT: sqlite
+      SQLITE_URL: file:${{ github.workspace }}/a11y.db
+      MEDIA_DIR: ${{ github.workspace }}/a11y-media
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: a11y-job-7f3c9b2e4d8a1c6e5b0f9d3a2c4e6b8a
+      ADMIN_DEFAULT_EMAIL: tarama@example.test
+      ADMIN_DEFAULT_PASSWORD: Ci-A11y!Pass-2026-xQ7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Tarayıcı önbelleği
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Chromium kurulumu
+        run: pnpm --filter @nexpress/cms exec playwright-core install --with-deps chromium
+      - name: Veritabanı göçü ve tohum veri
+        run: |
+          pnpm db:migrate
+          pnpm db:seed
+      - name: Üretim derlemesi
+        run: pnpm --filter @nexpress/cms build
+      - name: Uygulamayı başlat
+        run: |
+          nohup pnpm --filter @nexpress/cms start > server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/login > /dev/null && exit 0; sleep 2; done
+          echo "Uygulama açılmadı"; cat server.log; exit 1
+      - name: axe taraması (kritik/ciddi ihlal ve mobil taşma derlemeyi düşürür)
+        env:
+          A11Y_BASE_URL: http://localhost:3000
+          A11Y_EMAIL: ${{ env.ADMIN_DEFAULT_EMAIL }}
+          A11Y_PASSWORD: ${{ env.ADMIN_DEFAULT_PASSWORD }}
+          A11Y_OUT: ${{ github.workspace }}/a11y-report.json
+        run: pnpm --filter @nexpress/cms a11y
+      - name: Rapor
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-rapor
+          path: |
+            a11y-report.json
+            server.log
+          if-no-files-found: ignore
+
   pgvector:
     name: Arama dizini testleri (PostgreSQL + pgvector)
     runs-on: ubuntu-latest

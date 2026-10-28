@@ -48,7 +48,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
               <li key={n.id} className={`flex flex-wrap items-start gap-3 px-4 py-3 text-[12px] ${n.read ? "bg-[#F9FAFB] dark:bg-[#121317]" : ""}`}>
                 <span className={`mt-0.5 rounded px-2 py-0.5 text-[11px] font-medium ${n.resolved ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : cls}`}>{n.resolved ? "Çözüldü" : label}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-[#14151A] dark:text-[#F3F4F6]">{n.title}{n.count > 1 ? <span className="ml-1 text-[#5F6570] dark:text-[#8C9099]">×{n.count}</span> : null}{!n.read && <span aria-label="okunmamış" className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[#266DF0] align-middle" />}</p>
+                  <p className="font-medium text-[#14151A] dark:text-[#F3F4F6]">{n.title}{n.count > 1 ? <span className="ml-1 text-[#5F6570] dark:text-[#8C9099]">×{n.count}</span> : null}{!n.read && <><span aria-hidden="true" className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[#266DF0] align-middle" /><span className="sr-only"> (okunmamış)</span></>}</p>
                   {n.body && <p className="text-[#5C5F66] dark:text-[#9CA3AF]">{n.body}</p>}
                   <p className="mt-0.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">{n.updatedAt.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}{n.audience === "admin" ? " · yalnızca yöneticiler" : ""}</p>
                 </div>

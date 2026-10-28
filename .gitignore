@@ -39,3 +39,4 @@ tsbuildinfo
 **/data/*.db
 **/data/*.db-*
 *:Zone.Identifier
+a11y-report.json

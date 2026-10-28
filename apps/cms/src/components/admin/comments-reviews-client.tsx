@@ -294,7 +294,7 @@ export function CommentsReviewsClient({
                         Doğrulanmış
                       </span>
                     )}
-                    <span className="text-amber-500 font-mono text-[11px] font-bold">
+                    <span className="text-amber-800 font-mono text-[11px] font-bold">
                       {"★".repeat(item.rating)} ({item.rating}/5)
                     </span>
                   </div>
@@ -304,6 +304,7 @@ export function CommentsReviewsClient({
                       İçerik: {targetContent?.title ?? item.contentId}
                     </span>
                     <select
+                      aria-label={`Durum: ${item.authorName}`}
                       value={item.status}
                       onChange={(e) =>
                         handleToggleStatus(item, e.target.value)

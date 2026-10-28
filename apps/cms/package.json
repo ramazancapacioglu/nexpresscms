@@ -12,7 +12,8 @@
     "prebuild": "node scripts/link-env.mjs",
     "prestart": "node scripts/link-env.mjs",
     "budget": "node scripts/check-budget.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "a11y": "node scripts/a11y-audit.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -53,6 +54,8 @@
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "axe-core": "4.10.2",
+    "playwright-core": "1.49.1",
     "tailwindcss": "^4.0.6",
     "typescript": "^5.7.3"
   }
