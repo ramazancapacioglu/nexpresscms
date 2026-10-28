@@ -1,10 +1,11 @@
 import { StudioViewBar } from "@/components/admin/editor/studio-view-bar";
+import { PreviewLinkButton } from "./preview-link-button";
 import { PanelRightClose, PanelRightOpen, Save } from "lucide-react";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** ÜST STÜDYO ÇUBUĞU (BAĞLAM KİLİTLİ — KARIŞIK TÜR FİLTRESİ YOK!) */
 export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
-  const { isPending, title, rightSidebarOpen, setRightSidebarOpen, setRightTab, seoAnalysis, handleSave, isDirty, recovery, restoreRecovery, dismissRecovery } = s;
+  const { isPending, title, rightSidebarOpen, setRightSidebarOpen, setRightTab, seoAnalysis, handleSave, isDirty, recovery, restoreRecovery, dismissRecovery, contentId, locale } = s;
   return (
     <>
       {/* ÜST STÜDYO ÇUBUĞU (BAĞLAM KİLİTLİ — KARIŞIK TÜR FİLTRESİ YOK!) */}
@@ -16,6 +17,7 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             </span>
           )}
           <StudioViewBar />
+          <PreviewLinkButton contentId={contentId} locale={locale} dirty={isDirty} />
           <button
             type="button"
             onClick={() => {

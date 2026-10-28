@@ -11,21 +11,26 @@ import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { createFormToken } from "@/lib/form-token";
+import { resolveDraftPreview } from "@/lib/draft-preview";
 import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ nx_draft?: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
+  const { nx_draft } = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
   const [site, resolved] = await Promise.all([
     getPublicSite(siteId),
-    resolvePublicContent(siteId, slug, locale),
+    draftMeta ? Promise.resolve({ content: draftMeta, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
   ]);
 
   if (!resolved || !resolved.content) {
@@ -63,7 +68,7 @@ export async function generateMetadata({
       canonical: seoMeta.canonical,
       languages: await hreflangAlternates(siteId, content.contentId, baseUrl),
     },
-    robots: seoMeta.robots,
+    robots: draftMeta ? { index: false, follow: false } : seoMeta.robots,
     openGraph: {
       title: seoMeta.openGraph.title,
       description: seoMeta.openGraph.description,
@@ -87,7 +92,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string }>;
+  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string }>;
 }) {
   const { locale, slug } = await params;
   const sp = await searchParams;
@@ -96,9 +101,10 @@ export default async function PublicDynamicContentPage({
   await trackBotVisit("page");
   await trackAiReferral();
 
+  const draft = await resolveDraftPreview(siteId, locale, slug, sp.nx_draft);
   const [site, resolved] = await Promise.all([
     getPublicSite(siteId),
-    resolvePublicContent(siteId, slug, locale),
+    draft ? Promise.resolve({ content: draft, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
   ]);
 
   if (!resolved || !resolved.content) {
@@ -171,6 +177,7 @@ export default async function PublicDynamicContentPage({
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
   const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
   if (canvas) {
@@ -180,6 +187,7 @@ export default async function PublicDynamicContentPage({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
         />
+        {banner}
         {switcher}
         <RscBlockRenderer
           blocks={content.blocks}
@@ -195,6 +203,7 @@ export default async function PublicDynamicContentPage({
 
   return (
     <article className="mx-auto max-w-4xl space-y-10">
+      {banner}
       {switcher}
       <script
         type="application/ld+json"

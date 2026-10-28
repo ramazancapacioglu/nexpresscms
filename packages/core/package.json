@@ -11,6 +11,7 @@
     "./session": "./src/session-token.ts",
     "./password": "./src/password.ts",
     "./secret-box": "./src/secret-box.ts",
+    "./draft-preview": "./src/draft-preview.ts",
     "./markdown": "./src/markdown-compiler.ts",
     "./types": "./src/types.ts"
   },

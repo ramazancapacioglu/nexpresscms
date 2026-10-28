@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Paylaşılabilir taslak önizleme bağlantısı
+- ✅ `@nexpress/core/draft-preview` (HMAC belirteç, test edilir), `?nx_draft=` ile `/{dil}/{slug}` sayfasında yayında olmayan içeriği oturumsuz gösterme, `private, no-store` + noindex, sayfada bant, editörde `PreviewLinkButton` + `createDraftPreviewLinkAction` (denetim günlüğü). Gerçek derlemede doğrulandı: belirtecsiz/bozuk/başka içeriğe ait belirteç 404, geçerli belirteç 200.
+
 ### [2026-10-28] — Form modülü: sürükle-bırak kurucu, şablonlar, e-posta bildirimi, analiz
 - ✅ **Kurucu:** `/admin/forms/[id]` (`@dnd-kit`), 15 alan türü, 8 şablon, genişlik (tam/yarım), seçenek/sınır/yardım alanları; `form_block` denetçisinde form seçici (`/api/admin/forms/options`).
 - ✅ **Şema:** `forms` tablosu + `form_submissions.notify_*` (göç `0010_forms_builder`, iki motor); `forms` yedeğe girer; SMTP parolası yedeğe girmez.

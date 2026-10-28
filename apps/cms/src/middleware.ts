@@ -91,6 +91,11 @@ export async function middleware(request: NextRequest) {
     },
   });
   if (previewing) response.headers.set("Cache-Control", "private, no-store");
+  // Taslak önizleme bağlantısı: asla paylaşımlı önbelleğe girmez, dizinlenmez
+  if (searchParams.has("nx_draft")) {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
   if (/^\/[a-z]{2}(\/[^/]+)?$/.test(pathname)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);
