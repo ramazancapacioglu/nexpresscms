@@ -11,7 +11,7 @@
 | **F10** | Drizzle migration + şema paritesi testi + dialect dallarının sadeleştirilmesi + büyük dosyaların bölünmesi | ✅ Tamam (kalan: dondurulmuş `push.ts`) |
 | **F11** | RAG: gerçek anahtarla kalite ölçümü, hibrit arama, site içi arama; bot politikası arayüzü (`robots.txt`); RSS, JSON-LD doğrulayıcı, kırık bağlantı denetimi | ✅ Tamam (kalan: gerçek OpenAI anahtarıyla kalite ölçümü, dış bağlantı denetimi, "bu siteye sor" yanıtı, dile göre llms/ai-sitemap) |
 | **F12** | **Çok dilli altyapı** (L1–L5, `docs/14`) | ✅ Tamam (kalan, gerekçeli: ticaret çevirisi, insan için dil önerisi, AI çeviri taslağı, panel sayfa içi metinleri, dil başına site ayarları; `docs/14` §0) |
-| **F13** | **Eklenti sistemi + tema paketleri** (`docs/13` §2–§3): eklenti envanteri/aç-kapa/ayar/lisans, tema yükle/önizle/etkinleştir/dışa aktar | 🔄 Eklenti tarafı v1 yapıldı (manifest, `site_plugins`, modül aç/kapa, ayar formu, Eklentiler sayfası; `docs/15`). Kalan: lisans, eklenti göçleri (`plugin_migrations`), tema paketleri |
+| **F13** | **Eklenti sistemi + tema paketleri** (`docs/13` §2–§3): eklenti envanteri/aç-kapa/ayar/lisans, tema yükle/önizle/etkinleştir/dışa aktar | 🔄 Eklenti tarafı v1 ve **tema paketleri v1** yapıldı (`docs/13` §0, §3). Kalan: eklenti lisansı, eklenti göçleri (`plugin_migrations`), tema yazı tipi dosyaları ve ayar geçmişi |
 | **F14** | **Panel eksikleri** (`docs/13` §4): revizyonlar, otomatik kayıt, çöp, zamanlanmış yayın, yönlendirme/404, formlar, gerçek WP içe aktarma, medya klasörleri, yedekleme, sistem durumu, bildirimler, ⌘K kapsamı, mobil/a11y | ⬜ |
 
 Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.md` kaydı olmadan "tamamlandı" sayılmaz.

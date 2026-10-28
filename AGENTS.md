@@ -35,7 +35,7 @@ Projede kod yazan veya mimari değişiklik yapan her geliştirici ve AI ajanı a
 - İçerik kaydedildiği anda:
   1. Görsel bloklar saf JSON AST'ye (`blocks`) derlenir ve ön yüzde **%100 React Server Components (RSC)** olarak render edilir.
   2. Aynı anda `markdownCache` sütununa saf Markdown derlenir (`?format=md`, `/llms.txt` ve RAG için).
-- Temalar içerik verisini değiştirmez. Tasarım token'ları, header/footer şablonları ve blok görünümleri `packages/themes` içindedir. Ayrı `themes/<slug>` paket klasörü bu aşamada yoktur.
+- Temalar içerik verisini değiştirmez. Tasarım token'ları, header/footer şablonları ve blok görünümleri `packages/themes` içindedir (resmi temalar). Yüklenebilir **veri temaları** (`.nxtheme`: token, şablon, başlangıç sayfaları, kapsamlı CSS) `installed_themes` tablosunda yaşar; paket kod çalıştırmaz ve `@nexpress/themes/package` ile doğrulanır (zip sınırları, zod şemaları, CSS temizleme/kapsamlama). Ayrı `themes/<slug>` paket klasörü yoktur.
 
 - **Ön yüz JS kuralı (ölçülür):** ziyaretçi sayfaları `next/link`, `next-themes` veya herhangi bir `"use client"` bileşeni içermez; CI'daki bütçe testi (`perf-budget.json`) ihlalde derlemeyi düşürür. "0 KB" = sayfaya özel istemci kodu yok (React/Next çalışma zamanı ~101 kB gzip hariç).
 

@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — F13 (temalar): tema paketleri v1
+- ✅ `.nxtheme` biçimi ve doğrulayıcı (`@nexpress/themes/package`): zip sınırları (8 MB / 200 dosya / 30 MB açılmış, **zip bombası** şişirmeden önce reddedilir), yol gezinmesi ve izinsiz uzantı reddi, zod şemaları (tema, token, üst/alt şablon, başlangıç sayfaları), **CSS temizleyici + kapsamlayıcı** (postcss: @import/expression/dış url/@font-face yasak, her seçici `[data-nx-skin]` altına alınır), screenshot sihirli bayt denetimi, SHA-256 özet.
+- ✅ Göç `0007` + `CmsThemeRepository`: kur/güncelle, resmi kimlik çakışması reddi, etkin tema silinemez, kiracıya kapalı (SQLite + PG testli).
+- ✅ Çalışma zamanı: etkin veri temasının skin CSS'i ve `data-nx-skin` ön yüzde; `?nx_preview=` önizleme yalnızca geçerli oturumda (middleware başlığı ezer, `no-store`).
+- ✅ Yönetim: `/admin/themes/packages` (sürükle-bırak yükleme + doğrulama raporu, kartlar, önizle / etkinleştir [şablon ve sayfa seçenekleriyle] / dışa aktar / sil), `/api/admin/themes/{upload,export}` (yönetici + aynı-kaynak denetimi, denetim kaydı), **mevcut tasarımı dışa aktar**.
+- Doğrulama: HTTP ve tarayıcıda uçtan uca (bozuk dosya 422, kurulum, güncelleme, önizleme yalnızca oturumlu, anonim 401, etkinleştirme + şablon + taslak sayfa, skin ziyaretçide, dışa aktarma aynı bayt). Testler: themes 5, database 46 (SQLite+PG).
+- Açık: eklenti lisansı ve `plugin_migrations`, tema yazı tipi dosyaları, tema ayarı geçmişi.
+
 ### [2026-10-28] — F12 tamamlandı: tema metinleri, SEO dil profilleri, eksik çeviri raporu, çeviriye özgü öznitelikler, panel dili
 - ✅ Tema blok metinleri ve ana sayfa/üstbar/altbilgi sabitleri kataloğa taşındı (`RscBlockRenderer locale`); arama sayfası başlığı dilli.
 - ✅ `seoLanguageProfile`: İngilizce `INTERNET`≠`ınternet` hatası (Türkçe küçük harf kuralı her dile uygulanıyordu) giderildi; okunabilirlik eşiği dile göre; analiz içerik dilini kullanıyor.

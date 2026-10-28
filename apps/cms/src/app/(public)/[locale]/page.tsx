@@ -6,6 +6,7 @@ import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } f
 import { buildPageSchemaGraph } from "@nexpress/seo-core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
+import { getPreviewTheme } from "@/lib/public-theme";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -40,7 +41,8 @@ export default async function PublicHomePage({
   const site = await getPublicSite(siteId);
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const isInk = activeTheme.id === INK_GRID_ID;
-  const tokens = site?.designTokens ?? activeTheme.tokens;
+  const preview = await getPreviewTheme(siteId);
+  const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const homeContent = await getPublicContentBySlug(siteId, isInk ? INK_GRID_HOME_SLUG : "ana-sayfa", locale);
   const mediaFocal = await getPublicMediaFocal(siteId);
   const allContents = isInk ? [] : await listPublishedContents(siteId, locale);

@@ -65,6 +65,7 @@ export const tr = {
     homeListTitle: "Polimorfik bilgi grafiği ve yayınlanan içerikler",
     homeListBody: "Her içerik hem 100/100 RSC sayfası hem de sıfır maliyetli {md} beslemesi olarak sunulur.",
     homeEdit: "Görsel editörde düzenle →",
+    themePreview: "Tema önizlemesi: {id} — yalnızca siz görüyorsunuz, site değişmedi.",
     openPage: "RSC sayfasını aç →",
   },
   blocks: {

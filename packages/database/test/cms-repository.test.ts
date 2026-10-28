@@ -409,3 +409,29 @@ test("çeviriye özgü öznitelikler: alt metin, odak anahtar kelime ve slug ge�
   assert.equal(await repo.resolveContentBySlug("attr-en", "tr"), null);
   await repo.saveSupportedLocales(["tr"]);
 });
+
+test("yüklenen temalar: kurulum, sürüm güncelleme, resmi kimlik çakışması, etkin tema silinemez, kiracıya kapalı", async () => {
+  const site = (await repo.getSite())!;
+  const tokens = site.designTokens;
+  const input = (over: Record<string, unknown> = {}) => ({
+    themeId: "demo-tema", name: "Demo", version: "1.0.0", author: "T", tagline: "", description: "d", recommendedProfile: "corporate",
+    tokens, css: '[data-nx-skin="demo-tema"] .a{color:red}', rawCss: '.a{color:red}', header: null, footer: null, pages: [{ slug: "s", title: "S" }], screenshot: null, checksum: "abc", ...over,
+  });
+  assert.deepEqual(await repo.installUploadedTheme(input()), { ok: true, replaced: false });
+  assert.deepEqual(await repo.installUploadedTheme(input({ version: "1.1.0", checksum: "def" })), { ok: true, replaced: true });
+  const list = await repo.listUploadedThemes();
+  assert.equal(list.length, 1);
+  assert.equal(list[0]!.version, "1.1.0");
+  assert.equal(list[0]!.css.includes("demo-tema"), true);
+  assert.equal((await repo.installUploadedTheme(input({ themeId: "corporate-aurora" }))).ok, false, "resmi kimlik reddedilir");
+  assert.equal((await other.listUploadedThemes()).length, 0, "başka kiracı görmez");
+
+  assert.equal(await repo.activeSkin(), null, "etkin tema resmi: skin yok");
+  await repo.activateTheme("demo-tema", tokens);
+  assert.equal((await repo.activeSkin())?.themeId, "demo-tema");
+  assert.equal((await repo.deleteUploadedTheme("demo-tema")).ok, false, "etkin tema silinemez");
+  await repo.activateTheme("corporate-aurora", tokens);
+  assert.deepEqual(await repo.deleteUploadedTheme("demo-tema"), { ok: true });
+  assert.equal((await repo.listUploadedThemes()).length, 0);
+  assert.equal((await repo.deleteUploadedTheme("demo-tema")).ok, false);
+});

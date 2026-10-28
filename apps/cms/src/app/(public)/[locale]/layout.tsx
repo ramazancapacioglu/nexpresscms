@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
+import { getActiveSkin, getPreviewTheme } from "@/lib/public-theme";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { notFound } from "next/navigation";
@@ -49,7 +50,9 @@ export default async function PublicLocaleLayout({
   const savedIsLight = savedBg === "" || savedBg.startsWith("#fff") || savedBg === "#fcfcfd";
   const tokens =
     isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens);
-  const cssVars = compileDesignTokensToCssVars(tokens, site?.settings?.customizer);
+  const preview = await getPreviewTheme(siteId);
+  const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
+  const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, site?.settings?.customizer);
   const menuItems = nav?.menuItems ?? [];
   const footerColumns = nav?.footerConfig.columns ?? [];
   const copyright = nav?.footerConfig.copyrightText;
@@ -59,15 +62,21 @@ export default async function PublicLocaleLayout({
 
   return (
     <div
-      data-nx-skin={isInk ? "ink" : undefined}
+      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : undefined)}
       style={{
-        backgroundColor: tokens.colors.background,
-        color: tokens.colors.foreground,
-        fontFamily: tokens.typography.bodyFont,
+        backgroundColor: (preview?.tokens ?? tokens).colors.background,
+        color: (preview?.tokens ?? tokens).colors.foreground,
+        fontFamily: (preview?.tokens ?? tokens).typography.bodyFont,
       }}
       className="min-h-screen flex flex-col"
     >
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
+      {skin?.css ? <style dangerouslySetInnerHTML={{ __html: skin.css }} /> : null}
+      {preview ? (
+        <div role="status" className="bg-amber-100 px-3 py-1 text-center text-xs font-medium text-amber-900">
+          {t("site.themePreview", { id: preview.themeId })}
+        </div>
+      ) : null}
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
 

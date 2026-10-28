@@ -1,4 +1,5 @@
-import { Monitor, Palette, Save, Smartphone, Tablet } from "lucide-react";
+import Link from "next/link";
+import { Monitor, Package, Palette, Save, Smartphone, Tablet } from "lucide-react";
 import type { ThemeStoreState } from "./use-theme-store";
 
 /** Üst Başlık & Global Kaydet Çubuğu */
@@ -26,6 +27,9 @@ export function ThemeStoreHeader({ s }: { s: ThemeStoreState }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link href="/admin/themes/packages" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted">
+            <Package className="h-3.5 w-3.5" /> Tema paketleri
+          </Link>
           <div className="inline-flex items-center rounded-lg border border-border bg-background p-0.5">
             {(
               [

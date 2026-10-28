@@ -7,14 +7,19 @@
     ".": "./src/index.ts",
     "./starter": "./src/ink-grid-pages.ts",
     "./registry": "./src/registry.ts",
-    "./renderer": "./src/renderer.tsx"
+    "./renderer": "./src/renderer.tsx",
+    "./package": "./src/package/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@nexpress/core": "workspace:*",
-    "@nexpress/i18n": "workspace:*"
+    "@nexpress/i18n": "workspace:*",
+    "fflate": "^0.8.2",
+    "postcss": "^8.5.32",
+    "zod": "^4.6.7"
   },
   "peerDependencies": {
     "react": "^19.0.0"

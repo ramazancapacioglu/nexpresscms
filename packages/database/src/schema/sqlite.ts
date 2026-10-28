@@ -180,6 +180,25 @@ export const sqliteInstalledThemes = sqliteTable(
     customTokens: text("custom_tokens", { mode: "json" })
       .$type<Partial<DesignTokens>>()
       .default({}),
+    /** official: kodda tanımlı resmi tema; uploaded: `.nxtheme` paketinden yüklenen veri teması */
+    source: text("source").default("official").notNull(),
+    name: text("name").default("").notNull(),
+    version: text("version").default("").notNull(),
+    author: text("author").default("").notNull(),
+    tagline: text("tagline").default("").notNull(),
+    description: text("description").default("").notNull(),
+    recommendedProfile: text("recommended_profile").default("corporate").notNull(),
+    /** Paketin temel tasarım token'ları (özelleştirmeden bağımsız; dışa aktarma ve sıfırlama için) */
+    packageTokens: text("package_tokens", { mode: "json" }).$type<DesignTokens | null>(),
+    /** Doğrulanmış ve kapsamlanmış `skins.css` */
+    css: text("css").default("").notNull(),
+    /** Paketteki özgün (kapsamlanmamış) CSS: dışa aktarma bununla yapılır */
+    rawCss: text("raw_css").default("").notNull(),
+    header: text("header", { mode: "json" }).$type<Record<string, unknown> | null>(),
+    footer: text("footer", { mode: "json" }).$type<Record<string, unknown> | null>(),
+    pages: text("pages", { mode: "json" }).$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    screenshot: text("screenshot"),
+    checksum: text("checksum").default("").notNull(),
     installedAt: integer("installed_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [

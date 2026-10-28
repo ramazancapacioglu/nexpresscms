@@ -62,6 +62,7 @@ export const en: Messages = {
     homeListTitle: "Polymorphic knowledge graph and published content",
     homeListBody: "Every item is served both as a 100/100 RSC page and as a zero-cost {md} feed.",
     homeEdit: "Edit in the visual editor →",
+    themePreview: "Theme preview: {id} — only you can see this, the site is unchanged.",
     openPage: "Open RSC page →",
   },
   blocks: {

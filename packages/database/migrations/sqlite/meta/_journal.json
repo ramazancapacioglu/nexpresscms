@@ -50,6 +50,13 @@
       "when": 1793195993398,
       "tag": "0006_user_ui_locale",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1793198237457,
+      "tag": "0007_theme_packages",
+      "breakpoints": true
     }
   ]
 }

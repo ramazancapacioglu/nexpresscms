@@ -9,6 +9,7 @@ import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/t
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
+import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 
@@ -130,7 +131,7 @@ export default async function PublicDynamicContentPage({
   const allowComments = pub.allowComments !== false;
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
-  const tokens = site?.designTokens ?? activeTheme.tokens;
+  const tokens = (await getPreviewTheme(siteId))?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}/${locale}/${content.slug}`;
 

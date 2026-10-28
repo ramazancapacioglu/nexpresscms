@@ -15,6 +15,17 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-nexpress-site-id", siteId);
   // AI yönlendirme izleme girdileri: istemciden gelen değerler her zaman ezilir
   requestHeaders.set("x-nexpress-path", pathname);
+  // Tema önizleme: yalnızca geçerli oturumlu kullanıcı için (`?nx_preview=<tema>`); istemciden gelen başlık her zaman ezilir
+  requestHeaders.delete("x-nexpress-preview-theme");
+  const previewId = searchParams.get("nx_preview");
+  let previewing = false;
+  if (previewId && /^[a-z0-9][a-z0-9-]{1,38}$/.test(previewId) && !pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
+    const sess = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value, getAuthSecret());
+    if (sess && sess.siteId === siteId) {
+      requestHeaders.set("x-nexpress-preview-theme", previewId);
+      previewing = true;
+    }
+  }
   // Sayfa dili (kök <html lang/dir> için): ilk yol parçası dil etiketi gibiyse o, değilse boş
   const lang = pathname.match(/^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/|$)/)?.[1];
   if (lang) requestHeaders.set("x-nexpress-locale", lang);
@@ -79,6 +90,7 @@ export async function middleware(request: NextRequest) {
       headers: requestHeaders,
     },
   });
+  if (previewing) response.headers.set("Cache-Control", "private, no-store");
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
   if (/^\/[a-z]{2}(\/[^/]+)?$/.test(pathname)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);

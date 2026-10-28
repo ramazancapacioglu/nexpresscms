@@ -174,5 +174,6 @@ export interface SaveContentInput {
 }
 
 export type { RevisionSnapshot, RevisionSummary, RevisionActor } from "./revisions";
+export type { ThemeInstallResult, UploadedThemeDto, UploadedThemeInput } from "./themes";
 export type { TranslationMatrix, TranslationMatrixRow, TranslationOverviewRow, TranslationResult } from "./translations";
 export type { SitePluginRecord, SitePluginPatch } from "./plugins";

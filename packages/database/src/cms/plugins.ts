@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { PluginRow } from "@nexpress/core";
 import { upsertScoped } from "../dialect";
-import { CmsTranslationRepository } from "./translations";
+import { CmsThemeRepository } from "./themes";
 
 export interface SitePluginRecord extends PluginRow {
   pluginId: string;
@@ -19,7 +19,7 @@ export interface SitePluginPatch {
 }
 
 /** Kiracı başına eklenti durumu. Satır yoksa çağıran manifest varsayılanını kullanır. */
-export class CmsPluginRepository extends CmsTranslationRepository {
+export class CmsPluginRepository extends CmsThemeRepository {
   public async listSitePlugins(): Promise<SitePluginRecord[]> {
     const { db, t } = this.backend;
     const rows = await db.select().from(t.sitePlugins).where(eq(t.sitePlugins.siteId, this.siteId));
