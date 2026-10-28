@@ -57,6 +57,13 @@
       "when": 1793198237457,
       "tag": "0007_theme_packages",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793199244099,
+      "tag": "0008_redirects_not_found",
+      "breakpoints": true
     }
   ]
 }

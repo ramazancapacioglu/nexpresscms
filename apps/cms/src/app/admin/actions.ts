@@ -14,6 +14,7 @@ import {
   type WpMigrationReport,
   type WpRawPostInput,
 } from "@nexpress/wp-importer";
+import { resolvePublishing, resolveSiteSettings, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -141,6 +142,15 @@ export async function saveContentAction(input: {
   const site = await repo.getSite();
   const locale = input.locale && site?.supportedLocales.includes(input.locale) ? input.locale : (site?.defaultLocale ?? "tr");
 
+  if (input.status === "scheduled") {
+    // Tarihsiz/geçmiş zamanlama sonsuza dek bekler ya da hemen yayınlanır: kayıtta reddedilir
+    const tz = resolveSiteSettings(site?.settings).general.timezone;
+    const at = resolvePublishing(input.schemaAttributes).scheduledAt;
+    const when = at ? zonedLocalToUtc(at, tz) : null;
+    if (!when) return { ok: false as const, error: "Zamanlanmış yayın için geçerli bir tarih ve saat seçin." };
+    if (when.getTime() <= Date.now()) return { ok: false as const, error: "Zamanlanmış yayın tarihi gelecekte olmalı." };
+  }
+
   const res = await repo.saveContent({
     actor: { id: session.sub, email: session.email },
     contentId: input.contentId,
@@ -217,13 +227,14 @@ export async function bulkContentAction(input: {
   categorySlug?: string;
   tagSlug?: string;
 }) {
-  await requireUser({ audit: "cms.bulkContent" });
+  const session = await requireUser({ audit: "cms.bulkContent" });
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
   if (input.operation === "delete") {
-    const deletedCount = await repo.deleteContents(input.contentIds);
+    // Silme artık çöp kutusuna taşır (30 gün geri alınabilir); kalıcı silme Çöp Kutusu sayfasındadır.
+    const deletedCount = await repo.trashContents(input.contentIds, session.email);
     await revalidatePath("/admin");
     await revalidatePath("/admin/pages");
     await revalidatePath("/admin/posts");
@@ -241,8 +252,8 @@ export async function bulkContentAction(input: {
       await repo.patchContent(id, { status: "draft" });
       affected++;
     } else if (input.operation === "scheduled") {
-      await repo.patchContent(id, { status: "scheduled" });
-      affected++;
+      // Tarih gerekir: toplu işlemde tarih alınmaz, yalnızca tarihi olan içerik zamanlanır
+      if (await repo.patchContent(id, { status: "scheduled" })) affected++;
     } else if (input.operation === "assign_category" && input.categorySlug) {
       const existing = await repo.getContentById(id, "tr");
       if (existing) {

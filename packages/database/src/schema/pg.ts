@@ -793,3 +793,44 @@ export const pgAiReferralDaily = pgTable(
     index("ai_referral_daily_day_idx").on(t.siteId, t.day),
   ]
 );
+
+/** YÖNLENDİRMELER — elle yönetilen 301/302/307/308 kuralları (slug geçmişi otomatik 301'i ayrıdır). */
+export const pgRedirects = pgTable(
+  "redirects",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    fromPath: text("from_path").notNull(),
+    toPath: text("to_path").notNull(),
+    code: integer("code").default(301).notNull(),
+    enabled: boolean("enabled").default(true).notNull(),
+    hits: integer("hits").default(0).notNull(),
+    note: text("note").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    lastHitAt: timestamp("last_hit_at"),
+  },
+  (t) => [
+    index("redirects_site_id_idx").on(t.siteId),
+    uniqueIndex("redirects_site_from_uidx").on(t.siteId, t.fromPath),
+  ]
+);
+
+/** 404 İZLEYİCİ — bulunamayan ziyaretçi yolları (sorgu/çapa yok; yalnızca sayaç ve son yönlendiren alan adı). */
+export const pgNotFoundLog = pgTable(
+  "not_found_log",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    path: text("path").notNull(),
+    hits: integer("hits").default(0).notNull(),
+    firstSeenAt: timestamp("first_seen_at").defaultNow().notNull(),
+    lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
+    lastReferrer: text("last_referrer").default("").notNull(),
+    ignored: boolean("ignored").default(false).notNull(),
+  },
+  (t) => [
+    index("not_found_log_site_id_idx").on(t.siteId),
+    index("not_found_log_hits_idx").on(t.siteId, t.hits),
+  ]
+);

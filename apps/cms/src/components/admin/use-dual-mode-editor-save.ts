@@ -60,7 +60,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         markSaved(sigAtStart);
         router.refresh();
       } else {
-        showToast("Kaydedilemedi: sunucu isteği reddetti. Değişiklikleriniz sayfada duruyor.");
+        showToast(("error" in res && res.error) || "Kaydedilemedi: sunucu isteği reddetti. Değişiklikleriniz sayfada duruyor.");
       }
       } catch {
         showToast("Kaydedilemedi: bağlantı veya oturum hatası. Değişiklikleriniz sayfada duruyor.");
@@ -192,6 +192,8 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     showShareButtons,
     setShowShareButtons,
     contentId,
+    scheduledAt: p.scheduledAt,
+    setScheduledAt: p.setScheduledAt,
     locale: p.locale,
     defaultLocale: p.defaultLocale,
     siteLocales: p.siteLocales,

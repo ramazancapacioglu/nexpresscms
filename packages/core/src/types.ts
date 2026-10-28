@@ -27,7 +27,8 @@ export type ContentStatus =
   | "published"   // Herkese Açık Yayında
   | "scheduled"   // İleri Tarihte Zamanlanmış
   | "restricted"  // Kısıtlı (Şifre veya Üye Korumalı)
-  | "archived";   // Arşivlenmiş
+  | "archived"    // Arşivlenmiş
+  | "trashed";    // Çöp kutusunda (yumuşak silinmiş; hiçbir yüzeyde görünmez, 30 gün sonra kalıcı silinir)
 
 export type ContentVisibility = "public" | "password" | "members_only" | "private";
 

@@ -2,9 +2,11 @@ import React from "react";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getActiveSkin, getPreviewTheme } from "@/lib/public-theme";
+import { redirectOrNotFound } from "@/lib/redirect-runtime";
+import { runScheduler } from "@/lib/scheduler";
+import { after } from "next/server";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
-import { notFound } from "next/navigation";
 import { getPublicNavigation, getPublicSite } from "@/lib/public-data";
 import {
   compileDesignTokensToCssVars,
@@ -38,11 +40,14 @@ export default async function PublicLocaleLayout({
   const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  // Zamanlanmış yayın tetikleyicisi: yanıttan sonra, dakikada en çok bir kez (bkz. lib/scheduler.ts)
+  after(() => runScheduler(siteId).then(() => undefined));
 
   const [site, nav] = await Promise.all([getPublicSite(siteId), getPublicNavigation(siteId, locale)]);
 
   // Tanımsız dil kökü ana sayfayı kopyalamasın: yalnızca site dilleri 200 döner.
-  if (site && !site.supportedLocales.includes(locale)) notFound();
+  // Tek segmentli bilinmeyen yollar (`/eski-adres`) buraya düşer: yönlendirme kuralı varsa uygula, yoksa 404 izleyiciye yaz
+  if (site && !site.supportedLocales.includes(locale)) return redirectOrNotFound(siteId, `/${locale}`);
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const isInk = activeTheme.id === INK_GRID_ID;

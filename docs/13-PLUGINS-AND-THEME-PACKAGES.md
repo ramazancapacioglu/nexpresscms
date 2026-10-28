@@ -103,15 +103,15 @@ Denetimle bulunan açıklar; öncelik sırasıyla:
 | 4 | **Eklentiler** ve **tema yükleme** | Bu dokümanın §2–§3. |
 | 5 | **İçerik revizyonları** + karşılaştırma + geri alma | **v1 yapıldı** (2026-10-28): her kayıtta görüntü saklanır (aynı içerik tekrarlanmaz, içerik başına son 50), editörde Yayın sekmesinde "Sürüm Geçmişi" ve "Bu sürümü yükle" (yalnızca editörü doldurur, kaydetmek ayrı adım). Kalan: iki sürüm arası fark görünümü, sürüm silme, bloğa göre karşılaştırma. |
 | 6 | **Otomatik kayıt / taslak kurtarma** | **Tarayıcı tarafı yapıldı** (2026-10-28): "Kaydedilmedi" rozeti, sekme kapatma uyarısı, Ctrl/Cmd+S, 1,2 sn aralıkla yerel taslak (`localStorage`, `nx:draft:{siteId}:{contentId}`) ve açılışta kurtarma çubuğu; kayıt hatasında uyarı. Kalan: sunucu tarafı otomatik kayıt (çoklu cihaz), eşzamanlı düzenleme çakışma uyarısı. |
-| 7 | **Çöp kutusu** (yumuşak silme, geri yükleme) | Silme bugün kalıcı. |
-| 8 | **Zamanlanmış yayın** arayüzü ve takvim | `scheduled` durumu var, arayüz ve tetikleyici (zamanlayıcı) yok. |
+| 7 | **Çöp kutusu** (yumuşak silme, geri yükleme) | **Yapıldı (2026-10-28):** silme çöpe taşır (`status = trashed`, önceki durum saklanır), tüm yüzeylerden (liste, ziyaretçi, sitemap, RAG) gizlenir; `/admin/trash` geri yükle (**taslak** olarak) / kalıcı sil (yönetici) / çöpü boşalt; 30 gün sonra kendiliğinden silinir. |
+| 8 | **Zamanlanmış yayın** arayüzü ve takvim | **Yapıldı:** editörde tarih-saat seçici (site saat dilimi, tarihsiz/geçmiş reddedilir), `/admin/schedule` gün gün takvim (şimdi yayınla / zamanlamayı kaldır), tetikleyici: ziyaretçi trafiğiyle dakikada bir + `/api/cron/scheduled` (`CRON_SECRET`) ile kesin; yayında `content:afterPublish` (arama dizini, IndexNow) çalışır. |
 | 9 | **Paylaşılabilir taslak önizleme** bağlantısı | Süreli belirteç. |
-| 10 | **Yönlendirme yöneticisi** (301/302 elle) ve **404 izleyici** | Slug geçmişi otomatik; elle yönetim yok. |
+| 10 | **Yönlendirme yöneticisi** (301/302 elle) ve **404 izleyici** | **Yapıldı:** `/admin/redirects` (göç `0008`): doğrulama (rezerve yollar, kendine yönlendirme, döngü), zincir çözümü, 301/308 ve 302/307, isabet sayaçları; 404 izleyici (sorgusuz yol, son yönlendiren alan adı, "Yönlendir" kısayolu, yok say, 2000 satır sınırı). |
 | 11 | **Formlar ve gelen kutusu** | Form blokları, gönderim kayıtları, e-posta bildirimi, spam koruması. |
 | 12 | **Gerçek WordPress içe aktarma** | `/admin/migration` bugün **örnek veriyle simülasyon**; WXR/REST yükleme ve medya taşıma yok. |
 | 13 | **Medya**: klasör/etiket, toplu ve sürükle-bırak yükleme, dosya değiştirme, "kullanılmayanlar" raporu | |
 | 14 | **Yedekleme / dışa-içe aktarma** (JSON+zip, kiracı bazlı) | `db:export/import`. |
-| 15 | **Sistem durumu** sayfası | Sürüm, veritabanı, önbellek, disk, env denetimi, bekleyen göç, arama dizini sağlığı. |
+| 15 | **Sistem durumu** sayfası | **Yapıldı:** `/admin/system` (yönetici): veritabanı bağlantı/gecikme ve bekleyen göç, ortam denetimi (yer tutucu `AUTH_SECRET`, https, anahtar varlığı — değerler gösterilmez), medya klasörü ve boş disk, arama dizini kapsamı, zamanlanmış/çöp/404/talep/bot özetleri. Kalan: önbellek, sürüm/güncelleme. |
 | 16 | **Bildirim merkezi** | Başarısız dizinleme, lisans süresi, güncelleme, güvenlik uyarıları. |
 | 17 | **Komut paleti (⌘K)** veri kapsamı | Yalnızca gezinti; içerik/ayar/eylem araması yok. |
 | 18 | **Mobil/duyarlı yönetim**, klavye kısayolları, erişilebilirlik denetimi, boş durum ve yükleme iskeletleri | AGENTS.md kural 6 hedefi; tutarlılık denetimi yapılmadı. |

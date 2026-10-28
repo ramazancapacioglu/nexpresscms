@@ -95,6 +95,8 @@ export interface StudioInspectorApi {
   setAllowReviews: Dispatch<SetStateAction<boolean>>;
   showShareButtons: boolean;
   setShowShareButtons: Dispatch<SetStateAction<boolean>>;
+  scheduledAt: string;
+  setScheduledAt: Dispatch<SetStateAction<string>>;
   contentId: string | undefined;
   /** Düzenlenen dil ve sitenin dil kurulumu */
   locale: string;

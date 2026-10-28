@@ -9,6 +9,7 @@ import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/t
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
+import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -97,7 +98,7 @@ export default async function PublicDynamicContentPage({
   ]);
 
   if (!resolved || !resolved.content) {
-    notFound();
+    return redirectOrNotFound(siteId, `/${locale}/${slug}`);
   }
 
   if (resolved.isRedirect) {

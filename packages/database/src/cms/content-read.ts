@@ -45,7 +45,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       contentId: content.id,
       siteId: content.siteId,
       type: content.type,
-      status: (translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
+      status: (content.status === "trashed" ? "trashed" : translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
       importanceScore: content.importanceScore,
       schemaType: content.schemaType,
       schemaAttributes: mergeLocalizedAttributes(content.schemaAttributes ?? {}, translation.attributes),
@@ -74,7 +74,10 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       updatedAt: translation.updatedAt,
     }));
     // Yayın dışı filtreler etkin durum üzerinden (çeviri taslağı içerik durumunu ezer)
-    return options?.status && options.status !== "published" ? mapped.filter((c) => c.status === options.status) : mapped;
+    // Çöpteki içerik yalnızca açıkça istenince listelenir; hiçbir varsayılan listede görünmez
+    if (options?.status === "trashed") return mapped.filter((c) => c.status === "trashed");
+    const live = mapped.filter((c) => c.status !== "trashed");
+    return options?.status && options.status !== "published" ? live.filter((c) => c.status === options.status) : live;
   }
 
   /**

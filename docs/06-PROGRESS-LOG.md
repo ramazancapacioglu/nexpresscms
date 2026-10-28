@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — F14 (1): çöp kutusu, zamanlanmış yayın, yönlendirme + 404 izleyici, sistem durumu
+- ✅ **Çöp kutusu:** `ContentStatus` `trashed`; toplu silme çöpe taşır; hiçbir yüzeyde görünmez (liste/ziyaretçi/sitemap/RAG); geri yükleme **taslak**; 30 gün sonra otomatik silinir; kalıcı silme ve boşaltma yalnızca yönetici.
+- ✅ **Zamanlanmış yayın:** saat dilimli tarih çözümü (`zonedLocalToUtc`, yaz saati dahil, testli), editörde tarih seçici, tarihsiz/geçmiş reddi (kayıtta ve toplu işlemde), `publishDue` (+afterPublish kancaları), `/admin/schedule` takvimi, `/api/cron/scheduled` (`CRON_SECRET`, sabit zamanlı karşılaştırma) ve ziyaretçi trafiğiyle dakikada bir.
+- ✅ **Yönlendirmeler + 404:** göç `0008`; doğrulama/döngü reddi/zincir çözümü; uygulama 308/307; 404 izleyici (tek segmentli bilinmeyen yollar dahil `[locale]` yerleşiminde yakalanır); `/admin/redirects`.
+- ✅ **Sistem durumu:** `/admin/system`; ortam denetimi sır değeri sızdırmaz (testli).
+- 🐞 Doğrulamada bulundu: tek segmentli bilinmeyen adresler (`/eski-adres`) `[locale]` yerleşimine düşüp izleyiciye yazılmıyordu → düzeltildi. Sistem durumu bu makinede `apps/cms/.env` içindeki `AUTH_SECRET`'in örnek yer tutucu olduğunu doğru şekilde kırmızı işaretledi.
+- Doğrulama: HTTP + tarayıcıda uçtan uca (cron 401/200, gecikmiş içerik yayınlandı, gelecek bekledi, çöp 404, geri yüklenen taslak 404, redirect 308, döngü/rezerve reddi). Testler: core 79, database 49 (SQLite+PG).
+
 ### [2026-10-28] — F13 (temalar): tema paketleri v1
 - ✅ `.nxtheme` biçimi ve doğrulayıcı (`@nexpress/themes/package`): zip sınırları (8 MB / 200 dosya / 30 MB açılmış, **zip bombası** şişirmeden önce reddedilir), yol gezinmesi ve izinsiz uzantı reddi, zod şemaları (tema, token, üst/alt şablon, başlangıç sayfaları), **CSS temizleyici + kapsamlayıcı** (postcss: @import/expression/dış url/@font-face yasak, her seçici `[data-nx-skin]` altına alınır), screenshot sihirli bayt denetimi, SHA-256 özet.
 - ✅ Göç `0007` + `CmsThemeRepository`: kur/güncelle, resmi kimlik çakışması reddi, etkin tema silinemez, kiracıya kapalı (SQLite + PG testli).

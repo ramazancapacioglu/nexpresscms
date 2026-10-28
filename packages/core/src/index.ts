@@ -20,6 +20,8 @@ export * from "./plugins";
 export * from "./plugin-routes";
 export * from "./plugin-actions";
 export * from "./translation";
+export * from "./lifecycle";
+export * from "./system-health";
 export * from "./media";
 export * from "./chunker";
 export * from "./vector";

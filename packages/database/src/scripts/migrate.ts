@@ -1,6 +1,7 @@
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { migrate as migrateSqlite } from "drizzle-orm/libsql/migrator";
 import { migrate as migratePg } from "drizzle-orm/postgres-js/migrator";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { getDbDialect, getPgClient, getSqliteClient } from "../client";
 import { pushSchema } from "./push";
@@ -20,8 +21,17 @@ export interface MigrateResult {
 }
 
 /** `NEXPRESS_MIGRATIONS_DIR` yalnızca testler içindir (üretilmiş göç klasörünü geçersiz kılar). */
-const folderFor = (dialect: "sqlite" | "postgresql") =>
-  process.env.NEXPRESS_MIGRATIONS_DIR ?? path.resolve(import.meta.dirname, "../../migrations", dialect === "sqlite" ? "sqlite" : "pg");
+const folderFor = (dialect: "sqlite" | "postgresql") => {
+  if (process.env.NEXPRESS_MIGRATIONS_DIR) return process.env.NEXPRESS_MIGRATIONS_DIR;
+  const sub = dialect === "sqlite" ? "sqlite" : "pg";
+  // Derlenmiş (Next) pakette `import.meta.dirname` derleme çıktısını gösterir: çalışma dizininden de aranır.
+  const candidates = [
+    path.resolve(import.meta.dirname ?? ".", "../../migrations", sub),
+    path.resolve(process.cwd(), "../../packages/database/migrations", sub),
+    path.resolve(process.cwd(), "packages/database/migrations", sub),
+  ];
+  return candidates.find((c) => existsSync(c)) ?? candidates[0]!;
+};
 
 async function sqliteState() {
   const { client } = getSqliteClient();
@@ -52,6 +62,15 @@ async function markBaselinePg(hash: string, millis: number) {
   await sql`CREATE SCHEMA IF NOT EXISTS drizzle`;
   await sql`CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (id SERIAL PRIMARY KEY, hash text NOT NULL, created_at bigint)`;
   await sql`INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES (${hash}, ${millis})`;
+}
+
+/** Yönetim paneli için salt-okunur göç durumu: uygulanan/toplam/bekleyen. */
+export async function migrationStatus(): Promise<{ dialect: "sqlite" | "postgresql"; total: number; pending: number; legacy: boolean }> {
+  const dialect = getDbDialect();
+  const files = readMigrationFiles({ migrationsFolder: folderFor(dialect) });
+  const state = dialect === "sqlite" ? await sqliteState() : await pgState();
+  const pending = state.journalRows ? files.filter((f) => f.folderMillis > state.lastApplied).length : files.length;
+  return { dialect, total: files.length, pending, legacy: state.legacy && !state.journalRows };
 }
 
 export async function migrateDatabase(): Promise<MigrateResult> {

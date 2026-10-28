@@ -435,3 +435,91 @@ test("yüklenen temalar: kurulum, sürüm güncelleme, resmi kimlik çakışmas�
   assert.equal((await repo.listUploadedThemes()).length, 0);
   assert.equal((await repo.deleteUploadedTheme("demo-tema")).ok, false);
 });
+
+test("çöp kutusu: listelerden ve ziyaretçiden kaybolur, taslak olarak geri gelir, süresi dolan silinir, kiracıya kapalı", async () => {
+  const a = await repo.saveContent(baseInput({ slug: "cop-a", title: "Çöp A", status: "published" }));
+  const b = await repo.saveContent(baseInput({ slug: "cop-b", title: "Çöp B", status: "published" }));
+  assert.equal(await repo.trashContents([a.contentId, "yok-id"], "x@y.z"), 1);
+  assert.equal(await other.trashContents([b.contentId]), 0, "başka kiracı çöpe atamaz");
+  assert.equal((await repo.listContents({ locale: "tr" })).some((c) => c.contentId === a.contentId), false, "varsayılan liste");
+  assert.equal((await repo.listContents({ locale: "tr", status: "published" })).some((c) => c.contentId === a.contentId), false, "yayın listesi");
+  assert.equal(await repo.resolveContentBySlug("cop-a", "tr", { publicOnly: true }), null, "ziyaretçi");
+  const trashed = await repo.listTrashed();
+  assert.equal(trashed.length, 1);
+  assert.equal(trashed[0]!.previousStatus, "published");
+  assert.equal(trashed[0]!.deletedBy, "x@y.z");
+  assert.equal(await repo.trashContents([a.contentId]), 0, "zaten çöpte");
+  // geri yükleme: taslak
+  assert.equal(await repo.restoreContents([a.contentId]), 1);
+  const back = (await repo.getContentById(a.contentId, "tr"))!;
+  assert.equal(back.status, "draft");
+  assert.equal("_trash" in back.schemaAttributes, false);
+  // süresi dolma
+  await repo.trashContents([a.contentId]);
+  assert.equal(await repo.purgeExpiredTrash(new Date(Date.now() + 10 * 86_400_000)), 0, "10 gün: dolmadı");
+  assert.equal(await repo.purgeExpiredTrash(new Date(Date.now() + 31 * 86_400_000)), 1, "31 gün: silindi");
+  assert.equal(await repo.getContentById(a.contentId, "tr"), null);
+  await repo.trashContents([b.contentId]);
+  assert.equal(await repo.emptyTrash(), 1);
+});
+
+test("zamanlanmış yayın: tarihsiz zamanlama reddedilir, zamanı gelen yayınlanır (saat dilimi), gelmeyen beklenir, kancalar çalışır", async () => {
+  const { cmsHooks } = await import("@nexpress/core");
+  const fired: string[] = [];
+  cmsHooks.registerAction("content:afterPublish", "@test/scheduler", (p) => void fired.push(p.slug));
+  const mk = (slug: string, scheduledAt: string) =>
+    repo.saveContent(baseInput({ slug, title: slug, status: "scheduled", schemaAttributes: { _publishing: { scheduledAt } } }));
+  const due = await mk("zm-gecmis", "2020-01-01T10:00");
+  const later = await mk("zm-gelecek", "2099-01-01T10:00");
+  const nodate = await mk("zm-tarihsiz", "");
+  assert.equal(await repo.patchContent(nodate.contentId, { status: "scheduled" }), false, "tarihsiz patch reddedilir");
+  const list = await repo.listScheduled();
+  assert.deepEqual(list.filter((i) => i.slug.startsWith("zm-")).map((i) => [i.slug, i.due]), [["zm-gecmis", true], ["zm-gelecek", false], ["zm-tarihsiz", false]]);
+  assert.deepEqual(await repo.publishDue(), [due.contentId], "yalnızca zamanı gelen");
+  assert.ok(fired.includes("zm-gecmis") && !fired.includes("zm-gelecek"));
+  assert.equal((await repo.getContentById(due.contentId, "tr"))!.status, "published");
+  assert.equal((await repo.getContentById(later.contentId, "tr"))!.status, "scheduled");
+  assert.deepEqual(await repo.publishDue(), [], "ikinci çalıştırma boş");
+  // zamanlamayı kaldır / hemen yayınla
+  assert.equal(await repo.setScheduledOutcome(later.contentId, "draft"), true);
+  assert.equal((await repo.getContentById(later.contentId, "tr"))!.status, "draft");
+  assert.equal(await repo.setScheduledOutcome(later.contentId, "draft"), false, "zaten zamanlı değil");
+  assert.equal(await repo.setScheduledOutcome(nodate.contentId, "published"), true);
+  assert.ok(fired.includes("zm-tarihsiz"));
+});
+
+test("yönlendirme ve 404 izleyici: doğrulama, döngü reddi, sayaç, kiracıya kapalı, budama", async () => {
+  const { getRedirectRepository } = await import("../src/redirects-repository");
+  const r = getRedirectRepository("default");
+  const o = getRedirectRepository("baska-site");
+  assert.equal((await r.save({ fromPath: "/admin/x", toPath: "/a" })).ok, false);
+  assert.equal((await r.save({ fromPath: "/eski", toPath: "/eski/" })).ok, false);
+  assert.equal((await r.save({ fromPath: "/eski", toPath: "/yeni", code: 999 })).ok, false);
+  const ok = await r.save({ fromPath: "eski", toPath: "/yeni", code: 301, note: "test" });
+  assert.equal(ok.ok, true);
+  await r.save({ fromPath: "/eski", toPath: "/yeni-2", code: 302 }); // aynı kaynak güncellenir
+  assert.equal((await r.list()).length, 1);
+  assert.equal((await r.list())[0]!.toPath, "/yeni-2");
+  assert.deepEqual(await r.save({ fromPath: "/yeni-2", toPath: "/eski" }), { ok: false, error: "Bu kural bir yönlendirme döngüsü oluşturur." });
+  assert.equal((await o.list()).length, 0, "başka kiracı görmez");
+  assert.equal(await o.setEnabled(ok.ok ? ok.id : "", false), false, "başka kiracı değiştiremez");
+  await r.recordHit("/eski");
+  await r.recordHit("/eski");
+  assert.equal((await r.list())[0]!.hits, 2);
+  assert.equal((await r.activeMap()).get("/eski")?.code, 302);
+  assert.equal(await r.setEnabled((await r.list())[0]!.id, false), true);
+  assert.equal((await r.activeMap()).size, 0);
+  assert.equal(await r.remove((await r.list())[0]!.id), true);
+
+  for (let i = 0; i < 3; i++) await r.recordNotFound("/yok/sayfa?utm=1#x", "google.com");
+  await r.recordNotFound("/baska");
+  const nf = await r.listNotFound();
+  assert.deepEqual(nf.map((x) => [x.path, x.hits]), [["/yok/sayfa", 3], ["/baska", 1]]);
+  assert.equal(nf[0]!.lastReferrer, "google.com");
+  assert.equal((await o.listNotFound()).length, 0);
+  await r.ignoreNotFound("/baska");
+  assert.equal((await r.listNotFound()).length, 1);
+  assert.equal(await r.pruneNotFound(1), 1, "sınır 1: tablo budanır (ignored dahil toplam 2 satırdan 1 silinir)");
+  await r.clearNotFound();
+  assert.equal(await r.countNotFound(), 0);
+});

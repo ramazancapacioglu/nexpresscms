@@ -792,3 +792,44 @@ export const sqliteAiReferralDaily = sqliteTable(
     index("ai_referral_daily_day_idx").on(t.siteId, t.day),
   ]
 );
+
+/** YÖNLENDİRMELER — elle yönetilen 301/302/307/308 kuralları (slug geçmişi otomatik 301'i ayrıdır). */
+export const sqliteRedirects = sqliteTable(
+  "redirects",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    fromPath: text("from_path").notNull(),
+    toPath: text("to_path").notNull(),
+    code: integer("code").default(301).notNull(),
+    enabled: integer("enabled", { mode: "boolean" }).default(true).notNull(),
+    hits: integer("hits").default(0).notNull(),
+    note: text("note").default("").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    lastHitAt: integer("last_hit_at", { mode: "timestamp_ms" }),
+  },
+  (t) => [
+    index("redirects_site_id_idx").on(t.siteId),
+    uniqueIndex("redirects_site_from_uidx").on(t.siteId, t.fromPath),
+  ]
+);
+
+/** 404 İZLEYİCİ — bulunamayan ziyaretçi yolları (sorgu/çapa yok; yalnızca sayaç ve son yönlendiren alan adı). */
+export const sqliteNotFoundLog = sqliteTable(
+  "not_found_log",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    path: text("path").notNull(),
+    hits: integer("hits").default(0).notNull(),
+    firstSeenAt: integer("first_seen_at", { mode: "timestamp_ms" }).notNull(),
+    lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }).notNull(),
+    lastReferrer: text("last_referrer").default("").notNull(),
+    ignored: integer("ignored", { mode: "boolean" }).default(false).notNull(),
+  },
+  (t) => [
+    index("not_found_log_site_id_idx").on(t.siteId),
+    index("not_found_log_hits_idx").on(t.siteId, t.hits),
+  ]
+);

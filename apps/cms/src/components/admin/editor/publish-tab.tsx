@@ -13,6 +13,8 @@ export function PublishTab() {
     setStatus,
     visibility,
     setVisibility,
+    scheduledAt,
+    setScheduledAt,
     accessPassword,
     setAccessPassword,
     flatCategoryTree,
@@ -71,6 +73,22 @@ export function PublishTab() {
                         </select>
                       </div>
                     </div>
+
+                    {status === "scheduled" && (
+                      <div className="rounded-md border border-border p-2 space-y-1">
+                        <label className="block text-[10px] text-muted-foreground" htmlFor="nx-scheduled-at">
+                          Yayın tarihi ve saati (site saat dilimi)
+                        </label>
+                        <input
+                          id="nx-scheduled-at"
+                          type="datetime-local"
+                          value={scheduledAt}
+                          onChange={(e) => setScheduledAt(e.target.value)}
+                          className="h-8 w-full rounded border border-border bg-background px-2"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Zamanı gelince kendiliğinden yayınlanır. Tarih gelecekte olmalı; kaydedince Zamanlanmış Yayınlar sayfasında görünür.</p>
+                      </div>
+                    )}
 
                     {visibility === "password" && (
                       <input

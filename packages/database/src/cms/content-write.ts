@@ -52,6 +52,8 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
   ): Promise<boolean> {
     const existing = await this.getContentById(contentId, locale);
     if (!existing) return false;
+    // Tarihsiz zamanlama sonsuza dek bekler: tarih yoksa reddedilir
+    if (patch.status === "scheduled" && !(patch.scheduledAt || resolvePublishing(existing.schemaAttributes).scheduledAt)) return false;
     const pubRaw = (existing.schemaAttributes.publishing ?? {}) as Record<string, unknown>;
     const pub = resolvePublishing(existing.schemaAttributes);
 

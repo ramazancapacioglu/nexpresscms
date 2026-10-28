@@ -23,6 +23,10 @@ import {
   ScrollText,
   Inbox,
   Languages,
+  Trash2,
+  CalendarClock,
+  Route,
+  Activity,
 } from "lucide-react";
 
 export interface NavItem {
@@ -99,11 +103,25 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G R",
       },
       {
+        href: "/admin/schedule",
+        label: "Zamanlanmış yayınlar",
+        icon: CalendarClock,
+        count: "Takvim",
+        shortcut: "G Z",
+      },
+      {
+        href: "/admin/trash",
+        label: "Çöp kutusu",
+        icon: Trash2,
+        count: "30 gün",
+        shortcut: "G W",
+      },
+      {
         href: "/admin/translations",
         label: "Çeviriler",
         icon: Languages,
         count: "Diller",
-        shortcut: "G D",
+        shortcut: "G L",
       },
       {
         href: "/admin/requests",
@@ -170,6 +188,14 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G S",
       },
       {
+        href: "/admin/redirects",
+        label: "Yönlendirmeler & 404",
+        icon: Route,
+        count: "301/302",
+        shortcut: "G Y",
+        adminOnly: true,
+      },
+      {
         href: "/admin/migration",
         label: "WordPress Göç Aracı",
         icon: ArrowRightLeft,
@@ -194,6 +220,14 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/system",
+        label: "Sistem durumu",
+        icon: Activity,
+        count: "Sağlık",
+        shortcut: "G V",
+        adminOnly: true,
+      },
+      {
         href: "/admin/audit",
         label: "Denetim Günlüğü",
         icon: ScrollText,
@@ -215,6 +249,10 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/media": "admin.nav.media",
   "/admin/comments": "admin.nav.comments",
   "/admin/translations": "admin.nav.translations",
+  "/admin/schedule": "admin.nav.schedule",
+  "/admin/trash": "admin.nav.trash",
+  "/admin/redirects": "admin.nav.redirects",
+  "/admin/system": "admin.nav.system",
   "/admin/requests": "admin.nav.requests",
   "/admin/commerce": "admin.nav.commerce",
   "/admin/commerce/marketplaces": "admin.nav.marketplaces",
