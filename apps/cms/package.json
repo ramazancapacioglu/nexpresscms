@@ -1,0 +1,50 @@
+{
+  "name": "@nexpress/cms",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "predev": "node scripts/link-env.mjs",
+    "prebuild": "node scripts/link-env.mjs",
+    "prestart": "node scripts/link-env.mjs",
+    "budget": "node scripts/check-budget.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@nexpress-pro/agentic-seo": "workspace:^",
+    "@nexpress/commerce": "workspace:*",
+    "@nexpress/core": "workspace:*",
+    "@nexpress/database": "workspace:*",
+    "@nexpress/editor": "workspace:*",
+    "@nexpress/marketplace": "workspace:*",
+    "@nexpress/rag": "workspace:*",
+    "@nexpress/seo-core": "workspace:*",
+    "@nexpress/themes": "workspace:*",
+    "@nexpress/wp-importer": "workspace:*",
+    "@tiptap/extension-link": "^3.32.0",
+    "@tiptap/extension-placeholder": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/react": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "next": "^15.1.7",
+    "next-themes": "^0.4.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.35.5",
+    "tailwind-merge": "^3.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.6",
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "tailwindcss": "^4.0.6",
+    "typescript": "^5.7.3"
+  }
+}

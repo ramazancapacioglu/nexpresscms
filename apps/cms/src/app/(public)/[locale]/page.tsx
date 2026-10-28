@@ -1,0 +1,157 @@
+import React from "react";
+import { headers } from "next/headers";
+import { Link } from "@/components/public/link";
+import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
+import { buildPageSchemaGraph } from "@nexpress/seo-core";
+import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
+
+export default async function PublicHomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  await trackBotVisit("page");
+  await trackAiReferral();
+
+  const site = await getPublicSite(siteId);
+  const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
+  const isInk = activeTheme.id === INK_GRID_ID;
+  const tokens = site?.designTokens ?? activeTheme.tokens;
+  const homeContent = await getPublicContentBySlug(siteId, isInk ? INK_GRID_HOME_SLUG : "ana-sayfa", locale);
+  const mediaFocal = await getPublicMediaFocal(siteId);
+  const allContents = isInk ? [] : await listPublishedContents(siteId, locale);
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  const schemaGraph = await buildPageSchemaGraph({
+    siteId,
+    siteName: site?.name ?? "NexPress CMS",
+    siteUrl: baseUrl,
+    locale,
+    pageUrl: `${baseUrl}/${locale}`,
+    content: homeContent
+      ? {
+          id: homeContent.id,
+          title: homeContent.title,
+          tldr: homeContent.tldr,
+          schemaType: homeContent.schemaType,
+          schemaAttributes: homeContent.schemaAttributes,
+        }
+      : undefined,
+  });
+
+  return (
+    <div className={isInk ? "" : "space-y-14"}>
+      {/* Bağlantılı Schema.org JSON-LD Grafiği */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
+      />
+
+      {homeContent ? (
+        <RscBlockRenderer
+          blocks={homeContent.blocks}
+          themeId={activeTheme.id}
+          tokens={tokens}
+          mediaFocal={mediaFocal}
+        />
+      ) : (
+        <div className="rounded-xl border p-8 text-center">
+          <h1 className="text-2xl font-bold">NexPress CMS Hazır!</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            Başlangıç verilerini yüklemek için <code>pnpm db:seed</code> komutunu çalıştırın.
+          </p>
+        </div>
+      )}
+
+      {isInk ? null : (
+      <section className="space-y-6 pt-4">
+        <div className="flex items-center justify-between border-b pb-4">
+          <div>
+            <h2
+              style={{ fontFamily: tokens.typography.headingFont }}
+              className="text-2xl font-bold text-slate-900"
+            >
+              Polimorfik Bilgi Grafiği & Yayınlanan İçerikler
+            </h2>
+            <p className="text-sm text-slate-500">
+              Her içerik hem 100/100 RSC sayfası hem de sıfır maliyetli{" "}
+              <code>?format=md</code> beslemesi olarak sunulur.
+            </p>
+          </div>
+          <Link
+            href="/admin/contents"
+            className="text-xs font-semibold underline"
+            style={{ color: tokens.colors.primary }}
+          >
+            Görsel Editörde Düzenle →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {allContents
+            .filter((c) => c.slug !== "ana-sayfa")
+            .map((item) => (
+              <article
+                key={item.id}
+                style={{
+                  borderRadius: tokens.geometry.borderRadius,
+                  borderColor: tokens.colors.border,
+                }}
+                className="flex flex-col justify-between border bg-white p-6 shadow-xs transition hover:shadow-md"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span
+                      style={{
+                        backgroundColor: tokens.colors.muted,
+                        color: tokens.colors.primary,
+                      }}
+                      className="rounded px-2.5 py-0.5 font-mono font-semibold uppercase"
+                    >
+                      {item.type} • @{item.schemaType}
+                    </span>
+                    <span className="font-mono text-emerald-700 font-semibold">
+                      SEO: {item.seoScore}/100
+                    </span>
+                  </div>
+                  <Link
+                    href={`/${locale}/${item.slug}`}
+                    style={{ fontFamily: tokens.typography.headingFont }}
+                    className="block text-lg font-bold text-slate-900 hover:underline"
+                  >
+                    {item.title}
+                  </Link>
+                  {item.tldr && (
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                      {item.tldr}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-5 flex items-center justify-between border-t pt-3 text-xs">
+                  <Link
+                    href={`/${locale}/${item.slug}`}
+                    style={{ color: tokens.colors.primary }}
+                    className="font-semibold hover:underline"
+                  >
+                    RSC Sayfasını Aç →
+                  </Link>
+                  <Link
+                    href={`/${locale}/${item.slug}?format=md`}
+                    className="font-mono text-slate-500 hover:text-slate-900"
+                  >
+                    ?format=md (0ms)
+                  </Link>
+                </div>
+              </article>
+            ))}
+        </div>
+      </section>
+      )}
+    </div>
+  );
+}

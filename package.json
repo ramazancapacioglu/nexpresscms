@@ -1,0 +1,27 @@
+{
+  "name": "nexpresscms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-Core, Dual-Engine (Human & Agentic Web) Next.js 15 CMS with Theme Store, 0-KB RSC Visual Editor, and Pro Agentic SEO + RAG Factory",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:push": "pnpm --filter @nexpress/database db:push",
+    "db:seed": "pnpm --filter @nexpress/database db:seed",
+    "db:studio": "pnpm --filter @nexpress/database db:studio",
+    "db:migrate-engine": "pnpm --filter @nexpress/database db:migrate-engine",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @nexpress/database db:generate",
+    "db:migrate": "pnpm --filter @nexpress/database db:migrate"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DB_DIALECT: sqlite
+  SQLITE_URL: file:./data/ci.db
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-1234
+
+jobs:
+  verify:
+    name: Tip kontrolü, testler, derleme, bütçe
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # sürüm package.json "packageManager" alanından okunur
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Tip kontrolü (tüm paketler)
+        run: pnpm typecheck
+      - name: Testler (SQLite)
+        run: pnpm test
+      - name: Üretim derlemesi
+        run: pnpm --filter @nexpress/cms build
+      - name: Ziyaretçi JS bütçesi
+        run: pnpm --filter @nexpress/cms budget
+
+  pgvector:
+    name: Arama dizini testleri (PostgreSQL + pgvector)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: nexpress
+          POSTGRES_PASSWORD: nexpress_ci
+          POSTGRES_DB: nexpress_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nexpress -d nexpress_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: RAG testleri pgvector üzerinde
+        working-directory: packages/rag
+        env:
+          RAG_TEST_PG_URL: postgresql://nexpress:nexpress_ci@localhost:5432/nexpress_ci
+        run: pnpm test
+      - name: Veritabanı testleri PostgreSQL üzerinde (hesaplar, denetim, şema paritesi, göçler)
+        working-directory: packages/database
+        env:
+          # Sunucu adresi: her test dosyası kendi geçici veritabanını açıp siler
+          DB_TEST_PG_URL: postgresql://nexpress:nexpress_ci@localhost:5432/postgres
+        run: pnpm test
+
+  audit:
+    name: Bağımlılık denetimi
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true # uyarı verir, birleştirmeyi engellemez; ciddi bulgular elle ele alınır
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: pnpm audit --prod --audit-level=high

@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@source "../../../../packages/themes/src";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    /* Attio CRM Precision Light Palette */
+    --attio-canvas: #fbfbfb;
+    --attio-sidebar: #f4f5f6;
+    --attio-surface: #ffffff;
+    --attio-surface-hover: #f4f5f7;
+    --attio-surface-active: #eaeced;
+    --attio-border: #e6e7ea;
+    --attio-border-subtle: #eff0f2;
+    --attio-text: #14151a;
+    --attio-text-secondary: #5c5f66;
+    --attio-text-muted: #8c9099;
+    --attio-accent: #266df0;
+
+    /* Semantic shadcn/ui + Tailwind v4 Tokens (Mapped to Attio CRM) */
+    --background: #ffffff;
+    --foreground: #14151a;
+    --card: #ffffff;
+    --card-foreground: #14151a;
+    --popover: #ffffff;
+    --popover-foreground: #14151a;
+    --primary: #266df0;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f5f7;
+    --secondary-foreground: #14151a;
+    --muted: #f4f5f6;
+    --muted-foreground: #5c5f66;
+    --accent: #f4f5f7;
+    --accent-foreground: #14151a;
+    --destructive: #e5484d;
+    --destructive-foreground: #ffffff;
+    --border: #e6e7ea;
+    --input: #e6e7ea;
+    --ring: #266df0;
+  }
+
+  .dark {
+    /* Attio CRM Precision Dark Palette */
+    --attio-canvas: #0d0e11;
+    --attio-sidebar: #121317;
+    --attio-surface: #15171c;
+    --attio-surface-hover: #1c1e24;
+    --attio-surface-active: #22252d;
+    --attio-border: #23262e;
+    --attio-border-subtle: #1b1d24;
+    --attio-text: #f3f4f6;
+    --attio-text-secondary: #9ca3af;
+    --attio-text-muted: #6b7280;
+    --attio-accent: #3b82f6;
+
+    /* Semantic shadcn/ui + Tailwind v4 Tokens (Mapped to Attio CRM Dark) */
+    --background: #15171c;
+    --foreground: #f3f4f6;
+    --card: #15171c;
+    --card-foreground: #f3f4f6;
+    --popover: #181a20;
+    --popover-foreground: #f3f4f6;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: #1c1e24;
+    --secondary-foreground: #f3f4f6;
+    --muted: #121317;
+    --muted-foreground: #9ca3af;
+    --accent: #1c1e24;
+    --accent-foreground: #f3f4f6;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #23262e;
+    --input: #23262e;
+    --ring: #3b82f6;
+  }
+
+  body {
+    background-color: var(--attio-canvas);
+    color: var(--attio-text);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* İnce Attio Kaydırma Çubukları */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 144, 153, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 144, 153, 0.45);
+}
+
+.nx-prose .ProseMirror,
+.nx-prose-inline .ProseMirror {
+  outline: none;
+}
+.nx-prose .ProseMirror p,
+.nx-prose-inline .ProseMirror p,
+.nx-rich p {
+  margin: 0;
+}
+.nx-prose .ProseMirror p + p,
+.nx-rich p + p {
+  margin-top: 0.65em;
+}
+.nx-prose .ProseMirror ul,
+.nx-prose .ProseMirror ol,
+.nx-rich ul,
+.nx-rich ol {
+  margin: 0.35em 0 0;
+  padding-left: 1.25rem;
+}
+.nx-rich a,
+.nx-prose a,
+.nx-prose-inline a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.nx-rich u,
+.nx-prose u,
+.nx-prose-inline u {
+  text-decoration: underline;
+}
+.nx-rich s,
+.nx-prose s,
+.nx-prose-inline s {
+  text-decoration: line-through;
+}
+.nx-rich code,
+.nx-prose code,
+.nx-prose-inline code {
+  border-radius: 0.2rem;
+  background: rgba(15, 23, 42, 0.06);
+  padding: 0 0.2em;
+  font-size: 0.92em;
+}
+.nx-prose p.is-editor-empty:first-child::before,
+.nx-prose-inline p.is-editor-empty:first-child::before {
+  color: #8c9099;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

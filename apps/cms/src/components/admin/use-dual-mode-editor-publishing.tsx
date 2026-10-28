@@ -1,0 +1,75 @@
+import { useMemo, useState } from "react";
+import { resolvePublishing } from "@nexpress/core";
+import type { MediaAssetDto, TaxonomyDto } from "@nexpress/database";
+import type { useDualModeEditorDocument } from "./use-dual-mode-editor-document";
+
+/** useDualModeEditor — aşama 2: Publishing */
+export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEditorDocument>) {
+  const { initialTaxonomies, initialMediaAssets, title, tldr, initialDoc } = p;
+  // Yayınlama, Kategori, Etiket, Öne Çıkan Görsel ve SEO Alanları
+  const initialPub = useMemo(
+    () => resolvePublishing(initialDoc?.schemaAttributes),
+    [initialDoc]
+  );
+  const [visibility, setVisibility] = useState<
+    "public" | "private" | "password" | "members_only"
+  >(initialPub.visibility);
+  const [accessPassword, setAccessPassword] = useState<string>(
+    initialPub.password ?? ""
+  );
+  const [scheduledAt, setScheduledAt] = useState<string>(
+    initialPub.scheduledAt ?? ""
+  );
+  const [authorName, setAuthorName] = useState<string>(
+    initialPub.authorName ?? "Baş Mimari Ekibi"
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialPub.categories
+  );
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialPub.tags);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string>(
+    initialDoc?.featuredImage ?? initialPub.featuredImageUrl ?? ""
+  );
+  const [featuredImageAlt, setFeaturedImageAlt] = useState<string>(
+    initialPub.featuredImageAlt ?? ""
+  );
+  const [featuredImageCaption, setFeaturedImageCaption] = useState<string>(
+    initialPub.featuredImageCaption ?? ""
+  );
+  const [focusKeyword, setFocusKeyword] = useState<string>(
+    initialPub.focusKeyword ?? ""
+  );
+  const [allowComments, setAllowComments] = useState<boolean>(
+    initialPub.allowComments
+  );
+  const [allowReviews, setAllowReviews] = useState<boolean>(
+    initialPub.allowReviews
+  );
+  const [showShareButtons, setShowShareButtons] = useState<boolean>(
+    initialPub.showShareButtons
+  );
+
+  // SEO Meta Alanları
+  const [metaTitle, setMetaTitle] = useState<string>(
+    initialDoc?.metaTitle ?? initialDoc?.title ?? ""
+  );
+  const [metaDescription, setMetaDescription] = useState<string>(
+    initialDoc?.metaDescription ?? initialDoc?.tldr ?? ""
+  );
+  const [canonicalUrl, setCanonicalUrl] = useState<string>(
+    initialDoc?.canonicalUrl ?? ""
+  );
+  const [noIndex, setNoIndex] = useState<boolean>(Boolean(initialDoc?.noIndex));
+
+  // Taksonomi & Medya Havuzu
+  const [taxonomies, setTaxonomies] = useState<TaxonomyDto[]>(initialTaxonomies);
+  const [mediaAssets, setMediaAssets] =
+    useState<MediaAssetDto[]>(initialMediaAssets);
+
+  // Hızlı Kategori & Etiket Ekleme (Sidebar içinden)
+  const [quickCatName, setQuickCatName] = useState("");
+  const [quickCatParentId, setQuickCatParentId] = useState<string>("");
+  const [quickTagName, setQuickTagName] = useState("");
+
+  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
+}

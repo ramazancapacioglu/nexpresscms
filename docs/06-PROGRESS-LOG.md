@@ -1,0 +1,236 @@
+# 06 — Canlı Geliştirme ve İlerleme Günlüğü (`@progress`)
+
+> **Kural:** Projede tamamlanan her adım, oluşturulan her paket ve veritabanı değişikliği anında bu tabloya işlenir.
+
+---
+
+## 📊 Faz Özeti
+
+| Faz | Başlık | Durum | İlerleme |
+| :--- | :--- | :--- | :--- |
+| **Faz 0** | **Mimari Planlama, Kurallar (`AGENTS.md`) ve `@docs` Altyapısı** | ✅ Tamamlandı | %100 |
+| **Faz 1** | **Monorepo İskeleti, Docker (`pgvector` + `Redis`) ve Çift Motorlu DB (`@nexpress/database` & `@nexpress/core`)** | ✅ Tamamlandı | %100 |
+| **Faz 2** | **Kurumsal `shadcn/ui` Admin Paneli & Tema Motoru / Tema Mağazası (`@nexpress/themes`)** | ✅ Tamamlandı | %100 |
+| **Faz 3** | **Çift Modlu 0-KB RSC Görsel Editör & Header/Footer/Mega-Menü Stüdyosu** | ✅ Tamamlandı | %100 |
+| **Faz 4** | **Çekirdek SEO, Çok Boyutlu GEO/Hreflang ve 100/100 RSC Vitrin (`@nexpress/seo-core`)** | ✅ Tamamlandı | %100 |
+| **Faz 5** | **Pro Eklentiler: `@nexpress-pro/agentic-seo` & `@nexpress-pro/content-ops` Entegrasyonu** | ✅ Tamamlandı | %100 |
+| **Faz 6** | **WordPress 1-Dakika Göç Aracı (`@nexpress/wp-importer` & `/admin/migration`) ve Canlı Test** | ✅ Tamamlandı | %100 |
+| **Faz 7** | **Güvenlik sertleştirme, testler, dosya bölme, SEO/GEO/hız temelleri** | 🔄 Sürüyor | Bkz. aşağıdaki kayıt ve `12-ROADMAP.md` |
+
+---
+
+## 📝 Detaylı Günlük
+
+### [2026-10-28] — Ajan talepleri, AI yönlendirme izleme ve bot IP doğrulama
+- ✅ **agent-actions:** MCP `nexpress_create_lead|ticket|book_demo` (anahtarlı, doğrulamalı, hız sınırlı) → `agent_requests`; yönetici **Talepler** sayfası + nav.
+- ✅ **ai-referrals:** `Referer`/`utm_source` ile ChatGPT, Perplexity, Gemini, Copilot, Claude… yönlendirmesi (`ai_referral_daily`), panel kartı, JS yok.
+- ✅ **Bot doğrulama:** CIDR (IPv4/IPv6) eşleştirme + OpenAI/Perplexity'nin yayımladığı IP listeleri (gerçek listeler indirilip biçim doğrulandı); `bot_daily_stats` `verified/claimed`.
+- Migrasyon `0003_agent_requests_ai_referrals` (SQLite + PG). Doğrulama: HTTP ile uçtan uca (anahtarsız/yanlış anahtar/geçersiz e-posta reddedildi, geçerli talep kaydedildi, referral sayaçları, listedeki IP `verified`, 8.8.8.8 `claimed`) ve tarayıcıda Talepler sayfası + panel kartı. Testler: core 63, agentic-seo 16, database 40 (SQLite+PG). Modül kataloğu 33, hazır 19.
+- ⚠️ Talep e-posta bildirimi yok (SMTP altyapısı yok); saklama süresi tanımlı değil.
+
+### [2026-10-28] — Marka profili & Site DNA (`ai-brand`)
+- ✅ `saveSiteDna` (kiracıya kapalı, SQLite+PG testli); Pro: stil örneği seçici, Site DNA istemi/doğrulayıcı, `ai-brand.generate|save` eylemleri; AI yazım asistanı marka bağlamını kullanıyor. Eklentiler › Ayarlar: Marka profili alanları + Site DNA kartı (öner → düzenle → kaydet).
+- Doğrulama: sahte OpenAI sunucusuyla tarayıcıda uçtan uca (DNA üretildi, `sites.site_dna`'ya yazıldı; öneri isteminde DNA, stil örneği ve sektör göründü). Testler: agentic-seo 15, database 38. Modül kataloğu 34, hazır 17.
+- ⚠️ Gerçek OpenAI anahtarıyla denenmedi.
+
+### [2026-10-28] — AI yazım asistanı (`ai-writer`)
+- ✅ `plugin-actions.ts` (çekirdek eylem kaydı), `runPluginAction` server action; Pro: OpenAI sohbet istemcisi (zaman aşımı, 429/5xx yeniden deneme), istem üretici, çıktı doğrulayıcı, 2 geçişli yasak kalıp düzeltmesi, kullanıcı başına hız sınırı, ayarlar (model/ton/yasak kalıp/kurallar).
+- ✅ Editör SEO sekmesinde "AI yazım asistanı": TL;DR, meta başlık/açıklama (Uygula) ve SSS önerisi.
+- Doğrulama: sahte OpenAI sunucusuyla tarayıcıda uçtan uca (öneri geldi, uygula alanı doldurdu, "Kaydedilmedi" açıldı); anahtarsızken açık hata mesajı. Testler: agentic-seo 12, core 60. Modül kataloğu 34, hazır 16.
+- ⚠️ **Gerçek OpenAI anahtarıyla denenmedi** (`OPENAI_API_KEY` boş). Çıktı kalitesi ve maliyet ölçümü anahtar gelince yapılacak.
+
+### [2026-10-28] — Eklenti sistemi v1, Temel SEO / Agentic SEO Pro ayrımı ve `agentic-content-ops` taşıması başladı
+- ✅ **Eklentiler sayfası** yeniden tasarlandı: kurulu eklentiler, modül anahtarları (Hazır / Yakında), arama + filtre, manifestten ayar formu, Geliştirici sekmesi. Tarayıcıda doğrulandı (modül/eklenti aç-kapa kalıcı; eklenti kapalıyken `/llms-full.txt` 404, llms.txt Pro satırları kalkıyor; ayar doğrulama hatası + kayıt).
+- ✅ Altyapı: `plugins.ts` (manifest, durum, kapı, ayar normalleştirme), `plugin-routes.ts`, `site_plugins` tablosu + `0002` göçü + `CmsPluginRepository` (SQLite + PG testli), `robots:buildTxt` kancası.
+- ✅ **Temel SEO** (ücretsiz, gömülü manifest) + Google/Bing/Yandex doğrulama etiketleri (`seo.verification`, SEO sayfasında).
+- ✅ **Agentic SEO Pro 6.0:** `content-ops` paketi birleştirildi; 33 modüllük katalog (`docs/15`), 15'i hazır: `ai-feed.json`, `.well-known/{nlweb,ai-plugin,openapi}`, robots Content-Signal, LocalBusiness + geo meta, Speakable, NLWeb `ask`, tazelik kartı; mevcutlar modül kapısına bağlandı.
+- 🐞 `nexpress_create_lead` MCP aracı hiçbir şey kaydetmeden "accepted" dönüyordu → kaldırıldı. MCP anahtar kelime yedeği noindex/özel içeriği süzmüyordu → düzeltildi.
+- ⚠️ `OPENAI_API_KEY` boş (iki projede de); `ai-writer` ve gerçek gömme ölçümü anahtara bağlı.
+- Doğrulama: typecheck 11/11; testler core 59, seo-core 17, agentic-seo 7, rag 13, database 37 (SQLite+PG), cms 5; JS bütçesi içinde.
+
+### [2026-10-28] — F11: bot politikası, RSS/Atom, JSON-LD doğrulayıcı, hibrit/site içi arama, bağlantı denetimi
+- ✅ `seo.botPolicy` + `buildRobotsTxt`; `/admin/seo`'da bot başına izin/engel ve "Eğitim botlarını kapat". Tarayıcıda kaydedilip `robots.txt`'te doğrulandı.
+- ✅ `/feed.xml` (RSS 2.0), `/atom.xml`; `<head>` keşif bağlantıları.
+- ✅ `validateSchemaGraph`; editör SEO sekmesinde canlı hata/uyarı listesi.
+- ✅ Hibrit arama: BM25 (Türkçe katlama) + vektör, RRF; `searchCorpus` `ranking` alanı; noindex/özel içerik anahtar kelime tarafında da süzülür (testle).
+- ✅ `/{locale}/ara` site içi arama (0 KB sayfa koduna dokunmadan, `noindex`).
+- ✅ `auditLinks` + `/admin/seo` bağlantı denetim kartı; `Link: rel=alternate text/markdown` başlığı.
+- Doğrulama: typecheck 12/12, testler (core 53, seo-core 17, rag 13, database 36, cms 5) yeşil, JS bütçesi 101,1 kB / rota kodu 0,55 kB (bütçe içinde).
+- ⚠️ Gerçek OpenAI anahtarıyla kalite ölçümü yapılmadı (anahtar yok); site içi arama bilerek yalnızca anahtar kelimedir.
+
+### [2026-10-28] — Editör güvenlik ağı ve içerik revizyonları
+- ✅ **Revizyonlar:** `content_revisions` tablosu + `0001_content_revisions` göçü (SQLite ve PG), `CmsRevisionRepository` (kayıt/dedupe/50 sınır/liste/getir, kiracıya kapalı); `saveContent` her kayıtta yazar, yazar bilgisini `saveContentAction` iletir; `listRevisionsAction` / `getRevisionAction`. Testler: kayıt, tekrarsızlık, sıra, kiracı, silme, 50 sınırı (SQLite + PG).
+- ✅ **Editör güvenlik ağı:** `@nexpress/core/editor-draft` (imza, yerel taslak kararı, snapshot→alan); kanca zincirine **Dirty** ve **Safety** aşamaları; "Kaydedilmedi" rozeti, `beforeunload` uyarısı, Ctrl/Cmd+S, yerel taslak ve kurtarma çubuğu, Yayın sekmesinde Sürüm Geçmişi paneli; kayıt başarısızlığında artık hata bildirimi.
+- ✅ Tarayıcıda doğrulandı (rozet, sekme kapatma engeli, Ctrl+S, yerel taslak yazma/silme, sürüm yükleme, kurtarma çubuğu → geri yükle).
+- 🐞 Doğrulamada bulundu ve düzeltildi: SQLite budama sorgusu `OFFSET`'i `LIMIT`'siz kullanıyordu (hata yutuluyordu, 50 sınırı SQLite'ta işlemiyordu).
+- ℹ️ SQLite için bağlantı `SQLITE_URL` ile verilir (`DATABASE_URL` yalnızca PG).
+
+### [2026-10-23] — Stüdyo çubuğu ve kategorili tasarım kütüphanesi
+- ✅ Görünüm modları ve masaüstü / tablet / mobil önizleme sağ denetçinin üstüne alındı. Belge kartındaki hızlı ekle şeridi kaldırıldı. Stüdyo, üst menü çubuğunun altına oturuyor.
+- ✅ Tasarım kütüphanesi kategori rayı, arama ve tel kafes önizleme ile açılıyor. Bilgi kutusu, liste, sekme, akordeon, galeri, slayt, form, yazı ızgarası, ürün şeridi, geri sayım ve tablo blokları ön yüzde sunucu bileşeni olarak basılıyor.
+- ✅ Editör açılınca sol menü gizleniyor. Geri dönüş üst şeritte duruyor. Kütüphane ile geri-ileri, yapı gezgininin üstünde. Başlık tuvalin üst kenarına yaslı.
+- ✅ Yapı paneli kütüphanenin solunda ikonla açılıp kapanıyor. Görünüm ve cihaz seçimi stüdyo çubuğunda.
+- ✅ Sol ekleme panelindeki tekrarlayan kütüphane düğmesi kaldırıldı. Sağ denetçi biraz daraltıldı. Metin biçim çubuğu seçim yapılınca seçimin üstünde açılıyor.
+- ✅ Biçim çubuğuna paragraf, başlık, div ve bağlantı seçenekleri eklendi. Görünüm düğmeleri SEO skorunun yanında. Yeni sayfa ve yazı boş paragrafla açılıyor. Yeni belgenin adresi ilk boyamadan sonra üretiliyor.
+- ✅ Ink Grid teması eklendi. Siyah ızgara vitrin, örnek ürün, geliştirici, kurumsal, doküman, fiyat ve çalışma sayfalarıyla birlikte gelir. Tema etkinleşince ana sayfa bu vitrini basar.
+- ✅ Header, menü, footer ve kenar çubuğu ayrı düzenleyicilere alındı. Hazır header ve footer şablonları kayda kopyalanıp düzenlenir. Menü sürükle-bırak sıralanır.
+- ✅ Header ve footer tasarım kütüphanesi eklendi. Kategorili hazır yerleşimler ve JSON aktarımı sayfa kütüphanesiyle aynı düzendedir. AI sözleşmesi `docs/08-AI-CHROME-SPEC.md`.
+- ✅ `/admin/seo` site skor özetini ve motor ayarlarını tek ekranda toplar. Sitemap tür filtresi, `/llms.txt` anahtarı ve `robots.txt` bu ayarlardan okunur.
+- ✅ **E-Ticaret modülü (`@nexpress/commerce`)**: `commerce_*` tabloları, `/admin/commerce` (ürün/sipariş/ayar), RSC mağaza (`/tr/magaza`, sepet, ödeme), HTTP-only sepet çerezi. Bkz. `docs/09-COMMERCE.md`.
+- ✅ **Pazar yeri katmanı (`@nexpress/marketplace`)**: sürücü kaydı; Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti. Kanal, bağlantı testi, stok/fiyat itme, sipariş çekme. Bkz. `docs/10-MARKETPLACES.md`.
+- ✅ **E-ticaret operasyon ekranları:** kategori, nitelik, varyasyon sihirbazı, kaynaklı sipariş ve iade/değişim, müşteri grubu, sadakat, kampanya/kupon, kargo yöntemi.
+
+### [2026-10-23] — TipTap metin motoru, yerleşim denetçisi, eklenti kaydı
+- ✅ Metin alanları (başlık, paragraf, kısa yanıt, alıntı) TipTap ile düzenleniyor. HTML `props.html` alanında, düz metin mevcut alanda duruyor. Ön yüz `sanitizeInlineHtml` ile RSC basıyor; `markdownCache` bu HTML'den üretiliyor.
+- ✅ Alıntı bloklarının markdown derlemesi `quote` alanını kaçırıyordu; `heading_element` / `paragraph_element` de derlemeye alındı.
+- ✅ Stüdyo `editor/canvas-block.tsx`, `editor/prose-field.tsx`, `editor/block-inspector.tsx` ve `editor/studio-model.ts` olarak bölündü. Yerleşim denetçisi Genel / Stil / Gelişmiş katmanlarını koruyor.
+- ✅ Pro eklentiler `apps/cms/src/plugins/register.ts` kompozisyon kökünden kanca ve yuvalara bağlanıyor.
+- ✅ Geri al yığını her tuş vuruşunda değil, yapı değişiminde ve metin duraksamasında yazılıyor.
+- ✅ `?format=md` yeniden yazımı sayfa yolunu `x-nexpress-target-path` başlığında taşıyor; aksi halde her adres ana sayfanın markdown önbelleğini döndürüyordu.
+
+### [2026-10-23] — Sayfa/Blog/Kategori/Etiket Mimarisi, Yapışkan Sekmeli Sağ Sidebar, Medya & Görsel SEO, Atomik Elementler ve Yorum/İnceleme/Paylaşım Sistemi
+- ✅ **Çift Motorlu Veritabanı Genişlemesi (`packages/database`):**
+  - Hem PostgreSQL (`pg.ts`) hem SQLite (`sqlite.ts`) şemalarına `siteId` kapsamlı `taxonomies` (Kategori & Etiket + Arşiv SEO), `media_assets` (Medya Kütüphanesi & Görsel SEO: `altText`, `titleText`, `caption`, `focalPoint`, `seoScore`) ve `comments_reviews` (Yorum, 5 Yıldızlı İnceleme, Artılar/Eksiler & `AggregateRating`) tabloları eklendi ve her iki veritabanı motoruna tohumlandı (`pnpm db:seed`).
+- ✅ **Yapışkan (Sticky) ve 3 Sekmeli Sağ Denetçi Sidebar (`/admin/contents`):**
+  - İçerik stüdyosunun sağ kenar çubuğu `sticky top-12 max-h-[calc(100vh-56px)] overflow-y-auto` ile ekrana sabitlendi; sayfa aşağı kaydırıldığında yukarı çıkma zorunluluğu ortadan kaldırıldı.
+  - **`Belge & Yayın` Sekmesi:** Taslak (`draft`), Yayında (`published`), Zamanlanmış (`scheduled`) ve Kısıtlı/Şifreli (`restricted`) yayınlama seçenekleri; Kategori & Etiket çoklu seçimi ve satır içi hızlı oluşturma; Öne Çıkan Görsel ve Görsel SEO (`altText`, `titleText`, `caption`, LCP `eager/lazy`); Yorum, 5 Yıldızlı İnceleme ve Sosyal Paylaşım izinleri.
+  - **`SEO & GEO` Sekmesi:** Canlı Google SERP snippet önizlemesi, `metaTitle`, `metaDescription`, `canonicalUrl`, `noindex` anahtarı, `Schema @type`, `AI Önem Puanı (1-10)` ve `<PluginSlot name="editor.sidebar.tabs" />`.
+  - **`Blok & Element` Sekmesi:** Aktif blok veya atomik element için canlı özellik denetçisi.
+- ✅ **Atomik Elementler Hızlı Ekleme Çubuğu (`@nexpress/editor` & `@nexpress/themes`):**
+  - Editör kanvasının üstüne tek tıkla eklenebilen **Başlık (`heading`)**, **Paragraf (`paragraph`)**, **Buton (`button_element`)**, **SEO Görsel (`image_figure`)**, **İnceleme & Puan Kutusu (`review_box`)** ve **Ayırıcı (`divider_spacer`)** elementleri eklendi; hem 0-KB RSC ön yüz (`RscBlockRenderer`) hem de sıfır kayıplı `markdownCache` derleyicisi (`compileBlocksToMarkdown`) güncellendi.
+- ✅ **Yeni Attio-Tarzı Yönetim Modülleri & Ön Yüz Etkileşimi:**
+  - `/admin/taxonomies`: Kategoriler, Etiketler & Taksonomi SEO Merkezi.
+  - `/admin/media`: Medya Kütüphanesi & Görsel SEO Denetçisi (eksik `altText` tespiti, odak noktası kontrolü ve editör içi Medya Seçici Modal).
+  - `/admin/comments`: Yorum, 5 Yıldızlı İnceleme & `AggregateRating` Moderasyon Merkezi.
+  - Ön yüz sayfalarına (`/[locale]/[slug]`) Kategori/Etiket rozetleri, SEO uyumlu Öne Çıkan Görsel (`figure` + `figcaption`), Sosyal Paylaşım Çubuğu ve 5 Yıldızlı Müşteri Değerlendirmeleri bölümü eklendi.
+
+### [2026-10-23] — Görsel tuval, blok kütüphanesi, AI sayfa şeması ve gizlenebilir kenar çubuğu
+- ✅ **`@nexpress/editor` (`packages/editor/src/index.ts`) oluşturuldu:**
+  - 13+ görsel önizlemeli hazır blok/bölüm (`NEXPRESS_DESIGN_LIBRARY`), 2 tam sayfa başlangıç paketi (`NEXPRESS_STARTER_PAGE_PACKS`) ve kopyalanabilir AI Sistem Promptu (`NEXPRESS_AI_DESIGN_SYSTEM_PROMPT`) tanımlandı.
+- ✅ **Görsel editör stüdyosu (`apps/cms/src/components/admin/editor/`):**
+  - **Canlı Görsel Düzenleme (WYSIWYG):** Bloklar artık ham JSON textarea olarak değil, doğrudan kanvas üzerinde satır içi (inline) düzenlenebilir görsel bileşenler olarak çalışıyor (`4/12`, `6/12`, `8/12`, `12/12` grid span, yukarı/aşağı taşıma, çoğaltma, Masaüstü/Tablet/Mobil önizleme).
+  - **Tasarım & Blok Kütüphanesi Dialog Modalı:** Görsel minyatür önizlemeli (Live Wireframe) blok kütüphanesi, tam sayfa şablon paketleri ve **"+ Yeni Tasarım Ekle"** (kanvastaki bir bloğu veya özel/AI JSON şemasını kütüphaneye kaydetme) özelliği eklendi.
+  - **Kod & AI AST Aktarım Görünümü:** Kullanıcıların Claude / ChatGPT / Gemini'ye ürettirdiği sayfa veya blok JSON AST kodunu yapıştırıp tek tıkla görsel kanvasa uygulayabilmesi sağlandı.
+- ✅ **AI Sayfa ve Blok Tasarım Rehberi (`docs/07-AI-PAGE-AND-BLOCK-SPEC.md`):**
+  - Harici AI modellerine sayfa ve blok tasarlatmak için tam JSON AST spesifikasyonu ve sistem promptu dokümante edildi.
+- ✅ **Sıfır Gereksiz Boşluk & Gizlenebilir Sidebar (`admin-shell-client.tsx`):**
+  - Sol menüye ve üst bara **Menüyü Gizle/Göster (`Ctrl+B`)** ve sağ denetçi çekmecesini gizle/göster düğmeleri eklendi; çalışma alanı tam genişlikli hale getirildi.
+
+### [2026-10-23] — Attio CRM Tasarım Sistemi Yenilemesi, Canlı Navigasyon Stüdyosu ve Slot/Hook Veriyolu Ekranı
+- ✅ **Attio CRM Precision UI/UX Yenilemesi (`/admin/*`):**
+  - Tüm yönetim paneli (`admin-shell-client.tsx`, `admin/page.tsx`, `dual-mode-editor-client.tsx`, `theme-store-client.tsx`, `wp-migration-client.tsx`) kaba gradyan ve emojilerden arındırılarak **Attio CRM** tasarım sistemine (`#FBFBFB` / `#F4F5F6` monokrom yüzeyler, `1px` `divide-x divide-y` hücre ızgaraları, `44px` üst breadcrumb bar, `28px` kompakt butonlar ve `grid-cols-[96px_1fr]` sağ özellik çekmecesi) geçirildi.
+- ✅ **Etkileşimli 3 Katmanlı Navigasyon & Mega-Menü Stüdyosu (`/admin/appearance/navigation`):**
+  - `packages/database/src/repository.ts` içerisine `saveNavigationLayout` metodu ve `saveNavigationLayoutAction` Server Action eklendi; TopBar, MainBar (Sticky/Glassmorphism) ve Mega-Menü öğeleri doğrudan veritabanına kaydedilebilir hale getirildi.
+- ✅ **Open-Core Slot & Hook Veriyolu Ekranı (`/admin/plugins`):**
+  - Kayıtlı yaşam döngüsü kancalarını (`cmsHooks`), görsel `<PluginSlot />` yuvalarını ve canlı Agentic Web uç noktalarını (`/llms.txt`, `/llms-full.txt`, `/ai-sitemap.json`, `/api/mcp`) tek tabloda denetleyen yönetim ekranı eklendi.
+
+### [2026-10-28] — Faz 10: Göçler, Şema Paritesi, Tek Kod Yolu, Dosya Bölme
+- ✅ **Şema paritesi:** iki Drizzle şeması + `push.ts` ile kurulan gerçek veritabanları iki motorda testle birebir (321 sütun, 48 indeks). Bulgular: SQLite `push.ts` iki indeksi hiç oluşturmuyordu; `content_chunks` model/HNSW indeksleri şemada tanımsızdı → düzeltildi.
+- ✅ **Göç sistemi:** `drizzle-kit` yapılandırmaları, `0000_baseline` (iki motor), `scripts/migrate.ts` (fresh/baselined/upgraded/current), `db:generate`, `db:migrate`. Gerçek 0001 göçü üretilip eski veritabanına uygulama testi; "göçsüz şema değişikliği" koruması (bozularak doğrulandı).
+- ✅ **Tek kod yolu:** `dialect.ts` (`backendFor`, `Tables`, `upsertScoped`); `repository.ts`, `commerce-repository`, `commerce-ops-repository`, `marketplace-repository`, `site-identity`, `sitemap`, `media-admin`, `bot-stats` ve `seed.ts`'te toplam ~70 motor dalı mekanik dönüştürücüyle (yalnızca iki blok normalize edilince birebir aynıysa) tek yola indi; farklı olanlar elle birleştirildi.
+- 🔒 **Güvenlik bulgusu (kiracı ele geçirme):** id'ye göre upsert'te SQLite dalı kiracıdan bağımsız güncelliyor, PostgreSQL dalı `siteId`'yi üzerine yazıyordu. `upsertScoped` (`setWhere siteId`) ile kapatıldı; mutasyon testi korumasız hâlde ele geçirmenin gerçekten mümkün olduğunu gösterdi. Aynı sınıfın kalan örnekleri roadmap'te.
+- ✅ **Testler:** karakterizasyon (CMS 11, ticaret/pazar yeri 6) iki motorda refactor öncesi yazıldı; veritabanı paketi 33 test SQLite ve PostgreSQL'de yeşil. Seed çıktısı eski ve yeni kodla **iki motorda da birebir aynı** (31 tablo, 56 satır).
+- ✅ **Dosya bölme:** `repository.ts` 1528 → 18 + 7 dosya (≤290); `seed.ts` 1346 → 231 + 4 veri modülü; `editor/src/index.ts` 870 → 14 + 5 modül (dışa aktarılan veriler derin eşit doğrulandı); `admin-shell` nav ayrıldı; `content-list`, `theme-store`, `taxonomy-studio` istemci bileşenleri kanca + alan bileşenleri. 12 yönetim sayfasının SSR HTML'i bölme öncesi/sonrası **birebir aynı**.
+- ✅ **Tarayıcıda doğrulama:** sayfa listesi (hızlı düzenleme, toplu çubuk, arama), tema özelleştirici (4 sekme), taksonomi düzenleme ve içerik editörü denetçisi (4 sekme) gerçek tarayıcıda denendi.
+- 🐞 Doğrulama sırasında `ChunkLoadError`: `.next` klasörü, aynı dizinde çalışan başka bir `next dev` tarafından ezilmişti (kod hatası değil). `NEXT_DIST_DIR` ile izole derleme eklendi (`docs/11` §9).
+- 🔒 Aynı sınıf açık taksonomi, medya, yorum ve içerik (içerik + çeviri) yazmalarında da bulundu (mutasyon testi: korumasız hâlde ele geçirme başarılı) ve `setWhere siteId` ile kapatıldı; tek test 4 tabloyu kapsıyor.
+- 📋 Açık: `dual-mode-editor-client.tsx` (1390), dondurulmuş `push.ts`.
+
+### [2026-10-28] — Faz 9: Hesaplar, Oturum İptali, Denetim Günlüğü, Ayarlar
+- ✅ `users` genişledi (`status`, `sessionVersion`, `passwordChangedAt`), yeni `audit_log` (SQLite'ta ms), `sites.settings.general`; eski veritabanları için idempotent geçiş (eski bir SQLite veritabanında doğrulandı: mevcut yönetici `active`, `sv=0` ile korundu; oturumlar `sv` olmadığından bir kez yeniden giriş ister).
+- ✅ Saf kurallar (`@nexpress/core`): `validatePassword`, `wouldRemoveLastAdmin`; oturum belirtecine `sv`.
+- ✅ `dialect.ts` adaptörü: kullanıcı ve denetim depoları motor dalı olmadan tek kodla iki motorda çalışır (F10 için örnek kalıp).
+- ✅ Veritabanı doğrulamalı oturum (`getSession`: etkin mi, sürüm eşleşiyor mu, rol veritabanından), `requireUser({audit})`/`requireAdmin(name)`, `requireAdminPage`, ara katmanda editör için yönetici yollarına anında 307.
+- ✅ Sayfalar: `/admin/users` (oluştur, rol, devre dışı, parola sıfırla, oturumları kapat), `/admin/profile` (ad, parola değiştir, her yerden çıkış), `/admin/audit` (süzme + sayfalama), `/admin/settings`; "Sistem" navigasyon bölümü (yönetici dışına gizli).
+- ✅ 60 admin eylemi günlüğe adıyla bağlandı; kullanıcı/oturum/ayar eylemleri kesin sonuç yazar.
+- ✅ Testler: `accounts.test.ts` (4) SQLite ve **gerçek PostgreSQL**'de (kiracı yalıtımı, atomik oturum sürümü, LIKE kaçışı, sayfalama); core +6; CI'a PostgreSQL adımı. Uçtan uca (üretim derlemesi): bkz. `docs/11` §1.
+- 🐞 Testle bulunan: SQLite zaman damgası saniye hassasiyetindeydi (aynı saniyedeki denetim kayıtlarının sırası belirsiz); `audit_log.at` ms'ye alındı. Yönetici sayfalarında `redirect()` akış başladığından 200 dönüyordu (içerik sızmıyordu, doğrulandı); ara katmana 307 kuralı eklendi.
+- 📋 Açık: davet e-postası, 2FA, Redis hız sınırı, eylem sonucu kaydı (roadmap P1).
+
+### [2026-10-28] — Faz 8: Performans Bütçesi ve CI + Plan Dokümanları
+- ✅ Plan: `docs/13-PLUGINS-AND-THEME-PACKAGES.md` (eklenti sistemi, tema paketleri, 20 maddelik panel eksikleri) ve `docs/14-MULTILINGUAL-PLAN.md` (L1–L5); `docs/12` içine yürütme sırası (F8–F14). Denetim bulguları: `/admin/plugins` sabit "Ready" envanteri, temalar kodda sabit 4 tema, revizyon/otomatik kayıt/kullanıcı yönetimi/ayarlar/denetim günlüğü yok, WP göçü simülasyon.
+- ✅ Ölçüm ve iyileştirme: ziyaretçi JS 105,6 → **101,1 kB gzip**, rota/düzen kodu ~2 → **0,53 kB** (`next-themes` yalnızca yönetimde, düz `<a>` bağlantılar). Önce "0 KB" iddiasının gerçek anlamı ölçülüp dokümana yazıldı.
+- ✅ `apps/cms/scripts/budget-lib.mjs` + `check-budget.mjs` + `perf-budget.json` (+5 test), `.github/workflows/ci.yml` (verify, pgvector, audit). Yerelde: `pnpm typecheck` 12/12, `pnpm test` 63 test, üretim derlemesi, bütçe geçti; sıkı bütçede başarısız olduğu doğrulandı.
+- 📋 Açık: iş akışının GitHub'da ilk çalıştırması, Lighthouse CI, CSS bütçesi.
+
+### [2026-10-28] — Faz 7g: Gerçek RAG (Arama Dizini)
+- ✅ `@nexpress/core`: `chunker.ts` (başlık duyarlı parçalama, örtüşme, özet) ve `vector.ts` (yerel öznitelik-karma gömme, birim vektör, `f32:` kodlama); 11 test.
+- ✅ `@nexpress/database`: `content_chunks` yeni sütunlar + idempotent geçiş + HNSW indeksi; `ChunkRepository` (pgvector `<=>` ve SQLite iç çarpım, görünürlük süzgeci, `similarContents`, `stats`).
+- ✅ Yeni paket `@nexpress/rag`: sağlayıcılar (yerel, OpenAI uyumlu), `indexContent` / `reindexSite` / `searchCorpus` / `similarityReport`, `registerRagIndexing` kancası; 12 test (sağlayıcı sahte `fetch`; hizmet hem SQLite hem **gerçek pgvector** üzerinde geçici veritabanıyla).
+- ✅ Uygulama: yayın kancası (`after()`), `/admin/seo` "Arama dizini" kartı + `reindexSearchAction` (admin), MCP `nexpress_search_corpus` vektör araması (+anahtar kelime yedeği), Co-Pilot kartı gerçek kanibalizasyon/benzer içerik; `.env.example` değişkenleri.
+- ✅ Doğrulama (üretim derlemesi, SQLite): dizin yokken anahtar kelime yedeği; yeniden dizinleme 15 içerik / 23 parça; ikinci çalıştırma 15 değişmedi; başlık değişince otomatik dizinleme (arama 2 sn içinde yeni başlığı buldu); anonim yeniden dizinleme 307; Co-Pilot kartı mevcut içerikte gerçek benzer listesi, yeni içerikte yönlendirme; sahte OpenAI sunucusu: `Bearer`, `dimensions:1536`, model değişince tam yeniden gömme, `retrieval: semantic`.
+- ⚠ Not: yerel model sözcüksel; kısa seed içeriğinde sıralama kaba (ör. "WordPress hız" sorgusunda ilk iki skor neredeyse eşit). Anlamsal kalite için gerçek bir gömme sağlayıcısı gerekir; test edilmedi (roadmap P0-4a).
+
+### [2026-10-28] — Faz 7f: Medya Tamamlayıcıları ve Önbellek Düzeltmesi
+- ✅ Odak noktası → `object-position` (`MediaFocalMap` renderer boyunca, `getPublicMediaFocal`); yönetimde canlı önizleme. Silme: `MediaAdminRepository.findUsage/deleteAsset`, `deleteMediaAssetAction` (yalnızca admin, kullanımdaysa reddeder, `force` ile siler, dosyaları temizler), `MediaDelete` arayüzü. Ön ısıtma (`prewarm.ts`, `after()`).
+- 🐞 **Önbellek hatası bulundu ve düzeltildi:** yalnızca `revalidateTag` ile hızlı ardışık yazmalarda her ikinci okuma bayat kalıyordu (önceki "doğrulandı" notum tek yazmalık denemeye dayanıyordu). Anahtara site başına dönem sayacı eklendi; 10/10 odak güncellemesi ve 5/5 başlık güncellemesi anında yansıdı.
+- ✅ Doğrulama (üretim derlemesi): ön ısıtma 6 türev ürettirdi; kullanımdaki görsel zorlamasız silinemedi (içerik başlığı döndü), zorla silinince dizin ve türev adresi 404, sayfa 200; anonim silme 307.
+
+### [2026-10-28] — Faz 7e: Medya Hattı
+- ✅ `@nexpress/core` `media.ts` (başvuru biçimi, güvenli türev adı ayrıştırma, genişlik basamakları, `<picture>` belirtimi; 6 test). `lib/media/{storage,process}.ts` (`sharp` 0.35, yerel disk), rotalar `POST /api/media/upload`, `GET /media/[id]/[file]`, `GET /media/[id]`. `sharp` `apps/cms` bağımlılığına eklendi.
+- ✅ `ResponsiveImage` (`@nexpress/themes`): AVIF/WebP/JPG-PNG `<picture>`, srcset, sizes, width/height; blok görseli, katalog blokları ve öne çıkan görsel geçirildi; LCP seçimi (`findLcpImageId`).
+- ✅ `/admin/media` yükleme formu ve küçük resimler.
+- ✅ Doğrulama (üretim derlemesi): anonim yükleme 401, çapraz köken 403, sahte `.jpg` ve SVG 415; 3000×2000 JPEG -> türevler doğru boyut/biçim/başlık; tüm türevlerde EXIF yok (özgünde var, sunulmaz); EXIF yönü 6 → 200×400; saydam PNG yedek biçim PNG; izinsiz genişlik/biçim/yol gezinmesi 404; sayfa çıktısında `<picture>`, ilk görsel eager+yüksek öncelik, ikincisi lazy, dış görsel düz `<img>`.
+- 📋 Açık: odak noktası, silme/temizlik, S3 sürücüsü, ön ısıtma (roadmap P0-3).
+
+### [2026-10-28] — Faz 7d: Gerçek Bot Telemetrisi
+- ✅ `@nexpress/core` `ai-bots.ts` (11 bot, kategori, `detectBot`, `hostMatchesSuffix`, `classifyRequestKind`; 3 test). `bot_daily_stats` tablosu (iki motor + `push.ts`), `BotStatsRepository` (atomik artış, `summarizeBotRows`; 3 test), `lib/bot-log.ts` (`after()` ile kayıt), `lib/bot-verify.ts` (FCrDNS + önbellek). 11 kayıt noktası.
+- ✅ Pro `agentic-seo` kartı artık gerçek veriden beslenir (`bot-telemetry-card.tsx`); sabit sayılar ve "Demo verisi" rozeti bu kart için kaldırıldı. `bot-verifier.ts` çekirdeğe yönlendirildi.
+- ✅ Doğrulama (üretim derlemesi): gönderilen bot istekleri sayaçlarla birebir eşleşti (GPTBot sayfa 3 / llms 1 / markdown 1 / mcp 1, ClaudeBot llms+sitemap, Googlebot); 5 insan isteği kaydedilmedi; sahte Googlebot `claimed`; panel kartı doğru render etti. Üretimde varsayılan `Admin123!` ile ilk yönetici oluşmaması da doğrulandı.
+- 📋 Açık: IP aralığı doğrulaması, yol bazlı istatistik, saklama süresi (roadmap P0-2).
+
+### [2026-10-28] — Faz 7c: Parçalı Site Haritası ve Karşılıklı hreflang
+- ✅ `@nexpress/seo-core/src/sitemap.ts` (saf: bölme, indeks, urlset, dosya adı ayrıştırma, kaçış; 9 test), `SitemapRepository` (bloksuz okuma, iki motor), `lib/sitemap-source.ts`, rotalar `/sitemap.xml` (indeks) ve `/sitemaps/[file]`.
+- ✅ Doğrulama (üretim derlemesi): indeks ve parçalar geçerli XML; ek çeviri `hreflang` ile karşılıklı bağlandı; `noindex` kayıt dışarıda; geçersiz/olmayan dosya adları 404; slug URL kodlaması (hata bulunup düzeltildi).
+- ✅ Hata: bilinmeyen dil kökü (`/zzz`) ana sayfayı 200 ile basıyordu; artık 404.
+- ✅ Seed, şema varsayılanları ve `push.ts` `supportedLocales = ["tr"]` yapıldı (AGENTS.md kural 8); taze veritabanında `/en` ve `/zzz` 404, `/tr` 200 doğrulandı. Eski veritabanları için SQL notu: `docs/02`.
+- 📋 Açık: `ai-sitemap.json`/`llms*.txt` çok dilli bölümler (roadmap P0-5).
+
+### [2026-10-28] — Faz 7b: İstekler Arası Önbellek
+- ✅ `lib/cache.ts` (`cachedRead`, `invalidateSite`, `revalidatePath` sarmalayıcısı) ve `lib/public-data.ts`; `@nexpress/core` içine `stringifyWithDates` / `parseWithDates` (2 test).
+- ✅ Ön yüz sayfaları, layout, sitemap, robots, `llms*.txt`, `ai-sitemap.json` ve markdown müzakeresi önbellekten okur; tüm `admin/actions.ts` yazmaları kiracı etiketini düşürür.
+- ✅ Doğrulama (üretim derlemesi, SQLite): veritabanı doğrudan değiştirilince sayfa eski kaldı (önbellek isabeti); anonim eylem çağrısı 307; yetkili `patchContentAction` sonrası sayfa yeni başlığı gösterdi.
+- ✅ İsteğe bağlı CDN HTML önbelleği (`PUBLIC_CACHE_SECONDS`), yol bazında doğrulandı. IndexNow yalnızca yayınlanmış kayıtta ve mutlak adresle tetiklenir (hata düzeltildi).
+- 📋 Bulgu: ilk `next build` başarıyla tamamlandı; ön yüz rotaları 106 kB First Load JS (bkz. roadmap P0-6).
+
+### [2026-10-28] — Faz 7: Güvenlik, Testler, Bölme ve SEO/GEO/Hız Temelleri
+- ✅ **Kimlik doğrulama:** `users` tablosu (iki motor + `push.ts`), `UserRepository`, `scrypt` parola, HMAC imzalı `nx_session` çerezi, `/login`, middleware koruması, tüm admin server action'larında `requireUser` / `requireAdmin`, çıkış. Ayrıntı: `docs/11`.
+- ✅ **Sırlar:** pazar yeri kimlik bilgileri AES-256-GCM ile şifreli; MCP yazma anahtarı `MCP_AGENT_KEY` (varsayılan yok, sabit zamanlı karşılaştırma); üretimde zayıf `AUTH_SECRET` reddedilir.
+- ✅ **Testler:** `packages/core/test` (11) ve `packages/seo-core/test` (3), `pnpm test`.
+- ✅ **Dürüstlük:** Pro paneldeki sabit veriler "Demo verisi" etiketli; ön yüzde yapay `5.0` puan ve örnek kategori/etiket kaldırıldı.
+- ✅ **Dosya bölme (kural 7):** `renderer.tsx` 1109 → 102 satır (`blocks-marketing|content|layout.tsx`, `rich-block.tsx`, `column-layout.ts`, `block-context.ts`); `block-inspector.tsx` 1262 → 134 satır (altı sekme dosyası). Ön yüz DOM çıktısı bölme öncesi/sonrası birebir aynı doğrulandı.
+- ✅ **SEO/GEO/hız:** güvenlik başlıkları, `/og` sosyal görsel rotası, gerçek IndexNow bildirimi + `/indexnow-key.txt`, istek başına veri tekilleştirme, `image_figure` boyut/öncelik öznitelikleri. Ayrıntı: `docs/04` §6.
+- 📋 **Açık:** istekler arası önbellek, gerçek bot günlüğü, medya hattı, gerçek RAG, parçalı sitemap, migration, kalan büyük dosyalar. Bkz. `docs/12-ROADMAP.md`.
+
+### [2026-10-23] — Faz 6: WordPress → NexPress 1-Dakika Göç Aracı (`@nexpress/wp-importer`)
+- ✅ **`@nexpress/wp-importer` (`packages/wp-importer/src/index.ts`) oluşturuldu:**
+  - `convertWpHtmlToNexPressBlocks`: Elementor (`[elementor-template]`), WPBakery (`[vc_row]`), Divi (`[et_pb_*]`) ve Gutenberg (`<!-- wp:* -->`) kısa kodlarını temizleyip saf 0-KB RSC `BlockNode[]` AST'ye, otomatik Answer-First `tldr` özetine ve `markdownCache` çıktısına dönüştürür.
+  - `convertWpPostsToNexPress` & `executeWpMigrationToDatabase`: Eski WordPress URL'lerini otomatik 301 yönlendirme haritasıyla birlikte `siteId` kapsamındaki veritabanına aktarır.
+- ✅ **Admin WordPress Göç Stüdyosu (`/admin/migration`) oluşturuldu:**
+  - Tek tıkla örnek WordPress + Elementor + WooCommerce paketini veritabanına aktarma simülasyonu ve canlı HTML/Shortcode $\rightarrow$ 0-KB RSC AST dönüştürücü laboratuvarı eklendi.
+
+### [2026-10-23] — Faz 5: Pro Eklentiler (`@nexpress-pro/*`) ve Agentic Web Uç Noktaları
+- ✅ **`@nexpress-pro/agentic-seo` (`plugins-pro/agentic-seo-pro`) oluşturuldu:**
+  - `src/bot-verifier.ts`: GPTBot, ClaudeBot, PerplexityBot ve Google-Extended için Reverse-DNS ve User-Agent doğrulayıcı.
+  - `src/mcp-server.ts`: JSON-RPC 2.0 WebMCP sunucusu (`nexpress_search_corpus`, `nexpress_fetch_markdown`, `nexpress_ask_site_dna`, `nexpress_create_lead`).
+  - `src/index.tsx`: `seo:buildSchemaGraph`, `llms:buildTxt` ve `mcp:handleRequest` kancaları ile `dashboard.overview.cards` ve `admin.sidebar.nav` yuvalarına bağlantı (`registerAgenticSeoProPlugin`).
+- ✅ **`@nexpress-pro/content-ops` (`plugins-pro/content-ops-pro`) oluşturuldu:**
+  - `src/guardrails.ts`: `DEFAULT_FORBIDDEN_PHRASES` ve `auditContentGuardrails` ile kayıt anında (`content:beforeSave`) AI klişe ve `tldr` denetimi.
+  - `src/question-mining.ts`: 8 kaynaklı Soru Madenciliği (`gsc_pos_4_20`, `serper_paa`, `mcp_query_log`) ve `Cosine > 0.92` kümeleme modelleri.
+  - `src/index.tsx`: Editör sağ çekmecesi (`editor.sidebar.tabs`) Co-Pilot bileşeni ve ana panel soru madenciliği kartı (`registerContentOpsProPlugin`).
+- ✅ **Agentic Web Keşif ve Protokol Rotaları (`apps/cms/src/app/`) eklendi:**
+  - `/llms-full.txt`: 4-Katmanlı tam Markdown bilgi bankası beslemesi.
+  - `/ai-sitemap.json`: `importanceScore` (1-10), `tldr` ve `entityGraphLinks` içeren yapılandırılmış AI site haritası.
+  - `/api/mcp` & `/.well-known/mcp.json`: JSON-RPC 2.0 WebMCP sunucusu ve keşif manifestosu.
+
+### [2026-10-23] — Faz 1, 2, 3 ve 4 Çekirdek Paketlerin ve `apps/cms` Uygulamasının Kodlanması
+- ✅ **`@nexpress/core` (`packages/core`) oluşturuldu.**
+- ✅ **`@nexpress/database` (`packages/database`) oluşturuldu ve hem PostgreSQL (`pgvector`) hem SQLite (`LibSQL`) tohumlandı.**
+- ✅ **`@nexpress/themes` (`packages/themes`) ve `@nexpress/seo-core` (`packages/seo-core`) oluşturuldu.**
+- ✅ **`@nexpress/cms` (`apps/cms` — Next.js 15 App Router) oluşturuldu.**
+- ✅ **Faz 5 — Ağaç yapılı kategoriler, ayrıştırılmış sayfa/blog yönetimi, görsel stüdyo ve çekirdek SEO motoru tamamlandı:**
+  - `taxonomies` şemasına `parentId`, `imageUrl` ve `sortOrder` eklendi; `/admin/taxonomies` altında sınırsız alt/üst kırılımlı Kategori Ağacı, görsel seçici, düzenleme ve güvenli silme (alt kategorileri üst ebeveyne taşıma) devreye alındı.
+  - `/admin/pages` (Sayfalar) ve `/admin/posts` (Blog Yazıları) ekranları oluşturuldu: durum/kategori/etiket filtreleme, **Satır İçi Hızlı Düzenleme (Inline Quick Edit)**, **Toplu İşlem Çubuğu (Bulk Edit: Yayına Al, Taslağa Çek, Kategori/Etiket Ata, Sil)** ve Çoğaltma eklendi.
+  - Görsel editör bağlam kilitli hale getirildi ve yerleşim stüdyosuna yükseltildi: iç içe `section` / `columns` / `column`, sol yapı gezgini, geri al/yinele ve Genel / Stil / Gelişmiş denetçi.
+  - `/admin/themes` ekranı tema özelleştirici ve çekirdek SEO motoru stüdyosuna dönüştürüldü.
+  - `@nexpress/seo-core` içine 17-noktalı `analyzeSeo()`, `resolveSeoMeta()`, `deriveAutoSchemaNodes()` ve `slugHistory` tabanlı otomatik 301 yönlendirme motoru (`resolveContentBySlug`) gömüldü.

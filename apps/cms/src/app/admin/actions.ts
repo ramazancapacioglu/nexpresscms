@@ -1,0 +1,491 @@
+"use server";
+
+import { requireAdmin, requireUser } from "@/lib/auth/session";
+import { removeAsset } from "@/lib/media/storage";
+import { providerFromEnv, reindexSite, type ReindexSummary } from "@nexpress/rag";
+import "@/plugins/register";
+import { revalidatePath } from "@/lib/cache";
+import { headers } from "next/headers";
+import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
+import { getThemeManifest } from "@nexpress/themes";
+import {
+  DEMO_WORDPRESS_EXPORT_PAYLOAD,
+  convertWpPostsToNexPress,
+  type WpMigrationReport,
+  type WpRawPostInput,
+} from "@nexpress/wp-importer";
+import type {
+  BlockNode,
+  ContentStatus,
+  ContentType,
+  DesignTokens,
+  FooterConfig,
+  HeaderConfig,
+  NavigationMenuItem,
+  SidebarConfig,
+  SeoEngineSettings,
+  SiteCustomizerSettings,
+  SiteProfile,
+} from "@nexpress/core";
+
+export async function activateThemeAction(input: {
+  themeId: string;
+  customPrimaryColor?: string;
+  customBorderRadius?: string;
+  siteProfile?: SiteProfile;
+}) {
+  await requireUser({ audit: "cms.activateTheme" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  const manifest = getThemeManifest(input.themeId);
+  const mergedTokens: DesignTokens = {
+    ...manifest.tokens,
+    colors: {
+      ...manifest.tokens.colors,
+      ...(input.customPrimaryColor ? { primary: input.customPrimaryColor } : {}),
+    },
+    geometry: {
+      ...manifest.tokens.geometry,
+      ...(input.customBorderRadius ? { borderRadius: input.customBorderRadius } : {}),
+    },
+  };
+
+  await repo.activateTheme(
+    manifest.id,
+    mergedTokens,
+    input.siteProfile ?? manifest.recommendedProfile
+  );
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/themes");
+  await revalidatePath("/tr");
+  return { ok: true, activeThemeId: manifest.id };
+}
+
+export async function saveThemeCustomizerAction(input: {
+  themeId: string;
+  siteProfile?: SiteProfile;
+  tokens: DesignTokens;
+  customizer: SiteCustomizerSettings;
+}) {
+  await requireUser({ audit: "cms.saveThemeCustomizer" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  await repo.activateTheme(
+    input.themeId,
+    input.tokens,
+    input.siteProfile ?? "corporate"
+  );
+  const settings = await repo.saveSiteSettings({
+    customizer: input.customizer,
+  });
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/themes");
+  await revalidatePath("/tr");
+  return { ok: true, settings };
+}
+
+export async function saveSeoEngineSettingsAction(input: {
+  seo: Partial<SeoEngineSettings>;
+}) {
+  await requireAdmin("cms.saveSeoEngineSettings");
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  const settings = await repo.saveSiteSettings({
+    seo: input.seo,
+  });
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/themes");
+  await revalidatePath("/admin/seo");
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/tr");
+  await revalidatePath("/llms.txt");
+  await revalidatePath("/sitemap.xml");
+  await revalidatePath("/robots.txt");
+  return { ok: true, settings };
+}
+
+export async function saveContentAction(input: {
+  contentId?: string;
+  type: ContentType;
+  status?: ContentStatus;
+  schemaType: string;
+  importanceScore: number;
+  slug: string;
+  title: string;
+  tldr: string;
+  blocks: BlockNode[];
+  featuredImage?: string | null;
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  noIndex?: boolean;
+  schemaAttributes?: Record<string, unknown>;
+}) {
+  const session = await requireUser({ audit: "cms.saveContent" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  const res = await repo.saveContent({
+    actor: { id: session.sub, email: session.email },
+    contentId: input.contentId,
+    type: input.type,
+    status: input.status ?? "published",
+    importanceScore: input.importanceScore,
+    schemaType: input.schemaType,
+    schemaAttributes: input.schemaAttributes,
+    featuredImage: input.featuredImage ?? null,
+    locale: "tr",
+    region: "TR",
+    slug: input.slug,
+    title: input.title,
+    tldr: input.tldr,
+    blocks: input.blocks,
+    metaTitle: input.metaTitle,
+    metaDescription: input.metaDescription,
+    canonicalUrl: input.canonicalUrl,
+    noIndex: input.noIndex,
+  });
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/tr");
+  await revalidatePath(`/tr/${input.slug}`);
+  await revalidatePath("/llms.txt");
+
+  return {
+    ok: true,
+    contentId: res.contentId,
+    markdownCache: res.markdownCache,
+    seoScore: res.seoScore,
+  };
+}
+
+export async function patchContentAction(input: {
+  contentId: string;
+  title?: string;
+  slug?: string;
+  status?: ContentStatus;
+  importanceScore?: number;
+  tldr?: string;
+  noIndex?: boolean;
+  categories?: string[];
+  tags?: string[];
+  visibility?: "public" | "private" | "password" | "members_only";
+}) {
+  await requireUser({ audit: "cms.patchContent" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const res = await repo.patchContent(input.contentId, input);
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/tr");
+  await revalidatePath("/llms.txt");
+  return res;
+}
+
+export async function bulkContentAction(input: {
+  contentIds: string[];
+  operation:
+    | "publish"
+    | "draft"
+    | "scheduled"
+    | "assign_category"
+    | "assign_tag"
+    | "delete";
+  categorySlug?: string;
+  tagSlug?: string;
+}) {
+  await requireUser({ audit: "cms.bulkContent" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  if (input.operation === "delete") {
+    const deletedCount = await repo.deleteContents(input.contentIds);
+    await revalidatePath("/admin");
+    await revalidatePath("/admin/pages");
+    await revalidatePath("/admin/posts");
+    await revalidatePath("/admin/contents");
+    await revalidatePath("/tr");
+    return { ok: true, affected: deletedCount };
+  }
+
+  let affected = 0;
+  for (const id of input.contentIds) {
+    if (input.operation === "publish") {
+      await repo.patchContent(id, { status: "published" });
+      affected++;
+    } else if (input.operation === "draft") {
+      await repo.patchContent(id, { status: "draft" });
+      affected++;
+    } else if (input.operation === "scheduled") {
+      await repo.patchContent(id, { status: "scheduled" });
+      affected++;
+    } else if (input.operation === "assign_category" && input.categorySlug) {
+      const existing = await repo.getContentById(id, "tr");
+      if (existing) {
+        const rawPub = (existing.schemaAttributes?._publishing ?? {}) as Record<string, any>;
+        const currentCats = Array.isArray(rawPub.categories) ? rawPub.categories.map(String) : [];
+        const nextCats = Array.from(new Set([...currentCats, input.categorySlug]));
+        await repo.patchContent(id, { categories: nextCats });
+        affected++;
+      }
+    } else if (input.operation === "assign_tag" && input.tagSlug) {
+      const existing = await repo.getContentById(id, "tr");
+      if (existing) {
+        const rawPub = (existing.schemaAttributes?._publishing ?? {}) as Record<string, any>;
+        const currentTags = Array.isArray(rawPub.tags) ? rawPub.tags.map(String) : [];
+        const nextTags = Array.from(new Set([...currentTags, input.tagSlug]));
+        await repo.patchContent(id, { tags: nextTags });
+        affected++;
+      }
+    }
+  }
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/tr");
+  return { ok: true, affected };
+}
+
+export async function duplicateContentAction(input: { contentId: string }) {
+  await requireUser({ audit: "cms.duplicateContent" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const newContentId = await repo.duplicateContent(input.contentId, "tr");
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  return { ok: true, contentId: newContentId };
+}
+
+export async function saveTaxonomyAction(input: {
+  id?: string;
+  taxonomyType: "category" | "tag";
+  slug: string;
+  name: string;
+  description?: string;
+  parentId?: string | null;
+  imageUrl?: string | null;
+  sortOrder?: number;
+  color?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+}) {
+  await requireUser({ audit: "cms.saveTaxonomy" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const saved = await repo.saveTaxonomy(input);
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/admin/taxonomies");
+  return { ok: true, taxonomy: saved };
+}
+
+export async function deleteTaxonomyAction(input: { id: string }) {
+  await requireUser({ audit: "cms.deleteTaxonomy" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const res = await repo.deleteTaxonomy(input.id);
+  await revalidatePath("/admin/pages");
+  await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/admin/taxonomies");
+  return { ok: true, deletedId: res.deletedId };
+}
+
+export async function saveMediaAssetAction(input: {
+  id?: string;
+  filename: string;
+  url: string;
+  altText: string;
+  titleText?: string;
+  caption?: string;
+  focalPoint?: { x: number; y: number };
+}) {
+  await requireUser({ audit: "cms.saveMediaAsset" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const saved = await repo.saveMediaAsset(input);
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/admin/media");
+  return { ok: true, media: saved };
+}
+
+export async function saveCommentReviewAction(input: {
+  id?: string;
+  contentId: string;
+  authorName: string;
+  authorEmail?: string;
+  entryType: "comment" | "review";
+  rating?: number;
+  title?: string;
+  body: string;
+  pros?: string[];
+  cons?: string[];
+  status?: string;
+}) {
+  await requireUser({ audit: "cms.saveCommentReview" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const saved = await repo.saveCommentReview(input);
+  await revalidatePath("/admin/comments");
+  await revalidatePath("/tr");
+  return { ok: true, item: saved };
+}
+
+export async function runWpMigrationAction(input?: {
+  customPosts?: WpRawPostInput[];
+}): Promise<WpMigrationReport> {
+  await requireAdmin("cms.runWpMigration");
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const payload =
+    input?.customPosts && input.customPosts.length > 0
+      ? input.customPosts
+      : DEMO_WORDPRESS_EXPORT_PAYLOAD;
+
+  const converted = convertWpPostsToNexPress(payload, "tr");
+  let totalShortcodesStripped = 0;
+
+  for (const item of converted) {
+    totalShortcodesStripped += item.strippedShortcodesCount;
+    await repo.saveContent({
+      contentId: `cnt_wp_${item.wpId}`,
+      type: item.targetType,
+      status: "published",
+      importanceScore: item.importanceScore,
+      schemaType: item.schemaType,
+      schemaAttributes: {
+        migratedFrom: "wordpress",
+        originalPermalink: item.redirect301.fromPath,
+        redirect301To: item.redirect301.toPath,
+      },
+      locale: "tr",
+      region: "TR",
+      slug: item.slug,
+      title: item.title,
+      tldr: item.tldr,
+      blocks: item.blocks,
+      seoScore: 95,
+    });
+  }
+
+  await revalidatePath("/admin");
+  await revalidatePath("/admin/contents");
+  await revalidatePath("/admin/migration");
+  await revalidatePath("/tr");
+  await revalidatePath("/llms.txt");
+  await revalidatePath("/llms-full.txt");
+  await revalidatePath("/ai-sitemap.json");
+
+  return {
+    siteId,
+    totalProcessed: converted.length,
+    totalShortcodesStripped,
+    items: converted,
+  };
+}
+
+export async function saveChromeAction(input: {
+  headerConfig?: HeaderConfig;
+  menuItems?: NavigationMenuItem[];
+  footerConfig?: FooterConfig;
+  sidebarConfig?: SidebarConfig;
+}) {
+  await requireUser({ audit: "cms.saveChrome" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+
+  await repo.saveNavigationLayout({
+    locale: "tr",
+    ...input,
+  });
+
+  await revalidatePath("/admin/appearance/navigation");
+  await revalidatePath("/admin/appearance/header");
+  await revalidatePath("/admin/appearance/menus");
+  await revalidatePath("/admin/appearance/footer");
+  await revalidatePath("/admin/appearance/sidebar");
+  await revalidatePath("/tr", "layout");
+  return { ok: true };
+}
+
+export async function saveNavigationLayoutAction(input: {
+  headerConfig: HeaderConfig;
+  menuItems: NavigationMenuItem[];
+}) {
+  await requireUser();
+  return saveChromeAction(input);
+}
+
+export type DeleteMediaResult =
+  | { ok: true }
+  | { ok: false; reason: "in_use"; usage: MediaUsageDto[] }
+  | { ok: false; reason: "not_found" };
+
+/**
+ * Görseli ve tüm dosyalarını siler. İçeriklerde kullanılıyorsa `force` olmadan reddeder
+ * ve kullanım listesini döner (sessiz kırık görsel bırakmaz).
+ */
+export async function deleteMediaAssetAction(input: { id: string; force?: boolean }): Promise<DeleteMediaResult> {
+  const session = await requireAdmin("cms.deleteMediaAsset");
+  const media = getMediaAdminRepository(session.siteId);
+  if (!input.force) {
+    const usage = await media.findUsage(input.id);
+    if (usage.length > 0) return { ok: false, reason: "in_use", usage };
+  }
+  const deleted = await media.deleteAsset(input.id);
+  if (!deleted) return { ok: false, reason: "not_found" };
+  await removeAsset(session.siteId, input.id);
+  await revalidatePath("/admin/media");
+  return { ok: true };
+}
+
+export type ReindexResult = { ok: true; model: string; semantic: boolean; summary: ReindexSummary } | { ok: false; error: string };
+
+/**
+ * Arama dizinini (RAG) yeniden kurar. Değişmeyen içerik için gömme çağrısı yapılmaz;
+ * sağlayıcı/model değiştiyse tüm içerik yeniden gömülür.
+ */
+export async function reindexSearchAction(): Promise<ReindexResult> {
+  const session = await requireAdmin("cms.reindexSearch");
+  try {
+    const provider = providerFromEnv();
+    const summary = await reindexSite(session.siteId, "tr", provider);
+    await revalidatePath("/admin/seo");
+    return { ok: true, model: provider.model, semantic: provider.semantic, summary };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Dizin oluşturulamadı." };
+  }
+}

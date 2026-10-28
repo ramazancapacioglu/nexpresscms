@@ -1,0 +1,190 @@
+# 07 — AI İle Sayfa ve Blok Tasarlatma Rehberi (`JSON AST Kontratı`)
+
+Bu doküman; bir modele sıfırdan tam bir sayfa (`Page AST`) veya görsel bölüm (`BlockNode`) tasarlatıp **NexPress Görsel Editörüne (`/admin/contents`)** aktarmak içindir. Header ve footer için sözleşme `docs/08-AI-CHROME-SPEC.md` dosyasındadır.
+
+---
+
+## 1. Nasıl Kullanılır? (3 Adımda AI'dan Kanvasa Aktarım)
+
+1. Aşağıdaki **"Kopyalanabilir AI Sistem Promptu"** kutusunu kopyalayın (veya `/admin/contents` ekranındaki **"AI Sayfa/Blok Şeması"** butonuna tıklayın).
+2. Kullandığınız AI modeline yapıştırıp istediğiniz sayfayı tarif edin:
+   > *"Bana kurumsal bir Siber Güvenlik (SOC / MDR) hizmeti için Hero, 4'lü İstatistik, Bento Özellik Izgarası, 3 Kademeli Fiyatlandırma ve 4 soruluk SSS içeren tam bir NexPress sayfası üret."*
+3. AI'ın ürettiği JSON çıktısını kopyalayın ve `/admin/contents` ekranında:
+   - Tam sayfa ise: **"Kod & AI AST (JSON)"** sekmesine yapıştırıp **"Kodu Görsel Kanvasa Uygula"** butonuna basın.
+   - Tekil bir blok kalıbı ise: **"Tasarım & Blok Kütüphanesi -> + Yeni Tasarım Ekle"** sekmesine yapıştırıp kalıcı olarak kütüphanenize kaydedin.
+
+---
+
+## 2. Kopyalanabilir AI Sistem Promptu (LLM System Prompt)
+
+```markdown
+Sen bir NexPress CMS (Next.js 15 • 0-KB RSC) Görsel Sayfa ve Blok Mimarısın.
+Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST formatında üret. Açıklama yazmadan doğrudan geçerli JSON döndür.
+
+### A. TAM SAYFA ŞEMASI (Page AST)
+{
+  "title": "Sayfa Başlığı (H1)",
+  "slug": "seo-uyumlu-sayfa-adresi",
+  "type": "page | product | kb_tech | ai_prompt | campaign | post",
+  "schemaType": "WebPage | SoftwareApplication | Product | TechArticle | FAQPage | Offer",
+  "importanceScore": 9,
+  "tldr": "SGE, ChatGPT ve Perplexity için 2-3 cümlelik doğrudan yanıt özeti (Answer-First).",
+  "blocks": [ ...BlockNode[] ]
+}
+
+### B. BLOK DÜĞÜMÜ ŞEMASI (BlockNode)
+{
+  "id": "blk_benzersiz_id",
+  "type": "hero | tldr_box | stats_strip | bento_features | pricing_table | product_embed | howto_steps | faq_accordion | callout | cta_banner | heading | paragraph | code_block",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": { ... }
+}
+```
+
+---
+
+## 3. Desteklenen Blok Türleri ve `props` Kontratları
+
+### 3.1. `hero` (Görsel Vitrin & Lansman Bölümü)
+```json
+{
+  "id": "blk_hero_01",
+  "type": "hero",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "badge": "7/24 KURUMSAL SİBER SAVUNMA",
+    "title": "Yapay Zeka Destekli Otonom SOC ve Tehdit Avcılığı",
+    "subtitle": "Kritik altyapınızı sıfır gecikmeli MDR ve gerçek zamanlı telemetri analiziyle koruyun.",
+    "primaryCtaLabel": "Ücretsiz Güvenlik Analizi",
+    "primaryCtaHref": "/tr/iletisim",
+    "secondaryCtaLabel": "Teknik Mimariyi İncele",
+    "secondaryCtaHref": "/tr/mimari"
+  }
+}
+```
+
+### 3.2. `tldr_box` (Answer-First SGE & AI Özeti)
+```json
+{
+  "id": "blk_tldr_01",
+  "type": "tldr_box",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "summary": "Bu rehberde sıfır istemci JavaScript yüküyle (0-KB RSC) kurumsal web sitelerinin Core Web Vitals INP skorunu 20ms altına indirme adımları açıklanmaktadır."
+  }
+}
+```
+
+### 3.3. `stats_strip` (Sayısal Kanıt & SLA Şeridi)
+```json
+{
+  "id": "blk_stats_01",
+  "type": "stats_strip",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "stats": [
+      { "value": "100 / 100", "label": "Lighthouse Performans" },
+      { "value": "< 15 dk", "label": "Olay Müdahale SLA" },
+      { "value": "0 KB", "label": "İstemci JS Yükü" },
+      { "value": "%99.99", "label": "Uptime Garantisi" }
+    ]
+  }
+}
+```
+
+### 3.4. `bento_features` (Bento Özellik Izgarası)
+```json
+{
+  "id": "blk_bento_01",
+  "type": "bento_features",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "title": "Temel Platform Yetenekleri",
+    "items": [
+      {
+        "title": "100/100 React Server Components",
+        "description": "Tarayıcıya gereksiz hidratasyon yükü bindirmeden anında açılan sayfalar."
+      },
+      {
+        "title": "Sıfır-Maliyetli MarkdownCache",
+        "description": "Her içerik kaydında ?format=md ve /llms.txt için otomatik saf Markdown derlemesi."
+      }
+    ]
+  }
+}
+```
+
+### 3.5. `pricing_table` (3 Kademeli Fiyatlandırma Tablosu)
+```json
+{
+  "id": "blk_pricing_01",
+  "type": "pricing_table",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "title": "Kurumsal Lisans Paketleri",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "Ücretsiz",
+        "description": "Tekil site ve temel teknik SEO çekirdeği.",
+        "ctaLabel": "Başla",
+        "featured": false
+      },
+      {
+        "name": "Enterprise Pro",
+        "price": "4.900 TL / ay",
+        "description": "WebMCP, @id Entity Graph ve 8 kaynaklı Soru Madenciliği.",
+        "ctaLabel": "Pro'ya Geç",
+        "featured": true
+      }
+    ]
+  }
+}
+```
+
+### 3.6. `product_embed` (`@id` Bağlantılı Ürün / Yazılım Kartı)
+```json
+{
+  "id": "blk_prod_01",
+  "type": "product_embed",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "productName": "NexPress Enterprise Cloud v2026",
+    "sku": "NXP-CLOUD-ENT",
+    "price": "4.900 TL / ay",
+    "summary": "Subdomain Multi-Tenant ve PostgreSQL pgvector RAG kümesi dahil."
+  }
+}
+```
+
+### 3.7. `howto_steps` (`HowTo` Adım Adım Prosedür) & `faq_accordion` (`FAQPage`)
+```json
+{
+  "id": "blk_howto_01",
+  "type": "howto_steps",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "title": "3 Adımda Kurulum",
+    "steps": [
+      { "title": "1. Şemayı Aktarın", "description": "JSON AST kodunu editöre yapıştırın." },
+      { "title": "2. Görsel Olarak Düzenleyin", "description": "Kanvas üzerinde metinleri satır içi özelleştirin." }
+    ]
+  }
+}
+```
+```json
+{
+  "id": "blk_faq_01",
+  "type": "faq_accordion",
+  "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
+  "props": {
+    "title": "Sıkça Sorulan Sorular",
+    "items": [
+      {
+        "question": "Bu JSON yapısı otomatik Markdown'a dönüşür mü?",
+        "answer": "Evet, kaydedildiği anda compileBlocksToMarkdown motoru tarafından sıfır kayıplı MarkdownCache sütununa derlenir."
+      }
+    ]
+  }
+}
+```

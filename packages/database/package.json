@@ -1,0 +1,36 @@
+{
+  "name": "@nexpress/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema/pg": "./src/schema/pg.ts",
+    "./schema/sqlite": "./src/schema/sqlite.ts",
+    "./repository": "./src/repository.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "db:push": "tsx src/scripts/migrate.ts",
+    "db:seed": "tsx src/scripts/seed.ts",
+    "test": "tsx --test test/*.test.ts",
+    "db:generate": "drizzle-kit generate --config drizzle.config.sqlite.ts && drizzle-kit generate --config drizzle.config.pg.ts",
+    "db:migrate": "tsx src/scripts/migrate.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "@nexpress/commerce": "workspace:*",
+    "@nexpress/core": "workspace:*",
+    "@nexpress/marketplace": "workspace:*",
+    "@nexpress/themes": "workspace:*",
+    "@nexpress/seo-core": "workspace:*",
+    "drizzle-orm": "^0.39.3",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "drizzle-kit": "^0.30.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

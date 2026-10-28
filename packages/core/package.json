@@ -1,0 +1,32 @@
+{
+  "name": "@nexpress/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./hooks": "./src/hooks.ts",
+    "./slots": "./src/slots.tsx",
+    "./tenancy": "./src/tenancy.ts",
+    "./session": "./src/session-token.ts",
+    "./password": "./src/password.ts",
+    "./secret-box": "./src/secret-box.ts",
+    "./markdown": "./src/markdown-compiler.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "typescript": "^5.7.3"
+  }
+}

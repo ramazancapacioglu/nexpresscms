@@ -1,0 +1,28 @@
+{
+  "name": "@nexpress-pro/agentic-seo",
+  "version": "6.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./mcp": "./src/mcp-server.ts",
+    "./bot-verifier": "./src/bot-verifier.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@nexpress/core": "workspace:*",
+    "@nexpress/database": "workspace:*",
+    "@nexpress/rag": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,87 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
+import { verifySessionToken } from "@nexpress/core/session";
+import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
+
+/** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
+const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests"];
+
+export async function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+  const host = request.headers.get("host");
+  const siteId = resolveSiteIdFromHost(host);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nexpress-site-id", siteId);
+  // AI yönlendirme izleme girdileri: istemciden gelen değerler her zaman ezilir
+  requestHeaders.set("x-nexpress-path", pathname);
+  const utm = searchParams.get("utm_source");
+  if (utm) requestHeaders.set("x-nexpress-utm-source", utm.slice(0, 60));
+  else requestHeaders.delete("x-nexpress-utm-source");
+
+  // /admin yalnızca bu siteye ait geçerli oturumla açılır
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const session = await verifySessionToken(
+      request.cookies.get(SESSION_COOKIE)?.value,
+      getAuthSecret()
+    );
+    if (!session || session.siteId !== siteId) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(pathname)}`;
+      return NextResponse.redirect(url);
+    }
+    // Yönetici bölümleri: editör için anında 307 (sayfa içinde de veritabanı rolüyle ayrıca denetlenir)
+    if (session.role !== "admin" && ADMIN_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Kök dizini varsayılan dile yönlendir
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/tr";
+    return NextResponse.redirect(url);
+  }
+
+  // Kural 5 & 04-CORE-SEO-AND-GEO:
+  // ?format=md veya Accept: text/markdown geldiğinde 0ms CPU maliyetiyle markdownCache döndür
+  const wantsMarkdown =
+    searchParams.get("format") === "md" ||
+    (request.headers.get("accept")?.includes("text/markdown") ?? false);
+
+  if (
+    wantsMarkdown &&
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next")
+  ) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = "/api/markdown-negotiation";
+    rewriteUrl.searchParams.set("targetPath", pathname);
+    // Yeniden yazılan sorgu, rota işleyicisinin nextUrl'ine düşmeyebilir.
+    // Asıl yol bu yüzden istek başlığında taşınır.
+    requestHeaders.set("x-nexpress-target-path", pathname);
+    return NextResponse.rewrite(rewriteUrl, {
+      request: { headers: requestHeaders },
+    });
+  }
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+  // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
+  if (/^\/[a-z]{2}(\/[^/]+)?$/.test(pathname)) {
+    response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);
+  }
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

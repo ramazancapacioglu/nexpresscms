@@ -1,0 +1,53 @@
+import { isPluginModuleEnabled, pluginRoutes, resolvePublishing } from "@nexpress/core";
+import { getScopedRepository } from "@nexpress/database";
+import { PLUGIN_ID } from "./module-gate";
+import { buildAiFeed } from "./geo/ai-feed";
+import { buildAiPluginManifest, buildNlwebManifest, buildOpenApiYaml } from "./geo/discovery-files";
+
+const baseUrl = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+const CACHE = "public, s-maxage=300, stale-while-revalidate=3600";
+
+const json = (body: unknown, siteId: string, contentType = "application/json; charset=utf-8") =>
+  new Response(JSON.stringify(body, null, 2), { status: 200, headers: { "Content-Type": contentType, "Cache-Control": CACHE, "X-NexPress-Site-Id": siteId } });
+
+/** Çekirdeğin sabit uç noktalarına işleyici bağlar; modül kapalıysa `null` (→ 404). */
+export function registerAgenticRoutes(): void {
+  pluginRoutes.register("ai-feed", PLUGIN_ID, async ({ siteId }) => {
+    if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "ai-feed"))) return null;
+    const repo = getScopedRepository(siteId);
+    const [site, contents] = await Promise.all([repo.getSite(), repo.listContents({ locale: "tr", status: "published" })]);
+    const visible = contents.filter((c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public");
+    return json(
+      buildAiFeed({
+        siteName: site?.name ?? "NexPress",
+        baseUrl: baseUrl(),
+        locale: "tr",
+        items: visible.map((c) => ({
+          id: c.contentId,
+          title: c.title,
+          slug: c.slug,
+          type: c.type,
+          schemaType: c.schemaType,
+          importanceScore: c.importanceScore,
+          tldr: c.tldr,
+          updatedAt: new Date(c.updatedAt),
+          publishedAt: c.publishedAt ? new Date(c.publishedAt) : null,
+        })),
+      }),
+      siteId
+    );
+  });
+
+  const wellKnown = (key: string, make: (i: { siteName: string; description: string; baseUrl: string }) => unknown, type?: string) =>
+    pluginRoutes.register(key, PLUGIN_ID, async ({ siteId }) => {
+      if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "well-known"))) return null;
+      const site = await getScopedRepository(siteId).getSite();
+      const body = make({ siteName: site?.name ?? "NexPress", description: site?.tagline || site?.name || "", baseUrl: baseUrl() });
+      return typeof body === "string"
+        ? new Response(body, { status: 200, headers: { "Content-Type": type ?? "text/plain; charset=utf-8", "Cache-Control": CACHE, "X-NexPress-Site-Id": siteId } })
+        : json(body, siteId);
+    });
+  wellKnown("nlweb", buildNlwebManifest);
+  wellKnown("ai-plugin", buildAiPluginManifest);
+  wellKnown("openapi", buildOpenApiYaml, "application/yaml; charset=utf-8");
+}

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nexpress_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexpress
+      POSTGRES_PASSWORD: nexpress_secret_password
+      POSTGRES_DB: nexpress_cms
+    ports:
+      - "5434:5432"
+    volumes:
+      - nexpress_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexpress -d nexpress_cms"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexpress_redis
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    volumes:
+      - nexpress_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  nexpress_pgdata:
+  nexpress_redisdata:
