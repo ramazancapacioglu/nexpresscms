@@ -3,7 +3,7 @@ import { statfs } from "node:fs/promises";
 import { access, constants } from "node:fs";
 import { promisify } from "node:util";
 import { evaluateEnv, evaluateIndex, type HealthCheck } from "@nexpress/core";
-import { getBotStatsRepository, getChunkRepository, getDbDialect, getAgentRequestRepository, getRedirectRepository, getScopedRepository, migrationStatus } from "@nexpress/database";
+import { getBotStatsRepository, getChunkRepository, getFormSubmissionRepository, getDbDialect, getAgentRequestRepository, getRedirectRepository, getScopedRepository, migrationStatus } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { mediaRoot } from "@/lib/media/storage";
 
@@ -66,6 +66,8 @@ export async function collectSystemStatus(siteId: string): Promise<{ checks: Hea
   if (trash.ok) add("İçerik", "trash", "Çöp kutusu", "info", `${trash.value.length} içerik (30 gün sonra silinir)`);
   const nf = await safe(() => getRedirectRepository(siteId).countNotFound());
   if (nf.ok) add("İçerik", "404", "404 izleyici", nf.value > 50 ? "warn" : "info", `${nf.value} farklı bulunamayan adres`);
+  const forms = await safe(() => getFormSubmissionRepository(siteId).counts());
+  if (forms.ok) add("İçerik", "forms", "Form gönderimleri", "info", `${forms.value.new} yeni · ${forms.value.spam} spam · ${forms.value.read + forms.value.archived} işlenmiş`);
   const reqs = await safe(() => getAgentRequestRepository(siteId).countNew());
   if (reqs.ok) add("İçerik", "requests", "Ajan talepleri", reqs.value > 0 ? "info" : "ok", `${reqs.value} yeni talep`);
   const bots = await safe(() => getBotStatsRepository(siteId).summary(7));

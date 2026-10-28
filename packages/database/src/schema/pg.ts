@@ -834,3 +834,29 @@ export const pgNotFoundLog = pgTable(
     index("not_found_log_hits_idx").on(t.siteId, t.hits),
   ]
 );
+
+/**
+ * FORM GÖNDERİMLERİ — ziyaretçi formlarının (form_block) gelen kutusu. Kişisel veri içerir; yalnızca panelde görünür.
+ * IP saklanmaz: günlük tuzlanmış özet (`ipHash`) yalnızca hız sınırı içindir.
+ */
+export const pgFormSubmissions = pgTable(
+  "form_submissions",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    pagePath: text("page_path").notNull(),
+    locale: text("locale").default("tr").notNull(),
+    formId: text("form_id").notNull(),
+    formTitle: text("form_title").default("").notNull(),
+    fields: jsonb("fields").$type<Array<{ name: string; label: string; value: string }>>().default([]).notNull(),
+    /** new | read | spam | archived */
+    status: text("status").default("new").notNull(),
+    ipHash: text("ip_hash").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("form_submissions_site_id_idx").on(t.siteId),
+    index("form_submissions_status_idx").on(t.siteId, t.status, t.createdAt),
+    index("form_submissions_ip_idx").on(t.siteId, t.ipHash, t.createdAt),
+  ]
+);

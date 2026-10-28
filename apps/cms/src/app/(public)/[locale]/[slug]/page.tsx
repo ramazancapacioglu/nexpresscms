@@ -10,6 +10,7 @@ import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
+import { createFormToken } from "@/lib/form-token";
 import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -83,10 +84,13 @@ export async function generateMetadata({
 
 export default async function PublicDynamicContentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ form?: string; fb?: string }>;
 }) {
   const { locale, slug } = await params;
+  const sp = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   await trackBotVisit("page");
@@ -165,6 +169,7 @@ export default async function PublicDynamicContentPage({
 
   const t = createTranslator(locale);
   const canvas = content.schemaAttributes?.canvas === true;
+  const formCtx = { path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
   if (canvas) {
@@ -181,6 +186,7 @@ export default async function PublicDynamicContentPage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
+          form={formCtx}
         />
       </>
     );
@@ -309,6 +315,7 @@ export default async function PublicDynamicContentPage({
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
         locale={locale}
+        form={formCtx}
       />
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}

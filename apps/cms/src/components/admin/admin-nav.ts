@@ -27,6 +27,8 @@ import {
   CalendarClock,
   Route,
   Activity,
+  FormInput,
+  Archive,
 } from "lucide-react";
 
 export interface NavItem {
@@ -122,6 +124,13 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: Languages,
         count: "Diller",
         shortcut: "G L",
+      },
+      {
+        href: "/admin/forms",
+        label: "Formlar",
+        icon: FormInput,
+        count: "Gelen",
+        shortcut: "G J",
       },
       {
         href: "/admin/requests",
@@ -220,6 +229,13 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/backup",
+        label: "Yedekleme",
+        icon: Archive,
+        shortcut: "G Q",
+        adminOnly: true,
+      },
+      {
         href: "/admin/system",
         label: "Sistem durumu",
         icon: Activity,
@@ -253,7 +269,9 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/trash": "admin.nav.trash",
   "/admin/redirects": "admin.nav.redirects",
   "/admin/system": "admin.nav.system",
+  "/admin/backup": "admin.nav.backup",
   "/admin/requests": "admin.nav.requests",
+  "/admin/forms": "admin.nav.forms",
   "/admin/commerce": "admin.nav.commerce",
   "/admin/commerce/marketplaces": "admin.nav.marketplaces",
   "/admin/themes": "admin.nav.themes",

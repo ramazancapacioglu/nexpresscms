@@ -107,10 +107,10 @@ Denetimle bulunan açıklar; öncelik sırasıyla:
 | 8 | **Zamanlanmış yayın** arayüzü ve takvim | **Yapıldı:** editörde tarih-saat seçici (site saat dilimi, tarihsiz/geçmiş reddedilir), `/admin/schedule` gün gün takvim (şimdi yayınla / zamanlamayı kaldır), tetikleyici: ziyaretçi trafiğiyle dakikada bir + `/api/cron/scheduled` (`CRON_SECRET`) ile kesin; yayında `content:afterPublish` (arama dizini, IndexNow) çalışır. |
 | 9 | **Paylaşılabilir taslak önizleme** bağlantısı | Süreli belirteç. |
 | 10 | **Yönlendirme yöneticisi** (301/302 elle) ve **404 izleyici** | **Yapıldı:** `/admin/redirects` (göç `0008`): doğrulama (rezerve yollar, kendine yönlendirme, döngü), zincir çözümü, 301/308 ve 302/307, isabet sayaçları; 404 izleyici (sorgusuz yol, son yönlendiren alan adı, "Yönlendir" kısayolu, yok say, 2000 satır sınırı). |
-| 11 | **Formlar ve gelen kutusu** | Form blokları, gönderim kayıtları, e-posta bildirimi, spam koruması. |
+| 11 | **Formlar ve gelen kutusu** | **Yapıldı (2026-10-28, e-posta bildirimi hariç):** `form_block` JS'siz HTML POST ile `/api/forms/submit`'e gider (göç `0009_form_submissions`); `/admin/forms` gelen kutusu (yeni/okundu/spam/arşiv, toplu durum, silme yalnızca admin, CSV dışa aktarma). **Kalan:** e-posta bildirimi (SMTP yok), dosya alanı. |
 | 12 | **Gerçek WordPress içe aktarma** | `/admin/migration` bugün **örnek veriyle simülasyon**; WXR/REST yükleme ve medya taşıma yok. |
 | 13 | **Medya**: klasör/etiket, toplu ve sürükle-bırak yükleme, dosya değiştirme, "kullanılmayanlar" raporu | |
-| 14 | **Yedekleme / dışa-içe aktarma** (JSON+zip, kiracı bazlı) | `db:export/import`. |
+| 14 | **Yedekleme / dışa-içe aktarma** (JSON+zip, kiracı bazlı) | **Yapıldı (2026-10-28):** `/admin/backup` (yalnızca admin) `.nxbackup` dışa aktarır; içe aktarmada önce kuru doğrulama, sonra birleştir/değiştir. **Kalan:** CLI (`db:export/import`), zamanlanmış otomatik yedek. |
 | 15 | **Sistem durumu** sayfası | **Yapıldı:** `/admin/system` (yönetici): veritabanı bağlantı/gecikme ve bekleyen göç, ortam denetimi (yer tutucu `AUTH_SECRET`, https, anahtar varlığı — değerler gösterilmez), medya klasörü ve boş disk, arama dizini kapsamı, zamanlanmış/çöp/404/talep/bot özetleri. Kalan: önbellek, sürüm/güncelleme. |
 | 16 | **Bildirim merkezi** | Başarısız dizinleme, lisans süresi, güncelleme, güvenlik uyarıları. |
 | 17 | **Komut paleti (⌘K)** veri kapsamı | Yalnızca gezinti; içerik/ayar/eylem araması yok. |

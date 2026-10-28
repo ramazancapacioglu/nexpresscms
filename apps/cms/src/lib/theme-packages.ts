@@ -1,23 +1,10 @@
 import "server-only";
-import { NextResponse } from "next/server";
 import { getScopedRepository, type UploadedThemeDto } from "@nexpress/database";
 import { OFFICIAL_THEME_STORE } from "@nexpress/themes/registry";
 import { buildThemePackage, FooterSchema, HeaderSchema, parseThemePackage, ThemeJsonSchema, TokensSchema, type ThemeFooter, type ThemeHeader } from "@nexpress/themes/package";
-import { getSession, type SessionUser } from "@/lib/auth/session";
+import { requireAdminApi } from "@/lib/admin-api";
+export { requireAdminApi };
 import { invalidateSite } from "@/lib/cache";
-
-/** Rota işleyicileri için yönetici denetimi: oturum yoksa 401, yönetici değilse 403, çapraz kaynak isteği 403. */
-export async function requireAdminApi(request: Request): Promise<{ session: SessionUser } | { response: NextResponse }> {
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (request.method !== "GET" && origin && host && new URL(origin).host !== host) {
-    return { response: NextResponse.json({ ok: false, error: "Çapraz kaynak isteği reddedildi." }, { status: 403 }) };
-  }
-  const session = await getSession();
-  if (!session) return { response: NextResponse.json({ ok: false, error: "Oturum gerekli." }, { status: 401 }) };
-  if (session.role !== "admin") return { response: NextResponse.json({ ok: false, error: "Yalnızca yönetici." }, { status: 403 }) };
-  return { session };
-}
 
 export type InstallReport =
   | { ok: true; replaced: boolean; theme: { id: string; name: string; version: string }; warnings: string[]; pages: number; hasChrome: boolean; hasCss: boolean }

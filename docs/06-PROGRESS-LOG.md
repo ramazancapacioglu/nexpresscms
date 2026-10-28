@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — F14 (2): formlar + gelen kutusu, yedekleme / geri yükleme
+- ✅ **Formlar:** `form_submissions` (göç `0009`), `form_block` JS'siz POST, `/api/forms/submit` (bal küpü, HMAC zaman belirteci, hız sınırı, spam sezgisi), `/admin/forms` gelen kutusu ve CSV, 365 gün saklama. Uçtan uca doğrulandı (hızlı/bozuk belirteç hata, bal küpü sessiz, 5. sonrası hız sınırı, spam işareti).
+- ✅ **Yedek:** `BackupRepository` (iki motor, tek işlem), `lib/backup.ts` paketleme/doğrulama, `/admin/backup` arayüzü; kuru doğrulama, birleştir/değiştir, onay metni, bozuk/sahte paket reddi doğrulandı.
+- ⚠️ Kalan: form e-posta bildirimi, CLI yedek, zamanlanmış yedek; `lib/backup.ts` için ayrı birim testi yok (sunucuya özel içe aktarmalar nedeniyle uçtan uca doğrulandı).
+
 ### [2026-10-28] — F14 (1): çöp kutusu, zamanlanmış yayın, yönlendirme + 404 izleyici, sistem durumu
 - ✅ **Çöp kutusu:** `ContentStatus` `trashed`; toplu silme çöpe taşır; hiçbir yüzeyde görünmez (liste/ziyaretçi/sitemap/RAG); geri yükleme **taslak**; 30 gün sonra otomatik silinir; kalıcı silme ve boşaltma yalnızca yönetici.
 - ✅ **Zamanlanmış yayın:** saat dilimli tarih çözümü (`zonedLocalToUtc`, yaz saati dahil, testli), editörde tarih seçici, tarihsiz/geçmiş reddi (kayıtta ve toplu işlemde), `publishDue` (+afterPublish kancaları), `/admin/schedule` takvimi, `/api/cron/scheduled` (`CRON_SECRET`, sabit zamanlı karşılaştırma) ve ziyaretçi trafiğiyle dakikada bir.

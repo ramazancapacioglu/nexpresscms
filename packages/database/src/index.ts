@@ -9,6 +9,8 @@ export * from "./bot-stats-repository";
 export * from "./agent-requests-repository";
 export * from "./ai-referral-repository";
 export * from "./redirects-repository";
+export * from "./form-repository";
+export * from "./backup-repository";
 export * from "./repository";
 export * from "./site-identity-repository";
 export * from "./sitemap-repository";

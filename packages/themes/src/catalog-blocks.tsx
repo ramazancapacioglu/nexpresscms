@@ -1,7 +1,8 @@
 import { ResponsiveImage, type MediaFocalMap } from "./responsive-image";
 import React from "react";
 import { createTranslator } from "@nexpress/i18n";
-import { safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
+import { resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
+import type { FormRenderContext } from "./block-context";
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value : fallback;
@@ -36,7 +37,8 @@ export function renderStudioCatalogBlock(
   block: BlockNode,
   tokens: DesignTokens,
   focal?: MediaFocalMap,
-  locale = "tr"
+  locale = "tr",
+  form?: FormRenderContext
 ): React.ReactElement | null {
   const t = createTranslator(locale);
   const p = block.props ?? {};
@@ -274,22 +276,50 @@ export function renderStudioCatalogBlock(
 
     case "form_block": {
       const action = safeUrl(p.action);
+      const title = <h3 className="text-lg font-bold text-slate-900">{text(p.title, t("blocks.contact"))}</h3>;
+      // Dış `action` verilmişse eski davranış (GET); aksi halde gelen kutusuna POST (JS'siz)
+      if (action || !form) {
+        return (
+          <form action={action ?? undefined} method="get" style={box} className="space-y-3 border bg-white p-5">
+            {title}
+            {rows(p.fields).map((field, index) => (
+              <label key={index} className="block text-sm">
+                <span className="mb-1 block font-medium text-slate-700">{text(field.label, "Alan")}</span>
+                <input name={text(field.name, `alan_${index}`)} type={text(field.type, "text") === "email" ? "email" : "text"} className="w-full rounded-md border border-slate-300 px-3 py-2" />
+              </label>
+            ))}
+            <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{text(p.submitLabel, t("blocks.submit"))}</button>
+          </form>
+        );
+      }
+      const mine = form.blockId === block.id ? form.status : null;
       return (
-        <form action={action ?? undefined} method="get" style={box} className="space-y-3 border bg-white p-5">
-          <h3 className="text-lg font-bold text-slate-900">{text(p.title, t("blocks.contact"))}</h3>
-          {rows(p.fields).map((field, index) => (
-            <label key={index} className="block text-sm">
-              <span className="mb-1 block font-medium text-slate-700">{text(field.label, "Alan")}</span>
-              <input
-                name={text(field.name, `alan_${index}`)}
-                type={text(field.type, "text") === "email" ? "email" : "text"}
-                className="w-full rounded-md border border-slate-300 px-3 py-2"
-              />
+        <form action="/api/forms/submit" method="post" style={box} className="space-y-3 border bg-white p-5">
+          {title}
+          {mine === "sent" ? <p role="status" className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{t("blocks.formSent")}</p> : null}
+          {mine === "error" ? <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{t("blocks.formError")}</p> : null}
+          <input type="hidden" name="_path" value={form.path} />
+          <input type="hidden" name="_block" value={block.id} />
+          <input type="hidden" name="_t" value={form.token} />
+          <div style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }} aria-hidden="true">
+            <label>
+              Website <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+            </label>
+          </div>
+          {resolveFormFields(p.fields).map((field) => (
+            <label key={field.name} className="block text-sm">
+              <span className="mb-1 block font-medium text-slate-700">
+                {field.label}
+                {field.required ? " *" : ""}
+              </span>
+              {field.type === "textarea" ? (
+                <textarea name={field.name} required={field.required} maxLength={5000} rows={5} className="w-full rounded-md border border-slate-300 px-3 py-2" />
+              ) : (
+                <input name={field.name} type={field.type === "number" ? "number" : field.type} required={field.required} maxLength={500} className="w-full rounded-md border border-slate-300 px-3 py-2" />
+              )}
             </label>
           ))}
-          <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-            {text(p.submitLabel, t("blocks.submit"))}
-          </button>
+          <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{text(p.submitLabel, t("blocks.submit"))}</button>
         </form>
       );
     }

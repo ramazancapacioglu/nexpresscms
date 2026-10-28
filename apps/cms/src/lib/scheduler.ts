@@ -1,5 +1,5 @@
 import "server-only";
-import { getScopedRepository } from "@nexpress/database";
+import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { invalidateSite } from "./cache";
 
@@ -19,6 +19,8 @@ export async function runScheduler(siteId: string, force = false): Promise<{ pub
     const repo = getScopedRepository(siteId);
     const published = await repo.publishDue();
     const purged = await repo.purgeExpiredTrash();
+    // KVKK: form gönderimleri 365 günden uzun tutulmaz
+    await getFormSubmissionRepository(siteId).purgeOlderThan(365).catch(() => 0);
     if (published.length > 0 || purged > 0) {
       try {
         await invalidateSite(siteId);

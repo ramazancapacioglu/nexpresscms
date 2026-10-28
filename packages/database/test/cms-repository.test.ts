@@ -523,3 +523,75 @@ test("yönlendirme ve 404 izleyici: doğrulama, döngü reddi, sayaç, kiracıya
   await r.clearNotFound();
   assert.equal(await r.countNotFound(), 0);
 });
+
+test("form gelen kutusu: ekleme, listeleme, durum, hız sınırı sayacı, saklama süresi, kiracıya kapalı", async () => {
+  const { getFormSubmissionRepository } = await import("../src/form-repository");
+  const a = getFormSubmissionRepository("default");
+  const b = getFormSubmissionRepository("baska-site");
+  const input = { pagePath: "/tr/iletisim", locale: "tr", formId: "blk_1", formTitle: "İletişim", fields: [{ name: "ad", label: "Ad", value: "Ayşe" }], ipHash: "h1" };
+  const id1 = await a.create(input);
+  const id2 = await a.create({ ...input, status: "spam" });
+  assert.deepEqual(await a.counts(), { new: 1, read: 0, spam: 1, archived: 0 });
+  assert.equal((await a.list({ status: "new" })).length, 1);
+  assert.equal((await a.list())[0]!.fields[0]!.value, "Ayşe");
+  assert.equal((await b.list()).length, 0, "başka kiracı görmez");
+  assert.equal(await b.setStatus([id1], "read"), 0, "başka kiracı değiştiremez");
+  assert.equal(await a.setStatus([id1], "read"), 1);
+  assert.equal(await a.recentFromIp("h1", 60_000), 2);
+  assert.equal(await a.recentFromIp("baska", 60_000), 0);
+  assert.equal(await a.recentFromIp("", 60_000), 0);
+  assert.equal(await a.purgeOlderThan(365), 0, "yeni kayıtlar kalır");
+  assert.equal(await a.purgeOlderThan(365, new Date(Date.now() + 400 * 86_400_000)), 2, "süresi dolanlar silinir");
+  assert.equal(await a.remove([id2]), 0, "zaten silinmiş");
+});
+
+test("yedek: dışa aktar → değiştir → replace ile geri yükle (JSON gidiş-dönüşü), merge atlar, başka kiracıda çakışma raporlanır, hata geri alınır", async () => {
+  const { getBackupRepository } = await import("../src/backup-repository");
+  const { stringifyWithDates, parseWithDates } = await import("@nexpress/core");
+  const bk = getBackupRepository("default");
+  const roundTrip = <T,>(v: T): T => parseWithDates<T>(stringifyWithDates(v));
+  await repo.saveSupportedLocales(["tr"]);
+  const keep = await repo.saveContent(baseInput({ slug: "yedek-kalir", title: "Yedek Kalır", status: "published" }));
+  await repo.saveSitePlugin("@x/demo", { enabled: false, settings: { k: 1 } });
+  const data = roundTrip(await bk.exportData({ personal: false }));
+  assert.ok(data.tables.contents!.some((r) => r.id === keep.contentId));
+  assert.equal(data.tables.formSubmissions, undefined, "kişisel veri varsayılan dışarıda");
+  assert.equal(data.tables.sitePlugins!.every((r) => !("licenseKey" in r)), true, "lisans anahtarı yedeğe girmez");
+  assert.equal(data.tables.installedThemes!.every((r) => r.source === "uploaded"), true);
+
+  // Değişiklik: yedeklenmiş içeriği sil, yeni içerik ekle
+  await repo.deleteContents([keep.contentId]);
+  const extra = await repo.saveContent(baseInput({ slug: "yedek-sonra", title: "Sonradan", status: "published" }));
+  assert.equal(await repo.getContentById(keep.contentId, "tr"), null);
+
+  // merge: eksik olanı geri getirir, mevcutları atlar, fazlalığa dokunmaz
+  const merged = await bk.importData(roundTrip(data), "merge");
+  assert.equal(merged.tables.contents!.inserted, 1, "yalnızca silinen geri geldi");
+  assert.ok(merged.tables.contents!.skipped > 0);
+  assert.ok(await repo.getContentById(keep.contentId, "tr"));
+  assert.ok(await repo.getContentById(extra.contentId, "tr"), "merge fazlalığı silmez");
+
+  // replace: yedekteki duruma döner (sonradan eklenen gider), tarih alanları korunur
+  const replaced = await bk.importData(roundTrip(data), "replace");
+  assert.equal(replaced.mode, "replace");
+  assert.equal(replaced.siteRestored, true);
+  assert.equal(await repo.getContentById(extra.contentId, "tr"), null, "replace yedekte olmayanı siler");
+  const back = (await repo.getContentById(keep.contentId, "tr"))!;
+  assert.equal(back.title, "Yedek Kalır");
+  assert.ok(back.updatedAt instanceof Date && !Number.isNaN(back.updatedAt.getTime()));
+  assert.equal((await repo.getSitePlugin("@x/demo"))!.enabled, false);
+
+  // başka kiracıya: kimlikler genel PK olduğundan çakışma raporlanır, hata fırlatılmaz, kendi kiracısına yazılmaz
+  const other2 = getBackupRepository("baska-site");
+  const cross = await other2.importData(roundTrip(data), "merge");
+  assert.ok(cross.tables.contents!.conflicts > 0 && cross.tables.contents!.inserted === 0);
+  assert.equal((await other.listContents({ locale: "tr" })).length, 0);
+
+  // bozuk veri: tek işlem geri alınır, mevcut durum aynı kalır
+  const before = (await repo.listContents({ locale: "tr" })).length;
+  const bad = roundTrip(data);
+  const dup = { ...bad.tables.contents![0]!, id: "cnt_yeni_cift" };
+  bad.tables.contents = [dup, dup];
+  await assert.rejects(bk.importData(bad, "replace"));
+  assert.equal((await repo.listContents({ locale: "tr" })).length, before, "hata sonrası hiçbir şey değişmedi");
+});

@@ -7,6 +7,7 @@ import { buildPageSchemaGraph } from "@nexpress/seo-core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme } from "@/lib/public-theme";
+import { createFormToken } from "@/lib/form-token";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -28,10 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function PublicHomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ form?: string; fb?: string }>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
   const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
@@ -82,6 +86,7 @@ export default async function PublicHomePage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
+          form={{ path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
         />
       ) : (
         <div className="rounded-xl border p-8 text-center">

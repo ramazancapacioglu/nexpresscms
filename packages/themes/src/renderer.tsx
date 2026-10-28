@@ -5,7 +5,7 @@ import {
   type BlockNode,
   type DesignTokens,
 } from "@nexpress/core";
-import type { BlockRenderContext } from "./block-context";
+import type { BlockRenderContext, FormRenderContext } from "./block-context";
 import type { MediaFocalMap } from "./responsive-image";
 import { renderStudioCatalogBlock } from "./catalog-blocks";
 import { renderContentBlock } from "./blocks-content";
@@ -23,6 +23,8 @@ export interface RscBlockRendererProps {
   mediaFocal?: MediaFocalMap;
   /** Sayfa dili: blok içi sabit metinler ve boş alan yedekleri bu dilde çizilir (varsayılan `tr`). */
   locale?: string;
+  /** `form_block` için sayfa yolu + imzalı belirteç + son sonuç (yoksa form eski GET davranışında kalır) */
+  form?: FormRenderContext;
 }
 
 /**
@@ -57,6 +59,7 @@ export function RscBlockRenderer({
   lcp = true,
   mediaFocal,
   locale,
+  form,
 }: RscBlockRendererProps): React.ReactElement {
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
@@ -80,6 +83,7 @@ export function RscBlockRenderer({
           lcpBlockId={lcpBlockId}
           mediaFocal={mediaFocal}
           locale={locale}
+          form={form}
         />
       ))}
     </div>
@@ -96,7 +100,7 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   const rendered =
     renderMarketingBlock(ctx) ?? renderContentBlock(ctx) ?? renderLayoutBlock(ctx);
   return rendered === undefined
-    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale)
+    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale, input.form)
     : rendered;
 }
 
@@ -109,6 +113,7 @@ export function RscSingleBlock({
   lcpBlockId,
   mediaFocal,
   locale,
+  form,
 }: {
   block: BlockNode;
   themeId: string;
@@ -118,6 +123,7 @@ export function RscSingleBlock({
   lcpBlockId?: string;
   mediaFocal?: MediaFocalMap;
   locale?: string;
+  form?: FormRenderContext;
 }): React.ReactElement | null {
   const inner = renderBlockInner({
     block,
@@ -128,6 +134,7 @@ export function RscSingleBlock({
     lcpBlockId,
     mediaFocal,
     locale,
+    form,
   });
   if (!inner) return null;
 
