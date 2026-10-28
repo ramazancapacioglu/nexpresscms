@@ -4,7 +4,25 @@ import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
 import { buildPageSchemaGraph } from "@nexpress/seo-core";
+import type { Metadata } from "next";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
+import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
+import { LanguageSwitcher } from "@/components/public/language-switcher";
+
+/** Ana sayfa: dil başına canonical ve karşılıklı hreflang (yalnızca yayındaki çeviriler). */
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const site = await getPublicSite(siteId);
+  const home = await getPublicContentBySlug(siteId, site?.activeThemeId === INK_GRID_ID ? INK_GRID_HOME_SLUG : "ana-sayfa", locale);
+  return {
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      ...(home ? { languages: await hreflangAlternates(siteId, home.contentId, baseUrl) } : {}),
+    },
+  };
+}
 
 export default async function PublicHomePage({
   params,
@@ -25,6 +43,7 @@ export default async function PublicHomePage({
   const mediaFocal = await getPublicMediaFocal(siteId);
   const allContents = isInk ? [] : await listPublishedContents(siteId, locale);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const switcher = homeContent ? <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, homeContent.contentId, locale)} /> : null;
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -51,6 +70,7 @@ export default async function PublicHomePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
       />
 
+      {switcher}
       {homeContent ? (
         <RscBlockRenderer
           blocks={homeContent.blocks}

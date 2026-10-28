@@ -53,8 +53,9 @@ export interface StoredDraft {
   fields: EditorDraftFields;
 }
 
-export const draftStorageKey = (siteId: string, contentId: string | undefined, type: string) =>
-  `nx:draft:${siteId}:${contentId ?? `new-${type}`}`;
+/** Yerel taslak anahtarı; varsayılan (tr) dışındaki diller kendi anahtarını alır, böylece çeviri taslakları karışmaz. */
+export const draftStorageKey = (siteId: string, contentId: string | undefined, type: string, locale = "tr") =>
+  `nx:draft:${siteId}:${contentId ?? `new-${type}`}${locale === "tr" ? "" : `:${locale}`}`;
 
 /** Depodan okunan ham metni doğrular; bozuk/yabancı sürüm `null` döner. */
 export function parseStoredDraft(raw: string | null): StoredDraft | null {

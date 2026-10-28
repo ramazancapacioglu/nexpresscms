@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useTransition } from "reac
 import { DEFAULT_STUDIO_TOKENS } from "@/components/admin/editor/studio-model";
 import { useRouter } from "next/navigation";
 import { type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
-import type { ContentDto, MediaAssetDto, TaxonomyDto } from "@nexpress/database";
+import type { ContentDto, MediaAssetDto, TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 
 export interface DualModeEditorClientProps {
   initialContents: ContentDto[];
@@ -14,6 +14,12 @@ export interface DualModeEditorClientProps {
   siteTokens?: DesignTokens;
   inspectorSlot?: React.ReactNode;
   siteId?: string;
+  /** Düzenlenen dil (içerik listesi bu dilde gelir) */
+  locale?: string;
+  defaultLocale?: string;
+  siteLocales?: string[];
+  /** Açık içeriğin dil şeridi verisi (çoklu dilde) */
+  translations?: TranslationOverviewRow[];
 }
 
 /** useDualModeEditor — aşama 1: Document */
@@ -27,6 +33,10 @@ export function useDualModeEditorDocument({
   siteTokens = DEFAULT_STUDIO_TOKENS,
   inspectorSlot,
   siteId = "default",
+  locale = "tr",
+  defaultLocale = "tr",
+  siteLocales = ["tr"],
+  translations = [],
 }: DualModeEditorClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -153,5 +163,5 @@ export function useDualModeEditorDocument({
     restoreHistory(historyIdxRef.current + 1);
   };
 
-  return { isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId };
+  return { isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId, locale, defaultLocale, siteLocales, translations };
 }

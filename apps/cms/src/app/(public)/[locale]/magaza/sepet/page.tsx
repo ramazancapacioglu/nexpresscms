@@ -1,4 +1,5 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -16,6 +17,7 @@ export default async function ShopCartPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getCommerceRepository(siteId);
@@ -48,12 +50,12 @@ export default async function ShopCartPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">Sepet</h1>
+      <h1 className="text-2xl font-semibold">{t("shop.cart")}</h1>
       {rows.length === 0 ? (
         <p className="mt-6 text-sm text-neutral-500">
-          Sepetiniz boş.{" "}
+          {t("shop.cartEmpty")}{" "}
           <Link href={base} className="underline">
-            Mağazaya dön
+            {t("common.backToStore")}
           </Link>
         </p>
       ) : (
@@ -80,7 +82,7 @@ export default async function ShopCartPage({
                     className="w-16 rounded border border-neutral-200 px-2 py-1 dark:border-neutral-700"
                   />
                   <button type="submit" className="underline">
-                    Güncelle
+                    {t("shop.update")}
                   </button>
                 </form>
                 <span className="text-sm font-medium">{formatMoney(lineTotal, p.currency)}</span>
@@ -97,7 +99,7 @@ export default async function ShopCartPage({
               <dd>{formatMoney(shipping, settings.currency)}</dd>
             </div>
             <div className="flex justify-between font-semibold">
-              <dt>Toplam</dt>
+              <dt>{t("shop.total")}</dt>
               <dd>{formatMoney(total, settings.currency)}</dd>
             </div>
           </dl>
@@ -105,7 +107,7 @@ export default async function ShopCartPage({
             href={`${base}/odeme`}
             className="mt-6 inline-block rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
           >
-            Ödemeye geç
+            {t("shop.toCheckout")}
           </Link>
         </>
       )}

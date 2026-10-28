@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isPluginModuleEnabled } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
-import { getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { listPublishedContents } from "@/lib/public-data";
+import { requestLocale } from "@/lib/request-locale";
 import "@/plugins/register";
 import { trackBotVisit } from "@/lib/bot-log";
 
@@ -11,8 +12,8 @@ export async function GET(request: NextRequest) {
   if (!(await isPluginModuleEnabled(siteId, "@nexpress-pro/agentic-seo", "llms-full"))) {
     return new NextResponse("llms-full.txt kapalı.\n", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
-  const site = await getPublicSite(siteId);
-  const contents = await listPublishedContents(siteId, "tr");
+  const { site, locale } = await requestLocale(request, siteId);
+  const contents = await listPublishedContents(siteId, locale);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   const baseTxt = await generateCoreLlmsTxt({
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     tagline: site?.tagline,
     siteDna: site?.siteDna,
     baseUrl,
-    locale: "tr",
+    locale,
     items: contents.map((c) => ({
       title: c.title,
       url: `${baseUrl}/tr/${c.slug === "ana-sayfa" ? "" : c.slug}`.replace(/\/$/, ""),
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
   const fullCorpusAppendix = contents
     .map(
       (c) =>
-        `\n================================================================================\n### [${c.type.toUpperCase()} • Önem: ${c.importanceScore}/10] ${c.title}\nURL: ${baseUrl}/tr/${c.slug}\nSchema: @${c.schemaType}\n================================================================================\n\n${c.markdownCache}`
+        `\n================================================================================\n### [${c.type.toUpperCase()} • Önem: ${c.importanceScore}/10] ${c.title}\nURL: ${baseUrl}/${locale}/${c.slug}\nSchema: @${c.schemaType}\n================================================================================\n\n${c.markdownCache}`
     )
     .join("\n");
 

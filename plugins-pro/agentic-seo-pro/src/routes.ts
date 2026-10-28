@@ -1,4 +1,4 @@
-import { isPluginModuleEnabled, pluginRoutes, resolvePublishing } from "@nexpress/core";
+import { isPluginModuleEnabled, pickLocale, pluginRoutes, resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { PLUGIN_ID } from "./module-gate";
 import { buildAiFeed } from "./geo/ai-feed";
@@ -12,16 +12,19 @@ const json = (body: unknown, siteId: string, contentType = "application/json; ch
 
 /** Çekirdeğin sabit uç noktalarına işleyici bağlar; modül kapalıysa `null` (→ 404). */
 export function registerAgenticRoutes(): void {
-  pluginRoutes.register("ai-feed", PLUGIN_ID, async ({ siteId }) => {
+  pluginRoutes.register("ai-feed", PLUGIN_ID, async ({ siteId, request }) => {
     if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "ai-feed"))) return null;
     const repo = getScopedRepository(siteId);
-    const [site, contents] = await Promise.all([repo.getSite(), repo.listContents({ locale: "tr", status: "published" })]);
+    const site = await repo.getSite();
+    const defaultLocale = site?.defaultLocale ?? "tr";
+    const locale = pickLocale(new URL(request.url).searchParams.get("locale"), site?.supportedLocales ?? [defaultLocale], defaultLocale);
+    const contents = await repo.listContents({ locale, status: "published" });
     const visible = contents.filter((c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public");
     return json(
       buildAiFeed({
         siteName: site?.name ?? "NexPress",
         baseUrl: baseUrl(),
-        locale: "tr",
+        locale,
         items: visible.map((c) => ({
           id: c.contentId,
           title: c.title,

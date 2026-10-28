@@ -1,4 +1,5 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import type { Metadata } from "next";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return { title: `Mağaza | ${locale.toUpperCase()}` };
+  return { title: `${createTranslator(locale)("shop.title")} | ${locale.toUpperCase()}` };
 }
 
 export default async function ShopIndexPage({
@@ -25,6 +26,7 @@ export default async function ShopIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getCommerceRepository(siteId);
@@ -43,19 +45,19 @@ export default async function ShopIndexPage({
     <div className="mx-auto max-w-5xl px-4 py-10">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Mağaza</h1>
-          <p className="mt-1 text-sm text-neutral-500">Katalog ürünleri</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("shop.title")}</h1>
+          <p className="mt-1 text-sm text-neutral-500">{t("shop.subtitle")}</p>
         </div>
         <Link
           href={`${base}/sepet`}
           className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium dark:border-neutral-700"
         >
-          Sepet{count > 0 ? ` (${count})` : ""}
+          {t("shop.cart")}{count > 0 ? ` (${count})` : ""}
         </Link>
       </header>
 
       {products.length === 0 ? (
-        <p className="text-sm text-neutral-500">Şu an listelenecek ürün yok.</p>
+        <p className="text-sm text-neutral-500">{t("shop.empty")}</p>
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p) => (

@@ -143,6 +143,9 @@ export const pgContentTranslations = pgTable(
     seoScore: integer("seo_score").default(85).notNull(),
     gapFindings: jsonb("gap_findings").$type<string[]>().default([]).notNull(),
     descriptionSource: text("description_source").default("human").notNull(),
+    translationStatus: text("translation_status").default("published").notNull(),
+    sourceLocale: text("source_locale"),
+    sourceHash: text("source_hash"),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => [

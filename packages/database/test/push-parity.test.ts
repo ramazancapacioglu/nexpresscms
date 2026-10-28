@@ -43,7 +43,15 @@ test(`push.ts veritabanı (${pgUrl ? "PostgreSQL" : "SQLite"}) Drizzle şemasıy
   const all = pgUrl
     ? [...collect(pg as Record<string, unknown>, "pg")].map(([, t]) => describePg(t as PgTable))
     : [...collect(sqlite as Record<string, unknown>, "sqlite")].map(([, t]) => describeSqlite(t as SQLiteTable));
-  const expected = all.filter((t) => baselineTables.has(t.name));
+  // Sonraki göçlerin eklediği sütunlar da tabana ait değildir (ALTER TABLE ... ADD)
+  const dir = path.resolve(import.meta.dirname, "..", "migrations", pgUrl ? "pg" : "sqlite");
+  const later = new Set<string>();
+  for (const f of fs.readdirSync(dir).filter((n) => /^\d{4}_.*\.sql$/.test(n) && !n.startsWith("0000_"))) {
+    for (const m of fs.readFileSync(path.join(dir, f), "utf8").matchAll(/ALTER TABLE [`"](\w+)[`"] ADD (?:COLUMN )?[`"](\w+)[`"]/g)) later.add(`${m[1]}.${m[2]}`);
+  }
+  const expected = all
+    .filter((t) => baselineTables.has(t.name))
+    .map((t) => ({ ...t, columns: new Map([...t.columns].filter(([col]) => !later.has(`${t.name}.${col}`))) }));
   assert.ok(expected.length >= 31, `taban tablo sayısı: ${expected.length}`);
   const problems = compareWithSchema(actual, expected);
   assert.deepEqual(problems, []);

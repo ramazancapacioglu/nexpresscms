@@ -1,6 +1,25 @@
 # 14 — Çok Dilli Altyapı Planı
 
-> **Durum: PLAN.** Arayüz dili şimdilik Türkçedir (AGENTS.md kural 8). Bu doküman ikinci dil eklenmeden önce hazırlanacak altyapıyı tanımlar. Faz başladığında kural 8 güncellenir (çeviri dosyası ve dil tablosu yasağı kalkar).
+> **Durum: F12 başladı (2026-10-28): L1–L4'ün çekirdeği kodlandı, L5 ve bazı kalemler açık.** Aşağıdaki §0 "Yapılanlar" gerçek durumu gösterir; §1–§4 özgün plandır.
+
+## 0. Yapılanlar (F12, 2026-10-28)
+
+| Kalem | Durum |
+| :--- | :--- |
+| **L1** `@nexpress/i18n`: tip güvenli katalog (`tr` kaynak, `en`), `{değişken}` + `Intl.PluralRules` çoğul, bölge ve Türkçe yedeği, "kataloglar aynı anahtarlara sahip" testi | ✅ Ziyaretçi sayfaları (içerik, arama, mağaza) anahtara taşındı. **Kalan:** tema/blok iç metinleri (`packages/themes`: "İçindekiler", "Haritada aç"…), ana sayfa boş durumu, `layout.tsx` üstbar/altbilgi sabitleri, panel arayüzü (L5) |
+| **L2** `<head>`: dil başına canonical, karşılıklı `hreflang` + `x-default` (yalnızca yayındaki çeviriler), `<html lang dir>` (RTL tespiti), `inLanguage` (zaten vardı), sitemap hreflang (bölgesiz `en`) | ✅ |
+| **L2** `slugify(text, locale)` (tr, de, es, fr, pt, nl, pl, da, sv, no + NFKD yedeği) | ✅ Editör slug önerisi hâlâ Türkçe çağırıyor (kalan) |
+| **L2** SEO motoru dil profilleri, dil başına site adı/slogan/SEO şablonu | ⬜ |
+| **L3** Çeviri yaşam döngüsü: `content_translations.translation_status / source_locale / source_hash` (göç `0004`), "kaynaktan çeviri oluştur" (taslak), durumlar `yok / taslak / yayında / kaynak değişti`, ikincil dil kaydı içerik satırını ezmez, çeviri silme | ✅ Editör › Yayın & Kat. › **Diller** şeridi; `/admin/settings` › **Site dilleri** |
+| **L3** Eksik çeviri raporu, medya alt metni çevirisi, AI çeviri taslağı | ⬜ |
+| **L4** Ziyaretçi dil değiştirici (JS'siz bağlantılar), `/{locale}/llms.txt`, `llms-full`/`ai-sitemap`/RSS/ai-feed/MCP `?locale=` / `locale` parametresi | ✅ |
+| **L4** İnsan için dil önerisi (üst bar), dil başına navigasyon/footer yönetimi | ⬜ |
+| **L5** Panel arayüz dili, ticaret çevirileri | ⬜ (RTL: `lang`/`dir` var; mantıksal CSS turu yok) |
+
+**Çıkış ölçütü durumu:** `en` örnek verisiyle uçtan uca doğrulandı (dil ekle → çeviri oluştur → taslak ziyaretçiye 404 → yayınla → hreflang her iki yönde, `lang="en"`, `/zzz` 404). Kataloğu eksik anahtarla **derleme** hatası: `Messages` tipi (`en`'de eksik anahtar tsc'yi kırar) + test.
+
+**Bu fazda bulunan ve düzeltilen güvenlik açığı:** ziyaretçi sayfaları taslak/zamanlanmış/arşivlenmiş ve `private` içeriği adresini bilene gösteriyordu (yalnızca sitemap süzüyordu). `resolveContentBySlug/getContentBySlug` `publicOnly` seçeneği, `listPublishedContents` `private` süzgeci ve MCP `fetch_markdown` düzeltildi (testli). **Açık:** `password` / `members_only` görünürlük için erişim denetimi (oturum/parola formu) hâlâ yok.
+
 
 ## 1. Bugün ne var, ne yok?
 

@@ -5,7 +5,8 @@ import { findStale, STALE_AFTER_DAYS } from "./freshness";
 
 /** Panel kartı: 6+ aydır güncellenmeyen yayındaki içerikler. */
 export async function FreshnessCard({ siteId }: { siteId: string }) {
-  const contents = await getScopedRepository(siteId).listContents({ locale: "tr", status: "published" });
+  const repo = getScopedRepository(siteId);
+  const contents = await repo.listContents({ locale: (await repo.getSite())?.defaultLocale ?? "tr", status: "published" });
   const visible = contents.filter((c) => resolvePublishing(c.schemaAttributes).visibility === "public");
   const stale = findStale(
     visible.map((c) => ({ id: c.contentId, title: c.title, slug: c.slug, type: c.type, updatedAt: new Date(c.updatedAt) })),

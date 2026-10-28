@@ -29,6 +29,13 @@
       "when": 1793188557991,
       "tag": "0003_agent_requests_ai_referrals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793194044461,
+      "tag": "0004_translation_status",
+      "breakpoints": true
     }
   ]
 }

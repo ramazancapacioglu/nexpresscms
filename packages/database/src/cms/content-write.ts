@@ -204,7 +204,15 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
     }
 
     const { db, t } = this.backend;
-    await db
+    // İkincil dil çevirisi: içerik satırı (durum, şema, öznitelikler) varsayılan dile aittir ve bu kayıtla değişmez;
+    // çevirinin kendi yayın durumu `translationStatus` ile tutulur.
+    const defaultLocale = site?.defaultLocale ?? "tr";
+    const contentRowExists = input.contentId
+      ? (await db.select({ id: t.contents.id }).from(t.contents).where(and(eq(t.contents.id, input.contentId), eq(t.contents.siteId, this.siteId))).limit(1)).length > 0
+      : false;
+    const secondary = input.locale !== defaultLocale && contentRowExists;
+    const translationStatus = secondary && (input.status ?? "published") !== "published" ? "draft" : "published";
+    if (!secondary) await db
       .insert(t.contents)
       .values({
         id: contentId,
@@ -241,7 +249,8 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         siteId: this.siteId,
         contentId,
         locale: input.locale,
-        region: input.region ?? "TR",
+        // Varsayılan dil geriye uyumlu `TR` bölgesini taşır; çeviriler bölgesiz (yalnızca dil) başlar
+        region: input.region ?? (input.locale === defaultLocale ? "TR" : ""),
         slug: input.slug,
         title: hookResult.title,
         excerpt: input.excerpt ?? null,
@@ -254,6 +263,9 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         noIndex: input.noIndex ?? false,
         seoScore: hookResult.seoScore ?? analysis.score,
         gapFindings,
+        translationStatus,
+        sourceLocale: input.sourceLocale ?? null,
+        sourceHash: input.sourceHash ?? null,
         updatedAt: now,
       })
       .onConflictDoUpdate({
@@ -272,6 +284,8 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           noIndex: input.noIndex ?? false,
           seoScore: hookResult.seoScore ?? analysis.score,
           gapFindings,
+          translationStatus,
+          ...(input.sourceHash ? { sourceLocale: input.sourceLocale ?? null, sourceHash: input.sourceHash } : {}),
           updatedAt: now,
         },
       });
@@ -303,7 +317,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       console.warn("[revisions] kaydedilemedi:", error instanceof Error ? error.message : error);
     }
 
-    if ((input.status ?? "published") === "published") {
+    if ((input.status ?? "published") === "published" && translationStatus === "published") {
       await cmsHooks.runAction("content:afterPublish", {
         siteId: this.siteId,
         contentId,

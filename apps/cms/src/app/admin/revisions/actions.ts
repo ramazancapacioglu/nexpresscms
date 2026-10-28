@@ -9,10 +9,10 @@ export type RevisionGetResult =
   | { ok: false; error: string };
 
 /** İçeriğin revizyon özetleri (görüntü yüklenmez). Okuma olduğu için denetim kaydı yazılmaz. */
-export async function listRevisionsAction(input: { contentId: string }): Promise<RevisionListResult> {
+export async function listRevisionsAction(input: { contentId: string; locale?: string }): Promise<RevisionListResult> {
   const session = await requireUser();
   if (!input.contentId) return { ok: false, error: "İçerik kimliği gerekli." };
-  return { ok: true, revisions: await getScopedRepository(session.siteId).listRevisions(input.contentId, "tr") };
+  return { ok: true, revisions: await getScopedRepository(session.siteId).listRevisions(input.contentId, input.locale && /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/.test(input.locale) ? input.locale : "tr") };
 }
 
 /**

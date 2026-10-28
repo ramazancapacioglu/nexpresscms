@@ -1,4 +1,4 @@
-import { isPluginModuleEnabled, resolvePublishing, type ContentType } from "@nexpress/core";
+import { isPluginModuleEnabled, pickLocale, resolvePublishing, type ContentType } from "@nexpress/core";
 import { safeEqual } from "@nexpress/core/password";
 import { providerFromEnv, searchCorpus } from "@nexpress/rag";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
@@ -25,6 +25,7 @@ export const NEXPRESS_MCP_TOOLS: McpToolDefinition[] = [
       properties: {
         query: { type: "string", description: "Aranacak soru veya anahtar kelime" },
         limit: { type: "number", description: "En çok kaç içerik (1-20, varsayılan 5)" },
+        locale: { type: "string", description: "Etkin dillerden biri; boşsa sitenin varsayılan dili" },
         type: {
           type: "string",
           enum: ["page", "post", "kb_tech", "ai_prompt", "product", "campaign"],
@@ -42,7 +43,7 @@ export const NEXPRESS_MCP_TOOLS: McpToolDefinition[] = [
       type: "object",
       properties: {
         slug: { type: "string", description: "Örn: nexpress-enterprise-cloud" },
-        locale: { type: "string", default: "tr" },
+        locale: { type: "string", description: "Etkin dillerden biri; boşsa sitenin varsayılan dili" },
       },
       required: ["slug"],
     },
@@ -94,6 +95,12 @@ export async function handleWebMcpJsonRpc(
   agentKeyHeader?: string | null
 ) {
   const repo = getScopedRepository(siteId);
+  // Dil: params/arguments içindeki `locale` etkin dillerden biriyse o, değilse sitenin varsayılan dili
+  const site = await repo.getSite();
+  const defaultLocale = site?.defaultLocale ?? "tr";
+  const supported = site?.supportedLocales ?? [defaultLocale];
+  const requestedLocale = (rpc.params?.locale ?? (rpc.params?.arguments as Record<string, unknown> | undefined)?.locale) as string | undefined;
+  const locale = pickLocale(requestedLocale, supported, defaultLocale);
 
   if (rpc.method === "tools/list") {
     return {
@@ -119,9 +126,9 @@ export async function handleWebMcpJsonRpc(
     if (!query) return { jsonrpc: "2.0", id: rpc.id ?? null, error: { code: -32602, message: "params.query gerekli." } };
     const limit = Math.min(Math.max(Number(rpc.params?.limit ?? 5) || 5, 1), 10);
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-    const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale: "tr" });
-    const published = await repo.listContents({ locale: "tr", status: "published" });
-    return { jsonrpc: "2.0", id: rpc.id ?? 1, result: buildAskResult({ query, baseUrl, locale: "tr", hits: found.contents, contents: published, ranking: found.indexed ? found.ranking : "none" }) };
+    const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale });
+    const published = await repo.listContents({ locale, status: "published" });
+    return { jsonrpc: "2.0", id: rpc.id ?? 1, result: buildAskResult({ query, baseUrl, locale, hits: found.contents, contents: published, ranking: found.indexed ? found.ranking : "none" }) };
   }
 
   if (rpc.method === "tools/call") {
@@ -154,7 +161,7 @@ export async function handleWebMcpJsonRpc(
 
       // 1) Vektör araması (dizin varsa): parça düzeyinde alıntılar + içerik özeti
       if (query) {
-        const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale: "tr", types: type ? [type] : undefined });
+        const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale, types: type ? [type] : undefined });
         if (found.indexed) {
           return asText({
             retrieval: found.semantic ? "semantic" : "lexical-vector",
@@ -164,7 +171,7 @@ export async function handleWebMcpJsonRpc(
               slug: c.slug,
               type: c.type,
               score: Number(c.similarity.toFixed(4)),
-              markdownUrl: `/tr/${c.slug}?format=md`,
+              markdownUrl: `/${locale}/${c.slug}?format=md`,
               passages: found.passages
                 .filter((p) => p.contentId === c.contentId)
                 .map((p) => ({ heading: p.headingPath, text: p.text, score: Number(p.similarity.toFixed(4)) })),
@@ -175,7 +182,7 @@ export async function handleWebMcpJsonRpc(
 
       // 2) Dizin yoksa: anahtar kelime araması (eski davranış)
       const q = query.toLowerCase();
-      const contents = await repo.listContents({ locale: "tr", status: "published" });
+      const contents = await repo.listContents({ locale, status: "published" });
       const matched = contents.filter(
         (c) =>
           !c.noIndex &&
@@ -193,14 +200,14 @@ export async function handleWebMcpJsonRpc(
           schemaType: m.schemaType,
           importanceScore: m.importanceScore,
           tldr: m.tldr,
-          markdownUrl: `/tr/${m.slug}?format=md`,
+          markdownUrl: `/${locale}/${m.slug}?format=md`,
         })),
       });
     }
 
     if (toolName === "nexpress_fetch_markdown") {
       const slug = String(args.slug ?? "ana-sayfa");
-      const item = await repo.getContentBySlug(slug, "tr");
+      const item = await repo.getContentBySlug(slug, locale, { publicOnly: true });
       return {
         jsonrpc: "2.0",
         id: rpc.id ?? 1,

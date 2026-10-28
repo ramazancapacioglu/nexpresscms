@@ -10,7 +10,7 @@
 | **F9** | Kullanıcı yönetimi, profil/parola, oturum iptali, denetim günlüğü, **Ayarlar** sayfası | ✅ Tamam (2FA ve davet e-postası ayrı iş) |
 | **F10** | Drizzle migration + şema paritesi testi + dialect dallarının sadeleştirilmesi + büyük dosyaların bölünmesi | ✅ Tamam (kalan: dondurulmuş `push.ts`) |
 | **F11** | RAG: gerçek anahtarla kalite ölçümü, hibrit arama, site içi arama; bot politikası arayüzü (`robots.txt`); RSS, JSON-LD doğrulayıcı, kırık bağlantı denetimi | ✅ Tamam (kalan: gerçek OpenAI anahtarıyla kalite ölçümü, dış bağlantı denetimi, "bu siteye sor" yanıtı, dile göre llms/ai-sitemap) |
-| **F12** | **Çok dilli altyapı** (L1–L5, `docs/14`) | ⬜ |
+| **F12** | **Çok dilli altyapı** (L1–L5, `docs/14`) | 🔄 L1–L4 çekirdeği yapıldı (katalog, hreflang, çeviri yaşam döngüsü, dil değiştirici, dil bazlı llms/MCP); kalan: tema metinleri, SEO dil profilleri, eksik çeviri raporu, medya çevirisi, panel dili (L5), ticaret çevirisi |
 | **F13** | **Eklenti sistemi + tema paketleri** (`docs/13` §2–§3): eklenti envanteri/aç-kapa/ayar/lisans, tema yükle/önizle/etkinleştir/dışa aktar | 🔄 Eklenti tarafı v1 yapıldı (manifest, `site_plugins`, modül aç/kapa, ayar formu, Eklentiler sayfası; `docs/15`). Kalan: lisans, eklenti göçleri (`plugin_migrations`), tema paketleri |
 | **F14** | **Panel eksikleri** (`docs/13` §4): revizyonlar, otomatik kayıt, çöp, zamanlanmış yayın, yönlendirme/404, formlar, gerçek WP içe aktarma, medya klasörleri, yedekleme, sistem durumu, bildirimler, ⌘K kapsamı, mobil/a11y | ⬜ |
 

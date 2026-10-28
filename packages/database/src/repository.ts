@@ -6,7 +6,7 @@ export * from "./cms/types";
 /**
  * Kural 2 & Kural 3: her sorgu `siteId` kapsamlıdır; tek arayüz iki motorda çalışır.
  * Gerçek kod alan bazlı dosyalardadır (`src/cms/*`); sınıf, sırayla genişleyen bir zincirdir:
- * base -> site -> navigation -> media -> comments -> taxonomy -> content-read -> revisions -> content-write -> plugins.
+ * base -> site -> navigation -> media -> comments -> taxonomy -> content-read -> revisions -> content-write -> translations -> plugins.
  */
 export class ScopedCmsRepository extends CmsPluginRepository {}
 

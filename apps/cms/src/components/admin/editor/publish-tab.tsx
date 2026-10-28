@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ContentStatus } from "@nexpress/core";
 
+import { LanguageStrip } from "./language-strip";
 import { RevisionsPanel } from "./revisions-panel";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -208,6 +209,7 @@ export function PublishTab() {
                       </button>
                     </div>
                   </div>
+                  <LanguageStrip />
                   <RevisionsPanel />
                 </div>
   );

@@ -1,13 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getPublicSite, listPublicEntityLinks, listPublishedContents } from "@/lib/public-data";
+import { listPublicEntityLinks, listPublishedContents } from "@/lib/public-data";
+import { contentUrl, requestLocale } from "@/lib/request-locale";
 import "@/plugins/register";
 import { trackBotVisit } from "@/lib/bot-log";
 
 export async function GET(request: NextRequest) {
   await trackBotVisit("ai-sitemap");
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
-  const site = await getPublicSite(siteId);
-  const contents = await listPublishedContents(siteId, "tr");
+  const { site, locale, supported } = await requestLocale(request, siteId);
+  const contents = await listPublishedContents(siteId, locale);
   const entityLinks = await listPublicEntityLinks(siteId);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -15,6 +16,8 @@ export async function GET(request: NextRequest) {
     version: "1.0",
     generator: "NexPress CMS Agentic Discovery Engine",
     siteId,
+    locale,
+    locales: supported,
     siteName: site?.name ?? "NexPress CMS",
     siteProfile: site?.siteProfile ?? "corporate",
     siteDna: site?.siteDna,
@@ -25,10 +28,7 @@ export async function GET(request: NextRequest) {
       markdownNegotiation: "?format=md or Accept: text/markdown",
     },
     items: contents.map((item) => {
-      const publicUrl =
-        item.slug === "ana-sayfa"
-          ? `${baseUrl}/tr`
-          : `${baseUrl}/tr/${item.slug}`;
+      const publicUrl = contentUrl(baseUrl, locale, item.slug);
       return {
         id: item.id,
         title: item.title,

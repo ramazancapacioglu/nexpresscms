@@ -162,6 +162,7 @@ export class ChunkRepository {
           eq(c.embeddingModel, model),
           eq(pgContents.status, "published"),
           eq(pgContentTranslations.noIndex, false),
+          eq(pgContentTranslations.translationStatus, "published"),
           o.locale ? eq(c.locale, o.locale) : undefined,
           o.excludeContentId ? sql`${c.contentId} <> ${o.excludeContentId}` : undefined,
           o.types?.length ? sql`${pgContents.type} IN ${o.types}` : undefined
@@ -213,6 +214,7 @@ export class ChunkRepository {
           eq(c.embeddingModel, model),
           eq(sqliteContents.status, "published"),
           eq(sqliteContentTranslations.noIndex, false),
+          eq(sqliteContentTranslations.translationStatus, "published"),
           o.locale ? eq(c.locale, o.locale) : undefined,
           o.excludeContentId ? sql`${c.contentId} <> ${o.excludeContentId}` : undefined,
           o.types?.length ? sql`${sqliteContents.type} IN ${o.types}` : undefined

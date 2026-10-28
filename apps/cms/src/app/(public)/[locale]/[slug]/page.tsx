@@ -8,6 +8,9 @@ import { getPublicMediaFocal, getPublicSite, listPublicReviews, resolvePublicCon
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
+import { createTranslator } from "@nexpress/i18n";
+import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
+import { LanguageSwitcher } from "@/components/public/language-switcher";
 
 export async function generateMetadata({
   params,
@@ -23,7 +26,7 @@ export async function generateMetadata({
   ]);
 
   if (!resolved || !resolved.content) {
-    return { title: "Sayfa Bulunamadı | NexPress CMS" };
+    return { title: `${createTranslator(locale)("common.notFoundTitle")} | NexPress CMS` };
   }
 
   const content = resolved.content;
@@ -55,6 +58,7 @@ export async function generateMetadata({
     description: seoMeta.description,
     alternates: {
       canonical: seoMeta.canonical,
+      languages: await hreflangAlternates(siteId, content.contentId, baseUrl),
     },
     robots: seoMeta.robots,
     openGraph: {
@@ -157,7 +161,9 @@ export default async function PublicDynamicContentPage({
     },
   });
 
+  const t = createTranslator(locale);
   const canvas = content.schemaAttributes?.canvas === true;
+  const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
   if (canvas) {
     return (
@@ -166,6 +172,7 @@ export default async function PublicDynamicContentPage({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
         />
+        {switcher}
         <RscBlockRenderer
           blocks={content.blocks}
           themeId={activeTheme.id}
@@ -178,6 +185,7 @@ export default async function PublicDynamicContentPage({
 
   return (
     <article className="mx-auto max-w-4xl space-y-10">
+      {switcher}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
@@ -252,7 +260,7 @@ export default async function PublicDynamicContentPage({
             <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
               <span className="text-amber-500">★★★★★</span>
               <span>
-                {avgRating} / 5.0 ({approvedReviews.length} Değerlendirme)
+                {t("content.ratingSummary", { avg: avgRating, n: approvedReviews.length })}
               </span>
             </div>
           )}
@@ -287,7 +295,7 @@ export default async function PublicDynamicContentPage({
       {/* Kısıtlı / Taslak Yayın Bildirimi */}
       {content.status === "restricted" && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
-          <strong>🔒 Kısıtlı İçerik (Restricted Access):</strong> Bu içerik kurumsal üyelere veya parola sahiplerine özel olarak işaretlenmiştir.
+          <strong>🔒 {t("content.restricted")}:</strong> {t("content.restrictedBody")}
         </div>
       )}
 
@@ -307,7 +315,7 @@ export default async function PublicDynamicContentPage({
         >
           <div className="space-y-0.5">
             <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Bu İçeriği Paylaşın & AI Ajanlarına Aktarın
+              {t("content.shareHeading")}
             </div>
             <div className="text-sm font-semibold text-slate-900">
               {content.title}
@@ -357,10 +365,10 @@ export default async function PublicDynamicContentPage({
                 style={{ fontFamily: tokens.typography.headingFont }}
                 className="text-2xl font-bold text-slate-900"
               >
-                Değerlendirmeler, İncelemeler & Yorumlar ({approvedReviews.length})
+                {t("content.reviewsHeading", { n: approvedReviews.length })}
               </h2>
               <p className="text-sm text-slate-600">
-                Doğrulanmış kullanıcı deneyimleri ve Schema.org AggregateRating verileri.
+                {t("content.reviewsSubheading")}
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2.5">
@@ -370,7 +378,7 @@ export default async function PublicDynamicContentPage({
               </div>
               <div className="text-xs text-amber-900 font-semibold">
                 <div className="text-amber-500 tracking-widest">★★★★★</div>
-                <div>{approvedReviews.length} Onaylı Kayıt</div>
+                <div>{t("content.approvedCount", { n: approvedReviews.length })}</div>
               </div>
             </div>
           </div>
@@ -390,7 +398,7 @@ export default async function PublicDynamicContentPage({
                       </span>
                       {rev.isVerified && (
                         <span className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                          ✓ Doğrulanmış Deneyim
+                          ✓ {t("content.verified")}
                         </span>
                       )}
                     </div>
@@ -410,7 +418,7 @@ export default async function PublicDynamicContentPage({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
                       {rev.pros.length > 0 && (
                         <div className="rounded bg-emerald-50/70 border border-emerald-200/70 p-2.5 text-emerald-900">
-                          <strong className="text-emerald-700">+ Artılar: </strong>
+                          <strong className="text-emerald-700">+ {t("content.pros")}: </strong>
                           {rev.pros.join(" • ")}
                         </div>
                       )}
@@ -427,10 +435,7 @@ export default async function PublicDynamicContentPage({
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              Bu içerik için henüz inceleme eklenmemiş.{" "}
-              <Link href="/admin/comments" className="text-blue-600 underline">
-                Yönetim panelinden ilk değerlendirmeyi ekleyin →
-              </Link>
+              {t("content.noReviews")}
             </div>
           )}
         </section>

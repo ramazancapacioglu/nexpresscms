@@ -57,7 +57,7 @@ export class SitemapRepository {
           eq(t.contentTranslations.siteId, this.siteId)
         )
       )
-      .where(and(eq(t.contents.siteId, this.siteId), eq(t.contents.status, "published")));
+      .where(and(eq(t.contents.siteId, this.siteId), eq(t.contents.status, "published"), eq(t.contentTranslations.translationStatus, "published")));
     return rows.map((r) => ({ ...r, noIndex: Boolean(r.noIndex) }));
   }
 }

@@ -68,3 +68,11 @@ test("tek dilli içerik kendine ve x-default'a bağlanır", () => {
   const xml = buildUrlset("https://ex.com", file!, [only], "tr");
   assert.equal((xml.match(/hreflang=/g) ?? []).length, 2);
 });
+
+import { hreflangOf as hreflangOfRegion } from "../src";
+
+test("hreflang: bölge varsa tr-TR, yoksa yalnızca dil", () => {
+  assert.equal(hreflangOfRegion({ locale: "tr", region: "TR" }), "tr-TR");
+  assert.equal(hreflangOfRegion({ locale: "en", region: "" }), "en");
+  assert.equal(hreflangOfRegion({ locale: "en", region: "us" }), "en-US");
+});

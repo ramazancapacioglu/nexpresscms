@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     };
   } else if (body.method === "tools/call") {
     const params = (body.params ?? {}) as Record<string, unknown>;
-    const contents = await repo.listContents({ locale: "tr", status: "published" });
+    const contents = await repo.listContents({ locale: (await repo.getSite())?.defaultLocale ?? "tr", status: "published" });
     fallbackResponse = {
       jsonrpc: "2.0",
       id: body.id ?? 1,

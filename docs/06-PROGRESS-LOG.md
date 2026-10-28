@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — F12: çok dilli altyapı (L1–L4 çekirdeği) + ziyaretçi içerik sızıntısı düzeltmesi
+- ✅ `@nexpress/i18n` (tip güvenli katalog tr/en, çoğul, testli); ziyaretçi sayfaları (içerik, arama, mağaza) anahtara taşındı.
+- ✅ Göç `0004`: çeviri durumu/kaynak özeti; `createTranslation`, `translationOverview`, `deleteTranslation`, `saveSupportedLocales`; ikincil dil kaydı içerik satırını ezmez; RAG ve sitemap yalnızca yayındaki çevirileri alır.
+- ✅ Editörde **Diller** şeridi, `?locale=` ile çeviri düzenleme, dile özel yerel taslak anahtarı; Ayarlar'da **Site dilleri** kartı.
+- ✅ Ziyaretçi: dil başına canonical + karşılıklı hreflang + x-default, `<html lang dir>`, dil değiştirici, `/{locale}/llms.txt`, `?locale=` (llms-full, ai-sitemap, RSS, ai-feed), MCP `locale`. `slugify(text, locale)`.
+- 🐞 **Güvenlik:** taslak/zamanlanmış/arşiv/`private` içerik ziyaretçiye adresle açılıyordu → `publicOnly` ile düzeltildi (+test); `listPublishedContents` `private`'ı hiçbir yüzeye vermiyor.
+- Doğrulama: `en` ile uçtan uca (tarayıcıda dil ekleme/doğrulama, çeviri oluşturma, taslak 404, yayın, hreflang karşılıklı, sitemap `en`, `/{locale}/llms.txt`, `/zzz` 404). Testler: core 70, seo-core 19, database 42 (SQLite+PG), i18n 3.
+- Açık: tema blok metinleri, SEO dil profilleri, eksik çeviri raporu, medya çevirisi, panel dili, ticaret çevirisi, `password/members_only` erişim denetimi.
+
 ### [2026-10-28] — Ajan talepleri, AI yönlendirme izleme ve bot IP doğrulama
 - ✅ **agent-actions:** MCP `nexpress_create_lead|ticket|book_demo` (anahtarlı, doğrulamalı, hız sınırlı) → `agent_requests`; yönetici **Talepler** sayfası + nav.
 - ✅ **ai-referrals:** `Referer`/`utm_source` ile ChatGPT, Perplexity, Gemini, Copilot, Claude… yönlendirmesi (`ai_referral_daily`), panel kartı, JS yok.

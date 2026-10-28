@@ -66,21 +66,28 @@ export interface SeoAnalyzeInput {
   settings?: Partial<SeoEngineSettings>;
 }
 
-export function slugify(input: string): string {
-  const map: Record<string, string> = {
-    ç: "c",
-    ğ: "g",
-    ı: "i",
-    ö: "o",
-    ş: "s",
-    ü: "u",
-    â: "a",
-    î: "i",
-    û: "u",
-  };
-  return input
-    .toLocaleLowerCase("tr")
-    .replace(/[çğıöşüâîû]/g, (c) => map[c] ?? c)
+/** Dile özgü harf dönüşümleri (NFKD ile ayrışmayanlar). Tabloda olmayan diller NFKD yedeğini kullanır. */
+const SLUG_MAPS: Record<string, Record<string, string>> = {
+  tr: { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u" },
+  de: { ä: "ae", ö: "oe", ü: "ue", ß: "ss" },
+  es: { ñ: "n" },
+  fr: { œ: "oe", æ: "ae", ç: "c" },
+  pt: { ç: "c" },
+  nl: { ĳ: "ij" },
+  pl: { ł: "l" },
+  da: { æ: "ae", ø: "o", å: "aa" },
+  sv: { å: "a", ä: "a", ö: "o" },
+  no: { æ: "ae", ø: "o", å: "aa" },
+};
+
+export function slugify(input: string, locale = "tr"): string {
+  const lang = locale.toLowerCase().split("-")[0] ?? "tr";
+  const map = SLUG_MAPS[lang] ?? {};
+  const lowered = lang === "tr" || lang === "az" ? input.toLocaleLowerCase("tr") : input.toLocaleLowerCase(lang);
+  const mapped = [...lowered].map((c) => map[c] ?? c).join("");
+  return mapped
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")

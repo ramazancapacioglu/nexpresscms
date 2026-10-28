@@ -45,6 +45,10 @@ export interface ContentWithTranslationDto {
   publishedAt: Date | null;
   createdAt: Date;
   translationId: string;
+  /** Çevirinin kendi yayın durumu (`draft` ise ziyaretçi görmez); `status` etkin durumdur */
+  translationStatus: string;
+  sourceLocale: string | null;
+  sourceHash: string | null;
   locale: string;
   region: string;
   slug: string;
@@ -164,7 +168,11 @@ export interface SaveContentInput {
   canonicalUrl?: string;
   noIndex?: boolean;
   seoScore?: number;
+  /** Çeviri başka dilden üretildiyse kaynak dil ve o andaki kaynak özeti (`translationSourceHash`) */
+  sourceLocale?: string;
+  sourceHash?: string;
 }
 
 export type { RevisionSnapshot, RevisionSummary, RevisionActor } from "./revisions";
+export type { TranslationOverviewRow, TranslationResult } from "./translations";
 export type { SitePluginRecord, SitePluginPatch } from "./plugins";

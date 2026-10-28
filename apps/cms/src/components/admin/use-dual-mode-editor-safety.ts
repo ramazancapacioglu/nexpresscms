@@ -16,7 +16,7 @@ const DRAFT_DEBOUNCE_MS = 1200;
 /** useDualModeEditor — aşama 7: Safety (çıkış uyarısı, Ctrl+S, yerel taslak, kurtarma, revizyon yükleme) */
 export function useDualModeEditorSafety(p: ReturnType<typeof useDualModeEditorSave>) {
   const { siteId, contentId, lockedType, initialDoc, isDirty, docSignature, draftFields, handleSave, status } = p;
-  const storageKey = draftStorageKey(siteId, contentId ?? initialDoc?.contentId, lockedType);
+  const storageKey = draftStorageKey(siteId, contentId ?? initialDoc?.contentId, lockedType, p.locale);
   const docUpdatedAtMs = initialDoc?.updatedAt ? new Date(initialDoc.updatedAt).getTime() : 0;
   const [recovery, setRecovery] = useState<StoredDraft | null>(null);
   const checkedRef = useRef(false);

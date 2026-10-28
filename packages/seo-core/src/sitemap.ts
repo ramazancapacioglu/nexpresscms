@@ -36,7 +36,8 @@ export function entryPath(entry: Pick<SitemapEntry, "locale" | "slug">): string 
 }
 
 export function hreflangOf(entry: Pick<SitemapEntry, "locale" | "region">): string {
-  return `${entry.locale}-${entry.region.toUpperCase()}`;
+  // Bölge yoksa yalnızca dil (ör. `en`); varsa `tr-TR` biçimi
+  return entry.region ? `${entry.locale}-${entry.region.toUpperCase()}` : entry.locale;
 }
 
 export function sitemapFileName(type: string, page: number): string {

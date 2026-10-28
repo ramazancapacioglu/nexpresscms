@@ -1,4 +1,5 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -15,6 +16,7 @@ export default async function ShopThankYouPage({
   searchParams: Promise<{ no?: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const { no } = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
@@ -25,19 +27,19 @@ export default async function ShopThankYouPage({
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 text-center">
-      <h1 className="text-2xl font-semibold">Teşekkürler</h1>
+      <h1 className="text-2xl font-semibold">{t("shop.thanks")}</h1>
       <p className="mt-3 text-sm text-neutral-500">
-        Siparişiniz alındı
+        {t("shop.orderReceived")}
         {no ? (
           <>
             {" "}
-            — referans: <strong>{no}</strong>
+            — {t("shop.referenceNo")}: <strong>{no}</strong>
           </>
         ) : null}
         .
       </p>
       <Link href={base} className="mt-8 inline-block text-sm underline">
-        Mağazaya dön
+        {t("common.backToStore")}
       </Link>
     </div>
   );

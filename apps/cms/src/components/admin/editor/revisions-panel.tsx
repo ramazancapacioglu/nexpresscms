@@ -9,7 +9,7 @@ const STATUS_LABEL: Record<string, string> = { draft: "Taslak", published: "Yay�
 
 /** Yayın sekmesi: içeriğin kayıt geçmişi. Sürümü yüklemek yalnızca editörü doldurur; kaydetmek ayrı bir adımdır. */
 export function RevisionsPanel() {
-  const { contentId, applyRevision } = useStudioInspector();
+  const { contentId, locale, applyRevision } = useStudioInspector();
   const [items, setItems] = useState<RevisionSummary[] | null>(null);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
@@ -17,13 +17,13 @@ export function RevisionsPanel() {
   useEffect(() => {
     if (!contentId) return;
     let alive = true;
-    listRevisionsAction({ contentId })
+    listRevisionsAction({ contentId, locale })
       .then((r) => alive && (r.ok ? setItems(r.revisions) : setError(r.error)))
       .catch(() => alive && setError("Geçmiş yüklenemedi."));
     return () => {
       alive = false;
     };
-  }, [contentId]);
+  }, [contentId, locale]);
 
   const load = async (id: string) => {
     setBusyId(id);

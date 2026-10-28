@@ -1,4 +1,5 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -15,6 +16,7 @@ export default async function ShopCheckoutPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getCommerceRepository(siteId);
@@ -33,24 +35,24 @@ export default async function ShopCheckoutPage({
     <div className="mx-auto max-w-lg px-4 py-10">
       <p className="mb-4 text-sm">
         <Link href={`${base}/sepet`} className="text-neutral-500 hover:underline">
-          ← Sepet
+          {t("shop.backToCart")}
         </Link>
       </p>
-      <h1 className="text-2xl font-semibold">Ödeme</h1>
+      <h1 className="text-2xl font-semibold">{t("shop.checkout")}</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Kapıda ödeme / havale simülasyonu — kart entegrasyonu sonraki fazda eklenecek.
+        {t("shop.paymentNote")}
       </p>
 
       <form action={checkoutAction} className="mt-8 grid gap-4 text-sm">
         <input type="hidden" name="locale" value={locale} />
-        <Field label="Ad soyad" name="customerName" required />
-        <Field label="E-posta" name="customerEmail" type="email" required />
-        <Field label="Telefon" name="customerPhone" />
-        <Field label="Adres" name="line1" required />
-        <Field label="Adres 2" name="line2" />
+        <Field label={t("shop.fullName")} name="customerName" required />
+        <Field label={t("shop.email")} name="customerEmail" type="email" required />
+        <Field label={t("shop.phone")} name="customerPhone" />
+        <Field label={t("shop.address")} name="line1" required />
+        <Field label={t("shop.address2")} name="line2" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="İl" name="city" required />
-          <Field label="Posta kodu" name="postalCode" required />
+          <Field label={t("shop.city")} name="city" required />
+          <Field label={t("shop.postalCode")} name="postalCode" required />
         </div>
         <input type="hidden" name="country" value="TR" />
         {methods.length > 0 ? (
@@ -70,9 +72,9 @@ export default async function ShopCheckoutPage({
             </select>
           </label>
         ) : null}
-        <Field label="Kupon kodu" name="couponCode" />
+        <Field label={t("shop.coupon")} name="couponCode" />
         <label className="block">
-          <span className="mb-1 block text-neutral-500">Sipariş notu</span>
+          <span className="mb-1 block text-neutral-500">{t("shop.orderNote")}</span>
           <textarea
             name="customerNote"
             rows={3}
@@ -83,7 +85,7 @@ export default async function ShopCheckoutPage({
           type="submit"
           className="rounded-full bg-neutral-900 px-6 py-2.5 font-medium text-white dark:bg-white dark:text-neutral-900"
         >
-          Siparişi tamamla
+          {t("shop.placeOrder")}
         </button>
       </form>
     </div>

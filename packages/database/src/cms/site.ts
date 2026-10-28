@@ -1,6 +1,6 @@
 import type { InstalledThemeDto, SiteDto, SiteSettingsPatch } from "./types";
 import { eq, and } from "drizzle-orm";
-import { resolveSiteSettings, type DesignTokens, type SiteProfile, type SiteSettings } from "@nexpress/core";
+import { isValidLocaleTag, resolveSiteSettings, type DesignTokens, type SiteProfile, type SiteSettings } from "@nexpress/core";
 import { CmsRepositoryBase } from "./base";
 
 export class CmsSiteRepository extends CmsRepositoryBase {
@@ -31,6 +31,23 @@ export class CmsSiteRepository extends CmsRepositoryBase {
       siteDna: row.siteDna,
       settings: resolveSiteSettings(row.settings),
     };
+  }
+
+  /**
+   * Etkin dil listesini yazar. Varsayılan dil listede kalmak zorundadır; geçersiz etiket reddedilir.
+   * Çevirisi olan bir dili listeden çıkarmak çeviriyi silmez, yalnızca ziyaretçiye kapatır.
+   */
+  public async saveSupportedLocales(locales: string[]): Promise<{ ok: true; locales: string[] } | { ok: false; error: string }> {
+    const site = await this.getSite();
+    if (!site) return { ok: false, error: "Site bulunamadı." };
+    const clean = [...new Set(locales.map((l) => l.trim().toLowerCase()).filter(Boolean))];
+    const bad = clean.find((l) => !isValidLocaleTag(l));
+    if (bad) return { ok: false, error: `Geçersiz dil etiketi: ${bad}` };
+    if (!clean.includes(site.defaultLocale)) return { ok: false, error: "Varsayılan dil listede kalmalı." };
+    if (clean.length > 12) return { ok: false, error: "En çok 12 dil." };
+    const { db, t } = this.backend;
+    await db.update(t.sites).set({ supportedLocales: clean, updatedAt: new Date() }).where(eq(t.sites.siteId, this.siteId));
+    return { ok: true, locales: clean };
   }
 
   /** Site DNA (marka kimlik özeti) metnini yazar; boş metin alanı temizler. */

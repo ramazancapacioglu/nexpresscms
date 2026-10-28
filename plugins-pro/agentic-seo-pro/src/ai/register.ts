@@ -52,7 +52,8 @@ type Sample = BrandSample & { importanceScore: number };
 
 /** Yayındaki, herkese açık içeriklerden marka örneklemi. */
 async function loadSamples(siteId: string): Promise<Sample[]> {
-  const contents = await getScopedRepository(siteId).listContents({ locale: "tr", status: "published" });
+  const repo = getScopedRepository(siteId);
+  const contents = await repo.listContents({ locale: (await repo.getSite())?.defaultLocale ?? "tr", status: "published" });
   return contents
     .filter((c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public")
     .map((c) => ({ title: c.title, type: c.type, markdown: c.markdownCache, seoScore: c.seoScore, importanceScore: c.importanceScore, isHome: c.slug === "ana-sayfa" }));

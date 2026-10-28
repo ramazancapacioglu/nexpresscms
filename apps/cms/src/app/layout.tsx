@@ -3,7 +3,7 @@ import "@/plugins/register";
 import "./globals.css";
 
 import { headers } from "next/headers";
-import { webmasterVerification } from "@nexpress/core";
+import { localeDirection, webmasterVerification } from "@nexpress/core";
 import { getPublicSite } from "@/lib/public-data";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,13 +17,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const lang = (await headers()).get("x-nexpress-locale") ?? "tr";
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html lang={lang} dir={localeDirection(lang)} suppressHydrationWarning>
       <body className="antialiased selection:bg-blue-600 selection:text-white">
         {children}
       </body>

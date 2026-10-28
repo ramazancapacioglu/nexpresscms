@@ -50,8 +50,10 @@ Projede kod yazan veya mimari değişiklik yapan her geliştirici ve AI ajanı a
 - Yeni bir admin modülü yaklaşık 400 satırı aşıyorsa bölünür. Aynı işi yapan ikinci soyutlama yazılmaz.
 
 ## 8. Dil
-- Arayüz dili şimdilik Türkçedir. Varsayılan locale `tr`dir. Herkese açık adres `/{locale}/...` olarak kalır.
-- İkinci dil eklenmeden çeviri dosyası veya `locales` / `regions` tablosu açılmaz. Dil listesi `sites.supportedLocales` alanındadır.
+- Varsayılan locale `tr`dir; herkese açık adres her zaman `/{locale}/...`. Dil listesi `sites.supportedLocales` alanındadır (ayrı `locales`/`regions` tablosu açılmaz).
+- Ziyaretçiye dönen metinler `@nexpress/i18n` kataloğundan gelir (`createTranslator(locale)`); `tr` kataloğu anahtarların kaynağıdır ve her dil aynı anahtarlara sahip olmak zorundadır. Yeni görünür metin sabit yazılmaz, anahtar eklenir. Katalog istemci JS'ine taşınmaz.
+- Çeviri aynı `contentId` altında `content_translations` satırıdır; ziyaretçiye görünmesi için içerik VE çeviri (`translation_status`) yayında olmalıdır. Ziyaretçi yüzeyleri taslak, zamanlanmış, arşiv ve `private` içeriği asla vermez (`publicOnly`).
+- Panel arayüzü şimdilik Türkçedir (L5).
 
 ## 9. Güvenlik Kuralı
 - `apps/cms` içindeki her admin `server action` ilk satırında `requireUser()` (yalnızca `admin` işlemleri için `requireAdmin()`) çağırır. Sayfa koruması (middleware) bunun yerine geçmez.

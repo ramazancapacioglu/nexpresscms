@@ -4,6 +4,7 @@ import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { requireAdminPage } from "@/lib/auth/session";
 import { SettingsForm } from "@/components/admin/settings-form";
+import { LocalesCard } from "@/components/admin/locales-card";
 import { mediaRoot } from "@/lib/media/storage";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function AdminSettingsPage() {
   if (!timezones.includes(general.timezone)) timezones.unshift(general.timezone);
 
   return (
+    <div className="space-y-4">
     <SettingsForm
       initial={{ name: site?.name ?? "", tagline: site?.tagline ?? "", contactEmail: general.contactEmail, timezone: general.timezone }}
       timezones={timezones}
@@ -31,5 +33,7 @@ export default async function AdminSettingsPage() {
         mediaDir: mediaRoot(),
       }}
     />
+    <LocalesCard initial={site?.supportedLocales ?? ["tr"]} defaultLocale={site?.defaultLocale ?? "tr"} />
+    </div>
   );
 }

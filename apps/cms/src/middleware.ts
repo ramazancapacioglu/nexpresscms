@@ -15,6 +15,10 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-nexpress-site-id", siteId);
   // AI yönlendirme izleme girdileri: istemciden gelen değerler her zaman ezilir
   requestHeaders.set("x-nexpress-path", pathname);
+  // Sayfa dili (kök <html lang/dir> için): ilk yol parçası dil etiketi gibiyse o, değilse boş
+  const lang = pathname.match(/^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/|$)/)?.[1];
+  if (lang) requestHeaders.set("x-nexpress-locale", lang);
+  else requestHeaders.delete("x-nexpress-locale");
   const utm = searchParams.get("utm_source");
   if (utm) requestHeaders.set("x-nexpress-utm-source", utm.slice(0, 60));
   else requestHeaders.delete("x-nexpress-utm-source");

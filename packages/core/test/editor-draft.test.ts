@@ -71,3 +71,9 @@ test("revizyon görüntüsü editör alanlarına çevrilir; yayın öznitelikler
   assert.equal(empty.visibility, "public");
   assert.deepEqual(empty.categories, []);
 });
+
+test("taslak anahtarı: varsayılan dil eski biçimi korur, çeviri kendi anahtarını alır", () => {
+  assert.equal(draftStorageKey("default", "c1", "page"), "nx:draft:default:c1");
+  assert.equal(draftStorageKey("default", "c1", "page", "en"), "nx:draft:default:c1:en");
+  assert.equal(draftStorageKey("default", undefined, "post", "en"), "nx:draft:default:new-post:en");
+});

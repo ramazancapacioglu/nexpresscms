@@ -1,4 +1,5 @@
 import "server-only";
+import { resolvePublishing } from "@nexpress/core";
 import { getScopedRepository, getSitemapRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
 
@@ -10,15 +11,23 @@ import { cachedRead } from "./cache";
 export const getPublicSite = cachedRead("site", (siteId: string) => getScopedRepository(siteId).getSite());
 
 export const resolvePublicContent = cachedRead("resolve", (siteId: string, slug: string, locale: string) =>
-  getScopedRepository(siteId).resolveContentBySlug(slug, locale)
+  getScopedRepository(siteId).resolveContentBySlug(slug, locale, { publicOnly: true })
 );
 
 export const getPublicContentBySlug = cachedRead("by-slug", (siteId: string, slug: string, locale: string) =>
-  getScopedRepository(siteId).getContentBySlug(slug, locale)
+  getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true })
 );
 
-export const listPublishedContents = cachedRead("published", (siteId: string, locale: string) =>
-  getScopedRepository(siteId).listContents({ locale, status: "published" })
+/** Yayındaki içerikler; `private` görünürlüklü içerik hiçbir ziyaretçi/bot yüzeyine (llms, besleme, arama) girmez. */
+export const listPublishedContents = cachedRead("published", async (siteId: string, locale: string) =>
+  (await getScopedRepository(siteId).listContents({ locale, status: "published" })).filter(
+    (c) => resolvePublishing(c.schemaAttributes).visibility !== "private"
+  )
+);
+
+/** Bir içeriğin tüm dil çevirileri (hreflang ve dil değiştirici için); yayın filtresi çağıranda. */
+export const getPublicTranslations = cachedRead("translations", (siteId: string, contentId: string) =>
+  getScopedRepository(siteId).getTranslationsForContent(contentId)
 );
 
 export const getPublicNavigation = cachedRead("nav", (siteId: string, locale: string) =>

@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { bm25Rank, makeSnippet, resolvePublishing } from "@nexpress/core";
+import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { listPublishedContents } from "@/lib/public-data";
 
@@ -21,6 +22,7 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const q = ((await searchParams).q ?? "").trim().slice(0, MAX_QUERY);
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
 
@@ -39,22 +41,22 @@ export default async function SearchPage({
 
   return (
     <section className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-3xl font-bold">Ara</h1>
+      <h1 className="text-3xl font-bold">{t("search.title")}</h1>
       <form method="get" action={`/${locale}/ara`} role="search" className="flex gap-2">
         <input
           type="search"
           name="q"
           defaultValue={q}
           maxLength={MAX_QUERY}
-          placeholder="Aramak istediğiniz sözcükler"
-          aria-label="Site içi arama"
+          placeholder={t("search.placeholder")}
+          aria-label={t("common.siteSearch")}
           className="h-10 flex-1 rounded-md border px-3"
         />
         <button type="submit" className="h-10 rounded-md border px-4 font-medium">
-          Ara
+          {t("search.button")}
         </button>
       </form>
-      {q && results.length === 0 && <p>“{q}” için sonuç bulunamadı.</p>}
+      {q && results.length === 0 && <p>{t("search.noResults", { q })}</p>}
       {results.length > 0 && (
         <ol className="space-y-5">
           {results.map((r) => (

@@ -131,11 +131,15 @@ export async function saveContentAction(input: {
   canonicalUrl?: string;
   noIndex?: boolean;
   schemaAttributes?: Record<string, unknown>;
+  /** Düzenlenen dil; etkin diller dışındaki değer varsayılan dile düşer */
+  locale?: string;
 }) {
   const session = await requireUser({ audit: "cms.saveContent" });
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
+  const site = await repo.getSite();
+  const locale = input.locale && site?.supportedLocales.includes(input.locale) ? input.locale : (site?.defaultLocale ?? "tr");
 
   const res = await repo.saveContent({
     actor: { id: session.sub, email: session.email },
@@ -146,7 +150,7 @@ export async function saveContentAction(input: {
     schemaType: input.schemaType,
     schemaAttributes: input.schemaAttributes,
     featuredImage: input.featuredImage ?? null,
-    locale: "tr",
+    locale,
     region: "TR",
     slug: input.slug,
     title: input.title,
@@ -162,8 +166,8 @@ export async function saveContentAction(input: {
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
   await revalidatePath("/admin/contents");
-  await revalidatePath("/tr");
-  await revalidatePath(`/tr/${input.slug}`);
+  await revalidatePath(`/${locale}`);
+  await revalidatePath(`/${locale}/${input.slug}`);
   await revalidatePath("/llms.txt");
 
   return {

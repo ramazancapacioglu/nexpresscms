@@ -21,6 +21,7 @@
     "@nexpress/core": "workspace:*",
     "@nexpress/database": "workspace:*",
     "@nexpress/editor": "workspace:*",
+    "@nexpress/i18n": "workspace:*",
     "@nexpress/marketplace": "workspace:*",
     "@nexpress/rag": "workspace:*",
     "@nexpress/seo-core": "workspace:*",

@@ -1,4 +1,5 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import type { Metadata } from "next";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
@@ -16,12 +17,12 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const product = await getCommerceRepository(siteId).getProductBySlug(slug);
   if (!product || product.status !== "published") {
-    return { title: "Ürün bulunamadı" };
+    return { title: createTranslator(locale)("shop.productNotFound") };
   }
   return {
     title: product.name,
@@ -35,6 +36,7 @@ export default async function ShopProductPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getCommerceRepository(siteId);
@@ -56,7 +58,7 @@ export default async function ShopProductPage({
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="mb-4 text-sm">
         <Link href={base} className="text-neutral-500 hover:underline">
-          ← Mağaza
+          {t("shop.back")}
         </Link>
       </p>
       <article className="grid gap-8 md:grid-cols-2">
@@ -81,7 +83,7 @@ export default async function ShopProductPage({
             </p>
           ) : null}
           {product.stockStatus === "outofstock" ? (
-            <p className="mt-4 text-sm text-red-600">Stokta yok</p>
+            <p className="mt-4 text-sm text-red-600">{t("shop.outOfStock")}</p>
           ) : (
             <form action={addToCartAction} className="mt-6 flex items-center gap-3">
               <input type="hidden" name="productId" value={product.id} />
@@ -103,7 +105,7 @@ export default async function ShopProductPage({
                 </label>
               ) : null}
               <label className="text-sm">
-                Adet{" "}
+                {t("shop.quantity")}{" "}
                 <input
                   name="quantity"
                   type="number"
@@ -117,7 +119,7 @@ export default async function ShopProductPage({
                 type="submit"
                 className="rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
               >
-                Sepete ekle
+                {t("shop.addToCart")}
               </button>
             </form>
           )}

@@ -33,17 +33,19 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
         and(
           eq(t.contents.siteId, this.siteId),
           options?.type ? eq(t.contents.type, options.type) : undefined,
-          options?.status ? eq(t.contents.status, options.status) : undefined
+          // Ziyaretçi görünürlüğü: içerik VE çeviri yayında olmalı
+          options?.status === "published" ? eq(t.contents.status, "published") : undefined,
+          options?.status === "published" ? eq(t.contentTranslations.translationStatus, "published") : undefined
         )
       )
       .orderBy(desc(t.contents.importanceScore), desc(t.contents.updatedAt));
 
-    return rows.map(({ content, translation }) => ({
+    const mapped = rows.map(({ content, translation }) => ({
       id: content.id,
       contentId: content.id,
       siteId: content.siteId,
       type: content.type,
-      status: content.status,
+      status: (translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
       importanceScore: content.importanceScore,
       schemaType: content.schemaType,
       schemaAttributes: content.schemaAttributes ?? {},
@@ -52,6 +54,9 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       publishedAt: content.publishedAt ?? null,
       createdAt: content.createdAt,
       translationId: translation.id,
+      translationStatus: translation.translationStatus,
+      sourceLocale: translation.sourceLocale ?? null,
+      sourceHash: translation.sourceHash ?? null,
       locale: translation.locale,
       region: translation.region,
       slug: translation.slug,
@@ -68,6 +73,21 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       gapFindings: translation.gapFindings,
       updatedAt: translation.updatedAt,
     }));
+    // Yayın dışı filtreler etkin durum üzerinden (çeviri taslağı içerik durumunu ezer)
+    return options?.status && options.status !== "published" ? mapped.filter((c) => c.status === options.status) : mapped;
+  }
+
+  /**
+   * `publicOnly`: ziyaretçiye açılabilecek içerikler. Taslak, zamanlanmış ve arşivlenmiş içerik ile
+   * `private` görünürlüklü içerik ziyaretçiye hiçbir zaman verilmez (yayında olsa bile).
+   * `restricted` durum, sayfada kısıtlı bildirimiyle gösterilir.
+   */
+  private async visibleContents(locale: string, publicOnly?: boolean): Promise<ContentWithTranslationDto[]> {
+    const all = await this.listContents({ locale });
+    if (!publicOnly) return all;
+    return all.filter(
+      (c) => (c.status === "published" || c.status === "restricted") && resolvePublishing(c.schemaAttributes).visibility !== "private"
+    );
   }
 
   /**
@@ -75,9 +95,10 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
    */
   public async getContentBySlug(
     slug: string,
-    locale = "tr"
+    locale = "tr",
+    options?: { publicOnly?: boolean }
   ): Promise<ContentWithTranslationDto | null> {
-    const all = await this.listContents({ locale });
+    const all = await this.visibleContents(locale, options?.publicOnly);
     return all.find((item) => item.slug === slug) ?? null;
   }
 
@@ -98,9 +119,10 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
    */
   public async resolveContentBySlug(
     slug: string,
-    locale = "tr"
+    locale = "tr",
+    options?: { publicOnly?: boolean }
   ): Promise<{ content: ContentWithTranslationDto; isRedirect: boolean } | null> {
-    const all = await this.listContents({ locale });
+    const all = await this.visibleContents(locale, options?.publicOnly);
     const direct = all.find((item) => item.slug === slug);
     if (direct) return { content: direct, isRedirect: false };
     const old = all.find((item) => resolvePublishing(item.schemaAttributes).slugHistory.includes(slug));
@@ -112,7 +134,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
    */
   public async getTranslationsForContent(
     contentId: string
-  ): Promise<Array<{ locale: string; region: string; slug: string; title: string }>> {
+  ): Promise<Array<{ locale: string; region: string; slug: string; title: string; translationStatus: string; sourceLocale: string | null; sourceHash: string | null; updatedAt: Date }>> {
     const { db, t } = this.backend;
     return db
       .select({
@@ -120,6 +142,10 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
         region: t.contentTranslations.region,
         slug: t.contentTranslations.slug,
         title: t.contentTranslations.title,
+        translationStatus: t.contentTranslations.translationStatus,
+        sourceLocale: t.contentTranslations.sourceLocale,
+        sourceHash: t.contentTranslations.sourceHash,
+        updatedAt: t.contentTranslations.updatedAt,
       })
       .from(t.contentTranslations)
       .where(

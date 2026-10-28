@@ -11,7 +11,7 @@ import type {
   DeviceKey,
   SchemaGraphNode,
 } from "@nexpress/core";
-import type { TaxonomyDto } from "@nexpress/database";
+import type { TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 import type { SnapshotLike } from "@nexpress/core";
 import type { SeoAnalysis } from "@nexpress/seo-core";
 
@@ -96,6 +96,11 @@ export interface StudioInspectorApi {
   showShareButtons: boolean;
   setShowShareButtons: Dispatch<SetStateAction<boolean>>;
   contentId: string | undefined;
+  /** Düzenlenen dil ve sitenin dil kurulumu */
+  locale: string;
+  defaultLocale: string;
+  siteLocales: string[];
+  translations: TranslationOverviewRow[];
   /** Editörün derlediği Markdown (AI önerisi ve analiz girdisi) */
   compiledMarkdown: string;
   isDirty: boolean;

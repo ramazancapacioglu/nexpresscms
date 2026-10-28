@@ -127,6 +127,11 @@ export const sqliteContentTranslations = sqliteTable(
     seoScore: integer("seo_score").default(85).notNull(),
     gapFindings: text("gap_findings", { mode: "json" }).$type<string[]>().default([]).notNull(),
     descriptionSource: text("description_source").default("human").notNull(),
+    /** Çeviri yayın durumu: yayında görünmesi için içeriğin durumu VE bu alan `published` olmalı */
+    translationStatus: text("translation_status").default("published").notNull(),
+    /** Çeviri başka bir dilden üretildiyse kaynak dil ve o andaki kaynak özeti (kaynak değişti tespiti) */
+    sourceLocale: text("source_locale"),
+    sourceHash: text("source_hash"),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [

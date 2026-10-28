@@ -30,6 +30,7 @@ const nextConfig: NextConfig = {
     "@nexpress/editor",
     "@nexpress/themes",
     "@nexpress/seo-core",
+    "@nexpress/i18n",
     "@nexpress/rag",
     "@nexpress/wp-importer",
     "@nexpress-pro/agentic-seo",

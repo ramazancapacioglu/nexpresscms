@@ -20,6 +20,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         status: nextStatus,
         schemaType,
         importanceScore,
+        locale: p.locale,
         slug,
         title,
         tldr,
@@ -191,6 +192,10 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     showShareButtons,
     setShowShareButtons,
     contentId,
+    locale: p.locale,
+    defaultLocale: p.defaultLocale,
+    siteLocales: p.siteLocales,
+    translations: p.translations,
     compiledMarkdown: p.compiledMarkdown,
     isDirty: p.isDirty,
   };

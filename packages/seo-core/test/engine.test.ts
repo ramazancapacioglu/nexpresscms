@@ -34,3 +34,13 @@ test("analyzeSeo skor ve not üretir; tam girdi boş girdiden iyidir", () => {
   assert.ok(["A", "B", "C", "D"].includes(good.grade));
   assert.ok(good.checks.length >= 10);
 });
+
+import { slugify as slugifyLocale } from "../src";
+
+test("slugify: Türkçe geriye uyumlu, Almanca/İspanyolca/Fransızca ve NFKD yedeği", () => {
+  assert.equal(slugifyLocale("Işık Çözümleri & Öğrenci"), "isik-cozumleri-ogrenci");
+  assert.equal(slugifyLocale("Größe und Übung", "de"), "groesse-und-uebung");
+  assert.equal(slugifyLocale("¿Cómo está el niño?", "es"), "como-esta-el-nino");
+  assert.equal(slugifyLocale("Œuvre à l'écoute", "fr-CA"), "oeuvre-a-lecoute");
+  assert.equal(slugifyLocale("Zażółć gęślą", "pl"), "zazolc-gesla");
+});

@@ -305,3 +305,59 @@ test("AI yönlendirme sayacı: aynı gün/kaynak/yol artar, özet kaynak ve yola
   assert.deepEqual(s.topPaths[0], { path: "/tr/x", hits: 2 });
   assert.equal((await getAiReferralRepository("baska-site").summary(7)).total, 0);
 });
+
+test("çok dillilik: dil listesi doğrulanır; çeviri taslak oluşur, ziyaretçiden gizlidir, yayınlanınca görünür, kaynak değişince stale olur, kaynak durumu çeviriden etkilenmez", async () => {
+  const { translationSourceHash } = await import("@nexpress/core");
+  assert.deepEqual(await repo.saveSupportedLocales(["en"]), { ok: false, error: "Varsayılan dil listede kalmalı." });
+  assert.equal((await repo.saveSupportedLocales(["tr", "../x"])).ok, false);
+  assert.deepEqual(await repo.saveSupportedLocales(["tr", "EN"]), { ok: true, locales: ["tr", "en"] });
+
+  const { contentId } = await repo.saveContent(baseInput({ slug: "dil-testi", title: "Dil Testi", status: "published" }));
+  assert.deepEqual((await repo.translationOverview(contentId)).map((r) => [r.locale, r.state]), [["tr", "published"], ["en", "none"]]);
+
+  assert.equal((await repo.createTranslation(contentId, "tr", "tr")).ok, false);
+  assert.equal((await repo.createTranslation(contentId, "tr", "de")).ok, false, "etkin olmayan dil");
+  assert.deepEqual(await repo.createTranslation(contentId, "tr", "en"), { ok: true });
+  assert.equal((await repo.createTranslation(contentId, "tr", "en")).ok, false, "tekrar oluşturulamaz");
+
+  // Taslak çeviri: yönetici listesinde draft, ziyaretçi listesinde yok; kaynak (tr) yayında kalır
+  assert.equal((await repo.listContents({ locale: "en" })).find((c) => c.contentId === contentId)!.status, "draft");
+  assert.equal((await repo.listContents({ locale: "en", status: "published" })).some((c) => c.contentId === contentId), false);
+  assert.equal((await repo.listContents({ locale: "tr", status: "published" })).some((c) => c.contentId === contentId), true);
+  assert.equal((await repo.translationOverview(contentId))[1]!.state, "draft");
+
+  // Çeviriyi düzenleyip yayınla: içerik satırının durumu değişmez, yalnızca çeviri yayına girer
+  const en = (await repo.getContentById(contentId, "en"))!;
+  await repo.saveContent({ ...baseInput({ slug: "language-test", title: "Language Test", status: "published" }), contentId, locale: "en", blocks: en.blocks });
+  assert.equal((await repo.listContents({ locale: "en", status: "published" })).some((c) => c.slug === "language-test"), true);
+  assert.equal((await repo.translationOverview(contentId))[1]!.state, "published");
+
+  // Kaynak değişince çeviri stale
+  await repo.saveContent(baseInput({ slug: "dil-testi", title: "Dil Testi (güncel)", status: "published", contentId, blocks: [para("p1", "Tamamen yeni metin.")] }));
+  assert.equal((await repo.translationOverview(contentId))[1]!.state, "stale");
+  assert.notEqual(translationSourceHash({ title: "a", blocks: [] }), translationSourceHash({ title: "b", blocks: [] }));
+
+  // Kiracıya kapalı; varsayılan dil çevirisi silinemez; çeviri silinir
+  assert.equal((await other.createTranslation(contentId, "tr", "en")).ok, false);
+  assert.equal((await repo.deleteTranslation(contentId, "tr")).ok, false);
+  assert.deepEqual(await repo.deleteTranslation(contentId, "en"), { ok: true });
+  assert.equal((await repo.translationOverview(contentId))[1]!.state, "none");
+  await repo.saveSupportedLocales(["tr"]);
+});
+
+test("ziyaretçi çözümlemesi: taslak, zamanlanmış, arşiv ve private içerik hiçbir koşulda verilmez; yayında ve kısıtlı verilir", async () => {
+  const mk = async (slug: string, status: string, extra: Record<string, unknown> = {}) =>
+    (await repo.saveContent(baseInput({ slug, title: slug, status, ...extra }))).contentId;
+  await mk("gz-yayinda", "published");
+  await mk("gz-taslak", "draft");
+  await mk("gz-zamanli", "scheduled");
+  await mk("gz-arsiv", "archived");
+  await mk("gz-kisitli", "restricted");
+  await mk("gz-ozel", "published", { schemaAttributes: { _publishing: { visibility: "private" } } });
+  const pub = async (slug: string) => (await repo.resolveContentBySlug(slug, "tr", { publicOnly: true }))?.content.slug ?? null;
+  assert.equal(await pub("gz-yayinda"), "gz-yayinda");
+  assert.equal(await pub("gz-kisitli"), "gz-kisitli");
+  for (const s of ["gz-taslak", "gz-zamanli", "gz-arsiv", "gz-ozel"]) assert.equal(await pub(s), null, s);
+  assert.equal((await repo.resolveContentBySlug("gz-taslak", "tr"))?.content.slug, "gz-taslak", "yönetici çözümlemesi etkilenmez");
+  assert.equal(await repo.getContentBySlug("gz-taslak", "tr", { publicOnly: true }), null);
+});
