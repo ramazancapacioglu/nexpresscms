@@ -19,7 +19,7 @@ const env = tempPg
 Object.assign(process.env, env);
 
 const pkg = path.resolve(import.meta.dirname, "..");
-const tsx = path.resolve(pkg, "node_modules/.bin/tsx");
+const tsx = path.resolve(pkg, "../../node_modules/.bin/tsx");
 let repo: ReturnType<typeof import("../src/repository").getScopedRepository>;
 let other: typeof repo;
 
