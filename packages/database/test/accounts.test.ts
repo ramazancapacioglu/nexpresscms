@@ -95,3 +95,16 @@ test("denetim günlüğü: kayıt, süzme, ön ek joker karakter kaçışı, say
   assert.equal(await audit.getAuditRepository(siteB).count(), 1, "kiracılar ayrı");
   assert.equal(await audit.getAuditRepository("yok").count(), 0);
 });
+
+test("panel arayüz dili: varsayılan boş, kaydedilir, başka kiracıdaki kullanıcıyı etkilemez", async () => {
+  const a = users.getUserRepository("site-ui-a");
+  const b = users.getUserRepository("site-ui-b");
+  const u = await a.create({ email: "ui@example.com", passwordHash: "h", role: "editor" });
+  assert.equal(u.uiLocale, null);
+  await a.setUiLocale(u.id, "en");
+  assert.equal((await a.findById(u.id))!.uiLocale, "en");
+  await b.setUiLocale(u.id, "de"); // başka kiracı kapsamı: satır güncellenmez
+  assert.equal((await a.findById(u.id))!.uiLocale, "en");
+  await a.setUiLocale(u.id, null);
+  assert.equal((await a.findById(u.id))!.uiLocale, null);
+});

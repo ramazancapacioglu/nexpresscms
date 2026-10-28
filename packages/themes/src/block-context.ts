@@ -11,6 +11,8 @@ export interface BlockRenderContext {
   /** Sayfanın LCP adayı görsel bloğunun kimliği (eager + yüksek öncelik alır). */
   lcpBlockId?: string;
   mediaFocal?: MediaFocalMap;
+  /** Sayfa dili (blok içi sabit metinler için) */
+  locale?: string;
   /** İç içe blokları (bölüm, sütun) aynı bağlamla işler. */
   renderChild: (child: BlockNode) => React.ReactElement | null;
 }

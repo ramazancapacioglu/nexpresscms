@@ -8,5 +8,5 @@ export const dynamic = "force-dynamic";
 export default async function AdminProfilePage() {
   const me = await getSession();
   if (!me) redirect("/login");
-  return <ProfileForms name={me.name} email={me.email} role={me.role} />;
+  return <ProfileForms name={me.name} email={me.email} role={me.role} uiLocale={me.uiLocale} />;
 }

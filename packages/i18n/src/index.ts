@@ -17,6 +17,11 @@ export type MessageKey = Leaves<typeof tr>;
 const CATALOGS: Record<string, Messages> = { tr, en };
 export const DEFAULT_MESSAGE_LOCALE = "tr";
 
+/** Panel arayüzünde seçilebilen diller (kataloğu olanlar). */
+export const UI_LOCALES = Object.keys(CATALOGS);
+
+export const isUiLocale = (l: unknown): l is string => typeof l === "string" && l in CATALOGS;
+
 /** Dil kataloğu yoksa (ör. `de`) Türkçeye düşer; `pt-br` önce `pt`'ye bakar. */
 export function getMessages(locale: string): Messages {
   const l = locale.toLowerCase();

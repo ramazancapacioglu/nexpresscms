@@ -15,6 +15,7 @@ export interface UserSummaryDto {
   role: UserRole;
   status: UserStatus;
   sessionVersion: number;
+  uiLocale: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
 }
@@ -32,6 +33,7 @@ type Row = {
   role: UserRole;
   status: UserStatus;
   sessionVersion: number;
+  uiLocale: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
 };
@@ -90,6 +92,7 @@ export class UserRepository {
       role: input.role,
       status: "active" as const,
       sessionVersion: 0,
+      uiLocale: null,
       createdAt: now,
       lastLoginAt: null,
       passwordChangedAt: now,
@@ -105,6 +108,9 @@ export class UserRepository {
 
   public touchLogin(id: string) {
     return this.patch(id, { lastLoginAt: new Date() });
+  }
+  public setUiLocale(id: string, locale: string | null) {
+    return this.patch(id, { uiLocale: locale });
   }
   public setName(id: string, name: string) {
     return this.patch(id, { name: name.trim() });

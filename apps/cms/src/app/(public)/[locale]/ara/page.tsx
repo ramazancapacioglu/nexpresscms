@@ -6,10 +6,10 @@ import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { listPublishedContents } from "@/lib/public-data";
 
-export const metadata: Metadata = {
-  title: "Ara",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return { title: createTranslator(locale)("search.title"), robots: { index: false, follow: true } };
+}
 
 const MAX_QUERY = 120;
 

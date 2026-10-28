@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import { createTranslator } from "@nexpress/i18n";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { notFound } from "next/navigation";
@@ -33,6 +34,7 @@ export default async function PublicLocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
 
@@ -89,7 +91,7 @@ export default async function PublicLocaleLayout({
               {nav.headerConfig.topBar.contactPhone && (
                 <span>📞 {nav.headerConfig.topBar.contactPhone}</span>
               )}
-              <span>🌍 Dil/Bölge: {locale.toUpperCase()}-TR</span>
+              <span>🌍 {t("site.language")}: {locale.toUpperCase()}</span>
               <Link
                 href="/llms.txt"
                 className="underline hover:opacity-100 font-mono"
@@ -260,7 +262,7 @@ export default async function PublicLocaleLayout({
               href="/admin/themes"
               className="hidden sm:inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
             >
-              🎨 Tema Değiştir
+              🎨 {t("site.themeSwitch")}
             </Link>
             )}
             <Link
@@ -273,7 +275,7 @@ export default async function PublicLocaleLayout({
               }}
               className="inline-flex items-center px-4 py-2 text-sm font-semibold"
             >
-              {nav?.headerConfig.mainBar.ctaLabel ?? "Yönetim"}
+              {nav?.headerConfig.mainBar.ctaLabel ?? t("site.adminCta")}
             </Link>
           </div>
         </div>
@@ -328,7 +330,7 @@ export default async function PublicLocaleLayout({
             </div>
             <p className="max-w-md text-xs leading-relaxed opacity-80">
               {site?.siteDna ??
-                "Next.js 15 RSC ve çekirdek SEO motoruyla çalışan açık çekirdekli CMS."}
+                t("site.footerDefault")}
             </p>
             {showNewsletter ? (
               <form action={`/${locale}/kurumsal`} className="flex max-w-sm border border-current/15">

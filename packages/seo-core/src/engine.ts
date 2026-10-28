@@ -52,6 +52,8 @@ export interface ContentStats {
 }
 
 export interface SeoAnalyzeInput {
+  /** İçerik dili (dil profili): küçük harf kuralı, slug dönüşümü, okunabilirlik eşiği. Varsayılan `tr`. */
+  locale?: string;
   title: string;
   slug: string;
   tldr?: string | null;
@@ -206,12 +208,39 @@ export function extractContentStats(blocks: BlockNode[]): ContentStats {
   };
 }
 
-function lc(s: string): string {
-  return s.toLocaleLowerCase("tr");
+/**
+ * SEO dil profili: motorun dile bağlı kuralları. Tabloda olmayan dil, genel (İngilizce benzeri) varsayılanı kullanır.
+ * `lower`: Türkçe/Azerice `I`→`ı`, `İ`→`i` kuralını yalnızca o dillerde uygular (İngilizce "INTERNET" ≠ "ınternet").
+ */
+export interface SeoLanguageProfile {
+  lang: string;
+  lower: (s: string) => string;
+  /** Ortalama cümle uzunluğu için üst eşik (kelime) */
+  maxAvgSentenceWords: number;
+}
+
+const SENTENCE_LIMITS: Record<string, number> = { tr: 22, en: 20, de: 24, fr: 24, es: 24, it: 24, pt: 24, nl: 22, ru: 18, pl: 20 };
+
+export function seoLanguageProfile(locale = "tr"): SeoLanguageProfile {
+  const lang = locale.toLowerCase().split("-")[0] || "tr";
+  const tag = lang === "tr" || lang === "az" ? "tr" : lang;
+  return {
+    lang,
+    lower: (s) => {
+      try {
+        return s.toLocaleLowerCase(tag);
+      } catch {
+        return s.toLowerCase();
+      }
+    },
+    maxAvgSentenceWords: SENTENCE_LIMITS[lang] ?? 22,
+  };
 }
 
 export function analyzeSeo(input: SeoAnalyzeInput): SeoAnalysis {
   const settings = { ...DEFAULT_SEO_SETTINGS, ...(input.settings ?? {}) };
+  const profile = seoLanguageProfile(input.locale);
+  const lc = profile.lower;
   const stats = extractContentStats(input.blocks);
   const checks: SeoCheck[] = [];
   const add = (
@@ -284,7 +313,7 @@ export function analyzeSeo(input: SeoAnalyzeInput): SeoAnalysis {
     add("kw_title", "keyword", inTitle ? "pass" : "fail", "Anahtar kelime başlıkta", inTitle ? "Var." : "SEO başlığında geçmiyor.", 8);
     const inDesc = lc(effectiveDesc).includes(k);
     add("kw_desc", "keyword", inDesc ? "pass" : "warn", "Anahtar kelime açıklamada", inDesc ? "Var." : "Meta açıklamada geçmiyor.", 5);
-    const inSlug = input.slug.includes(slugify(kw));
+    const inSlug = input.slug.includes(slugify(kw, profile.lang));
     add("kw_slug", "keyword", inSlug ? "pass" : "warn", "Anahtar kelime URL'de", inSlug ? "Var." : "Slug içinde geçmiyor.", 4);
     const first100 = lc(stats.plainText.split(/\s+/).slice(0, 100).join(" "));
     const inIntro = first100.includes(k);
@@ -304,8 +333,8 @@ export function analyzeSeo(input: SeoAnalyzeInput): SeoAnalysis {
   const h2count = stats.headings.filter((h) => h.level === 2).length;
   add("h2", "content", h2count >= 1 ? "pass" : "warn", "Alt başlık yapısı", h2count >= 1 ? `${h2count} adet H2.` : "En az bir H2 alt başlığı ekleyin.", 4);
 
-  const avgOk = stats.avgSentenceWords > 0 && stats.avgSentenceWords <= 22;
-  add("read", "content", avgOk || stats.wordCount === 0 ? "pass" : "warn", "Okunabilirlik", `Ortalama cümle: ${stats.avgSentenceWords} kelime (≤22 ideal).`, 4);
+  const avgOk = stats.avgSentenceWords > 0 && stats.avgSentenceWords <= profile.maxAvgSentenceWords;
+  add("read", "content", avgOk || stats.wordCount === 0 ? "pass" : "warn", "Okunabilirlik", `Ortalama cümle: ${stats.avgSentenceWords} kelime (≤${profile.maxAvgSentenceWords} ideal).`, 4);
 
   if (stats.hasFaq || stats.hasHowTo)
     add("structured", "content", "pass", "Yapılandırılmış blok", `${stats.hasFaq ? "SSS " : ""}${stats.hasHowTo ? "HowTo " : ""}→ otomatik zengin sonuç şeması üretilir.`, 3);

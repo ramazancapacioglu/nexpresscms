@@ -44,3 +44,17 @@ test("slugify: Türkçe geriye uyumlu, Almanca/İspanyolca/Fransızca ve NFKD ye
   assert.equal(slugifyLocale("Œuvre à l'écoute", "fr-CA"), "oeuvre-a-lecoute");
   assert.equal(slugifyLocale("Zażółć gęślą", "pl"), "zazolc-gesla");
 });
+
+import { analyzeSeo, seoLanguageProfile } from "../src";
+
+test("SEO dil profili: Türkçe I/ı kuralı yalnızca tr/az'da; okunabilirlik eşiği dile göre", () => {
+  assert.equal(seoLanguageProfile("tr").lower("INTERNET"), "ınternet");
+  assert.equal(seoLanguageProfile("en").lower("INTERNET"), "internet");
+  assert.equal(seoLanguageProfile("en-GB").maxAvgSentenceWords, 20);
+  assert.equal(seoLanguageProfile("xx").maxAvgSentenceWords, 22);
+  const base = { title: "A guide to internet speed for everyone", slug: "internet-speed", focusKeyword: "INTERNET", blocks: [] };
+  const en = analyzeSeo({ ...base, locale: "en" }).checks.find((c) => c.id === "kw_title")!;
+  assert.equal(en.status, "pass", "İngilizce: INTERNET başlıktaki internet ile eşleşir");
+  const tr = analyzeSeo({ ...base, locale: "tr" }).checks.find((c) => c.id === "kw_title")!;
+  assert.equal(tr.status, "fail", "Türkçe kuralıyla ınternet ≠ internet (profil farkı)");
+});

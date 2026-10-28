@@ -1,20 +1,28 @@
 # 14 — Çok Dilli Altyapı Planı
 
-> **Durum: F12 başladı (2026-10-28): L1–L4'ün çekirdeği kodlandı, L5 ve bazı kalemler açık.** Aşağıdaki §0 "Yapılanlar" gerçek durumu gösterir; §1–§4 özgün plandır.
+> **Durum: F12 tamamlandı (2026-10-28).** L1–L5'in uygulanabilir kısmı kodlandı; bilerek yapılmayanlar §0 sonunda gerekçesiyle listelidir. §1–§4 özgün plandır (bazı maddeler "bugün yok" diyor; güncel durum §0'dadır).
 
-## 0. Yapılanlar (F12, 2026-10-28)
+## 0. Yapılanlar (F12)
 
 | Kalem | Durum |
 | :--- | :--- |
-| **L1** `@nexpress/i18n`: tip güvenli katalog (`tr` kaynak, `en`), `{değişken}` + `Intl.PluralRules` çoğul, bölge ve Türkçe yedeği, "kataloglar aynı anahtarlara sahip" testi | ✅ Ziyaretçi sayfaları (içerik, arama, mağaza) anahtara taşındı. **Kalan:** tema/blok iç metinleri (`packages/themes`: "İçindekiler", "Haritada aç"…), ana sayfa boş durumu, `layout.tsx` üstbar/altbilgi sabitleri, panel arayüzü (L5) |
-| **L2** `<head>`: dil başına canonical, karşılıklı `hreflang` + `x-default` (yalnızca yayındaki çeviriler), `<html lang dir>` (RTL tespiti), `inLanguage` (zaten vardı), sitemap hreflang (bölgesiz `en`) | ✅ |
-| **L2** `slugify(text, locale)` (tr, de, es, fr, pt, nl, pl, da, sv, no + NFKD yedeği) | ✅ Editör slug önerisi hâlâ Türkçe çağırıyor (kalan) |
-| **L2** SEO motoru dil profilleri, dil başına site adı/slogan/SEO şablonu | ⬜ |
-| **L3** Çeviri yaşam döngüsü: `content_translations.translation_status / source_locale / source_hash` (göç `0004`), "kaynaktan çeviri oluştur" (taslak), durumlar `yok / taslak / yayında / kaynak değişti`, ikincil dil kaydı içerik satırını ezmez, çeviri silme | ✅ Editör › Yayın & Kat. › **Diller** şeridi; `/admin/settings` › **Site dilleri** |
-| **L3** Eksik çeviri raporu, medya alt metni çevirisi, AI çeviri taslağı | ⬜ |
-| **L4** Ziyaretçi dil değiştirici (JS'siz bağlantılar), `/{locale}/llms.txt`, `llms-full`/`ai-sitemap`/RSS/ai-feed/MCP `?locale=` / `locale` parametresi | ✅ |
-| **L4** İnsan için dil önerisi (üst bar), dil başına navigasyon/footer yönetimi | ⬜ |
-| **L5** Panel arayüz dili, ticaret çevirileri | ⬜ (RTL: `lang`/`dir` var; mantıksal CSS turu yok) |
+| **L1** `@nexpress/i18n`: tip güvenli katalog (`tr` kaynak, `en`), `{değişken}` + çoğul (`Intl.PluralRules`), bölge ve Türkçe yedeği, "kataloglar aynı anahtarlara sahip" testi | ✅ Ziyaretçi sayfaları (içerik, arama, mağaza, ana sayfa, üstbar/altbilgi sabitleri) ve **tema blok metinleri** (`RscBlockRenderer locale`) anahtara taşındı |
+| **L2** `<head>`: dil başına canonical, karşılıklı `hreflang` + `x-default` (yalnızca yayındaki çeviriler), `<html lang dir>` (RTL tespiti), `inLanguage`, sitemap hreflang (bölgesiz `en`) | ✅ |
+| **L2** `slugify(text, locale)` (tr, de, es, fr, pt, nl, pl, da, sv, no + NFKD yedeği) | ✅ |
+| **L2** **SEO dil profilleri** (`seoLanguageProfile`: küçük harf kuralı yalnızca tr/az'da, dil başına okunabilirlik eşiği; analiz editörde ve kayıtta dili kullanır) | ✅ Dil başına site adı/slogan/SEO şablonu hâlâ tek (kalan) |
+| **L3** Çeviri yaşam döngüsü: `content_translations.translation_status / source_locale / source_hash` (göç `0004`), kaynaktan çeviri (taslak), durumlar yok/taslak/yayında/kaynak değişti, çeviri silme; ikincil dil kaydı içerik satırını ezmez | ✅ Editör › Yayın & Kat. › **Diller** şeridi; Ayarlar › **Site dilleri** |
+| **L3** **Eksik çeviri raporu** `/admin/translations` (içerik × dil matrisi, dil başına toplamlar, tek tıkla oluştur) | ✅ |
+| **L3** **Çeviriye özgü öznitelikler** (`content_translations.attributes`, göç `0005`): öne çıkan görsel alt/alt yazı, odak anahtar kelime, **slug geçmişi** dil başınadır (eskiden tek paylaşılan slug geçmişi diller arası karışıyordu) | ✅ |
+| **L3** Medya alt metni: blok içi görsel alt metni zaten çeviri bloklarında yaşar; öne çıkan görsel alt/alt yazısı yukarıdaki öznitelikte | ✅ (medya kütüphanesindeki varsayılan `altText` tek dilli kalır; ayrı `translations` sütunu açılmadı: yeni içgörü yok, bloklar yeterli) |
+| **L4** JS'siz dil değiştirici, `/{locale}/llms.txt`, `llms-full`/`ai-sitemap`/RSS/ai-feed/MCP `locale` | ✅ |
+| **L5** **Panel arayüz dili**: `users.ui_locale` (göç `0006`), profilde seçici, menü/bölüm/hesap metinleri `admin.*` kataloğundan, `<html lang>` panelde kullanıcının dili (CSS `uppercase` doğru çalışır) | ✅ Altyapı + menü. **Kalan:** sayfa içi panel metinleri (yüzlerce Türkçe sabit; yeni ekranlar anahtar kullanır, eskiler kademeli taşınır) |
+| **L5** RTL: `lang`/`dir` otomatik | ✅ Mantıksal CSS turu ve görsel regresyon yok (ilk RTL dili eklenirken) |
+
+**Bilerek yapılmayanlar (gerekçeli):**
+- **İnsan için dil önerisi (üst bar):** kişiselleştirilmiş HTML, CDN önbelleğiyle (`PUBLIC_CACHE_SECONDS`) çakışır (`Vary: Accept-Language` gerekir ve önbellek isabeti düşer). Dil değiştirici her sayfada zaten var; öneri ancak önbelleğe dokunmayan bir tasarımla (ör. kenar işlevi) eklenmeli.
+- **Ticaret çevirileri** (`commerce_product_translations`, bölge/para birimi fiyatı): ürün düzenleyici ve sepet akışını ilgilendiren ayrı bir tasarım kararı (para birimi dil değil bölgeye bağlı); `docs/09` ile birlikte ele alınmalı.
+- **AI çeviri taslağı (Pro):** `ai-writer` altyapısı hazır; çeviri istemi ve kalite denetimi OpenAI anahtarıyla birlikte tasarlanmalı.
+- Dil başına site adı/slogan/SEO şablonu ve navigasyon/footer dil yönetimi.
 
 **Çıkış ölçütü durumu:** `en` örnek verisiyle uçtan uca doğrulandı (dil ekle → çeviri oluştur → taslak ziyaretçiye 404 → yayınla → hreflang her iki yönde, `lang="en"`, `/zzz` 404). Kataloğu eksik anahtarla **derleme** hatası: `Messages` tipi (`en`'de eksik anahtar tsc'yi kırar) + test.
 

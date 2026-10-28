@@ -45,3 +45,20 @@ test("dil seçimi: etkin dil kabul, geçersiz/boş varsayılana düşer", () => 
   assert.equal(pickLocale("../etc", ["tr"], "tr"), "tr");
   assert.equal(pickLocale(null, ["tr"], "tr"), "tr");
 });
+
+import { mergeLocalizedAttributes, pickLocalizedAttributes } from "../src";
+
+test("çeviriye özgü öznitelikler: seçme, birleştirme, kaynak dil değerleri sızmaz", () => {
+  const shared = { slugHistory: ["eski-tr"], schemaX: 1, _publishing: { categories: ["a"], featuredImageAlt: "Türkçe alt", focusKeyword: "anahtar", featuredImageMeta: { url: "/u.png", altText: "Türkçe alt", caption: "Alt yazı" } } };
+  const picked = pickLocalizedAttributes({ _publishing: { featuredImageAlt: "English alt", focusKeyword: "keyword" } }, ["old-en"]);
+  assert.deepEqual(picked, { _localized: true, featuredImageAlt: "English alt", featuredImageCaption: undefined, focusKeyword: "keyword", slugHistory: ["old-en"] });
+  const merged = mergeLocalizedAttributes(shared, picked) as typeof shared;
+  assert.equal(merged._publishing.featuredImageAlt, "English alt");
+  assert.equal(merged._publishing.featuredImageMeta.altText, "English alt");
+  assert.equal(merged._publishing.featuredImageMeta.caption, "", "Türkçe alt yazı İngilizceye sızmaz");
+  assert.equal(merged._publishing.featuredImageMeta.url, "/u.png", "görsel adresi paylaşılır");
+  assert.deepEqual(merged._publishing.categories, ["a"]);
+  assert.deepEqual(merged.slugHistory, ["old-en"]);
+  assert.equal(mergeLocalizedAttributes(shared, {}), shared, "yerelleştirilmemiş satır paylaşılanı verir");
+  assert.equal((mergeLocalizedAttributes(shared, { _localized: true, slugHistory: [] }) as Record<string, unknown>).slugHistory, undefined);
+});

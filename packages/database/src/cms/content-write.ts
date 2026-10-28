@@ -1,6 +1,6 @@
 import type { SaveContentInput } from "./types";
 import { eq, and, inArray } from "drizzle-orm";
-import { cmsHooks, compileBlocksToMarkdown, resolvePublishing, resolveSiteSettings, type ContentStatus } from "@nexpress/core";
+import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, type ContentStatus } from "@nexpress/core";
 import { analyzeSeo, extractContentStats } from "@nexpress/seo-core";
 import { CmsRevisionRepository, type RevisionSnapshot } from "./revisions";
 
@@ -149,10 +149,20 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       ? await this.getContentById(input.contentId, input.locale)
       : null;
 
+    const { db, t } = this.backend;
+    // İkincil dil çevirisi: içerik satırı (durum, şema, öznitelikler) varsayılan dile aittir ve bu kayıtla değişmez;
+    // çevirinin kendi yayın durumu `translationStatus` ile tutulur.
+    const defaultLocale = site?.defaultLocale ?? "tr";
+    const contentRowExists = input.contentId
+      ? (await db.select({ id: t.contents.id }).from(t.contents).where(and(eq(t.contents.id, input.contentId), eq(t.contents.siteId, this.siteId))).limit(1)).length > 0
+      : false;
+    const secondary = input.locale !== defaultLocale && contentRowExists;
+    const translationStatus = secondary && (input.status ?? "published") !== "published" ? "draft" : "published";
     // --- SEO MOTORU: slug geçmişi (otomatik 301) ---
     const schemaAttributes: Record<string, unknown> = { ...(input.schemaAttributes ?? existing?.schemaAttributes ?? {}) };
     const history = new Set<string>(resolvePublishing(existing?.schemaAttributes).slugHistory);
-    for (const h of resolvePublishing(schemaAttributes).slugHistory) history.add(h);
+    // Yeni çeviri kaynak dilin slug geçmişini devralmaz
+    if (!(secondary && !existing)) for (const h of resolvePublishing(schemaAttributes).slugHistory) history.add(h);
     if (existing && siteSettings.seo.autoRedirectOnSlugChange && existing.slug !== input.slug) {
       history.add(existing.slug);
     }
@@ -163,6 +173,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
     // --- SEO MOTORU: analiz ---
     const pub = resolvePublishing(schemaAttributes);
     const analysis = analyzeSeo({
+      locale: input.locale,
       title: input.title,
       slug: input.slug,
       tldr: input.tldr,
@@ -203,15 +214,6 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       gapFindings.push("thin_content");
     }
 
-    const { db, t } = this.backend;
-    // İkincil dil çevirisi: içerik satırı (durum, şema, öznitelikler) varsayılan dile aittir ve bu kayıtla değişmez;
-    // çevirinin kendi yayın durumu `translationStatus` ile tutulur.
-    const defaultLocale = site?.defaultLocale ?? "tr";
-    const contentRowExists = input.contentId
-      ? (await db.select({ id: t.contents.id }).from(t.contents).where(and(eq(t.contents.id, input.contentId), eq(t.contents.siteId, this.siteId))).limit(1)).length > 0
-      : false;
-    const secondary = input.locale !== defaultLocale && contentRowExists;
-    const translationStatus = secondary && (input.status ?? "published") !== "published" ? "draft" : "published";
     if (!secondary) await db
       .insert(t.contents)
       .values({
@@ -241,6 +243,8 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         },
       });
 
+    // Çeviri satırına özgü öznitelikler; varsayılan dil satırı paylaşılan (içerik satırı) değerleri kullanır
+    const localizedAttributes = secondary ? pickLocalizedAttributes(schemaAttributes, [...history]) : {};
     const transId = `tr_${contentId}_${input.locale}`;
     await db
       .insert(t.contentTranslations)
@@ -266,6 +270,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         translationStatus,
         sourceLocale: input.sourceLocale ?? null,
         sourceHash: input.sourceHash ?? null,
+        attributes: localizedAttributes,
         updatedAt: now,
       })
       .onConflictDoUpdate({
@@ -285,6 +290,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           seoScore: hookResult.seoScore ?? analysis.score,
           gapFindings,
           translationStatus,
+          attributes: localizedAttributes,
           ...(input.sourceHash ? { sourceLocale: input.sourceLocale ?? null, sourceHash: input.sourceHash } : {}),
           updatedAt: now,
         },

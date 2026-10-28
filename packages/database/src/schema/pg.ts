@@ -146,6 +146,7 @@ export const pgContentTranslations = pgTable(
     translationStatus: text("translation_status").default("published").notNull(),
     sourceLocale: text("source_locale"),
     sourceHash: text("source_hash"),
+    attributes: jsonb("attributes").$type<Record<string, unknown>>().default({}).notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => [
@@ -643,6 +644,7 @@ export const pgUsers = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     lastLoginAt: timestamp("last_login_at"),
     sessionVersion: integer("session_version").default(0).notNull(),
+    uiLocale: text("ui_locale"),
     status: text("status").$type<"active" | "disabled">().default("active").notNull(),
     passwordChangedAt: timestamp("password_changed_at"),
   },

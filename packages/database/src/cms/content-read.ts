@@ -1,6 +1,6 @@
 import type { ContentWithTranslationDto, EntityLinkDto } from "./types";
 import { eq, and, desc } from "drizzle-orm";
-import { resolvePublishing, type ContentStatus, type ContentType } from "@nexpress/core";
+import { mergeLocalizedAttributes, resolvePublishing, type ContentStatus, type ContentType } from "@nexpress/core";
 import { CmsTaxonomyRepository } from "./taxonomy";
 
 export class CmsContentReadRepository extends CmsTaxonomyRepository {
@@ -48,7 +48,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       status: (translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
       importanceScore: content.importanceScore,
       schemaType: content.schemaType,
-      schemaAttributes: content.schemaAttributes ?? {},
+      schemaAttributes: mergeLocalizedAttributes(content.schemaAttributes ?? {}, translation.attributes),
       featuredImage: content.featuredImage ?? null,
       authorName: content.authorName,
       publishedAt: content.publishedAt ?? null,

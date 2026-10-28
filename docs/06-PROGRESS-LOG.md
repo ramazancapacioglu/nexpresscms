@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — F12 tamamlandı: tema metinleri, SEO dil profilleri, eksik çeviri raporu, çeviriye özgü öznitelikler, panel dili
+- ✅ Tema blok metinleri ve ana sayfa/üstbar/altbilgi sabitleri kataloğa taşındı (`RscBlockRenderer locale`); arama sayfası başlığı dilli.
+- ✅ `seoLanguageProfile`: İngilizce `INTERNET`≠`ınternet` hatası (Türkçe küçük harf kuralı her dile uygulanıyordu) giderildi; okunabilirlik eşiği dile göre; analiz içerik dilini kullanıyor.
+- ✅ `/admin/translations` eksik çeviri raporu (matris + toplamlar + tek tıkla oluştur); editörler de görebilir.
+- ✅ Göç `0005`: öne çıkan görsel alt/alt yazı, odak anahtar kelime ve **slug geçmişi** çeviri başına (eskiden diller arası ortak slug geçmişi; testli).
+- ✅ Göç `0006` + panel dili: profilde seçici, menü/bölüm/hesap `admin.*` kataloğu, `<html lang>` panelde kullanıcının dili. Tarayıcıda doğrulandı (İngilizce menü, `lang="en"`, PUBLISHING büyük harf doğru).
+- Doğrulama: testler core 71, seo-core 20, database 45 (SQLite+PG), i18n 4, cms 5, agentic-seo 16; JS bütçesi içinde.
+- Bilerek yapılmayanlar ve gerekçeleri: `docs/14` §0.
+
 ### [2026-10-28] — F12: çok dilli altyapı (L1–L4 çekirdeği) + ziyaretçi içerik sızıntısı düzeltmesi
 - ✅ `@nexpress/i18n` (tip güvenli katalog tr/en, çoğul, testli); ziyaretçi sayfaları (içerik, arama, mağaza) anahtara taşındı.
 - ✅ Göç `0004`: çeviri durumu/kaynak özeti; `createTranslation`, `translationOverview`, `deleteTranslation`, `saveSupportedLocales`; ikincil dil kaydı içerik satırını ezmez; RAG ve sitemap yalnızca yayındaki çevirileri alır.

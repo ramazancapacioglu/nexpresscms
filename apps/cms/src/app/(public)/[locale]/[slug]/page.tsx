@@ -178,6 +178,7 @@ export default async function PublicDynamicContentPage({
           themeId={activeTheme.id}
           tokens={tokens}
           mediaFocal={mediaFocal}
+          locale={locale}
         />
       </>
     );
@@ -305,6 +306,7 @@ export default async function PublicDynamicContentPage({
         tokens={tokens}
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
+        locale={locale}
       />
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}

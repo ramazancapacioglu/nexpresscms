@@ -36,6 +36,20 @@
       "when": 1793194044830,
       "tag": "0004_translation_status",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793195843051,
+      "tag": "0005_translation_attributes",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793195993710,
+      "tag": "0006_user_ui_locale",
+      "breakpoints": true
     }
   ]
 }

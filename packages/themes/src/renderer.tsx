@@ -21,6 +21,8 @@ export interface RscBlockRendererProps {
   lcp?: boolean;
   /** Medya odak noktaları; kırpılan görsellerde `object-position` olur. */
   mediaFocal?: MediaFocalMap;
+  /** Sayfa dili: blok içi sabit metinler ve boş alan yedekleri bu dilde çizilir (varsayılan `tr`). */
+  locale?: string;
 }
 
 /**
@@ -54,6 +56,7 @@ export function RscBlockRenderer({
   tokens,
   lcp = true,
   mediaFocal,
+  locale,
 }: RscBlockRendererProps): React.ReactElement {
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
@@ -76,6 +79,7 @@ export function RscBlockRenderer({
           isCommerce={isCommerce}
           lcpBlockId={lcpBlockId}
           mediaFocal={mediaFocal}
+          locale={locale}
         />
       ))}
     </div>
@@ -92,7 +96,7 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   const rendered =
     renderMarketingBlock(ctx) ?? renderContentBlock(ctx) ?? renderLayoutBlock(ctx);
   return rendered === undefined
-    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal)
+    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale)
     : rendered;
 }
 
@@ -104,6 +108,7 @@ export function RscSingleBlock({
   isCommerce,
   lcpBlockId,
   mediaFocal,
+  locale,
 }: {
   block: BlockNode;
   themeId: string;
@@ -112,6 +117,7 @@ export function RscSingleBlock({
   isCommerce: boolean;
   lcpBlockId?: string;
   mediaFocal?: MediaFocalMap;
+  locale?: string;
 }): React.ReactElement | null {
   const inner = renderBlockInner({
     block,
@@ -121,6 +127,7 @@ export function RscSingleBlock({
     isCommerce,
     lcpBlockId,
     mediaFocal,
+    locale,
   });
   if (!inner) return null;
 

@@ -26,3 +26,13 @@ test("çevirici: dil seçimi, bölge yedeği ve bilinmeyen dilde Türkçe", () =
   assert.equal(createTranslator("en")("content.ratingSummary", { avg: "4.5", n: 2 }), "4.5 / 5.0 (2 reviews)");
   assert.equal(getMessages("tr"), tr);
 });
+
+import { isUiLocale, UI_LOCALES } from "../src";
+
+test("panel dili: yalnızca kataloğu olan diller geçerli", () => {
+  assert.deepEqual([...UI_LOCALES].sort(), ["en", "tr"]);
+  assert.equal(isUiLocale("en"), true);
+  assert.equal(isUiLocale("de"), false);
+  assert.equal(isUiLocale(null), false);
+  assert.equal(createTranslator("en")("admin.nav.translations"), "Translations");
+});

@@ -263,6 +263,9 @@ importers:
       '@nexpress/core':
         specifier: workspace:*
         version: link:../core
+      '@nexpress/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       react:
         specifier: ^19.0.0
         version: 19.3.1

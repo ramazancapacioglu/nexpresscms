@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import type { MessageKey } from "@nexpress/i18n";
 import {
   LayoutGrid,
   Palette,
@@ -21,6 +22,7 @@ import {
   Users as UsersIcon,
   ScrollText,
   Inbox,
+  Languages,
 } from "lucide-react";
 
 export interface NavItem {
@@ -95,6 +97,13 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: MessageSquare,
         count: "★ 5.0",
         shortcut: "G R",
+      },
+      {
+        href: "/admin/translations",
+        label: "Çeviriler",
+        icon: Languages,
+        count: "Diller",
+        shortcut: "G D",
       },
       {
         href: "/admin/requests",
@@ -194,6 +203,39 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     ],
   },
 ];
+
+/** Menü bağlantısı → katalog anahtarı (görünen metin panel diline göre çözülür). */
+export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
+  "/admin": "admin.nav.overview",
+  "/admin/plugins": "admin.nav.plugins",
+  "/admin/pages": "admin.nav.pages",
+  "/admin/posts": "admin.nav.posts",
+  "/admin/contents": "admin.nav.studio",
+  "/admin/taxonomies": "admin.nav.taxonomies",
+  "/admin/media": "admin.nav.media",
+  "/admin/comments": "admin.nav.comments",
+  "/admin/translations": "admin.nav.translations",
+  "/admin/requests": "admin.nav.requests",
+  "/admin/commerce": "admin.nav.commerce",
+  "/admin/commerce/marketplaces": "admin.nav.marketplaces",
+  "/admin/themes": "admin.nav.themes",
+  "/admin/seo": "admin.nav.seo",
+  "/admin/appearance/header": "admin.nav.header",
+  "/admin/appearance/menus": "admin.nav.menus",
+  "/admin/appearance/footer": "admin.nav.footer",
+  "/admin/appearance/sidebar": "admin.nav.sidebar",
+  "/admin/migration": "admin.nav.migration",
+  "/admin/settings": "admin.nav.settings",
+  "/admin/users": "admin.nav.users",
+  "/admin/audit": "admin.nav.audit",
+};
+
+export const SECTION_LABEL_KEYS: Record<string, MessageKey> = {
+  Workspace: "admin.sections.workspace",
+  "İçerik & Yayın": "admin.sections.content",
+  "Tasarım & Motorlar": "admin.sections.design",
+  Sistem: "admin.sections.system",
+};
 
 export const QUICK_COMMANDS = [
   {

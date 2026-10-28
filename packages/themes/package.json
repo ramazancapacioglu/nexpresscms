@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nexpress/core": "workspace:*"
+    "@nexpress/core": "workspace:*",
+    "@nexpress/i18n": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0"

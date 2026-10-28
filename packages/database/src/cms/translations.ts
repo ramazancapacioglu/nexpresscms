@@ -11,6 +11,22 @@ export interface TranslationOverviewRow {
   updatedAt: Date | null;
 }
 
+export interface TranslationMatrixRow {
+  contentId: string;
+  type: string;
+  title: string;
+  slug: string;
+  cells: Record<string, { state: TranslationState; slug: string | null }>;
+}
+
+export interface TranslationMatrix {
+  defaultLocale: string;
+  locales: string[];
+  rows: TranslationMatrixRow[];
+  /** Hedef dil başına: yok / taslak / kaynak değişti sayıları */
+  totals: Record<string, { none: number; draft: number; stale: number; published: number }>;
+}
+
 export type TranslationResult = { ok: true } | { ok: false; error: string };
 
 /** Dil şeridi ve "kaynaktan çeviri oluştur" iş akışı. Çeviri aynı `contentId` altında ayrı satırdır. */
@@ -45,6 +61,7 @@ export class CmsTranslationRepository extends CmsContentWriteRepository {
       importanceScore: source.importanceScore,
       schemaType: source.schemaType,
       featuredImage: source.featuredImage,
+      schemaAttributes: source.schemaAttributes,
       locale: toLocale,
       slug: taken ? `${source.slug}-${toLocale}` : source.slug,
       title: source.title,
@@ -82,6 +99,36 @@ export class CmsTranslationRepository extends CmsContentWriteRepository {
         updatedAt: row?.updatedAt ?? null,
       };
     });
+  }
+
+  /** Tüm içerikler × etkin diller durum matrisi (eksik çeviri raporu). */
+  public async translationMatrix(): Promise<TranslationMatrix> {
+    const site = await this.getSite();
+    const defaultLocale = site?.defaultLocale ?? "tr";
+    const locales = site?.supportedLocales ?? [defaultLocale];
+    const sources = await this.listContents({ locale: defaultLocale });
+    const hashOf = new Map(sources.map((c) => [c.contentId, translationSourceHash({ title: c.title, tldr: c.tldr, blocks: c.blocks })]));
+    const byLocale = new Map<string, Map<string, (typeof sources)[number]>>();
+    for (const l of locales.filter((x) => x !== defaultLocale)) {
+      byLocale.set(l, new Map((await this.listContents({ locale: l })).map((c) => [c.contentId, c])));
+    }
+    const totals: TranslationMatrix["totals"] = {};
+    for (const l of locales.filter((x) => x !== defaultLocale)) totals[l] = { none: 0, draft: 0, stale: 0, published: 0 };
+    const rows = sources.map((s) => {
+      const cells: TranslationMatrixRow["cells"] = {};
+      for (const l of locales) {
+        if (l === defaultLocale) {
+          cells[l] = { state: "published", slug: s.slug };
+          continue;
+        }
+        const row = byLocale.get(l)?.get(s.contentId);
+        const state = translationStateOf(row, row ? hashOf.get(s.contentId) : undefined);
+        cells[l] = { state, slug: row?.slug ?? null };
+        totals[l]![state]++;
+      }
+      return { contentId: s.contentId, type: s.type, title: s.title, slug: s.slug, cells };
+    });
+    return { defaultLocale, locales, rows, totals };
   }
 
   /** Varsayılan dil çevirisi silinemez (içeriğin kendisidir); diğerleri kiracıya kapalı silinir. */

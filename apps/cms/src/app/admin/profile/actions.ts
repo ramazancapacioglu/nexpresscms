@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { PASSWORD_PROBLEM_MESSAGES, validatePassword } from "@nexpress/core";
 import { hashPassword, verifyPassword } from "@nexpress/core/password";
+import { isUiLocale } from "@nexpress/i18n";
 import { getUserRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { issueSession } from "@/lib/auth/issue";
@@ -45,4 +46,12 @@ export async function signOutEverywhereAction(): Promise<void> {
   const me = await requireUser({ audit: "auth.signOutEverywhere" });
   await getUserRepository(me.siteId).revokeSessions(me.sub);
   redirect("/login");
+}
+
+/** Kullanıcının panel arayüz dilini kaydeder (yalnızca kataloğu olan diller). İçerik dilini etkilemez. */
+export async function setUiLocaleAction(input: { locale: string }): Promise<ProfileResult> {
+  const me = await requireUser({ audit: "profile.uiLocale" });
+  if (!isUiLocale(input.locale)) return { ok: false, error: "Desteklenmeyen dil." };
+  await getUserRepository(me.siteId).setUiLocale(me.sub, input.locale);
+  return { ok: true };
 }

@@ -73,6 +73,7 @@ export function useDualModeEditorUiState(p: ReturnType<typeof useDualModeEditorP
   const seoAnalysis = useMemo(
     () =>
       analyzeSeo({
+        locale: p.locale,
         title,
         slug,
         tldr,

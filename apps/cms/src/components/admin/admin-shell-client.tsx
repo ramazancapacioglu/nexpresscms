@@ -16,7 +16,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { QUICK_COMMANDS, WORKSPACE_SECTIONS } from "./admin-nav";
+import { createTranslator } from "@nexpress/i18n";
+import { NAV_LABEL_KEYS, QUICK_COMMANDS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
 
 interface AdminShellClientProps {
   children: React.ReactNode;
@@ -28,6 +29,8 @@ interface AdminShellClientProps {
   accountSlot?: React.ReactNode;
   /** Oturum rolü: yönetici olmayanlar için yönetim bölümleri gizlenir (sayfalar ayrıca korunur). */
   role?: "admin" | "editor";
+  /** Panel arayüz dili (menü metinleri) */
+  uiLocale?: string;
 }
 
 export function AdminShellClient({
@@ -39,7 +42,9 @@ export function AdminShellClient({
   sidebarSlot,
   accountSlot,
   role,
+  uiLocale = "tr",
 }: AdminShellClientProps) {
+  const t = createTranslator(uiLocale);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -101,7 +106,9 @@ export function AdminShellClient({
                   ? "Sistem / Eklentiler"
                   : pathname.startsWith("/admin/requests")
                     ? "Workspace / Talepler"
-                    : "Workspace";
+                    : pathname.startsWith("/admin/translations")
+                      ? "Workspace / Çeviriler"
+                      : "Workspace";
 
   return (
     <div className="min-h-screen flex bg-[#FBFBFB] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
@@ -170,7 +177,7 @@ export function AdminShellClient({
                 .map((section) => (
                 <div key={section.label} className="space-y-0.5">
                   <div className="px-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#8C9099]">
-                    {section.label}
+                    {SECTION_LABEL_KEYS[section.label] ? t(SECTION_LABEL_KEYS[section.label]!) : section.label}
                   </div>
                   {section.items.map((item) => {
                     const Icon = item.icon;
@@ -202,7 +209,7 @@ export function AdminShellClient({
                             }`}
                             strokeWidth={1.75}
                           />
-                          <span className="truncate">{item.label}</span>
+                          <span className="truncate">{NAV_LABEL_KEYS[item.href] ? t(NAV_LABEL_KEYS[item.href]!) : item.label}</span>
                         </span>
                         {item.count && (
                           <span className="font-mono text-[10px] text-[#8C9099]">

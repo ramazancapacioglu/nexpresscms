@@ -53,7 +53,7 @@ Projede kod yazan veya mimari değişiklik yapan her geliştirici ve AI ajanı a
 - Varsayılan locale `tr`dir; herkese açık adres her zaman `/{locale}/...`. Dil listesi `sites.supportedLocales` alanındadır (ayrı `locales`/`regions` tablosu açılmaz).
 - Ziyaretçiye dönen metinler `@nexpress/i18n` kataloğundan gelir (`createTranslator(locale)`); `tr` kataloğu anahtarların kaynağıdır ve her dil aynı anahtarlara sahip olmak zorundadır. Yeni görünür metin sabit yazılmaz, anahtar eklenir. Katalog istemci JS'ine taşınmaz.
 - Çeviri aynı `contentId` altında `content_translations` satırıdır; ziyaretçiye görünmesi için içerik VE çeviri (`translation_status`) yayında olmalıdır. Ziyaretçi yüzeyleri taslak, zamanlanmış, arşiv ve `private` içeriği asla vermez (`publicOnly`).
-- Panel arayüzü şimdilik Türkçedir (L5).
+- Panel arayüzü dili kullanıcı başınadır (`users.ui_locale`, katalog `admin.*`); menü ve yeni ekranlar anahtar kullanır, eski ekranların iç metinleri kademeli taşınır. İçerik dili panel dilinden bağımsızdır.
 
 ## 9. Güvenlik Kuralı
 - `apps/cms` içindeki her admin `server action` ilk satırında `requireUser()` (yalnızca `admin` işlemleri için `requireAdmin()`) çağırır. Sayfa koruması (middleware) bunun yerine geçmez.

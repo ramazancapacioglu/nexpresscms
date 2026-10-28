@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PASSWORD_MIN_LENGTH } from "@nexpress/core";
-import { changePasswordAction, signOutEverywhereAction, updateProfileAction, type ProfileResult } from "@/app/admin/profile/actions";
+import { createTranslator, UI_LOCALES } from "@nexpress/i18n";
+import { changePasswordAction, setUiLocaleAction, signOutEverywhereAction, updateProfileAction, type ProfileResult } from "@/app/admin/profile/actions";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const field = `h-8 w-full rounded border ${border} bg-transparent px-2 text-[12px] outline-none focus:ring-1 focus:ring-[#266DF0]`;
@@ -17,7 +19,11 @@ function Notice({ r }: { r: ProfileResult | null }) {
   );
 }
 
-export function ProfileForms({ name, email, role }: { name: string; email: string; role: string }) {
+export function ProfileForms({ name, email, role, uiLocale }: { name: string; email: string; role: string; uiLocale: string }) {
+  const router = useRouter();
+  const [lang, setLang] = useState(uiLocale);
+  const [langResult, setLangResult] = useState<ProfileResult | null>(null);
+  const tt = createTranslator(lang);
   const [pending, start] = useTransition();
   const [displayName, setDisplayName] = useState(name);
   const [nameResult, setNameResult] = useState<ProfileResult | null>(null);
@@ -30,6 +36,31 @@ export function ProfileForms({ name, email, role }: { name: string; email: strin
         <h1 className="text-[16px] font-bold tracking-tight">Profilim</h1>
         <p className="text-[12px] text-[#8C9099]">{email} • {role === "admin" ? "Yönetici" : "Editör"}</p>
       </div>
+
+      <section className={card}>
+        <label className="block space-y-1 text-[12px] font-medium">{tt("admin.account.language")}
+          <select
+            value={lang}
+            disabled={pending}
+            onChange={(e) => {
+              const next = e.target.value;
+              setLang(next);
+              start(async () => {
+                const res = await setUiLocaleAction({ locale: next });
+                setLangResult(res);
+                if (res.ok) router.refresh();
+              });
+            }}
+            className={field}
+          >
+            {UI_LOCALES.map((l) => (
+              <option key={l} value={l}>{new Intl.DisplayNames([l], { type: "language" }).of(l)}</option>
+            ))}
+          </select>
+          <span className="block text-[11px] font-normal text-[#8C9099]">{tt("admin.account.languageHint")}</span>
+        </label>
+        <Notice r={langResult} />
+      </section>
 
       <form className={card} onSubmit={(e) => { e.preventDefault(); start(async () => setNameResult(await updateProfileAction({ name: displayName }))); }}>
         <label className="block space-y-1 text-[12px] font-medium">Görünen ad

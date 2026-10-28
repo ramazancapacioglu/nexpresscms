@@ -1,0 +1,1 @@
+ALTER TABLE `content_translations` ADD `attributes` text DEFAULT '{}' NOT NULL;

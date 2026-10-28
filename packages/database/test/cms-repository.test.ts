@@ -361,3 +361,51 @@ test("ziyaretçi çözümlemesi: taslak, zamanlanmış, arşiv ve private içeri
   assert.equal((await repo.resolveContentBySlug("gz-taslak", "tr"))?.content.slug, "gz-taslak", "yönetici çözümlemesi etkilenmez");
   assert.equal(await repo.getContentBySlug("gz-taslak", "tr", { publicOnly: true }), null);
 });
+
+test("çeviri matrisi: her içerik × dil durumu ve dil başına toplamlar", async () => {
+  await repo.saveSupportedLocales(["tr", "en"]);
+  const { contentId } = await repo.saveContent(baseInput({ slug: "matris-testi", title: "Matris", status: "published" }));
+  let m = await repo.translationMatrix();
+  assert.deepEqual(m.locales, ["tr", "en"]);
+  const before = m.totals.en!;
+  assert.equal(m.rows.find((r) => r.contentId === contentId)!.cells.en!.state, "none");
+  await repo.createTranslation(contentId, "tr", "en");
+  m = await repo.translationMatrix();
+  assert.equal(m.rows.find((r) => r.contentId === contentId)!.cells.en!.state, "draft");
+  assert.equal(m.totals.en!.none, before.none - 1);
+  assert.equal(m.totals.en!.draft, before.draft + 1);
+  assert.equal(m.rows.find((r) => r.contentId === contentId)!.cells.tr!.state, "published");
+  await repo.saveSupportedLocales(["tr"]);
+});
+
+test("çeviriye özgü öznitelikler: alt metin, odak anahtar kelime ve slug geçmişi dile göre ayrı kalır", async () => {
+  const { resolvePublishing } = await import("@nexpress/core");
+  await repo.saveSupportedLocales(["tr", "en"]);
+  const tr = await repo.saveContent(
+    baseInput({ slug: "oznitelik-tr", title: "Öznitelik", status: "published", featuredImage: "/m/a.png", schemaAttributes: { _publishing: { featuredImageAlt: "Türkçe alt", focusKeyword: "anahtar" } } })
+  );
+  const id = tr.contentId;
+  assert.deepEqual(await repo.createTranslation(id, "tr", "en"), { ok: true });
+  // Başlangıçta kaynak değerler kopyalanır (çevirmen görsün diye), slug geçmişi devralınmaz
+  let en = (await repo.getContentById(id, "en"))!;
+  assert.equal(resolvePublishing(en.schemaAttributes).featuredImageAlt, "Türkçe alt");
+  assert.deepEqual(resolvePublishing(en.schemaAttributes).slugHistory, []);
+
+  await repo.saveContent({ ...baseInput({ slug: "attr-en", title: "Attr", status: "published" }), contentId: id, locale: "en", blocks: en.blocks, schemaAttributes: { _publishing: { featuredImageAlt: "English alt", focusKeyword: "keyword" } } });
+  await repo.saveContent({ ...baseInput({ slug: "attr-en-2", title: "Attr", status: "published" }), contentId: id, locale: "en", blocks: en.blocks, schemaAttributes: { ...en.schemaAttributes, _publishing: { featuredImageAlt: "English alt", focusKeyword: "keyword" } } });
+  en = (await repo.getContentById(id, "en"))!;
+  const pubEn = resolvePublishing(en.schemaAttributes);
+  assert.equal(pubEn.featuredImageAlt, "English alt");
+  assert.equal(pubEn.focusKeyword, "keyword");
+  assert.equal(en.featuredImage, "/m/a.png", "görsel adresi paylaşılır");
+  assert.deepEqual(pubEn.slugHistory, ["oznitelik-tr", "attr-en"], "yalnızca İngilizce satırın eski slug'ları");
+  // Türkçe satır etkilenmez
+  const pubTr = resolvePublishing((await repo.getContentById(id, "tr"))!.schemaAttributes);
+  assert.equal(pubTr.featuredImageAlt, "Türkçe alt");
+  assert.equal(pubTr.focusKeyword, "anahtar");
+  assert.deepEqual(pubTr.slugHistory, []);
+  // İngilizce eski slug İngilizce'de 301 çözer, Türkçe'de çözmez
+  assert.equal((await repo.resolveContentBySlug("attr-en", "en"))?.isRedirect, true);
+  assert.equal(await repo.resolveContentBySlug("attr-en", "tr"), null);
+  await repo.saveSupportedLocales(["tr"]);
+});

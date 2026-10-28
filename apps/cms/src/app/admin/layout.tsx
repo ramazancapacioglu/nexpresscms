@@ -7,6 +7,7 @@ import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { logoutAction } from "@/app/login/actions";
 import { getSession } from "@/lib/auth/session";
 import { ThemeBoundary } from "@/components/admin/theme-boundary";
+import { createTranslator } from "@nexpress/i18n";
 import { AdminShellClient } from "@/components/admin/admin-shell-client";
 
 export default async function AdminLayout({
@@ -23,6 +24,7 @@ export default async function AdminLayout({
   if (!session) redirect("/login");
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
+  const t = createTranslator(session.uiLocale);
 
   return (
     <ThemeBoundary>
@@ -40,7 +42,7 @@ export default async function AdminLayout({
         >
           <span className="block truncate font-medium">{session.name || session.email}</span>
           <span className="block truncate text-[10px] text-[#8C9099]">
-            {session.email} • {session.role === "admin" ? "Yönetici" : "Editör"}
+            {session.email} • {session.role === "admin" ? t("admin.account.admin") : t("admin.account.editor")}
           </span>
         </Link>
         <form action={logoutAction}>
@@ -48,12 +50,13 @@ export default async function AdminLayout({
             type="submit"
             className="w-full rounded-md px-2 py-1 text-left text-[12px] text-[#5C5F66] hover:bg-black/5 dark:text-[#9CA3AF] dark:hover:bg-white/5"
           >
-            Çıkış yap
+            {t("admin.account.signOut")}
           </button>
         </form>
         </div>
       }
       role={session.role}
+      uiLocale={session.uiLocale}
       sidebarSlot={
         <PluginSlot
           name="admin.sidebar.nav"

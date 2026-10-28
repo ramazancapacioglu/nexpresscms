@@ -4,12 +4,15 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifySessionToken, type SessionPayload, type UserRole } from "@nexpress/core/session";
 import { getUserRepository } from "@nexpress/database";
+import { isUiLocale } from "@nexpress/i18n";
 import { recordAudit } from "@/lib/audit";
 import { SESSION_COOKIE, getAuthSecret } from "./config";
 
 export interface SessionUser extends SessionPayload {
   email: string;
   name: string;
+  /** Panel arayüz dili (boşsa tr) */
+  uiLocale: string;
 }
 
 /**
@@ -25,7 +28,7 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   if (payload.siteId !== siteId) return null;
   const user = await getUserRepository(siteId).findById(payload.sub);
   if (!user || user.status !== "active" || user.sessionVersion !== payload.sv) return null;
-  return { ...payload, role: user.role, email: user.email, name: user.name };
+  return { ...payload, role: user.role, email: user.email, name: user.name, uiLocale: isUiLocale(user.uiLocale) ? user.uiLocale : "tr" };
 });
 
 export interface GuardOptions {

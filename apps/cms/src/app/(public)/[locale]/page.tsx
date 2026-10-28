@@ -5,6 +5,7 @@ import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublish
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
 import { buildPageSchemaGraph } from "@nexpress/seo-core";
 import type { Metadata } from "next";
+import { createTranslator } from "@nexpress/i18n";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -30,6 +31,7 @@ export default async function PublicHomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   await trackBotVisit("page");
@@ -77,12 +79,13 @@ export default async function PublicHomePage({
           themeId={activeTheme.id}
           tokens={tokens}
           mediaFocal={mediaFocal}
+          locale={locale}
         />
       ) : (
         <div className="rounded-xl border p-8 text-center">
-          <h1 className="text-2xl font-bold">NexPress CMS Hazır!</h1>
+          <h1 className="text-2xl font-bold">{t("site.homeReady")}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Başlangıç verilerini yüklemek için <code>pnpm db:seed</code> komutunu çalıştırın.
+            {t("site.homeSeed", { cmd: "pnpm db:seed" })}
           </p>
         </div>
       )}
@@ -95,11 +98,10 @@ export default async function PublicHomePage({
               style={{ fontFamily: tokens.typography.headingFont }}
               className="text-2xl font-bold text-slate-900"
             >
-              Polimorfik Bilgi Grafiği & Yayınlanan İçerikler
+              {t("site.homeListTitle")}
             </h2>
             <p className="text-sm text-slate-500">
-              Her içerik hem 100/100 RSC sayfası hem de sıfır maliyetli{" "}
-              <code>?format=md</code> beslemesi olarak sunulur.
+              {t("site.homeListBody", { md: "?format=md" })}
             </p>
           </div>
           <Link
@@ -107,7 +109,7 @@ export default async function PublicHomePage({
             className="text-xs font-semibold underline"
             style={{ color: tokens.colors.primary }}
           >
-            Görsel Editörde Düzenle →
+            {t("site.homeEdit")}
           </Link>
         </div>
 
@@ -158,7 +160,7 @@ export default async function PublicHomePage({
                     style={{ color: tokens.colors.primary }}
                     className="font-semibold hover:underline"
                   >
-                    RSC Sayfasını Aç →
+                    {t("site.openPage")}
                   </Link>
                   <Link
                     href={`/${locale}/${item.slug}?format=md`}

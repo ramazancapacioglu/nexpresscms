@@ -132,6 +132,8 @@ export const sqliteContentTranslations = sqliteTable(
     /** Çeviri başka bir dilden üretildiyse kaynak dil ve o andaki kaynak özeti (kaynak değişti tespiti) */
     sourceLocale: text("source_locale"),
     sourceHash: text("source_hash"),
+    /** Çeviriye özgü yayın öznitelikleri (öne çıkan görsel alt/başlık, odak anahtar kelime, slug geçmişi); `_localized: true` ise içerik satırındakilerin yerine geçer */
+    attributes: text("attributes", { mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [
@@ -633,6 +635,8 @@ export const sqliteUsers = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     lastLoginAt: integer("last_login_at", { mode: "timestamp" }),
     sessionVersion: integer("session_version").default(0).notNull(),
+    /** Panel arayüz dili (boşsa Türkçe); içerik dilinden bağımsızdır */
+    uiLocale: text("ui_locale"),
     status: text("status").$type<"active" | "disabled">().default("active").notNull(),
     passwordChangedAt: integer("password_changed_at", { mode: "timestamp" }),
   },

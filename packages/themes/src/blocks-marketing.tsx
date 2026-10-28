@@ -1,11 +1,12 @@
 import React from "react";
+import { createTranslator } from "@nexpress/i18n";
 import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
 
 /** Vitrin ve dönüşüm blokları: hero, istatistik, bento, fiyat, CTA, yorum ızgarası. Tanımsız dönerse sıradaki grup denenir. */
-export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild }: BlockRenderContext): React.ReactElement | null | undefined {
+export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild, locale }: BlockRenderContext): React.ReactElement | null | undefined {
   const p = block.props ?? {};
   void renderChild;
 
@@ -87,7 +88,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           className="border-l-4 p-6"
         >
           <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase mb-2" style={{ color: tokens.colors.primary }}>
-            <span>⚡ Answer-First Özet (TL;DR — AI & SGE Optimize)</span>
+            <span>⚡ {createTranslator(locale ?? "tr")("blocks.tldr")}</span>
           </div>
           <RichBlock
             as="div"
