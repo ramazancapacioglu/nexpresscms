@@ -24,7 +24,7 @@ const env = pgUrl
   ? { ...process.env, DB_DIALECT: "postgresql", DATABASE_URL: pgUrl }
   : { ...process.env, DB_DIALECT: "sqlite", SQLITE_URL: `file:${path.join(dbDir, "t.db")}` };
 
-const tsx = path.resolve(import.meta.dirname, "../../../node_modules/.bin/tsx");
+const tsx = path.resolve(import.meta.dirname, "../node_modules/.bin/tsx");
 let actual: Actual;
 before(async () => {
   execFileSync(tsx, ["src/scripts/push.ts"], { cwd: path.resolve(import.meta.dirname, ".."), env, stdio: "pipe" });

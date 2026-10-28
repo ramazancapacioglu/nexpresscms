@@ -21,8 +21,8 @@ const tempPg = await createTempPgDatabase();
 const pgUrl = tempPg?.url;
 const dbDir = fs.mkdtempSync(path.join(os.tmpdir(), "nx-mig-"));
 const pkg = path.resolve(import.meta.dirname, "..");
-const tsx = path.resolve(pkg, "../../node_modules/.bin/tsx");
-const kit = path.resolve(pkg, "../../node_modules/.bin/drizzle-kit");
+const tsx = path.resolve(pkg, "node_modules/.bin/tsx");
+const kit = path.resolve(pkg, "node_modules/.bin/drizzle-kit");
 after(async () => {
   fs.rmSync(dbDir, { recursive: true, force: true });
   await tempPg?.drop();

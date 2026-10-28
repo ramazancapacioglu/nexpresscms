@@ -19,7 +19,7 @@ Object.assign(process.env, env);
 process.env.AUTH_SECRET = "test-secret-for-marketplace-encryption-0123456789";
 
 const pkg = path.resolve(import.meta.dirname, "..");
-const tsx = path.resolve(pkg, "../../node_modules/.bin/tsx");
+const tsx = path.resolve(pkg, "node_modules/.bin/tsx");
 let commerce: typeof import("../src/commerce-repository");
 let ops: typeof import("../src/commerce-ops-repository");
 let market: typeof import("../src/marketplace-repository");

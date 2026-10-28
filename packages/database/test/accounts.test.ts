@@ -14,7 +14,7 @@ const env = tempPg
   : { ...process.env, DB_DIALECT: "sqlite", SQLITE_URL: `file:${path.join(dbDir, "t.db")}` };
 Object.assign(process.env, env);
 
-const tsx = path.resolve(import.meta.dirname, "../../../node_modules/.bin/tsx");
+const tsx = path.resolve(import.meta.dirname, "../node_modules/.bin/tsx");
 let users: typeof import("../src/user-repository");
 let audit: typeof import("../src/audit-repository");
 
