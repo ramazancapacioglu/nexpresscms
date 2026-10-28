@@ -68,3 +68,12 @@ test("kiracı çözümleme: tek mod ve alt alan adı", () => {
     process.env.NEXT_PUBLIC_ROOT_DOMAIN = prev.root;
   }
 });
+
+import { BlockNodeSchema } from "../src";
+
+test("BlockNodeSchema (zod 4): iç içe bloğu doğrular, geçersiz türü ve sütun aralığı dışını reddeder", () => {
+  const ok = { id: "a", type: "section", props: {}, children: [{ id: "b", type: "paragraph", props: { text: "x" } }] };
+  assert.equal(BlockNodeSchema.safeParse(ok).success, true);
+  assert.equal(BlockNodeSchema.safeParse({ id: "a", type: "yok-boyle-tur", props: {} }).success, false);
+  assert.equal(BlockNodeSchema.safeParse({ id: "a", type: "paragraph", props: "düz metin" }).success, false);
+});

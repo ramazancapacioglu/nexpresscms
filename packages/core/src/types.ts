@@ -352,8 +352,8 @@ export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
       "code_block",
     ]),
     variant: z.string().optional(),
-    props: z.record(z.unknown()),
-    style: z.record(z.unknown()).optional() as unknown as z.ZodType<BlockStyle | undefined>,
+    props: z.record(z.string(), z.unknown()),
+    style: z.record(z.string(), z.unknown()).optional() as unknown as z.ZodType<BlockStyle | undefined>,
     children: z.array(BlockNodeSchema).optional(),
     gridSpan: z
       .object({

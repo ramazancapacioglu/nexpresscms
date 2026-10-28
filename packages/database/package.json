@@ -24,12 +24,12 @@
     "@nexpress/marketplace": "workspace:*",
     "@nexpress/themes": "workspace:*",
     "@nexpress/seo-core": "workspace:*",
-    "drizzle-orm": "^0.39.3",
+    "drizzle-orm": "^0.45.4",
     "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.31.11",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
