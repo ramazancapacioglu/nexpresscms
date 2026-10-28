@@ -3,6 +3,7 @@ import React from "react";
 import { createTranslator } from "@nexpress/i18n";
 import { resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
 import type { FormRenderContext } from "./block-context";
+import { RscForm } from "./rsc-form";
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value : fallback;
@@ -275,6 +276,12 @@ export function renderStudioCatalogBlock(
     }
 
     case "form_block": {
+      const bound = typeof p.formId === "string" ? form?.forms?.[p.formId] : undefined;
+      if (bound && form) {
+        if (bound.status !== "active") return <p style={box} className="border bg-slate-50 p-4 text-sm text-slate-600">{t("blocks.formClosed")}</p>;
+        return <RscForm form={bound} blockId={block.id} ctx={form} frame={box} title={text(p.title)} t={t} />;
+      }
+      if (typeof p.formId === "string" && p.formId) return null; // bağlı form silinmiş/bulunamadı: boş form gösterilmez
       const action = safeUrl(p.action);
       const title = <h3 className="text-lg font-bold text-slate-900">{text(p.title, t("blocks.contact"))}</h3>;
       // Dış `action` verilmişse eski davranış (GET); aksi halde gelen kutusuna POST (JS'siz)

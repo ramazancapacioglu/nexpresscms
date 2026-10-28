@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
 import { resolvePublishing } from "@nexpress/core";
-import { getPublicMediaFocal, getPublicSite, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
+import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
@@ -169,7 +169,8 @@ export default async function PublicDynamicContentPage({
 
   const t = createTranslator(locale);
   const canvas = content.schemaAttributes?.canvas === true;
-  const formCtx = { path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const pageForms = await loadPageForms(siteId, content.blocks);
+  const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
   if (canvas) {

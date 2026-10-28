@@ -1,6 +1,7 @@
 "use client";
 
 import type { BlockNode } from "@nexpress/core";
+import { FormBlockPicker } from "./form-block-picker";
 
 const CATALOG_TYPES = new Set([
   "info_box",
@@ -99,14 +100,19 @@ export function CatalogFields({
 }) {
   if (!CATALOG_TYPES.has(block.type)) return null;
   const props = block.props ?? {};
+  const bound = block.type === "form_block" && typeof props.formId === "string" && props.formId !== "";
   const scalars = Object.entries(props).filter(
-    ([, value]) => typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    ([key, value]) =>
+      (typeof value === "string" || typeof value === "number" || typeof value === "boolean") &&
+      key !== "formId" &&
+      !(bound && (key === "action" || key === "submitLabel")) // bağlı formda düğme metni ve adres kurucudan gelir
   );
-  const listKey = (["items", "slides", "buttons", "fields"] as const).find((key) => Array.isArray(props[key]));
+  const listKey = bound ? undefined : (["items", "slides", "buttons", "fields"] as const).find((key) => Array.isArray(props[key]));
   const list = listKey ? (props[listKey] as unknown[]) : null;
 
   return (
     <div className="space-y-2">
+      {block.type === "form_block" ? <FormBlockPicker value={typeof props.formId === "string" ? props.formId : ""} onChange={(formId) => onChange({ formId })} /> : null}
       {scalars.map(([key, value]) => (
         <label key={key} className="block space-y-1">
           <span className="text-[11px] font-semibold">{LABELS[key] ?? key}</span>

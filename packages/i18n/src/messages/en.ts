@@ -85,6 +85,7 @@ export const en: Messages = {
     progress: "Progress",
     contact: "Contact",
     formSent: "Your message has been received. Thank you.",
+    formClosed: "This form is not accepting submissions right now.",
     formError: "Could not send. Please check the fields and try again.",
     submit: "Send",
     openMap: "Open in maps",

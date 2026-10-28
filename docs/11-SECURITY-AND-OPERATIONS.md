@@ -57,6 +57,7 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 | `MCP_AGENT_KEY` | MCP yazma araçları (boşsa kapalı) |
 | `INDEXNOW_API_KEY` | IndexNow bildirimi ve `/indexnow-key.txt` |
 | `EMBEDDING_PROVIDER` / `EMBEDDING_MODEL` / `OPENAI_BASE_URL` | arama dizini gömme sağlayıcısı (boşsa `OPENAI_API_KEY` varsa openai, yoksa yerel) |
+| `SMTP_URL` | form e-postaları için yedek SMTP bağlantısı (`smtp://kullanici:parola@sunucu:587`); panelden SMTP açıksa o kullanılır |
 | `MEDIA_DIR` | yüklenen görseller ve türevleri (kalıcı birim; varsayılan `./data/media`) |
 | `PUBLIC_CACHE_SECONDS` | ziyaretçi HTML'i için CDN `s-maxage` (0 = kapalı; derlemede okunur) |
 
@@ -78,6 +79,9 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 - **Form gönderimi (`/api/forms/submit`):** JS'siz HTML POST, yanıt 303. Katmanlar: bal küpü alanı `website` (doluysa sessizce başarılı gösterilir, kaydedilmez), HMAC zaman belirteci (3 sn – 24 sa; çok hızlı/eski/bozuk → hata), IP özeti başına 5 gönderim / 10 dk, form tanımı istemciden değil yayınlanmış içerikteki bloktan okunur (kiracıya kapalı), alan doğrulaması (tür, uzunluk, toplam bayt), 2'den fazla bağlantı içeren metin `spam` işaretlenir. IP ham saklanmaz (özet). Kayıtlar 365 gün sonra zamanlayıcıyla silinir. CSV dışa aktarma formül enjeksiyonuna karşı önek koyar. Silme yalnızca admin.
 - **Yedek (`/admin/backup`, `/api/admin/backup/*`, yalnızca admin):** `.nxbackup` = zip (manifest + `data/<tablo>.json` + isteğe bağlı `media/<id>/original`, dosya başına SHA-256). İçerik, çeviri, bağlantılar, taksonomi, menü/yerleşim, medya kayıtları, yönlendirme, yüklenen temalar, eklenti ayarları (lisans anahtarı hariç), site ayarları. **Girmez:** kullanıcılar, parolalar, oturumlar, denetim günlüğü, arama dizini, revizyonlar, ticaret. Form gönderimleri ve yorumlar yalnızca "kişisel veri" seçilirse girer.
 - **İçe aktarma:** önce `dryRun=1` doğrulaması (zip bombası sınırları, güvenli dosya adları, özet, sürüm). `merge` yalnızca eksikleri ekler; `replace` kiracının yedek tablolarını siler ve `GERI YUKLE` onay metni ister; tek işlemde çalışır. Kimlikler genel birincil anahtardır: başka kiracıya ait kimlikle çakışan satırlar atlanır ve raporlanır. İçe aktarmadan sonra arama dizini yeniden kurulmalıdır.
+
+- **Form e-postası:** SMTP ayarları `sites.settings.email` içinde, parola `secret-box` ile şifreli; panele geri verilmez, boş bırakılan parola korunur, yedek dosyasına girmez ve `replace` içe aktarması mevcut parolayı korur. Gönderim `after()` ile yanıttan sonra yapılır; sonuç `form_submissions.notify_status` alanındadır. E-posta içeriği HTML'de kaçışlanır, konu tek satıra indirilir, ziyaretçiye yanıt yalnızca e-posta türlü alana ve spam olmayan gönderime gider (hız sınırı ve bal küpü aynen geçerli).
+- **Form tanımı güvenliği:** alan listesi sunucuda normalleştirilir (sınırlar, ayrılmış ad `website`, tür/seçenek doğrulaması); yönlendirme yalnızca site içi yoldur; gönderim her zaman sunucudaki tanıma göre doğrulanır, duraklatılmış/arşivlenmiş form gönderim almaz. Form düzenleme `requireUser`, silme ve SMTP `requireAdmin`.
 
 ## 9. Derleme izolasyonu
 

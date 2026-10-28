@@ -112,7 +112,23 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   timezone: "Europe/Istanbul",
 };
 
+/** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
+export interface EmailSettings {
+  enabled: boolean;
+  host: string;
+  port: number;
+  /** true: örtük TLS (genelde 465); false: STARTTLS (587) */
+  secure: boolean;
+  user: string;
+  password: string;
+  fromName: string;
+  fromEmail: string;
+}
+
+export const DEFAULT_EMAIL_SETTINGS: EmailSettings = { enabled: false, host: "", port: 587, secure: false, user: "", password: "", fromName: "", fromEmail: "" };
+
 export interface SiteSettings {
+  email: EmailSettings;
   seo: SeoEngineSettings;
   customizer: SiteCustomizerSettings;
   general: GeneralSettings;
@@ -226,6 +242,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
   return {
     seo: mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
     general: mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
+    email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {
       typography: mergeSection(d.typography, c.typography),
       layout: mergeSection(d.layout, c.layout),

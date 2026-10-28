@@ -12,7 +12,8 @@ export async function GET(request: Request) {
   if ("response" in auth) return auth.response;
   const s = new URL(request.url).searchParams.get("status") as FormStatus | null;
   const status = s && FORM_STATUSES.includes(s) ? s : undefined;
-  const rows = await getFormSubmissionRepository(auth.session.siteId).list({ status, limit: 5000 });
+  const formId = new URL(request.url).searchParams.get("form") || undefined;
+  const rows = await getFormSubmissionRepository(auth.session.siteId).list({ status, formId, limit: 5000 });
   const names = [...new Set(rows.flatMap((r) => r.fields.map((f) => f.label)))];
   const csv = toCsv([
     ["Tarih", "Durum", "Sayfa", "Form", ...names],

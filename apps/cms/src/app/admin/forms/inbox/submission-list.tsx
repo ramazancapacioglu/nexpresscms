@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { FormStatus } from "@nexpress/database";
-import { deleteSubmissionsAction, setSubmissionStatusAction } from "./actions";
+import { deleteSubmissionsAction, setSubmissionStatusAction } from "../actions";
 
 interface Item {
   id: string;
@@ -11,6 +11,8 @@ interface Item {
   formTitle: string;
   fields: Array<{ name: string; label: string; value: string }>;
   createdAt: string;
+  notifyStatus: string;
+  notifyError: string;
 }
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
@@ -39,6 +41,11 @@ export function SubmissionList({ items, status, isAdmin }: { items: Item[]; stat
             </div>
             {expanded && (
               <div className="mt-3 space-y-2 rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-3">
+                {i.notifyStatus && i.notifyStatus !== "skipped" && (
+                  <p className={`text-[11px] ${i.notifyStatus === "failed" ? "text-red-600" : "text-[#8C9099]"}`}>
+                    E-posta bildirimi: {i.notifyStatus === "sent" ? "gönderildi" : `gönderilemedi${i.notifyError ? ` (${i.notifyError})` : ""}`}
+                  </p>
+                )}
                 {i.fields.map((f) => (
                   <div key={f.name}>
                     <p className="text-[11px] font-medium text-[#8C9099]">{f.label}</p>

@@ -88,6 +88,7 @@ export const tr = {
     progress: "İlerleme",
     contact: "İletişim",
     formSent: "Mesajınız alındı. Teşekkürler.",
+    formClosed: "Bu form şu anda gönderim kabul etmiyor.",
     formError: "Gönderilemedi. Alanları kontrol edip tekrar deneyin.",
     submit: "Gönder",
     openMap: "Haritada aç",

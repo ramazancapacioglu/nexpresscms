@@ -20,6 +20,7 @@ export const BACKUP_TABLES = [
   "redirects",
   "installedThemes",
   "sitePlugins",
+  "forms",
   "formSubmissions",
 ] as const;
 export type BackupTable = (typeof BACKUP_TABLES)[number];
@@ -82,7 +83,13 @@ export class BackupRepository {
       const omit = OMIT_COLUMNS[name] ?? [];
       tables[name] = rows.map((r) => Object.fromEntries(Object.entries(r).filter(([k]) => !omit.includes(k))));
     }
-    return { site: site ? Object.fromEntries(SITE_FIELDS.map((k) => [k, site[k]])) : null, tables };
+    const snap = site ? (Object.fromEntries(SITE_FIELDS.map((k) => [k, site[k]])) as SiteSnapshot) : null;
+    // SMTP parolası (şifreli de olsa) yedek dosyasına girmez
+    if (snap?.settings && typeof snap.settings === "object") {
+      const settings = snap.settings as Record<string, unknown>;
+      if (settings.email && typeof settings.email === "object") snap.settings = { ...settings, email: { ...(settings.email as object), password: "" } };
+    }
+    return { site: snap, tables };
   }
 
   /**
@@ -132,6 +139,10 @@ export class BackupRepository {
       if (mode === "replace" && data.site) {
         const patch: Record<string, unknown> = {};
         for (const k of SITE_FIELDS) if (data.site[k] !== undefined && data.site[k] !== null) patch[k] = data.site[k];
+        // Yedekte parola yok: mevcut SMTP parolası korunur
+        const cur = (await tx.select({ settings: t.sites.settings }).from(t.sites).where(eq(t.sites.siteId, this.siteId)).limit(1))[0]?.settings as { email?: { password?: string } } | undefined;
+        const incoming = patch.settings as { email?: Record<string, unknown> } | undefined;
+        if (incoming?.email && cur?.email?.password) patch.settings = { ...incoming, email: { ...incoming.email, password: cur.email.password } };
         if (Object.keys(patch).length > 0) {
           await tx.update(t.sites).set({ ...patch, updatedAt: new Date() } as never).where(eq(t.sites.siteId, this.siteId));
           report.siteRestored = true;

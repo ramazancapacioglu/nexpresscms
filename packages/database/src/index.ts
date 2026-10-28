@@ -10,6 +10,7 @@ export * from "./agent-requests-repository";
 export * from "./ai-referral-repository";
 export * from "./redirects-repository";
 export * from "./form-repository";
+export * from "./form-definition-repository";
 export * from "./backup-repository";
 export * from "./repository";
 export * from "./site-identity-repository";

@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Form modülü: sürükle-bırak kurucu, şablonlar, e-posta bildirimi, analiz
+- ✅ **Kurucu:** `/admin/forms/[id]` (`@dnd-kit`), 15 alan türü, 8 şablon, genişlik (tam/yarım), seçenek/sınır/yardım alanları; `form_block` denetçisinde form seçici (`/api/admin/forms/options`).
+- ✅ **Şema:** `forms` tablosu + `form_submissions.notify_*` (göç `0010_forms_builder`, iki motor); `forms` yedeğe girer; SMTP parolası yedeğe girmez.
+- ✅ **E-posta:** `lib/mailer.ts` (nodemailer), `lib/form-notify.ts`, `/admin/forms/email`; `after()` ile yanıttan sonra gönderim, sonuç gönderimde saklanır. Yerel SMTP alıcısıyla doğrulandı (bildirim + otomatik yanıt, Reply-To, HTML kaçışı).
+- ✅ **Analiz:** `analyzeSubmissions` + `/admin/forms/[id]/analytics`; gelen kutusu `/admin/forms/inbox` (form süzgeci, e-posta durumu).
+- ✅ Testler: core (doğrulama, normalleştirme, şablonlar, analiz), database (tanım deposu, özet, yedek/SMTP) — SQLite ve PostgreSQL. Ziyaretçi bütçesi (≈101 kB) korundu. Ayrıntı: `docs/16-FORMS.md`.
+- ⚠️ Sürükle-bırak yalnızca sentetik işaretçi olaylarıyla doğrulandı (paletten ekleme, yeniden sıralama); gerçek fare/dokunmatik ve klavye sürüklemesi elle denenmeli.
+
 ### [2026-10-28] — F14 (2): formlar + gelen kutusu, yedekleme / geri yükleme
 - ✅ **Formlar:** `form_submissions` (göç `0009`), `form_block` JS'siz POST, `/api/forms/submit` (bal küpü, HMAC zaman belirteci, hız sınırı, spam sezgisi), `/admin/forms` gelen kutusu ve CSV, 365 gün saklama. Uçtan uca doğrulandı (hızlı/bozuk belirteç hata, bal küpü sessiz, 5. sonrası hız sınırı, spam işareti).
 - ✅ **Yedek:** `BackupRepository` (iki motor, tek işlem), `lib/backup.ts` paketleme/doğrulama, `/admin/backup` arayüzü; kuru doğrulama, birleştir/değiştir, onay metni, bozuk/sahte paket reddi doğrulandı.

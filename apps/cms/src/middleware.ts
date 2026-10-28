@@ -4,7 +4,7 @@ import { verifySessionToken } from "@nexpress/core/session";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
-const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup"];
+const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email"];
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;

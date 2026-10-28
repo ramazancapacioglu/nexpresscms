@@ -3,6 +3,8 @@ import type { BlockNode, DesignTokens } from "@nexpress/core";
 import type { MediaFocalMap } from "./responsive-image";
 
 export interface FormRenderContext {
+  /** `form_block`ların `props.formId` ile bağlandığı kurucu formları (kimlik → tanım) */
+  forms?: Record<string, import("./rsc-form").PublicFormDef>;
   path: string;
   token: string;
   status?: "sent" | "error" | null;

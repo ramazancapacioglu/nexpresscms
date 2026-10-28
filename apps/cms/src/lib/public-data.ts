@@ -1,7 +1,13 @@
 import "server-only";
-import { resolvePublishing } from "@nexpress/core";
-import { getScopedRepository, getSitemapRepository } from "@nexpress/database";
+import { collectFormIds, resolvePublishing, type BlockNode } from "@nexpress/core";
+import { getFormDefinitionRepository, getScopedRepository, getSitemapRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
+
+/** `form_block`ların bağlı olduğu kurucu formlar (virgüllü kimlik listesi → kimlik → tanım); yönetim kaydında düşer. */
+export const getPublicForms = cachedRead("forms", async (siteId: string, ids: string) => {
+  const defs = await getFormDefinitionRepository(siteId).getMany(ids.split(",").filter(Boolean));
+  return Object.fromEntries(defs.map((f) => [f.id, { id: f.id, name: f.name, status: f.status, spec: f.spec }]));
+});
 
 /**
  * Ziyaretçi sayfalarının veritabanı okumaları. Hepsi `cachedRead` ile istekler arası
@@ -56,3 +62,9 @@ export const getPublicMediaFocal = cachedRead("media-focal", async (siteId: stri
   }
   return map;
 });
+
+/** Sayfa bloklarındaki bağlı formları yükler (yoksa boş nesne). */
+export async function loadPageForms(siteId: string, blocks: BlockNode[]) {
+  const ids = [...collectFormIds(blocks)].sort();
+  return ids.length ? getPublicForms(siteId, ids.join(",")) : {};
+}

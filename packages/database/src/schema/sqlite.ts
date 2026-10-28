@@ -851,6 +851,9 @@ export const sqliteFormSubmissions = sqliteTable(
     /** new | read | spam | archived */
     status: text("status").default("new").notNull(),
     ipHash: text("ip_hash").default("").notNull(),
+    /** E-posta bildirimi: "" (gönderilmedi) | sent | failed | skipped */
+    notifyStatus: text("notify_status").default("").notNull(),
+    notifyError: text("notify_error").default("").notNull(),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
@@ -858,4 +861,25 @@ export const sqliteFormSubmissions = sqliteTable(
     index("form_submissions_status_idx").on(t.siteId, t.status, t.createdAt),
     index("form_submissions_ip_idx").on(t.siteId, t.ipHash, t.createdAt),
   ]
+);
+
+/**
+ * FORMLAR — sürükle-bırak kurucuyla tanımlanan form şablonları. Alanlar `spec`te, e-posta bildirimi `notify`dadır.
+ * `form_block` bloğu `props.formId` ile buna bağlanır; gönderimler `form_submissions.form_id` ile eşleşir.
+ */
+export const sqliteForms = sqliteTable(
+  "forms",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    name: text("name").notNull(),
+    /** active | paused | archived: yalnızca `active` gönderim kabul eder */
+    status: text("status").default("active").notNull(),
+    templateId: text("template_id"),
+    spec: text("spec", { mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    notify: text("notify", { mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("forms_site_id_idx").on(t.siteId), index("forms_site_status_idx").on(t.siteId, t.status)]
 );

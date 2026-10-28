@@ -7,12 +7,12 @@ test("alan tanımı: geçersiz ad/tür düzeltilir, yinelenen atılır, boşsa v
   assert.equal(resolveFormFields([]), DEFAULT_FORM_FIELDS);
   const f = resolveFormFields([{ name: "ad", label: "Ad", type: "text", required: true }, { name: "ad", label: "Yinelenen" }, { name: "Bozuk Ad!", label: "", type: "zip" }, null]);
   assert.deepEqual(f.map((x) => [x.name, x.type, x.required]), [["ad", "text", true], ["alan_2", "text", false], ["alan_3", "text", false]]);
-  assert.equal(resolveFormFields(Array.from({ length: 50 }, (_, i) => ({ name: `a${i}` }))).length, 20);
+  assert.equal(resolveFormFields(Array.from({ length: 200 }, (_, i) => ({ name: `a${i}` }))).length, 60);
 });
 
 test("doğrulama: zorunlu, e-posta, telefon, sayı, uzunluk; fazlalık alan yok sayılır", () => {
   const defs = resolveFormFields([{ name: "ad", label: "Ad", required: true }, { name: "e", label: "E", type: "email", required: true }, { name: "t", label: "T", type: "tel" }, { name: "n", label: "N", type: "number" }]);
-  assert.deepEqual(validateSubmission(defs, { ad: " Ayşe ", e: "a@x.test", gizli: "yok sayılır" }), { ok: true, values: [{ name: "ad", label: "Ad", value: "Ayşe" }, { name: "e", label: "E", value: "a@x.test" }] });
+  assert.deepEqual(validateSubmission(defs, { ad: " Ayşe ", e: "a@x.test", gizli: "yok sayılır" }), { ok: true, values: [{ name: "ad", label: "Ad", type: "text", value: "Ayşe" }, { name: "e", label: "E", type: "email", value: "a@x.test" }] });
   const bad = validateSubmission(defs, { e: "bozuk", t: "abc", n: "x" });
   assert.ok(!bad.ok);
   if (!bad.ok) assert.deepEqual(Object.keys(bad.errors).sort(), ["ad", "e", "n", "t"]);

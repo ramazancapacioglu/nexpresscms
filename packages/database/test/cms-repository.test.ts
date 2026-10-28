@@ -595,3 +595,73 @@ test("yedek: dışa aktar → değiştir → replace ile geri yükle (JSON gidi�
   await assert.rejects(bk.importData(bad, "replace"));
   assert.equal((await repo.listContents({ locale: "tr" })).length, before, "hata sonrası hiçbir şey değişmedi");
 });
+
+test("form tanımları: oluştur/güncelle/durum/sil kiracıya kapalı, spec normalleşir, gönderim özeti ve e-posta durumu", async () => {
+  const { getFormDefinitionRepository } = await import("../src/form-definition-repository");
+  const { getFormSubmissionRepository } = await import("../src/form-repository");
+  const a = getFormDefinitionRepository("default");
+  const b = getFormDefinitionRepository("baska-site");
+  const f = await a.create({ name: "  Teklif  ", spec: { fields: [{ name: "e", label: "E-posta", type: "email", required: true }, { name: "website", label: "x", type: "text" }, { name: "s", label: "Seç", type: "select" }], redirectUrl: "https://kotu.example" }, notify: { enabled: true, to: "a@x.co, bozuk" } });
+  assert.match(f.id, /^frm_[a-z0-9]+$/);
+  assert.equal(f.name, "Teklif");
+  assert.equal(f.spec.redirectUrl, "", "dış yönlendirme atılır");
+  assert.equal(f.spec.fields.some((x) => x.name === "website"), false, "ayrılmış ad kullanılamaz");
+  assert.deepEqual(f.spec.fields.find((x) => x.type === "select")!.options, ["Seçenek 1", "Seçenek 2"]);
+  assert.deepEqual(f.notify.to, ["a@x.co"]);
+  assert.equal(await b.get(f.id), null, "başka kiracı görmez");
+  assert.equal(await b.update(f.id, { name: "Ele geçirildi", spec: {} }), null);
+  assert.equal(await b.remove(f.id), false);
+  assert.equal(await b.setStatus(f.id, "archived"), false);
+  assert.equal((await a.get(f.id))!.name, "Teklif");
+
+  const up = (await a.update(f.id, { name: "Teklif 2", status: "paused", spec: { fields: f.spec.fields, submitLabel: "Yolla" } }))!;
+  assert.equal(up.name, "Teklif 2");
+  assert.equal(up.status, "paused");
+  assert.equal(up.spec.submitLabel, "Yolla");
+  assert.equal(up.notify.enabled, true, "bildirim verilmediyse korunur");
+  assert.deepEqual((await a.list()).map((x) => x.id), [f.id]);
+  assert.equal(await a.setStatus(f.id, "archived"), true);
+  assert.equal((await a.list()).length, 0, "arşiv varsayılan listede yok");
+  assert.equal((await a.list({ includeArchived: true })).length, 1);
+  assert.equal((await a.getMany([f.id, "frm_yok"])).length, 1);
+
+  const subs = getFormSubmissionRepository("default");
+  const s1 = await subs.create({ pagePath: "/tr/a", locale: "tr", formId: f.id, formTitle: "Teklif", fields: [{ name: "e", label: "E", value: "a@b.co", type: "email" }, { name: "c", label: "C", value: "x, y", type: "checkboxes", values: ["x", "y"] }] });
+  await subs.create({ pagePath: "/tr/a", locale: "tr", formId: f.id, formTitle: "Teklif", fields: [], status: "spam" });
+  await subs.create({ pagePath: "/tr/a", locale: "tr", formId: "blk_eski", formTitle: "", fields: [] });
+  const sum = await subs.summaryByForm();
+  assert.deepEqual([sum[f.id]!.total, sum[f.id]!.new, sum[f.id]!.last30], [2, 1, 1], "spam son 30 gün sayısına girmez");
+  assert.equal(sum.blk_eski!.total, 1);
+  assert.equal((await subs.list({ formId: f.id })).length, 2);
+  assert.deepEqual(await subs.counts(f.id), { new: 1, read: 0, spam: 1, archived: 0 });
+  const got = (await subs.list({ formId: f.id })).find((x) => x.id === s1)!;
+  assert.deepEqual(got.fields[1]!.values, ["x", "y"], "çoklu seçim değerleri korunur");
+  assert.equal(got.notifyStatus, "");
+  await subs.setNotify(s1, "failed", "x".repeat(500));
+  const after = (await subs.list({ formId: f.id })).find((x) => x.id === s1)!;
+  assert.equal(after.notifyStatus, "failed");
+  assert.equal(after.notifyError.length, 300);
+  assert.equal(await a.remove(f.id), true);
+  assert.equal(await a.get(f.id), null);
+});
+
+test("e-posta ayarları: kısmi kaydedilir, parola yedeğe girmez ve replace'te korunur, forms tablosu yedeğe girer", async () => {
+  const { getBackupRepository } = await import("../src/backup-repository");
+  const { getFormDefinitionRepository } = await import("../src/form-definition-repository");
+  const { stringifyWithDates, parseWithDates } = await import("@nexpress/core");
+  const saved = await repo.saveSiteSettings({ email: { enabled: true, host: "smtp.x.test", port: 465, secure: true, password: "enc:v1:gizli" } });
+  assert.equal(saved.email.host, "smtp.x.test");
+  assert.equal(saved.email.user, "", "verilmeyen alan varsayılan");
+  assert.equal(saved.general.timezone.length > 0, true, "diğer bölümler bozulmaz");
+  const form = await getFormDefinitionRepository("default").create({ name: "Yedek formu", spec: { fields: [{ name: "a", label: "A", type: "text" }] } });
+  const bk = getBackupRepository("default");
+  const data = parseWithDates<Awaited<ReturnType<typeof bk.exportData>>>(stringifyWithDates(await bk.exportData({ personal: false })));
+  assert.ok(data.tables.forms!.some((r) => r.id === form.id));
+  assert.equal(JSON.stringify(data).includes("gizli"), false, "SMTP parolası yedekte yok");
+  assert.equal((data.site!.settings as { email: { host: string; password: string } }).email.host, "smtp.x.test");
+  await bk.importData(data, "replace");
+  const after = (await repo.getSite())!.settings.email;
+  assert.equal(after.password, "enc:v1:gizli", "replace mevcut parolayı korur");
+  assert.equal(after.host, "smtp.x.test");
+  assert.ok(await getFormDefinitionRepository("default").get(form.id), "form geri yüklendi");
+});

@@ -1,8 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { resolveFormFields, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
-import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
+import { NextResponse, after, type NextRequest } from "next/server";
+import { resolveFormFields, safeInternalPath, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
+import { getFormDefinitionRepository, getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { ipDigest, verifyFormToken } from "@/lib/form-token";
+import { notifySubmission } from "@/lib/form-notify";
 
 export const runtime = "nodejs";
 
@@ -62,20 +63,20 @@ export async function POST(request: NextRequest) {
   const inbox = getFormSubmissionRepository(siteId);
   if ((await inbox.recentFromIp(ipHash, RATE_WINDOW_MS)) >= RATE_MAX) return back("error", blockId);
 
-  const defs = resolveFormFields((block.props as Record<string, unknown>)?.fields);
-  const raw: Record<string, unknown> = {};
-  for (const d of defs) raw[d.name] = form.get(d.name);
+  // Kurucu formu (props.formId) ya da eski satır içi alanlar. Tanım her zaman sunucudan okunur.
+  const props = (block.props ?? {}) as Record<string, unknown>;
+  const bound = typeof props.formId === "string" && props.formId ? await getFormDefinitionRepository(siteId).get(props.formId) : null;
+  if (typeof props.formId === "string" && props.formId && (!bound || bound.status !== "active")) return back("error", blockId);
+  const defs = bound ? bound.spec.fields : resolveFormFields(props.fields);
+  const raw: Record<string, string | string[]> = {};
+  for (const d of defs) raw[d.name] = d.type === "checkboxes" ? form.getAll(d.name).filter((x): x is string => typeof x === "string") : get(d.name);
   const result = validateSubmission(defs, raw);
   if (!result.ok) return back("error", blockId);
 
-  await inbox.create({
-    pagePath: path,
-    locale,
-    formId: block.id,
-    formTitle: typeof (block.props as Record<string, unknown>)?.title === "string" ? ((block.props as Record<string, unknown>).title as string) : "",
-    fields: result.values,
-    status: spamReasons(result.values).length > 0 ? "spam" : "new",
-    ipHash,
-  });
-  return back("sent", blockId);
+  const status = spamReasons(result.values).length > 0 ? "spam" : "new";
+  const title = bound?.name ?? (typeof props.title === "string" ? props.title : "");
+  const id = await inbox.create({ pagePath: path, locale, formId: bound?.id ?? block.id, formTitle: title, fields: result.values, status, ipHash });
+  if (bound) after(() => notifySubmission({ siteId, form: bound, submissionId: id, values: result.values, pagePath: path, status }).catch(() => undefined));
+  const target = bound ? safeInternalPath(bound.spec.redirectUrl) : "";
+  return target ? NextResponse.redirect(new URL(target, request.url), 303) : back("sent", blockId);
 }

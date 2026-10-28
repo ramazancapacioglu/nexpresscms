@@ -1,7 +1,7 @@
 import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
-import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
 import { buildPageSchemaGraph } from "@nexpress/seo-core";
 import type { Metadata } from "next";
@@ -86,7 +86,7 @@ export default async function PublicHomePage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
-          form={{ path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
+          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
         />
       ) : (
         <div className="rounded-xl border p-8 text-center">
