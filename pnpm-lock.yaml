@@ -23,6 +23,9 @@ importers:
 
   apps/cms:
     dependencies:
+      '@libsql/client':
+        specifier: ^0.14.0
+        version: 0.14.0
       '@nexpress-pro/agentic-seo':
         specifier: workspace:^
         version: link:../../plugins-pro/agentic-seo-pro
@@ -80,6 +83,9 @@ importers:
       next-themes:
         specifier: ^0.4.4
         version: 0.4.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.9
       react:
         specifier: ^19.0.0
         version: 19.3.1
