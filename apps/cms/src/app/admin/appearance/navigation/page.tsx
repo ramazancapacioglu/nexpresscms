@@ -13,7 +13,7 @@ export default function AppearanceHubPage() {
     <div className="space-y-4">
       <header className="border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <h1 className="text-[18px] font-semibold">Yerleşim</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Header, menü, footer ve kenar çubuğu sayfa bloklarından ayrı kayıtlardır.
         </p>
       </header>
@@ -25,7 +25,7 @@ export default function AppearanceHubPage() {
             className="rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]"
           >
             <div className="text-[13px] font-semibold">{item.title}</div>
-            <p className="mt-1 text-[12px] text-[#8C9099]">{item.text}</p>
+            <p className="mt-1 text-[12px] text-[#5F6570] dark:text-[#8C9099]">{item.text}</p>
           </Link>
         ))}
       </div>

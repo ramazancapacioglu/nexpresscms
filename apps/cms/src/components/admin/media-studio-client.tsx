@@ -148,10 +148,10 @@ export function MediaStudioClient({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E7EA] dark:border-[#23262E] pb-3">
         <div>
           <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
-            <ImageIcon className="h-4 w-4 text-[#266DF0]" />
+            <ImageIcon className="h-4 w-4 text-[#1D5ED8] dark:text-[#7AA7FF]" />
             <span>Medya Kütüphanesi & Görsel SEO Denetçisi</span>
           </h1>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             Tüm görseller için Alt Text, Title, Figcaption, Odak Noktası (Focal Point) ve Schema.org ImageObject optimizasyonu.
           </p>
         </div>
@@ -160,14 +160,14 @@ export function MediaStudioClient({
           <span className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 py-1">
             Toplam Medya: {assets.length}
           </span>
-          <span className="rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 px-2.5 py-1">
+          <span className="rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 px-2.5 py-1">
             Eksik Alt Metin: {assets.filter((a) => !a.altText.trim()).length}
           </span>
         </div>
       </div>
 
       {banner && (
-        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12px] text-emerald-700 flex items-center gap-2">
+        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12px] text-emerald-800 flex items-center gap-2">
           <Check className="h-4 w-4" />
           <span>{banner}</span>
         </div>
@@ -204,7 +204,7 @@ export function MediaStudioClient({
             {folders.map((f) => <option key={f.id} value={f.id}>{"— ".repeat(folderPath(folders, f.id).length - 1)}{f.name}</option>)}
           </select>
           <button type="button" disabled={!moveTarget || isPending} onClick={() => moveChecked(moveTarget === "__root" ? null : moveTarget)} className="h-7 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-50">Taşı</button>
-          <button type="button" onClick={() => setChecked(new Set(visible.map((a) => a.id)))} className="text-[#266DF0] underline">Görünenlerin hepsi</button>
+          <button type="button" onClick={() => setChecked(new Set(visible.map((a) => a.id)))} className="text-[#1D5ED8] dark:text-[#7AA7FF] underline">Görünenlerin hepsi</button>
           <button type="button" onClick={() => setChecked(new Set())} className="text-[#5C5F66] underline">Seçimi temizle</button>
         </div>
       )}
@@ -219,7 +219,7 @@ export function MediaStudioClient({
             onSubmit={handleCreateMedia}
             className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] p-4 space-y-3 text-[12px]"
           >
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#266DF0] flex items-center gap-1.5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#1D5ED8] dark:text-[#7AA7FF] flex items-center gap-1.5">
               <Plus className="h-3.5 w-3.5" />
               <span>Yeni Medya Varlığı & Görsel SEO Kaydı Ekle</span>
             </div>
@@ -229,6 +229,7 @@ export function MediaStudioClient({
                 value={newFilename}
                 onChange={(e) => setNewFilename(e.target.value)}
                 placeholder="Dosya Adı (örn: nexpress-hero-2026.webp)"
+                aria-label="Dosya Adı (örn: nexpress-hero-2026.webp)"
                 className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
               />
               <input
@@ -237,6 +238,7 @@ export function MediaStudioClient({
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
                 placeholder="Görsel URL veya SVG Data URI..."
+                aria-label="Görsel URL veya SVG Data URI..."
                 className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 font-mono text-[11px] outline-none"
               />
               <input
@@ -245,6 +247,7 @@ export function MediaStudioClient({
                 value={newAlt}
                 onChange={(e) => setNewAlt(e.target.value)}
                 placeholder="SEO Alt Metni (altText — Zorunlu)"
+                aria-label="SEO Alt Metni (altText — Zorunlu)"
                 className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
               />
               <input
@@ -252,6 +255,7 @@ export function MediaStudioClient({
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Görsel Title Etiketi (titleText)"
+                aria-label="Görsel Title Etiketi (titleText)"
                 className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
               />
             </div>
@@ -261,6 +265,7 @@ export function MediaStudioClient({
                 value={newCaption}
                 onChange={(e) => setNewCaption(e.target.value)}
                 placeholder="Görsel Altı Açıklaması (Figcaption — SGE & Bağlamsal SEO için önerilir)..."
+                aria-label="Görsel Altı Açıklaması (Figcaption — SGE & Bağlamsal SEO için önerilir)..."
                 className="flex-1 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
               />
               <button
@@ -278,11 +283,11 @@ export function MediaStudioClient({
         {selected && (
           <div className="lg:col-span-4 sticky top-12 rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] p-4 space-y-3.5 text-[12px]">
             <div className="flex items-center justify-between border-b border-[#E6E7EA] dark:border-[#23262E] pb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#266DF0] flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1D5ED8] dark:text-[#7AA7FF] flex items-center gap-1.5">
                 <Sliders className="h-3.5 w-3.5" />
                 <span>Görsel SEO Denetçisi</span>
               </span>
-              <span className="rounded bg-emerald-500/10 text-emerald-600 px-2 py-0.5 font-mono text-[10px] font-bold">
+              <span className="rounded bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 px-2 py-0.5 font-mono text-[10px] font-bold">
                 Skor: {selected.seoScore}/100
               </span>
             </div>
@@ -297,7 +302,7 @@ export function MediaStudioClient({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+              <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                 Dosya Adı & Boyut
               </label>
               <div className="font-mono text-[11px] text-[#5C5F66]">
@@ -306,10 +311,10 @@ export function MediaStudioClient({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+              <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                 Alt Metin (altText — Google Images & Erişilebilirlik)
               </label>
-              <textarea
+              <textarea aria-label="Alt metin"
                 rows={2}
                 value={editAlt}
                 onChange={(e) => setEditAlt(e.target.value)}
@@ -318,10 +323,10 @@ export function MediaStudioClient({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+              <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                 Title Etiketi (titleText)
               </label>
-              <input
+              <input aria-label="Title Etiketi (titleText)"
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
@@ -330,10 +335,10 @@ export function MediaStudioClient({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+              <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                 Altyazı (Figcaption & MarkdownCache)
               </label>
-              <textarea
+              <textarea aria-label="Altyazı (Figcaption & MarkdownCache)"
                 rows={2}
                 value={editCaption}
                 onChange={(e) => setEditCaption(e.target.value)}
@@ -343,10 +348,10 @@ export function MediaStudioClient({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+                <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                   Odak X ({focalX}%)
                 </label>
-                <input
+                <input aria-label="Odak X (%)"
                   type="range"
                   min={0}
                   max={100}
@@ -356,10 +361,10 @@ export function MediaStudioClient({
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase text-[#8C9099]">
+                <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]">
                   Odak Y ({focalY}%)
                 </label>
-                <input
+                <input aria-label="Odak Y (%)"
                   type="range"
                   min={0}
                   max={100}
@@ -380,7 +385,7 @@ export function MediaStudioClient({
             </button>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase text-[#8C9099]" htmlFor="media-folder-select">Klasör</label>
+              <label className="text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099]" htmlFor="media-folder-select">Klasör</label>
               <select
                 id="media-folder-select"
                 value={selected.folderId ?? ""}

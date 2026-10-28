@@ -79,7 +79,7 @@ export function CommandPalette({ open, onClose, role }: { open: boolean; onClose
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-3 pt-[10vh] backdrop-blur-[1px] sm:px-4 sm:pt-20" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label="Komut paleti" onKeyDown={onKey} onClick={(e) => e.stopPropagation()} className={`w-full max-w-xl overflow-hidden rounded-lg border ${border} bg-white shadow-2xl dark:bg-[#15171C]`}>
         <div className={`flex items-center gap-2.5 border-b ${border} px-3.5 py-2.5`}>
-          <Search className="h-4 w-4 shrink-0 text-[#8C9099]" strokeWidth={1.75} aria-hidden />
+          <Search className="h-4 w-4 shrink-0 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} aria-hidden />
           <input
             ref={input}
             autoFocus
@@ -94,7 +94,7 @@ export function CommandPalette({ open, onClose, role }: { open: boolean; onClose
             placeholder="Sayfa, içerik, form, medya veya kullanıcı ara…"
             className="w-full bg-transparent text-[13px] outline-none placeholder:text-[#8C9099]"
           />
-          <button type="button" onClick={onClose} aria-label="Kapat (Esc)" className={`shrink-0 rounded border ${border} px-1.5 py-0.5 font-mono text-[10px] text-[#8C9099]`}>ESC</button>
+          <button type="button" onClick={onClose} aria-label="Kapat (Esc)" className={`shrink-0 rounded border ${border} px-1.5 py-0.5 font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]`}>ESC</button>
         </div>
         <ul id={listId} role="listbox" aria-label="Sonuçlar" className="max-h-[60vh] overflow-y-auto p-1.5 sm:max-h-80">
           {entries.map((e, i) => {
@@ -102,22 +102,22 @@ export function CommandPalette({ open, onClose, role }: { open: boolean; onClose
             lastGroup = e.group;
             return (
               <li key={e.key} role="presentation">
-                {header && <div role="presentation" className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#8C9099]">{header}</div>}
+                {header && <div role="presentation" className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">{header}</div>}
                 <div id={`${uid}-opt-${i}`} role="option" aria-selected={i === active} onMouseMove={() => setActive(i)} onClick={() => go(e)} className={`flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2 ${i === active ? "bg-[#266DF0]/10" : ""}`}>
                   <span className="min-w-0">
                     <span className="block truncate text-[12px] font-medium text-[#14151A] dark:text-[#F3F4F6]">{e.title}</span>
-                    <span className="block truncate text-[11px] text-[#8C9099]">{e.subtitle}</span>
+                    <span className="block truncate text-[11px] text-[#5F6570] dark:text-[#8C9099]">{e.subtitle}</span>
                   </span>
-                  {e.hint ? <kbd className="shrink-0 font-mono text-[10px] text-[#8C9099]">{e.hint}</kbd> : <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[#8C9099]" aria-hidden />}
+                  {e.hint ? <kbd className="shrink-0 font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{e.hint}</kbd> : <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[#5F6570] dark:text-[#8C9099]" aria-hidden />}
                 </div>
               </li>
             );
           })}
         </ul>
-        {entries.length === 0 && state !== "loading" && <p className="px-4 py-6 text-center text-[12px] text-[#8C9099]">{q.length < 2 ? "Aramak için en az 2 karakter yazın." : "Sonuç bulunamadı."}</p>}
+        {entries.length === 0 && state !== "loading" && <p className="px-4 py-6 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">{q.length < 2 ? "Aramak için en az 2 karakter yazın." : "Sonuç bulunamadı."}</p>}
         {state === "error" && <p role="alert" className="border-t border-red-500/20 px-4 py-2 text-[11px] text-red-600">Veri araması şu an çalışmıyor; yalnızca sayfalar listeleniyor.</p>}
         <div className="sr-only" aria-live="polite">{state === "loading" ? "Aranıyor" : `${entries.length} sonuç`}</div>
-        <div className={`flex justify-between border-t ${border} px-3 py-1.5 text-[10px] text-[#8C9099]`}><span>↑↓ seç · Enter aç · Esc kapat</span><span>{state === "loading" ? "Aranıyor…" : ""}</span></div>
+        <div className={`flex justify-between border-t ${border} px-3 py-1.5 text-[10px] text-[#5F6570] dark:text-[#8C9099]`}><span>↑↓ seç · Enter aç · Esc kapat</span><span>{state === "loading" ? "Aranıyor…" : ""}</span></div>
       </div>
     </div>
   );

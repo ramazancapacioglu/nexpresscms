@@ -21,7 +21,7 @@ export function CommerceProductsClient({ products }: { products: CommerceProduct
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[18px] font-semibold">Ürünler</h1>
-          <p className="text-[12px] text-[#8C9099]">Katalog, fiyat ve stok yönetimi.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Katalog, fiyat ve stok yönetimi.</p>
         </div>
         <Link
           href="/admin/commerce/products/yeni"
@@ -32,13 +32,13 @@ export function CommerceProductsClient({ products }: { products: CommerceProduct
       </header>
 
       {products.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-[#E6E7EA] p-6 text-[13px] text-[#8C9099] dark:border-[#23262E]">
+        <p className="rounded-lg border border-dashed border-[#E6E7EA] p-6 text-[13px] text-[#5F6570] dark:text-[#8C9099] dark:border-[#23262E]">
           Henüz ürün yok. Seed çalıştırabilir veya yeni ürün ekleyebilirsiniz.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[#E6E7EA] dark:border-[#23262E]">
+        <div className="overflow-x-auto rounded-lg border border-[#E6E7EA] dark:border-[#23262E]" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <table className="w-full min-w-[640px] text-left text-[12px]">
-            <thead className="bg-[#F7F8FA] text-[#8C9099] dark:bg-[#14161B]">
+            <thead className="bg-[#F7F8FA] text-[#5F6570] dark:text-[#8C9099] dark:bg-[#14161B]">
               <tr>
                 <th className="px-3 py-2 font-medium">Ürün</th>
                 <th className="px-3 py-2 font-medium">SKU</th>
@@ -58,7 +58,7 @@ export function CommerceProductsClient({ products }: { products: CommerceProduct
                     >
                       {p.name}
                     </Link>
-                    <div className="text-[11px] text-[#8C9099]">/{p.slug}</div>
+                    <div className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">/{p.slug}</div>
                   </td>
                   <td className="px-3 py-2">{p.sku}</td>
                   <td className="px-3 py-2">{formatMoney(p.priceCents, p.currency)}</td>

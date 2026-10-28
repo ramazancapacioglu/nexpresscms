@@ -13,7 +13,7 @@ export function Row({ label, children, hint }: { label: string; children: React.
     <label className="block space-y-1">
       <span className={labelCls}>{label}</span>
       {children}
-      {hint && <span className="block text-[10px] text-[#8C9099]">{hint}</span>}
+      {hint && <span className="block text-[10px] text-[#5F6570] dark:text-[#8C9099]">{hint}</span>}
     </label>
   );
 }
@@ -36,7 +36,7 @@ export function FieldInspector({ f, all, onChange }: { f: FormField; all: FormFi
   const relabel = (label: string) => onChange({ label, ...(autoName && !content ? { name: slugName(label, otherNames) } : {}) });
   return (
     <div className="space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">{kindOf(f.type).label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">{kindOf(f.type).label}</p>
       {types.length > 1 && (
         <Row label="Alan türü">
           <select className={inputCls} value={f.type} onChange={(e) => onChange({ type: e.target.value as FormFieldType })}>

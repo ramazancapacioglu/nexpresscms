@@ -15,7 +15,7 @@ export function ContentListHeader({ s }: { s: ContentListState }) {
               {isPage ? (
                 <FileText className="h-4 w-4 text-blue-600" />
               ) : (
-                <Newspaper className="h-4 w-4 text-emerald-600" />
+                <Newspaper className="h-4 w-4 text-emerald-800 dark:text-emerald-400" />
               )}
             </div>
             <h1 className="text-lg font-semibold tracking-tight text-foreground">
@@ -24,7 +24,7 @@ export function ContentListHeader({ s }: { s: ContentListState }) {
             <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-mono font-semibold text-muted-foreground">
               {filteredItems.length} kayıt
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
               <Sparkles className="h-3 w-3" />
               SEO Motoru Ort: {avgSeoScore}/100
             </span>

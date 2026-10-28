@@ -17,7 +17,7 @@ export function BlockAdvancedTab() {
                             <label className="block text-[11px] font-semibold mb-1">
                               HTML Çapa (Anchor ID)
                             </label>
-                            <input
+                            <input aria-label="HTML Çapa (Anchor ID)"
                               type="text"
                               value={selectedBlock.style?.anchorId ?? ""}
                               onChange={(e) =>

@@ -70,7 +70,7 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
               />
               <button
                 type="button"
-                className="text-[11px] text-[#8C9099]"
+                className="text-[11px] text-[#5F6570] dark:text-[#8C9099]"
                 onClick={() =>
                   setFooter((prev) => ({
                     ...prev,
@@ -93,7 +93,7 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
                   value={link.href}
                   onChange={(e) => updateLink(col.id, index, { href: e.target.value })}
                 />
-                <button type="button" className="text-[#8C9099]" onClick={() => removeLink(col.id, index)}>
+                <button type="button" className="text-[#5F6570] dark:text-[#8C9099]" onClick={() => removeLink(col.id, index)}>
                   Sil
                 </button>
               </div>

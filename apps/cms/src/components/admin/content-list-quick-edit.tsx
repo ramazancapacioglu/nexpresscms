@@ -42,7 +42,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                     <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Başlık
                     </label>
-                    <input
+                    <input aria-label="Başlık"
                       type="text"
                       value={qeTitle}
                       onChange={(e) => setQeTitle(e.target.value)}
@@ -53,7 +53,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                     <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Kalıcı Bağlantı (Slug)
                     </label>
-                    <input
+                    <input aria-label="Kalıcı Bağlantı (Slug)"
                       type="text"
                       value={qeSlug}
                       onChange={(e) => setQeSlug(e.target.value)}
@@ -65,7 +65,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                       <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                         Durum
                       </label>
-                      <select
+                      <select aria-label="Durum"
                         value={qeStatus}
                         onChange={(e) =>
                           setQeStatus(e.target.value as ContentStatus)
@@ -81,7 +81,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                       <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                         Görünürlük
                       </label>
-                      <select
+                      <select aria-label="Görünürlük"
                         value={qeVisibility}
                         onChange={(e) =>
                           setQeVisibility(e.target.value as any)
@@ -103,7 +103,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                     <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Kategoriler (Ağaç Yapısı)
                     </label>
-                    <div className="max-h-28 overflow-y-auto rounded-md border border-border bg-muted/20 p-2 space-y-1">
+                    <div className="max-h-28 overflow-y-auto rounded-md border border-border bg-muted/20 p-2 space-y-1" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
                       {flatCategoryTree.map((cat) => {
                         const checked = qeCategories.includes(cat.slug);
                         return (
@@ -168,7 +168,7 @@ export function ContentListQuickEdit({ s, item }: { s: ContentListState; item: C
                     <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Answer-First Özeti (TL;DR & Otomatik Meta Açıklama)
                     </label>
-                    <textarea
+                    <textarea aria-label="Answer-First Özeti (TL;DR & Otomatik Meta Açıklama)"
                       rows={3}
                       value={qeTldr}
                       onChange={(e) => setQeTldr(e.target.value)}

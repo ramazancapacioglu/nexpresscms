@@ -73,11 +73,11 @@ export function TrashList({ items, isAdmin }: { items: Item[]; isAdmin: boolean 
             <input type="checkbox" aria-label={`${i.title} seç`} checked={selected.has(i.contentId)} onChange={() => toggle(i.contentId)} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium text-[#14151A] dark:text-[#F3F4F6]">{i.title}</p>
-              <p className="text-[11px] text-[#8C9099]">
+              <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                 {i.type} · önceki durum: {i.previousStatus} · {fmt(i.deletedAt)}{i.deletedBy && ` · ${i.deletedBy}`}
               </p>
             </div>
-            <span className={`shrink-0 font-mono text-[11px] ${i.daysLeft <= 3 ? "text-red-600" : "text-[#8C9099]"}`}>{i.daysLeft} gün kaldı</span>
+            <span className={`shrink-0 font-mono text-[11px] ${i.daysLeft <= 3 ? "text-red-600" : "text-[#5F6570] dark:text-[#8C9099]"}`}>{i.daysLeft} gün kaldı</span>
           </li>
         ))}
       </ul>

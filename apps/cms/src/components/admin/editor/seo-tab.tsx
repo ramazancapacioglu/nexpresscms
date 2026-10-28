@@ -31,7 +31,7 @@ export function SeoTab() {
                   {/* Skor Özeti */}
                   <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                         Çekirdek SEO & GEO Motoru
                       </div>
                       <div className="text-lg font-extrabold text-foreground">
@@ -55,7 +55,7 @@ export function SeoTab() {
                     <label className="block text-[11px] font-semibold mb-1">
                       🎯 Odak Anahtar Kelime (Focus Keyword)
                     </label>
-                    <input
+                    <input aria-label="🎯 Odak Anahtar Kelime (Focus Keyword)"
                       type="text"
                       value={focusKeyword}
                       onChange={(e) => setFocusKeyword(e.target.value)}
@@ -69,7 +69,7 @@ export function SeoTab() {
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Canlı Google & AI SERP Önizlemesi
                     </div>
-                    <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono truncate">
+                    <div className="text-[11px] text-emerald-800 dark:text-emerald-400 font-mono truncate">
                       https://localhost:3000/tr/{slug}
                     </div>
                     <div className="text-sm font-semibold text-blue-600 line-clamp-1">
@@ -113,7 +113,7 @@ export function SeoTab() {
                         <label className="block text-[10px] text-muted-foreground mb-1">
                           Birincil Schema.org
                         </label>
-                        <select
+                        <select aria-label="Birincil Schema.org"
                           value={schemaType}
                           onChange={(e) => setSchemaType(e.target.value)}
                           className="h-8 w-full rounded border border-border bg-background px-2"
@@ -129,7 +129,7 @@ export function SeoTab() {
                         <label className="block text-[10px] text-muted-foreground mb-1">
                           SGE / RAG Önem (1-10)
                         </label>
-                        <input
+                        <input aria-label="SGE / RAG Önem (1-10)"
                           type="number"
                           min={1}
                           max={10}
@@ -160,7 +160,7 @@ export function SeoTab() {
                       {autoSchemaNodes.map((n: any, i: number) => (
                         <span
                           key={i}
-                          className="rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-mono"
+                          className="rounded bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-mono"
                         >
                           {String(n["@type"])}
                         </span>

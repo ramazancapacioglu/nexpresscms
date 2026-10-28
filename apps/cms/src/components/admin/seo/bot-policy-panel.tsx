@@ -28,7 +28,7 @@ export function BotPolicyPanel({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Bot politikası (robots.txt)</div>
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Bot politikası (robots.txt)</div>
         <button
           type="button"
           onClick={() => set(KNOWN_BOTS.filter((b) => b.category === "ai-training").map((b) => b.id), "block")}
@@ -45,7 +45,7 @@ export function BotPolicyPanel({
             return (
               <label key={b.id} className="flex items-center justify-between gap-2 text-[12px]">
                 <span>
-                  {b.name} <span className="text-[#8C9099]">· {b.vendor}</span>
+                  {b.name} <span className="text-[#5F6570] dark:text-[#8C9099]">· {b.vendor}</span>
                 </span>
                 <select
                   value={blocked ? "block" : "allow"}

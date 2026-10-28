@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Mobil ve erişilebilirlik turu
+- ✅ Panel kabuğu: dar ekranda kenar çubuğu çekmece (arka plan, Esc, sayfa değişince kapanır), üst çubuk sıkışması giderildi, "İçeriğe geç" + `main#main-content`.
+- ✅ Ölçülen: axe-core (4.10) ile 31 sayfa × mobil/masaüstü (yerel Chromium + `playwright-core`, test sitesi): başlangıçta kritik `button-name`/`label`/`select-name` ve ~30 sayfada renk kontrastı; sonunda kritik 0, ciddi yalnızca tema önizleme çipi (kullanıcı rengi) ve içerik kaynaklı başlık sırası. Yatay taşma tüm sayfalarda 0.
+- ✅ Kod: ikincil metin `#8C9099`→`#5F6570` (açık kipte; koyu kip aynı), marka mavisi/amber/yeşil metinler koyulaştırıldı, 41 etiketsiz kontrol `aria-label` aldı, simge düğmeleri adlandırıldı, kaydırılabilir bölgeler odaklanabilir, form kurucu kartı iç içe etkileşimsiz, ziyaretçi formunda başlık düzeyleri (h2/h3).
+- ⚠️ Tarama CI'da değil; stüdyo (`/admin/contents`) ve tema özelleştirici dar ekranda ayrıca incelenmedi; dokunma hedefleri elle ölçülmedi. Dönüştürmeler (sed/regex) geniş olduğundan görsel gerileme için panelin ana sayfaları gözle kontrol edildi (mobil ekran görüntüleri: medya, form kurucu).
+
 ### [2026-10-28] — ⌘K komut paleti veri araması
 - ✅ `core/admin-search` (normalleştirme + sıralama, test edilir), `AdminSearchRepository` (yalnızca başlık düzeyi sütunlar, kiracı ve rol kapsamlı), `GET /api/admin/search`, yeni `CommandPalette` (sayfalar + veri grupları, combobox/listbox ARIA, klavye, odak iadesi, hata durumu). Gerçek derlemede denendi: "iletisim" → "İletişim formu"; kısayol ve sonuçlar çalışıyor. DB testi iki motorda.
 

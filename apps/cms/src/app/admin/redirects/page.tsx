@@ -21,7 +21,7 @@ export default async function AdminRedirectsPage({ searchParams }: { searchParam
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Yönlendirmeler & 404</h1>
-          <p className="text-[12px] text-[#8C9099]">Elle 301/302 yönlendirmeleri ve bulunamayan adresler. Adres değişince eski adrese otomatik 301 zaten verilir; burası dış/eski adresler içindir.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Elle 301/302 yönlendirmeleri ve bulunamayan adresler. Adres değişince eski adrese otomatik 301 zaten verilir; burası dış/eski adresler içindir.</p>
         </div>
         <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-0.5 text-[12px] font-medium">
           {[

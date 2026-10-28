@@ -41,7 +41,7 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
               className="w-full min-w-0 resize-none overflow-hidden bg-transparent px-4 pb-2 text-3xl font-extrabold leading-tight tracking-tight text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
             />
           </div>
-          <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <div
             className={`mx-auto transition-all duration-200 ${
               viewport === "mobile"

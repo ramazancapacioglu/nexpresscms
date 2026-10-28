@@ -68,7 +68,7 @@ export function SeoStudio({
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <div>
           <h1 className="text-[18px] font-semibold">SEO</h1>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             {siteName} için motor ayarları ve kayıtlı skor özeti. Sayfa başlığı stüdyoda düzenlenir.
           </p>
         </div>
@@ -93,7 +93,7 @@ export function SeoStudio({
           ) : null}
         </div>
       </header>
-      {notice ? <p className="text-[12px] text-emerald-600">{notice}</p> : null}
+      {notice ? <p className="text-[12px] text-emerald-800 dark:text-emerald-400">{notice}</p> : null}
       {tab === "summary" ? <SummaryView summary={summary} /> : <SettingsView seo={seo} patch={patch} />}
     </div>
   );
@@ -135,10 +135,10 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
       <div className="grid grid-cols-2 divide-y divide-[#E6E7EA] overflow-hidden rounded-lg border border-[#E6E7EA] bg-white dark:divide-[#23262E] dark:border-[#23262E] dark:bg-[#15171C] lg:grid-cols-4 lg:divide-x lg:divide-y-0">
         {metrics.map((item) => (
           <div key={item.label} className="p-4">
-            <div className="text-[11px] text-[#8C9099]">{item.label}</div>
+            <div className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{item.label}</div>
             <div className="mt-1 text-xl font-semibold tabular-nums">
               {item.value}
-              <span className="ml-1 text-[11px] font-normal text-[#8C9099]">{item.hint}</span>
+              <span className="ml-1 text-[11px] font-normal text-[#5F6570] dark:text-[#8C9099]">{item.hint}</span>
             </div>
           </div>
         ))}
@@ -157,13 +157,13 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
             ).map(([letter, count, range]) => (
               <li key={letter} className="flex items-center justify-between">
                 <span>
-                  {letter} <span className="text-[#8C9099]">{range}</span>
+                  {letter} <span className="text-[#5F6570] dark:text-[#8C9099]">{range}</span>
                 </span>
                 <span className="tabular-nums">{count}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[11px] text-[#8C9099]">
+          <p className="mt-3 text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             Görselsiz yayın {summary.missingImage} · odak kelimesiz {summary.missingKeyword} · kısa metin {summary.thin}
           </p>
         </section>
@@ -173,10 +173,10 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
             {summary.checks.map((check) => (
               <li key={check.id} className="flex items-start justify-between gap-3 text-[12px]">
                 <span>
-                  <span className={check.ok ? "text-emerald-600" : "text-amber-600"}>{check.ok ? "Tamam" : "Eksik"}</span>
+                  <span className={check.ok ? "text-emerald-800 dark:text-emerald-400" : "text-amber-800"}>{check.ok ? "Tamam" : "Eksik"}</span>
                   <span className="ml-2">{check.label}</span>
                 </span>
-                <span className="max-w-[46%] truncate text-right text-[#8C9099]">{check.detail}</span>
+                <span className="max-w-[46%] truncate text-right text-[#5F6570] dark:text-[#8C9099]">{check.detail}</span>
               </li>
             ))}
           </ul>
@@ -198,7 +198,7 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
           Önce bakılacak kayıtlar
         </div>
         {summary.rows.length === 0 ? (
-          <p className="px-4 py-6 text-[12px] text-[#8C9099]">Açık boşluk yok.</p>
+          <p className="px-4 py-6 text-[12px] text-[#5F6570] dark:text-[#8C9099]">Açık boşluk yok.</p>
         ) : (
           <ul className="divide-y divide-[#E6E7EA] dark:divide-[#23262E]">
             {summary.rows.map((row) => (
@@ -210,7 +210,7 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
                   >
                     {row.title}
                   </Link>
-                  <p className="text-[11px] text-[#8C9099]">
+                  <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                     {contentTypeLabel(row.type)} · /{row.slug} · {row.issues.join(" · ")}
                   </p>
                 </div>
@@ -235,16 +235,16 @@ function SettingsView({
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
         <h2 className="text-[13px] font-semibold">Başlık ve açıklama</h2>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Başlık şablonu
           <input className={`${fieldClass} mt-1 font-mono`} value={seo.titleTemplate} onChange={(e) => patch({ titleTemplate: e.target.value })} />
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Ana sayfa şablonu
           <input className={`${fieldClass} mt-1 font-mono`} value={seo.homeTitleTemplate} onChange={(e) => patch({ homeTitleTemplate: e.target.value })} />
         </label>
         <div className="grid grid-cols-2 gap-2">
-          <label className="block text-[11px] text-[#8C9099]">
+          <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             Ayırıcı
             <input
               className={`${fieldClass} mt-1`}
@@ -252,7 +252,7 @@ function SettingsView({
               onChange={(e) => patch({ titleSeparator: e.target.value, separator: e.target.value })}
             />
           </label>
-          <label className="block text-[11px] text-[#8C9099]">
+          <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             En az kelime
             <input
               type="number"
@@ -263,7 +263,7 @@ function SettingsView({
             />
           </label>
         </div>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Açıklama kaynağı
           <select
             className={`${fieldClass} mt-1`}
@@ -275,7 +275,7 @@ function SettingsView({
             <option value="content">İlk paragraf</option>
           </select>
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Varsayılan meta açıklama
           <textarea
             rows={3}
@@ -287,23 +287,23 @@ function SettingsView({
       </section>
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
         <h2 className="text-[13px] font-semibold">Kimlik ve paylaşım</h2>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Kurum adı
           <input className={`${fieldClass} mt-1`} value={seo.organizationName} onChange={(e) => patch({ organizationName: e.target.value })} />
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Logo adresi
           <input className={`${fieldClass} mt-1`} value={seo.organizationLogo} onChange={(e) => patch({ organizationLogo: e.target.value })} />
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Twitter
           <input className={`${fieldClass} mt-1`} value={seo.twitterHandle} onChange={(e) => patch({ twitterHandle: e.target.value })} placeholder="@site" />
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Varsayılan paylaşım görseli
           <input className={`${fieldClass} mt-1`} value={seo.defaultOgImage} onChange={(e) => patch({ defaultOgImage: e.target.value })} />
         </label>
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Aynı kuruluş bağlantıları
           <textarea
             rows={3}
@@ -354,7 +354,7 @@ function SettingsView({
         </div>
         <WebmasterPanel value={seo.verification ?? {}} onChange={(verification) => patch({ verification })} />
         <BotPolicyPanel policy={seo.botPolicy ?? {}} onChange={(botPolicy) => patch({ botPolicy })} />
-        <label className="block text-[11px] text-[#8C9099]">
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           robots.txt ek satırları
           <textarea
             rows={4}

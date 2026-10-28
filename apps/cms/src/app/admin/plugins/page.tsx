@@ -69,7 +69,7 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#E6E7EA] dark:border-[#23262E] pb-3.5">
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Eklentiler</h1>
-          <p className="text-[12px] text-[#8C9099]">Bu site için eklentileri ve modüllerini aç/kapat. Değişiklikler anında geçerli olur.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Bu site için eklentileri ve modüllerini aç/kapat. Değişiklikler anında geçerli olur.</p>
         </div>
         <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-0.5 text-[12px] font-medium">
           {[
@@ -94,7 +94,7 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {stats.map((s) => (
               <div key={s.label} className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-3.5 py-2.5">
-                <dt className="text-[11px] text-[#8C9099]">{s.label}</dt>
+                <dt className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{s.label}</dt>
                 <dd className="text-[20px] font-semibold tabular-nums text-[#14151A] dark:text-[#F3F4F6]">{s.value}</dd>
               </div>
             ))}

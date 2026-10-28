@@ -52,7 +52,7 @@ export function SaveBar({
       <div className="flex items-center gap-3 text-[12px]">
         <span className="font-medium">{title}</span>
         {notice ? (
-          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-600">
+          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
             <Check className="h-3 w-3" />
             {notice}
           </span>
@@ -98,7 +98,7 @@ export function TemplateRow({
           className="rounded-lg border border-[#E6E7EA] bg-white p-3 text-left hover:border-[#14151A] dark:border-[#23262E] dark:bg-[#15171C]"
         >
           <div className="text-[12px] font-semibold">{tpl.name}</div>
-          <p className="mt-1 text-[11px] leading-snug text-[#8C9099]">{tpl.description}</p>
+          <p className="mt-1 text-[11px] leading-snug text-[#5F6570] dark:text-[#8C9099]">{tpl.description}</p>
         </button>
       ))}
     </div>

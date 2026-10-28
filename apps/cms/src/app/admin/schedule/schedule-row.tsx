@@ -19,12 +19,12 @@ export function ScheduleRow({ contentId, title, type, time, invalid }: { content
     });
   return (
     <li className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-[12px]">
-      <span className={`w-12 shrink-0 font-mono text-[12px] tabular-nums ${invalid ? "text-red-600" : "text-[#266DF0]"}`}>{time}</span>
+      <span className={`w-12 shrink-0 font-mono text-[12px] tabular-nums ${invalid ? "text-red-600" : "text-[#1D5ED8] dark:text-[#7AA7FF]"}`}>{time}</span>
       <div className="min-w-0 flex-1">
         <Link href={`/admin/contents?id=${encodeURIComponent(contentId)}`} className="truncate font-medium text-[#14151A] dark:text-[#F3F4F6] hover:underline">
           {title}
         </Link>
-        <p className="text-[11px] text-[#8C9099]">{type}{invalid && " · tarih eksik/geçersiz: yayınlanmaz, düzenleyin"}</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{type}{invalid && " · tarih eksik/geçersiz: yayınlanmaz, düzenleyin"}</p>
         {err && <p role="alert" className="text-[11px] text-red-600">{err}</p>}
       </div>
       <button type="button" className={btn} disabled={pending} onClick={() => act("published")}>

@@ -70,11 +70,11 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
         <span className="text-[#5C5F66] dark:text-[#9CA3AF]">veya buraya sürükleyip bırakın → <strong>{folderName}</strong></span>
         <input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Ortak alt metin (isteğe bağlı)" className={`ml-auto h-7 min-w-48 flex-1 rounded border ${border} bg-transparent px-2 sm:max-w-xs`} aria-label="Ortak alt metin" />
       </div>
-      <p className="mt-1.5 text-[11px] text-[#8C9099]">JPEG, PNG, WebP veya AVIF • dosya başına en çok 12 MB • tek seferde {MAX_FILES} dosya • EXIF/konum verisi silinir • animasyonlu ve SVG dosyalar desteklenmez.</p>
-      {note && <p role="status" className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">{note}</p>}
+      <p className="mt-1.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">JPEG, PNG, WebP veya AVIF • dosya başına en çok 12 MB • tek seferde {MAX_FILES} dosya • EXIF/konum verisi silinir • animasyonlu ve SVG dosyalar desteklenmez.</p>
+      {note && <p role="status" className="mt-1 text-[11px] text-amber-800 dark:text-amber-300">{note}</p>}
       {items.length > 0 && (
         <div className="mt-2 space-y-1" aria-live="polite">
-          <p className="text-[11px] font-medium">{running ? `Yükleniyor… ${done}/${items.length}` : `${done} dosya yüklendi${failed.length ? `, ${failed.length} hata` : ""}.`}{!running && <button type="button" onClick={() => setItems([])} className="ml-2 text-[#266DF0] underline">Temizle</button>}</p>
+          <p className="text-[11px] font-medium">{running ? `Yükleniyor… ${done}/${items.length}` : `${done} dosya yüklendi${failed.length ? `, ${failed.length} hata` : ""}.`}{!running && <button type="button" onClick={() => setItems([])} className="ml-2 text-[#1D5ED8] dark:text-[#7AA7FF] underline">Temizle</button>}</p>
           {failed.length > 0 && <ul className="list-disc pl-5 text-[11px] text-red-600">{failed.map((f, i) => <li key={i}>{f.name}: {f.message}</li>)}</ul>}
         </div>
       )}

@@ -37,18 +37,18 @@ export function SubmissionList({ items, status, isAdmin }: { items: Item[]; stat
                 <span className="block truncate font-medium text-[#14151A] dark:text-[#F3F4F6]">{i.fields[0]?.value || "(boş)"}</span>
                 <span className="block truncate text-[#5C5F66] dark:text-[#9CA3AF]">{summary}</span>
               </button>
-              <span className="text-[11px] text-[#8C9099]">{i.formTitle && `${i.formTitle} · `}<a href={i.pagePath} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">{i.pagePath}</a> · {new Date(i.createdAt).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}</span>
+              <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{i.formTitle && `${i.formTitle} · `}<a href={i.pagePath} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">{i.pagePath}</a> · {new Date(i.createdAt).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}</span>
             </div>
             {expanded && (
               <div className="mt-3 space-y-2 rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-3">
                 {i.notifyStatus && i.notifyStatus !== "skipped" && (
-                  <p className={`text-[11px] ${i.notifyStatus === "failed" ? "text-red-600" : "text-[#8C9099]"}`}>
+                  <p className={`text-[11px] ${i.notifyStatus === "failed" ? "text-red-600" : "text-[#5F6570] dark:text-[#8C9099]"}`}>
                     E-posta bildirimi: {i.notifyStatus === "sent" ? "gönderildi" : `gönderilemedi${i.notifyError ? ` (${i.notifyError})` : ""}`}
                   </p>
                 )}
                 {i.fields.map((f) => (
                   <div key={f.name}>
-                    <p className="text-[11px] font-medium text-[#8C9099]">{f.label}</p>
+                    <p className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">{f.label}</p>
                     <p className="whitespace-pre-wrap break-words text-[#14151A] dark:text-[#F3F4F6]">{f.value}</p>
                   </div>
                 ))}

@@ -13,7 +13,7 @@ const card = `rounded-lg border ${border} bg-white dark:bg-[#15171C] p-4 space-y
 function Notice({ r }: { r: ProfileResult | null }) {
   if (!r) return null;
   return r.ok ? (
-    <p role="status" className="text-[11px] text-emerald-700">Kaydedildi.</p>
+    <p role="status" className="text-[11px] text-emerald-800">Kaydedildi.</p>
   ) : (
     <p role="alert" className="text-[11px] text-red-600">{r.error}</p>
   );
@@ -34,7 +34,7 @@ export function ProfileForms({ name, email, role, uiLocale }: { name: string; em
     <div className="max-w-xl space-y-4">
       <div>
         <h1 className="text-[16px] font-bold tracking-tight">Profilim</h1>
-        <p className="text-[12px] text-[#8C9099]">{email} • {role === "admin" ? "Yönetici" : "Editör"}</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">{email} • {role === "admin" ? "Yönetici" : "Editör"}</p>
       </div>
 
       <section className={card}>
@@ -57,7 +57,7 @@ export function ProfileForms({ name, email, role, uiLocale }: { name: string; em
               <option key={l} value={l}>{new Intl.DisplayNames([l], { type: "language" }).of(l)}</option>
             ))}
           </select>
-          <span className="block text-[11px] font-normal text-[#8C9099]">{tt("admin.account.languageHint")}</span>
+          <span className="block text-[11px] font-normal text-[#5F6570] dark:text-[#8C9099]">{tt("admin.account.languageHint")}</span>
         </label>
         <Notice r={langResult} />
       </section>
@@ -88,7 +88,7 @@ export function ProfileForms({ name, email, role, uiLocale }: { name: string; em
         <input type="password" autoComplete="current-password" aria-label="Mevcut parola" placeholder="Mevcut parola" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} className={field} required />
         <input type="password" autoComplete="new-password" aria-label="Yeni parola" placeholder={`Yeni parola (en az ${PASSWORD_MIN_LENGTH} karakter)`} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} className={field} required />
         <input type="password" autoComplete="new-password" aria-label="Yeni parola (tekrar)" placeholder="Yeni parola (tekrar)" value={pw.again} onChange={(e) => setPw({ ...pw, again: e.target.value })} className={field} required />
-        <p className="text-[11px] text-[#8C9099]">Değişimden sonra diğer tüm cihazlardaki oturumlarınız kapanır; bu oturum devam eder. Uzun bir cümle iyi bir paroladır.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Değişimden sonra diğer tüm cihazlardaki oturumlarınız kapanır; bu oturum devam eder. Uzun bir cümle iyi bir paroladır.</p>
         <div className="flex items-center gap-3">
           <button type="submit" disabled={pending} className="h-8 rounded bg-[#266DF0] px-3 text-[12px] font-medium text-white disabled:opacity-60">Parolayı değiştir</button>
           <Notice r={pwResult} />
@@ -97,7 +97,7 @@ export function ProfileForms({ name, email, role, uiLocale }: { name: string; em
 
       <div className={card}>
         <div className="text-[12px] font-semibold">Oturumlar</div>
-        <p className="text-[11px] text-[#8C9099]">Tüm cihazlardaki (bu cihaz dahil) oturumlarınızı kapatır.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Tüm cihazlardaki (bu cihaz dahil) oturumlarınızı kapatır.</p>
         <button type="button" disabled={pending} onClick={() => start(() => signOutEverywhereAction())} className={`h-8 rounded border ${border} px-3 text-[12px]`}>Her yerden çıkış yap</button>
       </div>
     </div>

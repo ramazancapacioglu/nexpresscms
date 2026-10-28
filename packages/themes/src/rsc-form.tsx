@@ -73,7 +73,7 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
   const mine = ctx.blockId === blockId ? ctx.status : null;
   return (
     <form action="/api/forms/submit" method="post" style={frame} className="border bg-white p-5">
-      {title ? <h3 className="mb-3 text-lg font-bold text-slate-900">{title}</h3> : null}
+      {title ? <h2 className="mb-3 text-lg font-bold text-slate-900">{title}</h2> : null}
       {mine === "sent" ? <p role="status" className="mb-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{form.spec.successMessage || t("blocks.formSent")}</p> : null}
       {mine === "error" ? <p role="alert" className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{t("blocks.formError")}</p> : null}
       <input type="hidden" name="_path" value={ctx.path} />
@@ -85,7 +85,7 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {form.spec.fields.map((f) => {
           const span = f.width === "half" ? "" : "sm:col-span-2";
-          if (f.type === "heading") return <h4 key={f.id} className={`${span} text-base font-bold text-slate-900`}>{f.label}</h4>;
+          if (f.type === "heading") return <h3 key={f.id} className={`${span} text-base font-bold text-slate-900`}>{f.label}</h3>;
           if (f.type === "paragraph") return <p key={f.id} className={`${span} text-sm text-slate-600`}>{f.label}</p>;
           if (f.type === "checkbox") return <div key={f.id} className={span}><Control f={f} />{f.help ? <p className="mt-1 text-xs text-slate-500">{f.help}</p> : null}</div>;
           const group = f.type === "radio" || f.type === "checkboxes" || f.type === "rating" || f.type === "scale";

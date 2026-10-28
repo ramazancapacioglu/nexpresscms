@@ -42,21 +42,21 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
     <div className="space-y-4">
       <div>
         <h1 className="text-[16px] font-bold tracking-tight">Kullanıcılar & Roller</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Yönetici her şeyi yönetir; Editör içerik, medya, tema ve katalogla çalışır, ayarlara ve kullanıcılara erişemez.
           Rol, devre dışı bırakma ve parola sıfırlama kullanıcının açık oturumlarını hemen kapatır.
         </p>
       </div>
 
       {message && (
-        <p role={message.kind === "error" ? "alert" : "status"} className={`rounded-md border px-3 py-2 text-[12px] ${message.kind === "error" ? "border-red-500/30 bg-red-500/10 text-red-700" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"}`}>
+        <p role={message.kind === "error" ? "alert" : "status"} className={`rounded-md border px-3 py-2 text-[12px] ${message.kind === "error" ? "border-red-500/30 bg-red-500/10 text-red-700" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-800"}`}>
           {message.text}
         </p>
       )}
 
-      <div className={`overflow-x-auto rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
+      <div className={`overflow-x-auto rounded-lg border ${border} bg-white dark:bg-[#15171C]`} tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
         <table className="w-full text-[12px]">
-          <thead className="bg-[#FBFBFB] dark:bg-[#121317] text-left text-[10px] uppercase tracking-wider text-[#8C9099]">
+          <thead className="bg-[#FBFBFB] dark:bg-[#121317] text-left text-[10px] uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
             <tr>
               <th className="px-3 py-2">Kullanıcı</th>
               <th className="px-3 py-2">Rol</th>
@@ -72,8 +72,8 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                 <React.Fragment key={u.id}>
                   <tr className={u.status === "disabled" ? "opacity-60" : ""}>
                     <td className="px-3 py-2">
-                      <div className="font-medium">{u.name || u.email}{self && <span className="ml-1.5 text-[10px] text-[#266DF0]">(siz)</span>}</div>
-                      <div className="font-mono text-[10px] text-[#8C9099]">{u.email}</div>
+                      <div className="font-medium">{u.name || u.email}{self && <span className="ml-1.5 text-[10px] text-[#1D5ED8] dark:text-[#7AA7FF]">(siz)</span>}</div>
+                      <div className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{u.email}</div>
                     </td>
                     <td className="px-3 py-2">
                       <select
@@ -90,7 +90,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                       </select>
                     </td>
                     <td className="px-3 py-2">
-                      <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${u.status === "active" ? "bg-emerald-500/10 text-emerald-700" : "bg-zinc-500/10 text-zinc-600"}`}>
+                      <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${u.status === "active" ? "bg-emerald-500/10 text-emerald-800" : "bg-zinc-500/10 text-zinc-600"}`}>
                         {u.status === "active" ? "etkin" : "devre dışı"}
                       </span>
                     </td>
@@ -127,7 +127,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                             onClick={() => run(() => resetUserPasswordAction({ id: u.id, password: resetPw }), "Parola sıfırlandı; kullanıcının oturumları kapandı.", () => { setResetFor(null); setResetPw(""); })}>
                             Sıfırla
                           </button>
-                          <span className="text-[11px] text-[#8C9099]">Parolayı kullanıcıya güvenli bir kanaldan iletin; ilk girişte değiştirmesini isteyin.</span>
+                          <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Parolayı kullanıcıya güvenli bir kanaldan iletin; ilk girişte değiştirmesini isteyin.</span>
                         </div>
                       </td>
                     </tr>

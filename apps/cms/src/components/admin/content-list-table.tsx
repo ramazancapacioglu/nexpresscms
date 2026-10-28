@@ -13,13 +13,16 @@ export function ContentListTable({ s }: { s: ContentListState }) {
     <>
       {/* ATTIO-TARZI YÜKSEK YOĞUNLUKLU TABLO */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xs">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="w-10 px-3.5 py-2.5">
+                  <span className="sr-only">Seçim</span>
                   <button
                     type="button"
+                    aria-label={allSelected ? "Tüm seçimi kaldır" : "Tümünü seç"}
+                    aria-pressed={allSelected}
                     onClick={toggleSelectAll}
                     className="flex items-center justify-center text-muted-foreground hover:text-foreground"
                   >

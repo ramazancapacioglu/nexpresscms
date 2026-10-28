@@ -36,7 +36,7 @@ export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-medium mb-1">
                 Temel Font Boyutu (px)
               </label>
-              <input
+              <input aria-label="Temel Font Boyutu (px)"
                 type="number"
                 min={14}
                 max={20}
@@ -57,7 +57,7 @@ export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-medium mb-1">
                 Tipografik Ölçek Oranı
               </label>
-              <select
+              <select aria-label="Tipografik Ölçek Oranı"
                 value={String(tokens.typography.scaleRatio)}
                 onChange={(e) =>
                   setTokens((prev) => ({
@@ -80,7 +80,7 @@ export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-medium mb-1">
                 Başlık Kalınlığı
               </label>
-              <select
+              <select aria-label="Başlık Kalınlığı"
                 value={customizer.typography.headingWeight}
                 onChange={(e) =>
                   setCustomizer((prev) => ({
@@ -102,7 +102,7 @@ export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-medium mb-1">
                 Satır Yüksekliği
               </label>
-              <select
+              <select aria-label="Satır Yüksekliği"
                 value={customizer.typography.bodyLineHeight}
                 onChange={(e) =>
                   setCustomizer((prev) => ({

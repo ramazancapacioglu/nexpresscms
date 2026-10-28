@@ -6,9 +6,9 @@ export const card = `rounded-lg border ${border} bg-white p-4 dark:bg-[#15171C]`
 export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
     <div className={card}>
-      <p className="text-[11px] font-medium text-[#8C9099]">{label}</p>
+      <p className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">{label}</p>
       <p className="mt-1 text-[22px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">{value}</p>
-      {hint && <p className="text-[11px] text-[#8C9099]">{hint}</p>}
+      {hint && <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{hint}</p>}
     </div>
   );
 }
@@ -23,7 +23,7 @@ export function Columns({ data, label, height = 96 }: { data: Array<{ label: str
           <div key={d.label} title={`${d.label}: ${d.count}`} className="flex-1 rounded-t-sm bg-[#266DF0]" style={{ height: `${Math.max(d.count ? 4 : 1, (d.count / max) * 100)}%`, opacity: d.count ? 1 : 0.18 }} />
         ))}
       </div>
-      <figcaption className="mt-1 flex justify-between text-[10px] text-[#8C9099]"><span>{data[0]?.label}</span><span>{data.at(-1)?.label}</span></figcaption>
+      <figcaption className="mt-1 flex justify-between text-[10px] text-[#5F6570] dark:text-[#8C9099]"><span>{data[0]?.label}</span><span>{data.at(-1)?.label}</span></figcaption>
     </figure>
   );
 }

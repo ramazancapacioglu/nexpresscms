@@ -17,7 +17,7 @@ export function AttributeBoard({ attributes }: { attributes: CommerceAttributeDt
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Nitelikler</h1>
-        <p className="text-[12px] text-[#8C9099]">Varyasyon sihirbazı bu değerlerin kombinasyonunu üretir. Değerleri virgülle yazın.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Varyasyon sihirbazı bu değerlerin kombinasyonunu üretir. Değerleri virgülle yazın.</p>
       </header>
       <form
         className="grid max-w-xl gap-2"
@@ -43,7 +43,7 @@ export function AttributeBoard({ attributes }: { attributes: CommerceAttributeDt
         {attributes.map((attr) => (
           <li key={attr.id} className="rounded border border-[#E6E7EA] px-3 py-2 dark:border-[#23262E]">
             <strong>{attr.name}</strong>
-            <span className="text-[#8C9099]"> — {attr.values.map((value) => value.label).join(", ") || "değer yok"}</span>
+            <span className="text-[#5F6570] dark:text-[#8C9099]"> — {attr.values.map((value) => value.label).join(", ") || "değer yok"}</span>
           </li>
         ))}
       </ul>

@@ -47,7 +47,7 @@ export function CommerceHub({
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <div>
           <h1 className="text-[18px] font-semibold">E-Ticaret</h1>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             Ürün kataloğu, siparişler ve mağaza ayarları. Ön yüz:{" "}
             <Link href={shopPublicPath} className="underline">
               {shopPublicPath}
@@ -88,7 +88,7 @@ export function CommerceHub({
             Mağaza açık
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Mağaza yolu (slug)</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Mağaza yolu (slug)</span>
             <input
               className={fieldClass}
               value={cfg.shopBasePath}
@@ -97,7 +97,7 @@ export function CommerceHub({
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block space-y-1">
-              <span className="text-[11px] font-medium text-[#8C9099]">Sabit kargo (kuruş)</span>
+              <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Sabit kargo (kuruş)</span>
               <input
                 className={fieldClass}
                 type="number"
@@ -108,7 +108,7 @@ export function CommerceHub({
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] font-medium text-[#8C9099]">Ücretsiz kargo eşiği (kuruş)</span>
+              <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Ücretsiz kargo eşiği (kuruş)</span>
               <input
                 className={fieldClass}
                 type="number"
@@ -127,7 +127,7 @@ export function CommerceHub({
           >
             Ayarları kaydet
           </button>
-          {notice ? <p className="text-[12px] text-emerald-600">{notice}</p> : null}
+          {notice ? <p className="text-[12px] text-emerald-800 dark:text-emerald-400">{notice}</p> : null}
         </div>
       </section>
     </div>
@@ -137,7 +137,7 @@ export function CommerceHub({
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
-      <p className="text-[11px] text-[#8C9099]">{label}</p>
+      <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{label}</p>
       <p className="text-[20px] font-semibold">{value}</p>
     </div>
   );

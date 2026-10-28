@@ -17,7 +17,7 @@ export function CategoryBoard({ categories }: { categories: CommerceCategoryDto[
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Kategoriler</h1>
-        <p className="text-[12px] text-[#8C9099]">Ürün ağacı. Üst kategori boşsa kök kayıttır.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Ürün ağacı. Üst kategori boşsa kök kayıttır.</p>
       </header>
       <form
         className="grid max-w-xl gap-2 sm:grid-cols-3"
@@ -47,7 +47,7 @@ export function CategoryBoard({ categories }: { categories: CommerceCategoryDto[
         {categories.map((category) => (
           <li key={category.id} className="flex items-center justify-between rounded border border-[#E6E7EA] px-3 py-2 dark:border-[#23262E]">
             <span>
-              {category.name} <span className="text-[#8C9099]">/{category.slug}</span>
+              {category.name} <span className="text-[#5F6570] dark:text-[#8C9099]">/{category.slug}</span>
             </span>
             <button
               type="button"

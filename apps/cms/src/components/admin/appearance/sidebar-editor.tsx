@@ -41,7 +41,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
         className="rounded-lg border border-[#E6E7EA] bg-white p-3 text-left text-[12px] dark:border-[#23262E] dark:bg-[#15171C]"
       >
         <div className="font-semibold">Doküman kenarı</div>
-        <p className="mt-1 text-[11px] text-[#8C9099]">Ürün, doküman ve fiyat bağlantıları. Sağda durur.</p>
+        <p className="mt-1 text-[11px] text-[#5F6570] dark:text-[#8C9099]">Ürün, doküman ve fiyat bağlantıları. Sağda durur.</p>
       </button>
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">
         <label className="flex items-center justify-between">
@@ -99,7 +99,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
             />
             <button
               type="button"
-              className="text-[#8C9099]"
+              className="text-[#5F6570] dark:text-[#8C9099]"
               onClick={() =>
                 setSidebar((prev) => ({ ...prev, links: prev.links.filter((row) => row.id !== link.id) }))
               }
@@ -120,7 +120,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
         >
           Bağlantı ekle
         </button>
-        <p className="text-[11px] text-[#8C9099]">Bu liste sayfa bloklarından bağımsızdır. Tüm herkese açık sayfalarda görünür.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Bu liste sayfa bloklarından bağımsızdır. Tüm herkese açık sayfalarda görünür.</p>
       </section>
     </div>
   );

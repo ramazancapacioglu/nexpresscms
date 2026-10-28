@@ -48,7 +48,7 @@ export function EmailSettingsForm({ initial, envFallback }: { initial: Initial; 
       </div>
       <div className="flex items-center gap-3">
         <button type="button" onClick={save} disabled={pending} className="h-8 rounded-md bg-[#266DF0] px-4 text-[12px] font-semibold text-white disabled:opacity-50">Kaydet</button>
-        {msg && <span role="status" className={`text-[12px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</span>}
+        {msg && <span role="status" className={`text-[12px] ${msg.ok ? "text-emerald-800 dark:text-emerald-400" : "text-red-600"}`}>{msg.text}</span>}
       </div>
       <div className={`flex items-end gap-2 border-t ${border} pt-3`}>
         <div className="flex-1">{field("Test e-postası gönder (önce kaydedin)", <input className={input} type="email" value={testTo} placeholder="siz@ornek.com" onChange={(e) => setTestTo(e.target.value)} />)}</div>

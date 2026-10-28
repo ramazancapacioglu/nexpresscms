@@ -143,7 +143,7 @@ export function MenuEditor({ initial }: { initial: NavigationMenuItem[] }) {
                   />
                   <button
                     type="button"
-                    className="text-[#8C9099]"
+                    className="text-[#5F6570] dark:text-[#8C9099]"
                     onClick={() =>
                       patchItem(selected.id, {
                         children: (selected.children ?? []).filter((row) => row.id !== child.id),
@@ -190,12 +190,12 @@ export function MenuEditor({ initial }: { initial: NavigationMenuItem[] }) {
                 <Trash2 className="h-3 w-3" />
                 Bağlantıyı sil
               </button>
-              <p className="text-[11px] leading-snug text-[#8C9099]">
+              <p className="text-[11px] leading-snug text-[#5F6570] dark:text-[#8C9099]">
                 Tutamacı sürükleyerek aynı düzeyde sıralayın. Alt bağlantı yalnızca kendi üstünün içinde yer değiştirir.
               </p>
             </>
           ) : (
-            <p className="text-[11px] text-[#8C9099]">Düzenlemek için bir bağlantı seçin.</p>
+            <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Düzenlemek için bir bağlantı seçin.</p>
           )}
         </aside>
       </div>
@@ -237,14 +237,14 @@ function MenuRow({
           event.dataTransfer.effectAllowed = "move";
           onDragStart();
         }}
-        className="cursor-grab text-[#8C9099]"
+        className="cursor-grab text-[#5F6570] dark:text-[#8C9099]"
       >
         <GripVertical className="h-3.5 w-3.5" />
       </button>
       <button type="button" onClick={onSelect} className="min-w-0 flex-1 truncate text-left font-medium">
         {label}
       </button>
-      <span className="truncate font-mono text-[10px] text-[#8C9099]">{href}</span>
+      <span className="truncate font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{href}</span>
     </div>
   );
 }

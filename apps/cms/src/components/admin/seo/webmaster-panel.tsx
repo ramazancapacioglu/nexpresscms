@@ -19,9 +19,9 @@ export function WebmasterPanel({
 }) {
   return (
     <div className="space-y-2">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Arama konsolu doğrulaması</div>
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Arama konsolu doğrulaması</div>
       {ENGINES.map((e) => (
-        <label key={e.key} className="block text-[11px] text-[#8C9099]">
+        <label key={e.key} className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           {e.label} <span className="opacity-70">· {e.hint}</span>
           <input
             className={`${fieldClass} mt-1 font-mono`}

@@ -49,7 +49,7 @@ export default async function AdminOverviewPage() {
               {siteId} ({getCmsMode()})
             </span>
           </div>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             Çift motorlu içerik tablosu, @id varlık grafiği ve sıfır maliyetli Markdown akışı.
           </p>
         </div>
@@ -74,24 +74,24 @@ export default async function AdminOverviewPage() {
       {/* ATTIO TARZI İNCE KENARLIKLI BÖLÜNMÜŞ METRİK ŞERİDİ (1px Hairline Strip) */}
       <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E7EA] dark:divide-[#23262E]">
         <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#8C9099]">
+          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             <span>Toplam Kayıt (Objects)</span>
-            <Layers className="h-3.5 w-3.5 text-[#8C9099]" strokeWidth={1.75} />
+            <Layers className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <span className="text-xl font-semibold tabular-nums tracking-tight">
               {contents.length}
             </span>
-            <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
               100% MarkdownCache
             </span>
           </div>
         </div>
 
         <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#8C9099]">
+          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             <span>@id Entity İlişkileri</span>
-            <Link2 className="h-3.5 w-3.5 text-[#8C9099]" strokeWidth={1.75} />
+            <Link2 className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <span className="text-xl font-semibold tabular-nums tracking-tight">
@@ -104,31 +104,31 @@ export default async function AdminOverviewPage() {
         </div>
 
         <Link href="/admin/seo" className="p-4 space-y-1 hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">
-          <div className="flex items-center justify-between text-[11px] text-[#8C9099]">
+          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             <span>Ortalama SEO & GEO</span>
-            <Hash className="h-3.5 w-3.5 text-[#8C9099]" strokeWidth={1.75} />
+            <Hash className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <span className="text-xl font-semibold tabular-nums tracking-tight">
               {avgSeoScore}
-              <span className="text-xs font-normal text-[#8C9099]">/100</span>
+              <span className="text-xs font-normal text-[#5F6570] dark:text-[#8C9099]">/100</span>
             </span>
-            <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
               TL;DR + @graph
             </span>
           </div>
         </Link>
 
         <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#8C9099]">
+          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             <span>Ön Yüz İstemci JS Yükü</span>
-            <FileCode className="h-3.5 w-3.5 text-[#8C9099]" strokeWidth={1.75} />
+            <FileCode className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <span className="text-xl font-semibold tabular-nums tracking-tight">
               0 KB
             </span>
-            <span className="font-mono text-[11px] text-[#266DF0] dark:text-[#3B82F6]">
+            <span className="font-mono text-[11px] text-[#1D5ED8] dark:text-[#3B82F6]">
               {getDbDialect()} • RSC
             </span>
           </div>
@@ -163,10 +163,10 @@ export default async function AdminOverviewPage() {
         </div>
 
         {/* Hücre Çizgili (divide-x & divide-y) Attio Tablosu */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] text-[11px] font-medium text-[#8C9099] divide-x divide-[#E6E7EA] dark:divide-[#23262E]">
+              <tr className="border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099] divide-x divide-[#E6E7EA] dark:divide-[#23262E]">
                 <th className="py-2 px-3.5 font-medium">Aa Kayıt Başlığı</th>
                 <th className="py-2 px-3 font-medium">🔗 URL Yolu</th>
                 <th className="py-2 px-3 font-medium">◎ Nesne Türü</th>
@@ -208,7 +208,7 @@ export default async function AdminOverviewPage() {
                     <td className="py-2.5 px-3 text-right font-mono text-[11px] tabular-nums">
                       {item.importanceScore}/10
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
+                    <td className="py-2.5 px-3 text-right font-mono text-[11px] tabular-nums font-medium text-emerald-800 dark:text-emerald-400">
                       {item.seoScore}
                     </td>
                     <td className="py-2.5 px-3.5 text-right space-x-1.5 whitespace-nowrap">
@@ -246,7 +246,7 @@ export default async function AdminOverviewPage() {
               <span className="font-medium text-[#14151A] dark:text-[#F3F4F6]">
                 Open-Core Genişleme Yuvası (<code>dashboard.overview.cards</code>)
               </span>
-              <span className="text-[#8C9099] hidden md:inline">
+              <span className="text-[#5F6570] dark:text-[#8C9099] hidden md:inline">
                 — Eklentileri ve modüllerini yönetmek için Eklentiler sayfasını açın.
               </span>
             </div>

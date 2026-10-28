@@ -115,7 +115,7 @@ export function DesignLibraryModal({
                 </button>
               ))}
             </aside>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
                   <button
@@ -147,7 +147,7 @@ export function DesignLibraryModal({
         ) : null}
 
         {tab === "packs" ? (
-          <div className="grid flex-1 grid-cols-1 gap-3 overflow-y-auto p-4 md:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 gap-3 overflow-y-auto p-4 md:grid-cols-2" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
             {NEXPRESS_STARTER_PAGE_PACKS.map((pack) => (
               <div key={pack.id} className="rounded-xl border border-border p-4">
                 <h3 className="text-sm font-bold">{pack.name}</h3>
@@ -165,7 +165,7 @@ export function DesignLibraryModal({
         ) : null}
 
         {tab === "ai_import" ? (
-          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 lg:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 lg:grid-cols-2" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-bold">Sistem istemi</span>

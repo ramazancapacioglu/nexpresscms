@@ -80,7 +80,7 @@ export function BackupPanel() {
         <a href={`/api/admin/backup/export?media=${media ? 1 : 0}&personal=${personal ? 1 : 0}`} className={`${btn} inline-flex items-center gap-1.5`}>
           <Download className="h-3.5 w-3.5" /> Yedeği indir (.nxbackup)
         </a>
-        <p className="text-[11px] text-[#8C9099]">Düzenli yedek için bu bağlantıyı bir zamanlayıcıdan çağırmak yerine veritabanı yedeğini de alın; bu dosya içerik taşıma ve geri dönüş içindir.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Düzenli yedek için bu bağlantıyı bir zamanlayıcıdan çağırmak yerine veritabanı yedeğini de alın; bu dosya içerik taşıma ve geri dönüş içindir.</p>
       </section>
 
       <section className={card}>
@@ -89,7 +89,7 @@ export function BackupPanel() {
           <Upload className="h-3.5 w-3.5" /> {file ? file.name : "Yedek dosyası seç"}
         </button>
         <input ref={input} type="file" accept=".nxbackup,.zip,application/zip" hidden onChange={(e) => e.target.files?.[0] && void verify(e.target.files[0])} />
-        {busy && !preview && <p className="text-[12px] text-[#8C9099]">Doğrulanıyor…</p>}
+        {busy && !preview && <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Doğrulanıyor…</p>}
 
         {preview && !preview.ok && (
           <ul role="alert" className="list-disc space-y-0.5 pl-5 text-[12px] text-red-600">{preview.errors.map((e, i) => <li key={i}>{e}</li>)}</ul>
@@ -98,17 +98,17 @@ export function BackupPanel() {
           <div className="space-y-3 text-[12px]">
             <div className="rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-3 space-y-1">
               <p><strong>{total(preview.summary.tables)}</strong> satır · {preview.summary.media.files} görsel{preview.summary.personal ? " · kişisel veri dahil" : ""}</p>
-              <p className="text-[11px] text-[#8C9099]">{new Date(preview.summary.createdAt).toLocaleString("tr-TR")} · kaynak: {preview.summary.sourceSite}</p>
-              <p className="text-[11px] text-[#8C9099]">{Object.entries(preview.summary.tables).map(([k, v]) => `${k}: ${v}`).join(" · ")}</p>
+              <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{new Date(preview.summary.createdAt).toLocaleString("tr-TR")} · kaynak: {preview.summary.sourceSite}</p>
+              <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{Object.entries(preview.summary.tables).map(([k, v]) => `${k}: ${v}`).join(" · ")}</p>
             </div>
-            {preview.warnings && preview.warnings.length > 0 && <ul className="list-disc space-y-0.5 pl-5 text-amber-700 dark:text-amber-300">{preview.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}
+            {preview.warnings && preview.warnings.length > 0 && <ul className="list-disc space-y-0.5 pl-5 text-amber-800 dark:text-amber-300">{preview.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}
             <fieldset className="space-y-1.5">
-              <legend className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Nasıl aktarılsın?</legend>
+              <legend className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Nasıl aktarılsın?</legend>
               <label className="flex items-start gap-2"><input type="radio" checked={mode === "merge"} onChange={() => setMode("merge")} className="mt-0.5" /><span><strong>Birleştir</strong> — yalnızca eksik içerikleri ekler; mevcutlara dokunmaz.</span></label>
               <label className="flex items-start gap-2"><input type="radio" checked={mode === "replace"} onChange={() => setMode("replace")} className="mt-0.5" /><span><strong>Değiştir</strong> — bu sitenin yedekteki tablolarını silip yedekten yazar ve site ayarlarını geri yükler. <span className="text-red-600">Geri alınamaz.</span></span></label>
             </fieldset>
             {mode === "replace" && (
-              <label className="block text-[11px] text-[#8C9099]">Onay için <code>GERI YUKLE</code> yazın
+              <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">Onay için <code>GERI YUKLE</code> yazın
                 <input value={confirm} onChange={(e) => setConfirm(e.target.value)} className={`mt-1 h-8 w-full rounded-md border ${border} bg-transparent px-2 text-[12px] font-mono outline-none focus:border-red-500`} />
               </label>
             )}

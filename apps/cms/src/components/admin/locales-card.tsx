@@ -45,7 +45,7 @@ export function LocalesCard({ initial, defaultLocale }: { initial: string[]; def
     <section className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] p-4 space-y-3">
       <div>
         <h2 className="text-[13px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">Site dilleri</h2>
-        <p className="text-[12px] text-[#8C9099]">Ziyaretçi sayfaları <code>/{"{dil}"}/…</code> adresinde yayınlanır. Yeni bir dil eklemek içerik oluşturmaz; çeviriyi editörün "Diller" bölümünden oluşturursunuz.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Ziyaretçi sayfaları <code>/{"{dil}"}/…</code> adresinde yayınlanır. Yeni bir dil eklemek içerik oluşturmaz; çeviriyi editörün "Diller" bölümünden oluşturursunuz.</p>
       </div>
       <ul className="flex flex-wrap gap-1.5">
         {locales.map((code) => (
@@ -53,9 +53,9 @@ export function LocalesCard({ initial, defaultLocale }: { initial: string[]; def
             <span className="font-mono text-[11px] uppercase">{code}</span>
             <span>{nameOf(code)}</span>
             {code === defaultLocale ? (
-              <span className="rounded bg-[#266DF0]/10 px-1 text-[10px] font-semibold text-[#266DF0]">varsayılan</span>
+              <span className="rounded bg-[#266DF0]/10 px-1 text-[10px] font-semibold text-[#1D5ED8] dark:text-[#7AA7FF]">varsayılan</span>
             ) : (
-              <button type="button" aria-label={`${nameOf(code)} dilini kaldır`} onClick={() => setLocales(locales.filter((l) => l !== code))} className="text-[#8C9099] hover:text-red-600">×</button>
+              <button type="button" aria-label={`${nameOf(code)} dilini kaldır`} onClick={() => setLocales(locales.filter((l) => l !== code))} className="text-[#5F6570] dark:text-[#8C9099] hover:text-red-600">×</button>
             )}
           </li>
         ))}
@@ -71,7 +71,7 @@ export function LocalesCard({ initial, defaultLocale }: { initial: string[]; def
         <button type="button" onClick={() => add(custom)} disabled={!custom.trim()} className="h-8 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-3 text-[12px] disabled:opacity-50">Ekle</button>
         <button type="button" onClick={save} disabled={pending || !dirty} className="ml-auto h-8 rounded-md bg-[#266DF0] px-4 text-[12px] font-semibold text-white disabled:opacity-50">{pending ? "Kaydediliyor…" : "Kaydet"}</button>
       </div>
-      {msg && <p role="status" className={`text-[12px] ${msg.tone === "ok" ? "text-emerald-700 dark:text-emerald-300" : "text-red-600"}`}>{msg.text}</p>}
+      {msg && <p role="status" className={`text-[12px] ${msg.tone === "ok" ? "text-emerald-800 dark:text-emerald-300" : "text-red-600"}`}>{msg.text}</p>}
     </section>
   );
 }

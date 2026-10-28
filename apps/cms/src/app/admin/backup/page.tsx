@@ -12,7 +12,7 @@ export default async function AdminBackupPage() {
     <div className="space-y-5">
       <div className={`border-b ${border} pb-3.5`}>
         <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Yedekleme</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Bu sitenin içeriği, çevirileri, taksonomisi, menüleri, medya kayıtları, yönlendirmeleri, yüklenen temaları, eklenti ayarları ve site ayarları tek dosyada. <strong>Kullanıcılar, parolalar, oturumlar, denetim günlüğü, arama dizini, revizyonlar ve ticaret verisi yedeğe girmez</strong> (arama dizini içe aktarmadan sonra yeniden kurulur).
         </p>
       </div>

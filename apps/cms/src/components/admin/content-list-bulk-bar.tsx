@@ -27,7 +27,7 @@ export function ContentListBulkBar({ s }: { s: ContentListState }) {
               type="button"
               disabled={isPending}
               onClick={() => handleBulkAction("publish")}
-              className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+              className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20"
             >
               <CheckCircle2 className="h-3 w-3" />
               Yayına Al
@@ -36,7 +36,7 @@ export function ContentListBulkBar({ s }: { s: ContentListState }) {
               type="button"
               disabled={isPending}
               onClick={() => handleBulkAction("draft")}
-              className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+              className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-500/20"
             >
               <Clock className="h-3 w-3" />
               Taslağa Çek

@@ -16,17 +16,17 @@ export function CommerceOrdersClient({ orders }: { orders: CommerceOrderDto[] })
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Siparişler</h1>
-        <p className="text-[12px] text-[#8C9099]">Mağaza ön yüzünden gelen sipariş kayıtları.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Mağaza ön yüzünden gelen sipariş kayıtları.</p>
       </header>
 
       {orders.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-[#E6E7EA] p-6 text-[13px] text-[#8C9099] dark:border-[#23262E]">
+        <p className="rounded-lg border border-dashed border-[#E6E7EA] p-6 text-[13px] text-[#5F6570] dark:text-[#8C9099] dark:border-[#23262E]">
           Henüz sipariş yok.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[#E6E7EA] dark:border-[#23262E]">
+        <div className="overflow-x-auto rounded-lg border border-[#E6E7EA] dark:border-[#23262E]" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <table className="w-full min-w-[720px] text-left text-[12px]">
-            <thead className="bg-[#F7F8FA] text-[#8C9099] dark:bg-[#14161B]">
+            <thead className="bg-[#F7F8FA] text-[#5F6570] dark:text-[#8C9099] dark:bg-[#14161B]">
               <tr>
                 <th className="px-3 py-2 font-medium">No</th>
                 <th className="px-3 py-2 font-medium">Müşteri</th>
@@ -48,11 +48,11 @@ export function CommerceOrdersClient({ orders }: { orders: CommerceOrderDto[] })
                   </td>
                   <td className="px-3 py-2">
                     <div>{o.customerName}</div>
-                    <div className="text-[11px] text-[#8C9099]">{o.customerEmail}</div>
+                    <div className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{o.customerEmail}</div>
                   </td>
                   <td className="px-3 py-2">{formatMoney(o.totalCents, o.currency)}</td>
                   <td className="px-3 py-2">{statusLabel[o.status] ?? o.status}</td>
-                  <td className="px-3 py-2 text-[#8C9099]">
+                  <td className="px-3 py-2 text-[#5F6570] dark:text-[#8C9099]">
                     {o.createdAt.toLocaleString("tr-TR")}
                   </td>
                 </tr>

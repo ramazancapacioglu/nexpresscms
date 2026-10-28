@@ -39,8 +39,8 @@ export default async function ThemePackagesPage() {
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Tema paketleri</h1>
-          <p className="text-[12px] text-[#8C9099]">
-            <Link href="/admin/themes" className="text-[#266DF0] hover:underline">← Tema mağazası</Link> · Yüklenen veri temaları: önizleyin, etkinleştirin, dışa aktarın.
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
+            <Link href="/admin/themes" className="text-[#1D5ED8] dark:text-[#7AA7FF] hover:underline">← Tema mağazası</Link> · Yüklenen veri temaları: önizleyin, etkinleştirin, dışa aktarın.
           </p>
         </div>
         <a href="/api/admin/themes/export?current=1" className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-3 text-[12px] font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">
@@ -51,7 +51,7 @@ export default async function ThemePackagesPage() {
       <UploadPanel />
 
       {cards.length === 0 ? (
-        <p className={`rounded-lg border ${border} bg-white dark:bg-[#15171C] px-6 py-10 text-center text-[12px] text-[#8C9099]`}>Henüz yüklenmiş tema yok.</p>
+        <p className={`rounded-lg border ${border} bg-white dark:bg-[#15171C] px-6 py-10 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]`}>Henüz yüklenmiş tema yok.</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map((c) => (

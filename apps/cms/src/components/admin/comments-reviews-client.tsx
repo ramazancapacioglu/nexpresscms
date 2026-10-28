@@ -106,16 +106,16 @@ export function CommentsReviewsClient({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E7EA] dark:border-[#23262E] pb-3">
         <div>
           <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-[#266DF0]" />
+            <MessageSquare className="h-4 w-4 text-[#1D5ED8] dark:text-[#7AA7FF]" />
             <span>Yorum, İnceleme & 5 Yıldızlı Değerlendirme Merkezi</span>
           </h1>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             Onaylanan ürün/makale değerlendirmeleri otomatik olarak Google Rich Snippets (<code>AggregateRating</code> & <code>Review</code>) şemasına işlenir.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-mono text-amber-600 font-bold flex items-center gap-1.5">
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-mono text-amber-800 font-bold flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
             <span>AggregateRating: {avgRating} / 5.00 ({items.length} onaylı)</span>
           </div>
@@ -152,7 +152,7 @@ export function CommentsReviewsClient({
       </div>
 
       {banner && (
-        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12px] text-emerald-700 flex items-center gap-2">
+        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12px] text-emerald-800 flex items-center gap-2">
           <Check className="h-4 w-4" />
           <span>{banner}</span>
         </div>
@@ -164,16 +164,16 @@ export function CommentsReviewsClient({
           onSubmit={handleCreate}
           className="lg:col-span-4 rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] p-4 space-y-3 text-[12px]"
         >
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#266DF0] flex items-center gap-1.5">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#1D5ED8] dark:text-[#7AA7FF] flex items-center gap-1.5">
             <Plus className="h-3.5 w-3.5" />
             <span>Yeni İnceleme veya Yorum Ekle</span>
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono uppercase text-[#8C9099] mb-1">
+            <label className="block text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099] mb-1">
               İlgili Sayfa / Ürün / Makale
             </label>
-            <select
+            <select aria-label="İlgili Sayfa / Ürün / Makale"
               value={contentId}
               onChange={(e) => setContentId(e.target.value)}
               className="w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 text-[11px] outline-none"
@@ -188,10 +188,10 @@ export function CommentsReviewsClient({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[10px] font-mono uppercase text-[#8C9099] mb-1">
+              <label className="block text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099] mb-1">
                 Kayıt Türü
               </label>
-              <select
+              <select aria-label="Kayıt Türü"
                 value={entryType}
                 onChange={(e) =>
                   setEntryType(e.target.value as "review" | "comment")
@@ -203,13 +203,13 @@ export function CommentsReviewsClient({
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-mono uppercase text-[#8C9099] mb-1">
+              <label className="block text-[10px] font-mono uppercase text-[#5F6570] dark:text-[#8C9099] mb-1">
                 Yıldız Puanı (1-5)
               </label>
-              <select
+              <select aria-label="Yıldız Puanı (1-5)"
                 value={rating}
                 onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 text-[11px] font-bold text-amber-600 outline-none"
+                className="w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 text-[11px] font-bold text-amber-800 outline-none"
               >
                 <option value={5}>★★★★★ (5 / 5)</option>
                 <option value={4}>★★★★☆ (4 / 5)</option>
@@ -289,7 +289,7 @@ export function CommentsReviewsClient({
                       {item.authorName}
                     </span>
                     {item.isVerified && (
-                      <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 font-mono text-[10px]">
+                      <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 px-1.5 py-0.5 font-mono text-[10px]">
                         <ShieldCheck className="h-3 w-3" />
                         Doğrulanmış
                       </span>
@@ -310,8 +310,8 @@ export function CommentsReviewsClient({
                       }
                       className={`rounded border px-2 py-0.5 font-mono text-[10px] uppercase outline-none cursor-pointer ${
                         item.status === "approved"
-                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
-                          : "border-amber-500/30 bg-amber-500/10 text-amber-700"
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-800"
                       }`}
                     >
                       <option value="approved">ONAYLI (YAYINDA)</option>
@@ -331,7 +331,7 @@ export function CommentsReviewsClient({
                 {(item.pros.length > 0 || item.cons.length > 0) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px]">
                     {item.pros.length > 0 && (
-                      <div className="rounded bg-emerald-500/5 border border-emerald-500/20 px-2.5 py-1.5 text-emerald-700 dark:text-emerald-400">
+                      <div className="rounded bg-emerald-500/5 border border-emerald-500/20 px-2.5 py-1.5 text-emerald-800 dark:text-emerald-400">
                         <span className="font-bold">+ Artılar: </span>
                         {item.pros.join(" • ")}
                       </div>

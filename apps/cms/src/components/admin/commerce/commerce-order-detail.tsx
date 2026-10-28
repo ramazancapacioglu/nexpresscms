@@ -18,12 +18,12 @@ export function CommerceOrderDetail({ order }: { order: CommerceOrderDto }) {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[18px] font-semibold">Sipariş {order.orderNumber}</h1>
-          <p className="text-[12px] text-[#8C9099]">
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
             {order.createdAt.toLocaleString("tr-TR")} · {order.customerEmail}
           </p>
         </div>
         <label className="space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Durum</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Durum</span>
           <select
             className={fieldClass}
             disabled={pending}
@@ -76,9 +76,9 @@ export function CommerceOrderDetail({ order }: { order: CommerceOrderDto }) {
         <div className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
           <h2 className="mb-2 font-semibold">Müşteri</h2>
           <p>{order.customerName}</p>
-          <p className="text-[#8C9099]">{order.customerPhone}</p>
+          <p className="text-[#5F6570] dark:text-[#8C9099]">{order.customerPhone}</p>
           {order.customerNote ? (
-            <p className="mt-2 text-[#8C9099]">Not: {order.customerNote}</p>
+            <p className="mt-2 text-[#5F6570] dark:text-[#8C9099]">Not: {order.customerNote}</p>
           ) : null}
         </div>
         <div className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">

@@ -19,7 +19,7 @@ export function ShippingBoard({ methods }: { methods: CommerceShippingMethodDto[
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Kargo</h1>
-        <p className="text-[12px] text-[#8C9099]">Açık yöntemler ödeme adımında seçilir. Eşik aşılırsa ücret sıfırlanır.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Açık yöntemler ödeme adımında seçilir. Eşik aşılırsa ücret sıfırlanır.</p>
       </header>
       <form
         className="grid max-w-xl gap-2"

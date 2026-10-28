@@ -25,7 +25,7 @@ export function DualModeEditorModals({ s }: { s: DualModeEditorState }) {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               {mediaAssets.map((med) => (
                 <button
                   key={med.id}
@@ -59,7 +59,7 @@ export function DualModeEditorModals({ s }: { s: DualModeEditorState }) {
                   <div className="text-[11px] font-semibold truncate">
                     {med.filename}
                   </div>
-                  <div className="text-[10px] text-emerald-600">
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-400">
                     SEO: {med.seoScore}%
                   </div>
                 </button>

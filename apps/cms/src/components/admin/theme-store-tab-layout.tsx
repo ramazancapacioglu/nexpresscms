@@ -14,7 +14,7 @@ export function ThemeStoreTabLayout({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-semibold mb-1">
                 Site Maks. Genişlik
               </label>
-              <select
+              <select aria-label="Site Maks. Genişlik"
                 value={tokens.geometry.containerMaxWidth}
                 onChange={(e) =>
                   setTokens((prev) => ({
@@ -37,7 +37,7 @@ export function ThemeStoreTabLayout({ s }: { s: ThemeStoreState }) {
               <label className="block text-[11px] font-semibold mb-1">
                 Köşe Yuvarlaklığı (Radius)
               </label>
-              <select
+              <select aria-label="Köşe Yuvarlaklığı (Radius)"
                 value={tokens.geometry.borderRadius}
                 onChange={(e) =>
                   setTokens((prev) => ({
@@ -133,7 +133,7 @@ export function ThemeStoreTabLayout({ s }: { s: ThemeStoreState }) {
             <label className="block text-[11px] font-semibold mb-1">
               Global Özel CSS (Site Geneli)
             </label>
-            <textarea
+            <textarea aria-label="Global Özel CSS (Site Geneli)"
               rows={3}
               value={customizer.customCss}
               onChange={(e) =>

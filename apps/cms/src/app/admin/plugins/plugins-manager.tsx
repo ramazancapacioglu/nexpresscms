@@ -138,17 +138,17 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
               }`}
             >
               <div className="flex items-start gap-2.5">
-                <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md ${p.license === "pro" ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"}`}>
+                <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md ${p.license === "pro" ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" : "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"}`}>
                   <PIcon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span className="truncate text-[13px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">{p.name}</span>
-                    <span className={`rounded px-1.5 py-px text-[10px] font-semibold ${p.license === "pro" ? "bg-violet-500/10 text-violet-700 dark:text-violet-300" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"}`}>
+                    <span className={`rounded px-1.5 py-px text-[10px] font-semibold ${p.license === "pro" ? "bg-violet-500/10 text-violet-700 dark:text-violet-300" : "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"}`}>
                       {p.license === "pro" ? "Pro" : "Ücretsiz"}
                     </span>
                   </span>
-                  <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#8C9099]">
+                  <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                     <span className={`h-1.5 w-1.5 rounded-full ${p.enabled ? "bg-emerald-500" : "bg-[#C9CDD4]"}`} />
                     {p.enabled ? `${activeCount(p)}/${readyCount(p)} modül açık` : "Kapalı"} · v{p.version}
                   </span>
@@ -163,20 +163,20 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
       <section className="min-w-0 rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C]">
         <header className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E6E7EA] dark:border-[#23262E] p-4">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#266DF0]/10 text-[#266DF0]">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]">
               <Icon className="h-5 w-5" />
             </span>
             <div className="min-w-0">
               <h2 className="text-[15px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">
-                {plugin.name} <span className="font-mono text-[11px] font-normal text-[#8C9099]">v{plugin.version}</span>
+                {plugin.name} <span className="font-mono text-[11px] font-normal text-[#5F6570] dark:text-[#8C9099]">v{plugin.version}</span>
               </h2>
               <p className="mt-1 max-w-[62ch] text-[12px] leading-relaxed text-[#5C5F66] dark:text-[#9CA3AF]">{plugin.description}</p>
-              <p className="mt-1.5 font-mono text-[10px] text-[#8C9099]">{plugin.id} · {plugin.vendor}</p>
+              <p className="mt-1.5 font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{plugin.id} · {plugin.vendor}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {plugin.settingsHref && plugin.settingsHref !== "/admin/plugins" && (
-              <a href={plugin.settingsHref} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-2.5 text-[12px] text-[#266DF0] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">
+              <a href={plugin.settingsHref} className="inline-flex h-7 items-center gap-1 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-2.5 text-[12px] text-[#1D5ED8] dark:text-[#7AA7FF] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">
                 Ayarlar <ExternalLink className="h-3 w-3" />
               </a>
             )}
@@ -205,7 +205,7 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
                 role="tab"
                 aria-selected={view === id}
                 onClick={() => setView(id)}
-                className={`-mb-px border-b-2 py-2 text-[12px] font-medium ${view === id ? "border-[#266DF0] text-[#14151A] dark:text-[#F3F4F6]" : "border-transparent text-[#8C9099]"}`}
+                className={`-mb-px border-b-2 py-2 text-[12px] font-medium ${view === id ? "border-[#266DF0] text-[#14151A] dark:text-[#F3F4F6]" : "border-transparent text-[#5F6570]"}`}
               >
                 {label}
               </button>
@@ -236,14 +236,14 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
                 className={`rounded px-2.5 py-1 text-[12px] font-medium transition ${filter === f.id ? "bg-white dark:bg-[#2A2D35] text-[#14151A] dark:text-[#F3F4F6] shadow-sm" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}
               >
                 {f.label}
-                <span className="ml-1 text-[10px] text-[#8C9099]">
+                <span className="ml-1 text-[10px] text-[#5F6570] dark:text-[#8C9099]">
                   {f.id === "all" ? plugin.modules.length : plugin.modules.filter((m) => m.status === f.id).length}
                 </span>
               </button>
             ))}
           </div>
           <label className="relative">
-            <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8C9099]" />
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#5F6570] dark:text-[#8C9099]" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -255,10 +255,10 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
         </div>
 
         <div className={plugin.enabled ? "" : "opacity-60"}>
-          {groups.length === 0 && <p className="px-4 py-10 text-center text-[12px] text-[#8C9099]">Bu filtreyle eşleşen modül yok.</p>}
+          {groups.length === 0 && <p className="px-4 py-10 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">Bu filtreyle eşleşen modül yok.</p>}
           {groups.map(([group, mods]) => (
             <div key={group}>
-              <div className="sticky top-0 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">
+              <div className="sticky top-0 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
                 {group} <span className="font-normal">· {mods.length}</span>
               </div>
               <ul className="divide-y divide-[#E6E7EA] dark:divide-[#23262E]">
@@ -268,11 +268,11 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[13px] font-medium text-[#14151A] dark:text-[#F3F4F6]">{m.label}</span>
                         {m.status === "ready" ? (
-                          <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/10 px-1.5 py-px text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                          <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/10 px-1.5 py-px text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
                             <Check className="h-2.5 w-2.5" /> Hazır
                           </span>
                         ) : (
-                          <span className="rounded bg-amber-500/10 px-1.5 py-px text-[10px] font-semibold text-amber-700 dark:text-amber-300">Yakında</span>
+                          <span className="rounded bg-amber-500/10 px-1.5 py-px text-[10px] font-semibold text-amber-800 dark:text-amber-300">Yakında</span>
                         )}
                       </div>
                       <p className="mt-0.5 max-w-[70ch] text-[12px] leading-relaxed text-[#5C5F66] dark:text-[#9CA3AF]">{m.description}</p>

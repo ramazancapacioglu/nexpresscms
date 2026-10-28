@@ -28,7 +28,7 @@ export function CommerceNav({ pathname }: { pathname: string }) {
             className={`rounded-md px-2 py-1 text-[12px] ${
               active
                 ? "bg-[#111318] text-white dark:bg-white dark:text-[#111318]"
-                : "text-[#8C9099] hover:bg-[#F4F5F6] dark:hover:bg-[#1C1E24]"
+                : "text-[#5F6570] dark:text-[#8C9099] hover:bg-[#F4F5F6] dark:hover:bg-[#1C1E24]"
             }`}
           >
             {link.label}

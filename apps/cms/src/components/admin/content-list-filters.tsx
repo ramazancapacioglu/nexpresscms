@@ -62,6 +62,7 @@ export function ContentListFilters({ s }: { s: ContentListState }) {
           </div>
 
           <select
+            aria-label="Kategoriye göre süz"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"
@@ -76,6 +77,7 @@ export function ContentListFilters({ s }: { s: ContentListState }) {
           </select>
 
           <select
+            aria-label="Etikete göre süz"
             value={tagFilter}
             onChange={(e) => setTagFilter(e.target.value)}
             className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus:border-blue-500 focus:outline-none"

@@ -27,7 +27,7 @@ export default async function AdminFormsPage({ searchParams }: { searchParams: P
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Gelen kutusu{current ? ` — ${current.name}` : ""}</h1>
-          <p className="text-[12px] text-[#8C9099]">Form gönderimleri. <Link href="/admin/forms" className="underline">Formlara dön</Link>. Kişisel veri içerir; 365 gün sonra kendiliğinden silinir. Spam korumaları: gizli alan, zaman belirteci, hız sınırı, bağlantı sezgisi.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Form gönderimleri. <Link href="/admin/forms" className="underline">Formlara dön</Link>. Kişisel veri içerir; 365 gün sonra kendiliğinden silinir. Spam korumaları: gizli alan, zaman belirteci, hız sınırı, bağlantı sezgisi.</p>
         </div>
         <div className="flex items-center gap-2">
           {me.role === "admin" && (
@@ -49,7 +49,7 @@ export default async function AdminFormsPage({ searchParams }: { searchParams: P
         <div className={`rounded-lg border ${border} bg-white dark:bg-[#15171C] px-6 py-14 text-center`}>
           <MailOpen className="mx-auto h-8 w-8 text-[#C9CDD4]" />
           <p className="mt-3 text-[13px] font-medium text-[#14151A] dark:text-[#F3F4F6]">Bu klasörde gönderim yok</p>
-          <p className="mx-auto mt-1 max-w-[52ch] text-[12px] text-[#8C9099]">Görsel editörde sayfaya bir <strong>Form</strong> bloğu ekleyip bir form seçin; ziyaretçi mesajları burada görünür.</p>
+          <p className="mx-auto mt-1 max-w-[52ch] text-[12px] text-[#5F6570] dark:text-[#8C9099]">Görsel editörde sayfaya bir <strong>Form</strong> bloğu ekleyip bir form seçin; ziyaretçi mesajları burada görünür.</p>
         </div>
       ) : (
         <SubmissionList

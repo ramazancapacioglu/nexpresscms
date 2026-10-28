@@ -12,7 +12,7 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
       <header className="flex h-10 shrink-0 items-center justify-end gap-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] px-3">
         <div className="flex min-w-0 items-center gap-2">
           {isDirty && (
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300">
               Kaydedilmedi
             </span>
           )}
@@ -26,10 +26,10 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             }}
             className={`hidden md:inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-bold transition ${
               seoAnalysis.score >= 85
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
                 : seoAnalysis.score >= 70
                   ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                  : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                  : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
             }`}
           >
             <span>SEO: {seoAnalysis.score}/100</span>

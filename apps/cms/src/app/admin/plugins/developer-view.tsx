@@ -9,12 +9,12 @@ export function DeveloperView() {
   const slotsSummary = slotRegistry.getAllRegisteredSlots();
   return (
     <div className="space-y-4">
-      <p className="text-[12px] text-[#8C9099]">
+      <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
         Kural 4 gereği çekirdek kodda <code>if (isPro)</code> bulunmaz; eklentiler yuvalara ve kancalara dışarıdan bağlanır.
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] overflow-hidden">
-          <div className="px-4 py-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] flex items-center justify-between text-[11px] font-medium text-[#8C9099]">
+          <div className="px-4 py-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] flex items-center justify-between text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5" />
               <span>Çekirdek Genişleme Yuvaları (&lt;PluginSlot /&gt;)</span>
@@ -30,7 +30,7 @@ export function DeveloperView() {
                 <span className="font-mono text-[11px] text-[#14151A] dark:text-[#F3F4F6]">
                   {slotName}
                 </span>
-                <span className="font-mono text-[11px] text-[#8C9099]">
+                <span className="font-mono text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                   {mounted.length > 0 ? mounted.join(", ") : "Standby (Open Slot)"}
                 </span>
               </div>
@@ -39,12 +39,12 @@ export function DeveloperView() {
         </div>
 
         <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] overflow-hidden">
-          <div className="px-4 py-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] flex items-center justify-between text-[11px] font-medium text-[#8C9099]">
+          <div className="px-4 py-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] flex items-center justify-between text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">
             <span className="flex items-center gap-1.5">
               <Terminal className="h-3.5 w-3.5" />
               <span>Canlı Agentic Web & LLMO Uç Noktaları</span>
             </span>
-            <span className="font-mono text-emerald-600">HTTP 200 OK</span>
+            <span className="font-mono text-emerald-800 dark:text-emerald-400">HTTP 200 OK</span>
           </div>
           <div className="divide-y divide-[#E6E7EA] dark:divide-[#23262E] text-[12px]">
             {[
@@ -60,10 +60,10 @@ export function DeveloperView() {
                 className="px-4 py-2.5 flex items-center justify-between"
               >
                 <div>
-                  <span className="font-mono text-[11px] font-medium text-[#266DF0]">
+                  <span className="font-mono text-[11px] font-medium text-[#1D5ED8] dark:text-[#7AA7FF]">
                     {ep.path}
                   </span>
-                  <span className="text-[11px] text-[#8C9099] ml-2">
+                  <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099] ml-2">
                     — {ep.desc}
                   </span>
                 </div>

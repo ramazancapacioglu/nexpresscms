@@ -75,26 +75,26 @@ export function CommerceProductEditor({
     <div className="mx-auto max-w-2xl space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">{product ? "Ürün düzenle" : "Yeni ürün"}</h1>
-        <p className="text-[12px] text-[#8C9099]">Mağaza vitrininde görünen katalog kaydı.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Mağaza vitrininde görünen katalog kaydı.</p>
       </header>
 
       <div className="grid gap-3">
         <label className="block space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Ad</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Ad</span>
           <input className={fieldClass} value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">SKU</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">SKU</span>
             <input className={fieldClass} value={sku} onChange={(e) => setSku(e.target.value)} />
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Adres (slug)</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Adres (slug)</span>
             <input className={fieldClass} value={slug} onChange={(e) => setSlug(e.target.value)} />
           </label>
         </div>
         <label className="block space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Kısa açıklama</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Kısa açıklama</span>
           <textarea
             className={fieldClass}
             rows={2}
@@ -103,7 +103,7 @@ export function CommerceProductEditor({
           />
         </label>
         <label className="block space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Açıklama (HTML)</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Açıklama (HTML)</span>
           <textarea
             className={fieldClass}
             rows={4}
@@ -113,7 +113,7 @@ export function CommerceProductEditor({
         </label>
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Fiyat (TRY)</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Fiyat (TRY)</span>
             <input
               className={fieldClass}
               value={priceInput}
@@ -121,7 +121,7 @@ export function CommerceProductEditor({
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Karşılaştırma fiyatı</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Karşılaştırma fiyatı</span>
             <input
               className={fieldClass}
               value={compareAtInput}
@@ -129,7 +129,7 @@ export function CommerceProductEditor({
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Stok adedi</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Stok adedi</span>
             <input
               className={fieldClass}
               value={stockQuantity}
@@ -139,7 +139,7 @@ export function CommerceProductEditor({
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Stok durumu</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Stok durumu</span>
             <select
               className={fieldClass}
               value={stockStatus}
@@ -151,7 +151,7 @@ export function CommerceProductEditor({
             </select>
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-[#8C9099]">Yayın durumu</span>
+            <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Yayın durumu</span>
             <select
               className={fieldClass}
               value={status}
@@ -163,7 +163,7 @@ export function CommerceProductEditor({
           </label>
         </div>
         <label className="block space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Ürün tipi</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Ürün tipi</span>
           <select
             className={fieldClass}
             value={productKind}
@@ -175,7 +175,7 @@ export function CommerceProductEditor({
         </label>
         {categories.length > 0 ? (
           <fieldset className="space-y-1">
-            <legend className="text-[11px] font-medium text-[#8C9099]">Kategoriler</legend>
+            <legend className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Kategoriler</legend>
             {categories.map((category) => (
               <label key={category.id} className="flex items-center gap-2 text-[12px]">
                 <input
@@ -193,7 +193,7 @@ export function CommerceProductEditor({
           </fieldset>
         ) : null}
         <label className="block space-y-1">
-          <span className="text-[11px] font-medium text-[#8C9099]">Görsel URL</span>
+          <span className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">Görsel URL</span>
           <input className={fieldClass} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
         </label>
       </div>
@@ -224,7 +224,7 @@ export function CommerceProductEditor({
         >
           {pending ? "Kaydediliyor…" : "Kaydet"}
         </button>
-        {notice ? <span className="text-[12px] text-emerald-600">{notice}</span> : null}
+        {notice ? <span className="text-[12px] text-emerald-800 dark:text-emerald-400">{notice}</span> : null}
       </div>
     </div>
   );
@@ -337,7 +337,7 @@ function VariantWizard({
           </button>
         </div>
       ) : (
-        <p className="text-[12px] text-[#8C9099]">Önce nitelik değerleri tanımlayın, sonra kombinasyon üretin.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Önce nitelik değerleri tanımlayın, sonra kombinasyon üretin.</p>
       )}
     </section>
   );

@@ -9,7 +9,7 @@ const border = "border-[#E6E7EA] dark:border-[#23262E]";
 /** Görsel ızgarası: tıkla = denetçide aç; onay kutusu = toplu seçim (Shift ile aralık). */
 export function MediaGrid({ items, selectedId, checked, folders, onOpen, onToggle }: { items: MediaAssetDto[]; selectedId: string | undefined; checked: Set<string>; folders: MediaFolderDto[]; onOpen: (a: MediaAssetDto) => void; onToggle: (id: string, range: boolean) => void }) {
   const folderName = (id: string | null) => folders.find((f) => f.id === id)?.name;
-  if (items.length === 0) return <div className={`rounded-lg border ${border} bg-white px-6 py-14 text-center text-[12px] text-[#8C9099] dark:bg-[#15171C]`}>Bu görünümde görsel yok. Yukarıdan yükleyin ya da başka bir klasör seçin.</div>;
+  if (items.length === 0) return <div className={`rounded-lg border ${border} bg-white px-6 py-14 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099] dark:bg-[#15171C]`}>Bu görünümde görsel yok. Yukarıdan yükleyin ya da başka bir klasör seçin.</div>;
   return (
     <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
       {items.map((item) => {
@@ -24,9 +24,9 @@ export function MediaGrid({ items, selectedId, checked, folders, onOpen, onToggl
               </div>
               <div className="space-y-1 p-3 text-[11px]">
                 <div className="truncate font-semibold">{item.filename}</div>
-                <div className="font-mono text-[10px] text-[#8C9099]">{item.width}×{item.height}px • {(item.sizeBytes / 1024).toFixed(1)} KB</div>
+                <div className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{item.width}×{item.height}px • {(item.sizeBytes / 1024).toFixed(1)} KB</div>
                 <p className="line-clamp-1 text-[10px] text-[#5C5F66]">alt: {item.altText || "⚠️ Eksik alt metin"}</p>
-                {folderName(item.folderId) && <p className="truncate text-[10px] text-[#8C9099]">📁 {folderName(item.folderId)}</p>}
+                {folderName(item.folderId) && <p className="truncate text-[10px] text-[#5F6570] dark:text-[#8C9099]">📁 {folderName(item.folderId)}</p>}
               </div>
             </button>
             <button

@@ -42,7 +42,7 @@ export function ThemeStoreControlPanel({ s }: { s: ThemeStoreState }) {
         </div>
 
         {/* Sekme İçeriği */}
-        <div className="p-4 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
+        <div className="p-4 space-y-4 text-xs max-h-[70vh] overflow-y-auto" tabIndex={0} role="region" aria-label="Tema kontrol paneli">
           <ThemeStoreTabThemes s={s} />
 
           <ThemeStoreTabPalettes s={s} />

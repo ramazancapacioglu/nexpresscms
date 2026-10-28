@@ -41,7 +41,7 @@ export default async function AdminLayout({
           className="block rounded-md px-2 py-1 text-[12px] text-[#14151A] hover:bg-black/5 dark:text-[#F3F4F6] dark:hover:bg-white/5"
         >
           <span className="block truncate font-medium">{session.name || session.email}</span>
-          <span className="block truncate text-[10px] text-[#8C9099]">
+          <span className="block truncate text-[10px] text-[#5F6570] dark:text-[#8C9099]">
             {session.email} • {session.role === "admin" ? t("admin.account.admin") : t("admin.account.editor")}
           </span>
         </Link>

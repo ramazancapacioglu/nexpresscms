@@ -54,7 +54,7 @@ export function BlockInspector() {
             </div>
 
             {/* Sekme İçeriği (Bağımsız Dikey Kaydırma) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
+            <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               {/* BLOK DENETÇİSİ */}
               {rightTab === "block" && (
                 <div className="space-y-4">

@@ -107,7 +107,7 @@ export function AiSuggestPanel() {
             </div>
           )}
           {result.remainingForbidden.length > 0 && (
-            <p className="text-[11px] text-amber-700 dark:text-amber-300">Dikkat: yasak kalıp kaldı ({result.remainingForbidden.join(", ")}). Uygulamadan önce düzenleyin.</p>
+            <p className="text-[11px] text-amber-800 dark:text-amber-300">Dikkat: yasak kalıp kaldı ({result.remainingForbidden.join(", ")}). Uygulamadan önce düzenleyin.</p>
           )}
           <p className="text-[10px] text-muted-foreground">
             Model: {result.model}{result.refined ? " · 2. geçişte düzeltildi" : ""} · Yapay zeka çıktısıdır, yayından önce kontrol edin.

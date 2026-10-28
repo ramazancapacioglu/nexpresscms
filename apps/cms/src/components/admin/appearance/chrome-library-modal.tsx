@@ -85,7 +85,7 @@ export function ChromeLibraryModal({
             <Sparkles className="h-4 w-4 text-blue-600" />
             <div>
               <h2 className="text-sm font-bold">{kind === "header" ? "Header kütüphanesi" : "Footer kütüphanesi"}</h2>
-              <p className="text-[11px] text-[#8C9099]">
+              <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                 {tab === "designs" ? `${items.length} tasarım. Seçince forma alınır.` : "JSON forma alınır."} Kaydet ile yayınlanır.
               </p>
             </div>
@@ -97,7 +97,7 @@ export function ChromeLibraryModal({
             <button type="button" onClick={() => setTab("json")} className={tabClass(tab === "json")}>
               JSON aktar
             </button>
-            <button type="button" onClick={onClose} className="rounded-md p-1.5 text-[#8C9099]">
+            <button type="button" onClick={onClose} className="rounded-md p-1.5 text-[#5F6570] dark:text-[#8C9099]">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -124,7 +124,7 @@ export function ChromeLibraryModal({
                 </button>
               ))}
             </aside>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {items.map((item) => (
                   <button
@@ -139,7 +139,7 @@ export function ChromeLibraryModal({
                   >
                     <ChromeWireframe kind={item.preview} />
                     <div className="mt-2 text-[12px] font-semibold">{item.name}</div>
-                    <p className="mt-1 text-[11px] leading-snug text-[#8C9099]">{item.description}</p>
+                    <p className="mt-1 text-[11px] leading-snug text-[#5F6570] dark:text-[#8C9099]">{item.description}</p>
                   </button>
                 ))}
               </div>

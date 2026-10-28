@@ -58,7 +58,7 @@ export function PluginSettingsForm({
     >
       {groups.map((group) => (
         <fieldset key={group} className="space-y-3">
-          <legend className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">{group}</legend>
+          <legend className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">{group}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {fields
               .filter((f) => f.group === group)
@@ -100,9 +100,9 @@ export function PluginSettingsForm({
                     {errors[f.key] ? (
                       <p className="mt-1 text-[11px] text-red-600">{errors[f.key]}</p>
                     ) : f.help ? (
-                      <p className="mt-1 text-[11px] text-[#8C9099]">{f.help}</p>
+                      <p className="mt-1 text-[11px] text-[#5F6570] dark:text-[#8C9099]">{f.help}</p>
                     ) : off ? (
-                      <p className="mt-1 text-[11px] text-[#8C9099]">İlgili modül kapalı.</p>
+                      <p className="mt-1 text-[11px] text-[#5F6570] dark:text-[#8C9099]">İlgili modül kapalı.</p>
                     ) : null}
                   </div>
                 );

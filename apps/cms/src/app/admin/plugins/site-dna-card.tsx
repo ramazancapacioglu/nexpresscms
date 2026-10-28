@@ -46,7 +46,7 @@ export function SiteDnaCard({ initial, onNotice }: { initial: string; onNotice: 
     <section className="space-y-2 border-t border-[#E6E7EA] dark:border-[#23262E] p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Site DNA</h3>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Site DNA</h3>
           <p className="text-[12px] text-[#5C5F66] dark:text-[#9CA3AF]">Markanızın kim olduğunu, ne sunduğunu ve nasıl konuştuğunu anlatan 4–6 paragraf. AI yazım asistanı her öneride bunu bağlam olarak kullanır.</p>
         </div>
         <button type="button" onClick={generate} disabled={pending} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-violet-500/40 px-3 text-[12px] font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-500/10 disabled:opacity-60">
@@ -61,7 +61,7 @@ export function SiteDnaCard({ initial, onNotice }: { initial: string; onNotice: 
         placeholder="Henüz tanımlı değil. 'Siteden öner' ile yayındaki içeriğinizden taslak üretebilir veya elle yazabilirsiniz."
         className="w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#121317] p-2.5 text-[12px] leading-relaxed outline-none focus:border-[#266DF0]"
       />
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8C9099]">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#5F6570] dark:text-[#8C9099]">
         <span>
           {text.length}/{MAX}
           {basedOn.length > 0 && ` · Dayanak: ${basedOn.slice(0, 4).join(", ")}${basedOn.length > 4 ? "…" : ""}`}
@@ -70,7 +70,7 @@ export function SiteDnaCard({ initial, onNotice }: { initial: string; onNotice: 
           Kaydet
         </button>
       </div>
-      <p className="text-[11px] text-[#8C9099]">Yapay zeka taslağıdır; kaydetmeden önce doğruluğunu kontrol edin.</p>
+      <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Yapay zeka taslağıdır; kaydetmeden önce doğruluğunu kontrol edin.</p>
     </section>
   );
 }

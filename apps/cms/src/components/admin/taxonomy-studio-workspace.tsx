@@ -70,7 +70,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 <label className="block text-[11px] font-semibold mb-1">
                   Kalıcı Bağlantı (Slug)
                 </label>
-                <input
+                <input aria-label="Kalıcı Bağlantı (Slug)"
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
@@ -82,7 +82,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 <label className="block text-[11px] font-semibold mb-1">
                   Sıra No
                 </label>
-                <input
+                <input aria-label="Sıra No"
                   type="number"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(Number(e.target.value))}
@@ -98,6 +98,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                   Üst Kategori (Parent — Ağaç Kırılımı)
                 </label>
                 <select
+                  aria-label="Üst kategori"
                   value={parentId}
                   onChange={(e) => setParentId(e.target.value)}
                   className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
@@ -125,7 +126,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 <button
                   type="button"
                   onClick={() => setMediaModalOpen(true)}
-                  className="rounded bg-blue-600/10 px-2 py-0.5 text-[10px] font-semibold text-blue-600 hover:bg-blue-600/20"
+                  className="rounded bg-blue-600/10 px-2 py-0.5 text-[10px] font-semibold text-blue-700 hover:bg-blue-600/20"
                 >
                   Medyadan Seç
                 </button>
@@ -162,7 +163,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 <label className="block text-[11px] font-semibold mb-1">
                   Açıklama
                 </label>
-                <textarea
+                <textarea aria-label="Açıklama"
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -174,7 +175,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 <label className="block text-[11px] font-semibold mb-1">
                   Renk
                 </label>
-                <input
+                <input aria-label="Renk"
                   type="color"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
@@ -186,7 +187,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
             {/* KATEGORİ SEO MOTORU ALANLARI */}
             <div className="rounded-lg border border-border p-2.5 space-y-2">
               <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-emerald-600" />
+                <Sparkles className="h-3 w-3 text-emerald-800 dark:text-emerald-400" />
                 CollectionPage Arşiv SEO Ayarları
               </div>
               <input
@@ -315,7 +316,7 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                       </td>
 
                       <td className="px-3.5 py-3 align-top">
-                        <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300">
                           CollectionPage
                         </span>
                         <div className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5 max-w-[180px]">

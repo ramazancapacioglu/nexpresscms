@@ -9,8 +9,8 @@ import { useStudioInspector } from "./studio-inspector-context";
 const STATE_LABEL: Record<TranslationState, string> = { none: "Yok", draft: "Taslak", published: "Yayında", stale: "Kaynak değişti" };
 const STATE_STYLE: Record<TranslationState, string> = {
   none: "bg-muted text-muted-foreground",
-  draft: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-  published: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  draft: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  published: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
   stale: "bg-red-500/15 text-red-700 dark:text-red-300",
 };
 

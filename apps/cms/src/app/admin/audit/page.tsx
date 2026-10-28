@@ -43,42 +43,42 @@ export default async function AdminAuditPage({
     <div className="space-y-4">
       <div>
         <h1 className="text-[16px] font-bold tracking-tight">Denetim Günlüğü</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Kim, ne zaman, hangi işlemi yaptı. Kayıtlar yetkilendirilmiş çağrıları gösterir (işlemin başarısı ayrıca garanti edilmez); parola ve sır yazılmaz. Yalnızca eklenir.
         </p>
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2 text-[12px]">
         <label className="space-y-1">
-          <span className="block text-[10px] uppercase text-[#8C9099]">Kullanıcı (e-posta)</span>
+          <span className="block text-[10px] uppercase text-[#5F6570] dark:text-[#8C9099]">Kullanıcı (e-posta)</span>
           <input name="actor" defaultValue={filter.actorEmail} className={`h-8 rounded border ${border} bg-transparent px-2`} />
         </label>
         <label className="space-y-1">
-          <span className="block text-[10px] uppercase text-[#8C9099]">Alan</span>
+          <span className="block text-[10px] uppercase text-[#5F6570] dark:text-[#8C9099]">Alan</span>
           <select name="action" defaultValue={filter.actionPrefix ?? ""} className={`h-8 rounded border ${border} bg-transparent px-2`}>
             {DOMAINS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
         <button type="submit" className="h-8 rounded bg-[#266DF0] px-3 font-medium text-white">Filtrele</button>
-        <span className="pb-2 text-[11px] text-[#8C9099]">{total.toLocaleString("tr-TR")} kayıt</span>
+        <span className="pb-2 text-[11px] text-[#5F6570] dark:text-[#8C9099]">{total.toLocaleString("tr-TR")} kayıt</span>
       </form>
 
-      <div className={`overflow-x-auto rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
+      <div className={`overflow-x-auto rounded-lg border ${border} bg-white dark:bg-[#15171C]`} tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
         <table className="w-full text-[12px]">
-          <thead className="bg-[#FBFBFB] dark:bg-[#121317] text-left text-[10px] uppercase tracking-wider text-[#8C9099]">
+          <thead className="bg-[#FBFBFB] dark:bg-[#121317] text-left text-[10px] uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
             <tr><th className="px-3 py-2">Zaman</th><th className="px-3 py-2">Kullanıcı</th><th className="px-3 py-2">Eylem</th><th className="px-3 py-2">Hedef / ayrıntı</th><th className="px-3 py-2">IP</th></tr>
           </thead>
           <tbody className="divide-y divide-[#E6E7EA] dark:divide-[#23262E]">
             {rows.length === 0 && (
-              <tr><td colSpan={5} className="px-3 py-8 text-center text-[#8C9099]">Bu filtreyle kayıt yok.</td></tr>
+              <tr><td colSpan={5} className="px-3 py-8 text-center text-[#5F6570] dark:text-[#8C9099]">Bu filtreyle kayıt yok.</td></tr>
             )}
             {rows.map((r) => (
               <tr key={r.id}>
                 <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px]">{new Date(r.at).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "medium" })}</td>
-                <td className="px-3 py-2">{r.actorEmail || <span className="text-[#8C9099]">anonim</span>}</td>
+                <td className="px-3 py-2">{r.actorEmail || <span className="text-[#5F6570] dark:text-[#8C9099]">anonim</span>}</td>
                 <td className="px-3 py-2 font-mono text-[11px]">{r.action}</td>
                 <td className="px-3 py-2 text-[#5C5F66] dark:text-[#9CA3AF]">{[r.target, r.detail].filter(Boolean).join(" — ") || "—"}</td>
-                <td className="px-3 py-2 font-mono text-[10px] text-[#8C9099]">{r.ip || "—"}</td>
+                <td className="px-3 py-2 font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{r.ip || "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -87,7 +87,7 @@ export default async function AdminAuditPage({
 
       <nav className="flex items-center gap-3 text-[12px]" aria-label="Sayfalama">
         {page > 1 && <a className="underline" href={qs(page - 1)}>← Yeni</a>}
-        <span className="text-[#8C9099]">Sayfa {page} / {pages}</span>
+        <span className="text-[#5F6570] dark:text-[#8C9099]">Sayfa {page} / {pages}</span>
         {page < pages && <a className="underline" href={qs(page + 1)}>Eski →</a>}
       </nav>
     </div>

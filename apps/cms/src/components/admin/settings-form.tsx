@@ -48,7 +48,7 @@ export function SettingsForm({
     <div className="max-w-2xl space-y-4">
       <div>
         <h1 className="text-[16px] font-bold tracking-tight">Ayarlar</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Genel site kimliği. Kurum kimliği ve <code>sameAs</code> için <a className="underline" href="/admin/seo">SEO</a>, ticaret için <a className="underline" href="/admin/commerce">E-Ticaret</a>, görünüm için <a className="underline" href="/admin/themes">Tema</a> sayfaları kullanılır.
         </p>
       </div>
@@ -76,7 +76,7 @@ export function SettingsForm({
         </label>
         <div className="flex items-center gap-3">
           <button type="submit" disabled={pending} className="h-8 rounded bg-[#266DF0] px-3 text-[12px] font-medium text-white disabled:opacity-60">{pending ? "Kaydediliyor…" : "Kaydet"}</button>
-          {result && (result.ok ? <span role="status" className="text-[11px] text-emerald-700">Kaydedildi.</span> : <span role="alert" className="text-[11px] text-red-600">{result.error}</span>)}
+          {result && (result.ok ? <span role="status" className="text-[11px] text-emerald-800">Kaydedildi.</span> : <span role="alert" className="text-[11px] text-red-600">{result.error}</span>)}
         </div>
       </form>
 
@@ -85,7 +85,7 @@ export function SettingsForm({
         <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
           {rows.map(([k, val]) => (
             <div key={k}>
-              <dt className="text-[10px] uppercase text-[#8C9099]">{k}</dt>
+              <dt className="text-[10px] uppercase text-[#5F6570] dark:text-[#8C9099]">{k}</dt>
               <dd className="break-all font-mono text-[11px]">{val || "—"}</dd>
             </div>
           ))}

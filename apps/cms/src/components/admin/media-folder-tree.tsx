@@ -64,8 +64,8 @@ export function MediaFolderTree({ folders, counts, total, unused, filter, onFilt
   };
 
   const row = (active: boolean, onClick: () => void, icon: React.ReactNode, label: string, count: number, pad = 0) => (
-    <button type="button" onClick={onClick} aria-current={active} style={{ paddingLeft: 8 + pad * 14 }} className={`flex w-full items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-[12px] ${active ? "bg-[#266DF0]/10 font-semibold text-[#266DF0]" : "hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]"}`}>
-      {icon}<span className="min-w-0 flex-1 truncate">{label}</span><span className="text-[11px] text-[#8C9099]">{count}</span>
+    <button type="button" onClick={onClick} aria-current={active} style={{ paddingLeft: 8 + pad * 14 }} className={`flex w-full items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-[12px] ${active ? "bg-[#266DF0]/10 font-semibold text-[#1D5ED8] dark:text-[#7AA7FF]" : "hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]"}`}>
+      {icon}<span className="min-w-0 flex-1 truncate">{label}</span><span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{count}</span>
     </button>
   );
 
@@ -77,7 +77,7 @@ export function MediaFolderTree({ folders, counts, total, unused, filter, onFilt
         <li key={n.id}>
           <div className="group flex items-center">
             {n.children.length > 0 ? (
-              <button type="button" aria-label={expanded ? "Daralt" : "Genişlet"} onClick={() => setOpen((o) => { const x = new Set(o); if (x.has(n.id)) x.delete(n.id); else x.add(n.id); return x; })} className="h-6 w-5 shrink-0 text-[#8C9099]"><ChevronRight className={`h-3.5 w-3.5 transition ${expanded ? "rotate-90" : ""}`} /></button>
+              <button type="button" aria-label={expanded ? "Daralt" : "Genişlet"} onClick={() => setOpen((o) => { const x = new Set(o); if (x.has(n.id)) x.delete(n.id); else x.add(n.id); return x; })} className="h-6 w-5 shrink-0 text-[#5F6570] dark:text-[#8C9099]"><ChevronRight className={`h-3.5 w-3.5 transition ${expanded ? "rotate-90" : ""}`} /></button>
             ) : <span className="w-5 shrink-0" />}
             <div className="min-w-0 flex-1">
               {editing === n.id ? (
@@ -86,8 +86,8 @@ export function MediaFolderTree({ folders, counts, total, unused, filter, onFilt
             </div>
             {editing !== n.id && (
               <span className="flex shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
-                {n.depth < 3 && <button type="button" aria-label={`${n.name} altına klasör ekle`} title="Alt klasör" onClick={() => { setAdding(n.id); setEditing(null); setName(""); setOpen((o) => new Set(o).add(n.id)); }} className="p-1 text-[#8C9099] hover:text-[#266DF0]"><FolderPlus className="h-3 w-3" /></button>}
-                <button type="button" aria-label={`${n.name} yeniden adlandır`} title="Yeniden adlandır" onClick={() => { setEditing(n.id); setAdding(false); setName(n.name); }} className="p-1 text-[#8C9099] hover:text-[#266DF0]"><Pencil className="h-3 w-3" /></button>
+                {n.depth < 3 && <button type="button" aria-label={`${n.name} altına klasör ekle`} title="Alt klasör" onClick={() => { setAdding(n.id); setEditing(null); setName(""); setOpen((o) => new Set(o).add(n.id)); }} className="p-1 text-[#5F6570] dark:text-[#8C9099] hover:text-[#266DF0]"><FolderPlus className="h-3 w-3" /></button>}
+                <button type="button" aria-label={`${n.name} yeniden adlandır`} title="Yeniden adlandır" onClick={() => { setEditing(n.id); setAdding(false); setName(n.name); }} className="p-1 text-[#5F6570] dark:text-[#8C9099] hover:text-[#266DF0]"><Pencil className="h-3 w-3" /></button>
                 <button type="button" aria-label={`${n.name} sil`} title="Sil" onClick={() => remove(n)} className="p-1 text-red-500"><Trash2 className="h-3 w-3" /></button>
               </span>
             )}
@@ -104,12 +104,12 @@ export function MediaFolderTree({ folders, counts, total, unused, filter, onFilt
       {row(filter === "none", () => onFilter("none"), <Folder className="h-3.5 w-3.5 shrink-0 opacity-50" />, "Klasörsüz", counts[""] ?? 0)}
       {row(filter === "unused", () => onFilter("unused"), <ImageOff className="h-3.5 w-3.5 shrink-0" />, "Kullanılmayanlar", unused)}
       <div className={`my-1 flex items-center justify-between border-t ${border} px-2 pt-2`}>
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#8C9099]">Klasörler</span>
-        <button type="button" onClick={() => { setAdding(null); setEditing(null); setName(""); }} aria-label="Yeni klasör" title="Yeni klasör" className="text-[#8C9099] hover:text-[#266DF0]"><FolderPlus className="h-3.5 w-3.5" /></button>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Klasörler</span>
+        <button type="button" onClick={() => { setAdding(null); setEditing(null); setName(""); }} aria-label="Yeni klasör" title="Yeni klasör" className="text-[#5F6570] dark:text-[#8C9099] hover:text-[#266DF0]"><FolderPlus className="h-3.5 w-3.5" /></button>
       </div>
       {adding === null && <NewFolderInput name={name} setName={setName} submit={submit} cancel={() => setAdding(false)} pending={pending} />}
       <ul>{nodes(tree)}</ul>
-      {tree.length === 0 && adding !== null && <p className="px-2 pb-1 text-[11px] text-[#8C9099]">Henüz klasör yok.</p>}
+      {tree.length === 0 && adding !== null && <p className="px-2 pb-1 text-[11px] text-[#5F6570] dark:text-[#8C9099]">Henüz klasör yok.</p>}
       {error && <p role="alert" className="px-2 text-[11px] text-red-600">{error}</p>}
     </nav>
   );

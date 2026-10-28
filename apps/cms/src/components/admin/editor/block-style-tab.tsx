@@ -111,7 +111,7 @@ export function BlockStyleTab() {
                               <label className="block text-[10px] text-muted-foreground mb-1">
                                 CSS Gradyan (İsteğe Bağlı)
                               </label>
-                              <input
+                              <input aria-label="CSS Gradyan (İsteğe Bağlı)"
                                 type="text"
                                 value={
                                   getActiveStyleValue("backgroundGradient") ?? ""
@@ -199,7 +199,7 @@ export function BlockStyleTab() {
                                 <label className="block text-[10px] text-muted-foreground mb-0.5">
                                   Kalınlık
                                 </label>
-                                <input
+                                <input aria-label="Kalınlık"
                                   type="text"
                                   value={getActiveStyleValue("borderWidth") ?? ""}
                                   onChange={(e) =>
@@ -215,7 +215,7 @@ export function BlockStyleTab() {
                                 <label className="block text-[10px] text-muted-foreground mb-0.5">
                                   Köşe (Radius)
                                 </label>
-                                <input
+                                <input aria-label="Köşe (Radius)"
                                   type="text"
                                   value={getActiveStyleValue("borderRadius") ?? ""}
                                   onChange={(e) =>
@@ -231,7 +231,7 @@ export function BlockStyleTab() {
                                 <label className="block text-[10px] text-muted-foreground mb-0.5">
                                   Gölge
                                 </label>
-                                <select
+                                <select aria-label="Gölge"
                                   value={
                                     getActiveStyleValue("boxShadow") ?? "none"
                                   }

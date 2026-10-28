@@ -55,7 +55,7 @@ export default async function AdminContentsEditorPage({
           context={{ contentId: sp.id }}
           fallback={
             <div className="border-t border-[#E6E7EA] dark:border-[#23262E] pt-3 space-y-1.5 text-[11px]">
-              <div className="font-semibold uppercase tracking-wider text-[#8C9099]">
+              <div className="font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
                 Co-Pilot Slot (editor.sidebar.tabs)
               </div>
               <p className="text-[#5C5F66] dark:text-[#9CA3AF] leading-relaxed">

@@ -27,7 +27,7 @@ export function CustomerBoard({
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Müşteriler</h1>
-        <p className="text-[12px] text-[#8C9099]">Site kasası ve pazar yeri alıcıları ayrı kayıtlarda durur.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Site kasası ve pazar yeri alıcıları ayrı kayıtlarda durur.</p>
       </header>
       <div className="flex gap-2 text-[12px]">
         {(["all", "site", "marketplace"] as const).map((item) => (
@@ -70,7 +70,7 @@ export function CustomerBoard({
           <h2 className="text-[13px] font-semibold">Müşteri grubu</h2>
           <input className={fieldClass} placeholder="Grup adı" value={groupName} onChange={(e) => setGroupName(e.target.value)} required />
           <button disabled={pending} className="rounded-md border border-[#E6E7EA] px-3 py-2 text-[12px] dark:border-[#23262E]">Grup ekle</button>
-          <p className="text-[11px] text-[#8C9099]">{groups.map((group) => group.name).join(", ") || "Grup yok"}</p>
+          <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{groups.map((group) => group.name).join(", ") || "Grup yok"}</p>
         </form>
       </div>
       <ul className="divide-y divide-[#E6E7EA] rounded-lg border border-[#E6E7EA] dark:divide-[#23262E] dark:border-[#23262E]">
@@ -78,7 +78,7 @@ export function CustomerBoard({
           <li key={customer.id} className="flex items-center justify-between px-3 py-2 text-[12px]">
             <div>
               <Link href={`/admin/commerce/customers/${customer.id}`} className="font-medium hover:underline">{customer.name}</Link>
-              <p className="text-[#8C9099]">
+              <p className="text-[#5F6570] dark:text-[#8C9099]">
                 {customer.source === "site" ? "Site" : "Pazar yeri"} · {customer.email || "e-posta yok"} · {groupNameOf(customer.groupId)} · {customer.loyaltyPoints} puan
               </p>
             </div>

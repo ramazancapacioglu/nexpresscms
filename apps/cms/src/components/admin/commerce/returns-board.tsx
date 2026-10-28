@@ -21,7 +21,7 @@ export function ReturnsBoard({ returns }: { returns: CommerceReturnDto[] }) {
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">İade ve değişim</h1>
-        <p className="text-[12px] text-[#8C9099]">Site ve pazar yeri siparişleri aynı listede, kaynak etiketiyle izlenir.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Site ve pazar yeri siparişleri aynı listede, kaynak etiketiyle izlenir.</p>
       </header>
       <form
         className="grid max-w-xl gap-2"

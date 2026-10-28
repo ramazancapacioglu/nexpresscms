@@ -113,12 +113,12 @@ export function FormBuilder({ id, initial, smtpReady, contactEmail, isAdmin }: P
     <div className="space-y-4">
       <div className={`flex flex-wrap items-center justify-between gap-3 border-b ${border} pb-3`}>
         <div className="min-w-0">
-          <Link href="/admin/forms" className="text-[11px] text-[#8C9099] hover:underline">← Formlar</Link>
+          <Link href="/admin/forms" className="text-[11px] text-[#5F6570] dark:text-[#8C9099] hover:underline">← Formlar</Link>
           <h1 className="truncate text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">{name || "Adsız form"}</h1>
         </div>
         <div className="flex items-center gap-2 text-[12px]">
-          {msg && <span role="status" className={msg.ok ? "text-emerald-600" : "text-red-600"}>{msg.text}</span>}
-          {dirty && !msg && <span className="text-[#8C9099]">Kaydedilmedi</span>}
+          {msg && <span role="status" className={msg.ok ? "text-emerald-800 dark:text-emerald-400" : "text-red-600"}>{msg.text}</span>}
+          {dirty && !msg && <span className="text-[#5F6570] dark:text-[#8C9099]">Kaydedilmedi</span>}
           <Link href={`/admin/forms/${id}/analytics`} className={`inline-flex h-8 items-center gap-1.5 rounded-md border ${border} px-3 font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}><BarChart3 className="h-3.5 w-3.5" /> Analiz</Link>
           <Link href={`/admin/forms/inbox?form=${id}`} className={`inline-flex h-8 items-center gap-1.5 rounded-md border ${border} px-3 font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}><Inbox className="h-3.5 w-3.5" /> Gönderimler</Link>
           <button type="button" onClick={save} disabled={pending || !dirty} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-[#266DF0] px-4 font-semibold text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" /> {pending ? "Kaydediliyor…" : "Kaydet"}</button>
@@ -134,10 +134,10 @@ export function FormBuilder({ id, initial, smtpReady, contactEmail, isAdmin }: P
       {tab === "fields" && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={(e: DragStartEvent) => setActiveDrag(String(e.active.id))} onDragCancel={() => setActiveDrag(null)} onDragEnd={onDragEnd}>
           <div className="grid gap-4 lg:grid-cols-[200px_minmax(0,1fr)_280px]">
-            <aside aria-label="Alan paleti"><Palette onAdd={(t) => insert(t, -1)} /></aside>
-            <Canvas fields={fields} selectedId={selectedId} onSelect={setSelectedId} onRemove={remove} onDuplicate={duplicate} submitLabel={spec.submitLabel} dragging={activeDrag !== null} />
-            <aside aria-label="Alan özellikleri" className={`h-fit rounded-lg border ${border} bg-white p-3 dark:bg-[#15171C]`}>
-              {selected ? <FieldInspector f={selected} all={fields} onChange={patchField} /> : <p className="py-6 text-center text-[12px] text-[#8C9099]">Düzenlemek için kanvastan bir alan seçin.</p>}
+            <aside aria-label="Alan paleti" className="order-2 lg:order-1"><Palette onAdd={(t) => insert(t, -1)} /></aside>
+            <div className="order-1 min-w-0 lg:order-2"><Canvas fields={fields} selectedId={selectedId} onSelect={setSelectedId} onRemove={remove} onDuplicate={duplicate} submitLabel={spec.submitLabel} dragging={activeDrag !== null} /></div>
+            <aside aria-label="Alan özellikleri" className={`order-3 h-fit rounded-lg border ${border} bg-white p-3 dark:bg-[#15171C]`}>
+              {selected ? <FieldInspector f={selected} all={fields} onChange={patchField} /> : <p className="py-6 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">Düzenlemek için kanvastan bir alan seçin.</p>}
             </aside>
           </div>
           <DragOverlay>{dragLabel ? <div className="rounded-md border border-[#266DF0] bg-white px-3 py-1.5 text-[12px] shadow-lg dark:bg-[#15171C]">{dragLabel}</div> : null}</DragOverlay>

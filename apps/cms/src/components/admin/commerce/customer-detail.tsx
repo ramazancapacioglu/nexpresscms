@@ -35,7 +35,7 @@ export function CustomerDetail({
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
         <h1 className="text-[18px] font-semibold">{customer.name}</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           {customer.source === "site" ? "Siteden" : "Sanal pazardan"} · {customer.loyaltyPoints} sadakat puanı
         </p>
       </header>
@@ -88,7 +88,7 @@ export function CustomerDetail({
             Puan yaz
           </button>
         </div>
-        <ul className="text-[12px] text-[#8C9099]">
+        <ul className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           {ledger.map((entry) => (
             <li key={entry.id}>{entry.points} · {entry.reason}</li>
           ))}

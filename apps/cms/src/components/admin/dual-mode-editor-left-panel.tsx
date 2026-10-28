@@ -88,7 +88,7 @@ export function DualModeEditorLeftPanel({ s }: { s: DualModeEditorState }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
+            <div className="flex-1 overflow-y-auto p-2.5 space-y-2" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               {leftTab === "tree" ? (
                 <>
                   <div className="flex items-center justify-between px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

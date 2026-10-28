@@ -51,7 +51,7 @@ export function MarketplaceChannelEditor({
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
         <h1 className="text-[18px] font-semibold">{driver.name}</h1>
-        <p className="text-[12px] text-[#8C9099]">{driver.summary}</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">{driver.summary}</p>
         <a href={driver.docsUrl} className="text-[11px] underline" target="_blank" rel="noreferrer">
           Resmi dokümantasyon
         </a>
@@ -59,7 +59,7 @@ export function MarketplaceChannelEditor({
 
       <section className="grid gap-3">
         <label className="block space-y-1">
-          <span className="text-[11px] text-[#8C9099]">Kanal adı</span>
+          <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Kanal adı</span>
           <input className={fieldClass} value={label} onChange={(e) => setLabel(e.target.value)} />
         </label>
         <label className="flex items-center gap-2 text-[12px]">
@@ -67,7 +67,7 @@ export function MarketplaceChannelEditor({
           Kanal açık
         </label>
         <label className="block space-y-1">
-          <span className="text-[11px] text-[#8C9099]">Ortam</span>
+          <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Ortam</span>
           <select
             className={fieldClass}
             value={environment}
@@ -79,7 +79,7 @@ export function MarketplaceChannelEditor({
         </label>
         {driver.credentialFields.map((field) => (
           <label key={field.key} className="block space-y-1">
-            <span className="text-[11px] text-[#8C9099]">
+            <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
               {field.label}
               {field.secret && channel.credentials[field.key] ? " (kayıtlı, boş bırakılırsa korunur)" : ""}
             </span>
@@ -90,7 +90,7 @@ export function MarketplaceChannelEditor({
               value={credentials[field.key] ?? ""}
               onChange={(e) => setCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
             />
-            {field.help ? <span className="block text-[11px] text-[#8C9099]">{field.help}</span> : null}
+            {field.help ? <span className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">{field.help}</span> : null}
           </label>
         ))}
         <div className="flex flex-wrap gap-2">
@@ -139,14 +139,14 @@ export function MarketplaceChannelEditor({
             Siparişleri çek
           </button>
         </div>
-        {notice ? <p className="text-[12px] text-[#8C9099]">{notice}</p> : null}
+        {notice ? <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">{notice}</p> : null}
         {channel.lastError ? <p className="text-[12px] text-red-600">{channel.lastError}</p> : null}
       </section>
 
       <section>
         <h2 className="mb-2 text-[13px] font-semibold">Son işlemler</h2>
         {jobs.length === 0 ? (
-          <p className="text-[12px] text-[#8C9099]">Henüz işlem yok.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Henüz işlem yok.</p>
         ) : (
           <ul className="space-y-1 text-[12px]">
             {jobs.map((job) => (
@@ -161,7 +161,7 @@ export function MarketplaceChannelEditor({
       <section>
         <h2 className="mb-2 text-[13px] font-semibold">Çekilen siparişler</h2>
         {orders.length === 0 ? (
-          <p className="text-[12px] text-[#8C9099]">Kayıt yok.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Kayıt yok.</p>
         ) : (
           <ul className="space-y-1 text-[12px]">
             {orders.map((order) => (

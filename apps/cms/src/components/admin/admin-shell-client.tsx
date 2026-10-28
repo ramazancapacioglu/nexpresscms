@@ -54,6 +54,15 @@ export function AdminShellClient({
   const [cmdOpen, setCmdOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Dar ekranda (<768px) kenar çubuğu açılır çekmece olarak çalışır: varsayılan kapalı, sayfa değişince kapanır
+  const isNarrow = () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  useEffect(() => {
+    if (isNarrow()) setSidebarOpen(false);
+  }, []);
+  useEffect(() => {
+    if (isNarrow()) setSidebarOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -67,6 +76,7 @@ export function AdminShellClient({
       }
       if (e.key === "Escape") {
         setCmdOpen(false);
+        if (isNarrow()) setSidebarOpen(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -107,9 +117,13 @@ export function AdminShellClient({
 
   return (
     <div className="min-h-screen flex bg-[#FBFBFB] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
+      <a href="#main-content" className="sr-only z-[60] rounded-md bg-[#266DF0] px-3 py-2 text-[12px] font-semibold text-white focus:not-sr-only focus:fixed focus:left-2 focus:top-2">İçeriğe geç</a>
       {/* ATTIO CRM TARZI GİZLENEBİLİR SOL SIDEBAR */}
       {sidebarOpen && !studioOpen && (
-        <aside className="w-[224px] shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none">
+        <div className="fixed inset-0 z-30 bg-black/40 md:hidden" aria-hidden="true" onClick={() => setSidebarOpen(false)} />
+      )}
+      {sidebarOpen && !studioOpen && (
+        <aside id="admin-sidebar" aria-label="Yönetim menüsü" className="fixed inset-y-0 left-0 z-40 h-dvh w-[260px] max-w-[85vw] overflow-y-auto shadow-xl md:static md:z-auto md:h-auto md:w-[224px] md:max-w-none md:overflow-visible md:shadow-none shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none">
           <div className="p-2 space-y-2.5">
             <div className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-[#EAECED]/70 dark:hover:bg-[#1C1E24] transition">
               <Link href="/admin" className="flex items-center gap-2 min-w-0">
@@ -151,13 +165,13 @@ export function AdminShellClient({
             <button
               type="button"
               onClick={() => setCmdOpen(true)}
-              className="w-full h-7 flex items-center justify-between rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 text-[12px] text-[#8C9099] hover:border-[#D0D3D9] dark:hover:border-[#2E323D] transition"
+              className="w-full h-7 flex items-center justify-between rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 text-[12px] text-[#5F6570] dark:text-[#8C9099] hover:border-[#D0D3D9] dark:hover:border-[#2E323D] transition"
             >
               <span className="flex items-center gap-1.5">
-                <Search className="h-3.5 w-3.5 text-[#8C9099]" strokeWidth={1.75} />
+                <Search className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
                 <span>Hızlı arama...</span>
               </span>
-              <kbd className="font-mono text-[10px] text-[#8C9099]">⌘K</kbd>
+              <kbd className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">⌘K</kbd>
             </button>
 
             {/* Gruplanmış Attio Navigasyon Ağacı */}
@@ -171,7 +185,7 @@ export function AdminShellClient({
                 .filter((section) => section.items.length > 0)
                 .map((section) => (
                 <div key={section.label} className="space-y-0.5">
-                  <div className="px-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#8C9099]">
+                  <div className="px-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
                     {SECTION_LABEL_KEYS[section.label] ? t(SECTION_LABEL_KEYS[section.label]!) : section.label}
                   </div>
                   {section.items.map((item) => {
@@ -200,14 +214,14 @@ export function AdminShellClient({
                             className={`h-3.5 w-3.5 shrink-0 ${
                               isActive
                                 ? "text-[#14151A] dark:text-[#F3F4F6]"
-                                : "text-[#8C9099]"
+                                : "text-[#5F6570] dark:text-[#8C9099]"
                             }`}
                             strokeWidth={1.75}
                           />
                           <span className="truncate">{NAV_LABEL_KEYS[item.href] ? t(NAV_LABEL_KEYS[item.href]!) : item.label}</span>
                         </span>
                         {item.count && (
-                          <span className="font-mono text-[10px] text-[#8C9099]">
+                          <span className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">
                             {item.count}
                           </span>
                         )}
@@ -219,7 +233,7 @@ export function AdminShellClient({
 
               {/* Kural 4: Open-Core Genişleme Yuvası (<PluginSlot name="admin.sidebar.nav" />) */}
               <div className="space-y-1 pt-2 border-t border-[#E6E7EA] dark:border-[#23262E]">
-                <div className="px-2 pb-0.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#8C9099]">
+                <div className="px-2 pb-0.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
                   <span>Agentic Feeds</span>
                 </div>
                 {sidebarSlot}
@@ -232,7 +246,7 @@ export function AdminShellClient({
           <div className="p-2 border-t border-[#E6E7EA] dark:border-[#23262E] space-y-1.5">
             <div className="rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 py-1.5 space-y-1 text-[11px]">
               <div className="flex items-center justify-between">
-                <span className="text-[#8C9099] flex items-center gap-1.5">
+                <span className="text-[#5F6570] dark:text-[#8C9099] flex items-center gap-1.5">
                   <Database className="h-3 w-3" strokeWidth={1.75} />
                   <span>DB Motoru</span>
                 </span>
@@ -242,7 +256,7 @@ export function AdminShellClient({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#8C9099]">Mod / Tema</span>
+                <span className="text-[#5F6570] dark:text-[#8C9099]">Mod / Tema</span>
                 <span className="font-mono text-[#5C5F66] dark:text-[#9CA3AF]">
                   {cmsMode === "single" ? "single" : "multi"} •{" "}
                   {activeThemeId.split("-")[0]}
@@ -256,7 +270,7 @@ export function AdminShellClient({
               className="w-full h-7 flex items-center justify-between rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 text-[12px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] transition"
             >
               <span>Canlı RSC Vitrin (/tr)</span>
-              <ExternalLink className="h-3 w-3 text-[#8C9099]" strokeWidth={1.75} />
+              <ExternalLink className="h-3 w-3 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
             </Link>
           </div>
         </aside>
@@ -279,6 +293,9 @@ export function AdminShellClient({
               <button
                 type="button"
                 onClick={() => setSidebarOpen((prev) => !prev)}
+                aria-label={sidebarOpen ? "Menüyü gizle" : "Menüyü göster"}
+                aria-expanded={sidebarOpen}
+                aria-controls="admin-sidebar"
                 title={
                   sidebarOpen
                     ? "Kenar Çubuğunu Gizle (Ctrl+B)"
@@ -296,7 +313,7 @@ export function AdminShellClient({
                 </span>
               </button>
             )}
-            <span className="font-medium text-[#14151A] dark:text-[#F3F4F6]">
+            <span className="hidden truncate font-medium text-[#14151A] dark:text-[#F3F4F6] sm:inline">
               {currentBreadcrumb}
             </span>
           </div>
@@ -323,17 +340,18 @@ export function AdminShellClient({
             <button
               type="button"
               onClick={() => setCmdOpen(true)}
+              aria-label="Komut paletini aç (Ctrl+K)"
               className="h-6 inline-flex items-center gap-1.5 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#1C1E24] px-2 text-[11px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] transition cursor-pointer"
             >
-              <SlidersHorizontal className="h-3 w-3 text-[#8C9099]" />
-              <span>Komutlar</span>
-              <kbd className="font-mono text-[10px] text-[#8C9099]">⌘K</kbd>
+              <SlidersHorizontal className="h-3 w-3 text-[#5F6570] dark:text-[#8C9099]" />
+              <span className="hidden sm:inline">Komutlar</span>
+              <kbd className="hidden font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099] sm:inline">⌘K</kbd>
             </button>
           </div>
         </header>
 
         {/* Tam Genişlikli, Sıfır Gereksiz Boşluklu İçerik Alanı */}
-        <main className="flex-1 p-3 w-full">{children}</main>
+        <main id="main-content" tabIndex={-1} className="flex-1 p-3 w-full outline-none">{children}</main>
       </div>
 
       <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} role={role} />

@@ -85,7 +85,7 @@ export function WpImportPanel() {
   const check = (k: keyof Opts, label: React.ReactNode, hint?: string) => (
     <label className="flex items-start gap-2 text-[12px]">
       <input type="checkbox" checked={o[k]} onChange={(e) => setO((s) => ({ ...s, [k]: e.target.checked }))} className="mt-0.5" />
-      <span>{label}{hint && <span className="block text-[11px] text-[#8C9099]">{hint}</span>}</span>
+      <span>{label}{hint && <span className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">{hint}</span>}</span>
     </label>
   );
 
@@ -98,19 +98,19 @@ export function WpImportPanel() {
             <FileUp className="h-3.5 w-3.5" /> {file ? file.name : "WordPress .xml dosyası seç"}
           </button>
           <input ref={input} type="file" accept=".xml,text/xml,application/xml" hidden onChange={(e) => { setFile(e.target.files?.[0] ?? null); setSummary(null); setReport(null); }} />
-          {busy === "analyze" && <p className="mt-2 text-[12px] text-[#8C9099]">Çözümleniyor…</p>}
+          {busy === "analyze" && <p className="mt-2 text-[12px] text-[#5F6570] dark:text-[#8C9099]">Çözümleniyor…</p>}
           {errors.length > 0 && <ul role="alert" className="mt-2 list-disc pl-5 text-[12px] text-red-600">{errors.map((e, i) => <li key={i}>{e}</li>)}</ul>}
         </section>
 
         {summary && (
           <section className={`${card} space-y-3 text-[12px]`}>
-            <h2 className="text-[13px] font-semibold">2. Çözümleme sonucu {summary.siteTitle && <span className="font-normal text-[#8C9099]">— {summary.siteTitle}</span>}</h2>
+            <h2 className="text-[13px] font-semibold">2. Çözümleme sonucu {summary.siteTitle && <span className="font-normal text-[#5F6570] dark:text-[#8C9099]">— {summary.siteTitle}</span>}</h2>
             <p><strong>{summary.importing}</strong> içerik aktarılacak: {summary.totals.posts} yazı, {summary.totals.pages} sayfa, {summary.totals.products} ürün ({summary.totals.drafts} taslak). {summary.terms} kategori/etiket, {summary.images} görsel adresi, {summary.totals.shortcodes} kısa kod/işaretleme temizlendi. Dil: <code>{summary.locale}</code>.</p>
             {Object.keys(summary.skipped).length > 0 && <p className="text-[#5C5F66] dark:text-[#9CA3AF]">Atlananlar: {Object.entries(summary.skipped).map(([k, v]) => `${k} (${v})`).join(" · ")}</p>}
-            {summary.warnings.map((w, i) => <p key={i} className="text-amber-700 dark:text-amber-300">{w}</p>)}
+            {summary.warnings.map((w, i) => <p key={i} className="text-amber-800 dark:text-amber-300">{w}</p>)}
             {summary.sample.length > 0 && (
               <ul className={`divide-y rounded-md border ${border} ${border.replace("border-", "divide-")}`}>
-                {summary.sample.map((s, i) => <li key={i} className="flex justify-between gap-3 px-3 py-1.5"><span className="truncate">{s.title}</span><span className="shrink-0 text-[#8C9099]">{s.type} · {s.status} · {s.blocks} blok · /{summary.locale}/{s.slug}</span></li>)}
+                {summary.sample.map((s, i) => <li key={i} className="flex justify-between gap-3 px-3 py-1.5"><span className="truncate">{s.title}</span><span className="shrink-0 text-[#5F6570] dark:text-[#8C9099]">{s.type} · {s.status} · {s.blocks} blok · /{summary.locale}/{s.slug}</span></li>)}
               </ul>
             )}
             {summary.itemWarnings.length > 0 && (
@@ -137,7 +137,7 @@ export function WpImportPanel() {
 
       <aside className={`${card} h-fit space-y-3`}>
         <h2 className="text-[13px] font-semibold">Seçenekler</h2>
-        <fieldset className="space-y-1.5"><legend className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Türler</legend>
+        <fieldset className="space-y-1.5"><legend className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Türler</legend>
           {check("post", "Yazılar")}{check("page", "Sayfalar")}{check("product", "Ürünler (yalnızca metin)", "Fiyat, stok, varyasyon aktarılmaz.")}
         </fieldset>
         {check("includeDrafts", "Taslak ve bekleyenleri de al", "Özel (private) içerik gizli olarak alınır; çöp atlanır.")}
@@ -147,7 +147,7 @@ export function WpImportPanel() {
         <button type="button" onClick={() => void run()} disabled={!summary || summary.importing === 0 || busy !== ""} className="h-9 w-full rounded-md bg-[#266DF0] text-[12px] font-semibold text-white disabled:opacity-50">
           {busy === "run" ? "Aktarılıyor… (büyük dosyalarda dakikalar sürebilir)" : "İçe aktar"}
         </button>
-        <p className="text-[11px] text-[#8C9099]">Aynı dosyayı tekrar yüklemek güvenlidir: içerikler WordPress kimliğiyle eşleşir.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Aynı dosyayı tekrar yüklemek güvenlidir: içerikler WordPress kimliğiyle eşleşir.</p>
       </aside>
     </div>
   );

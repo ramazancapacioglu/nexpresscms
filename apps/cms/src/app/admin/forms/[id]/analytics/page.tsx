@@ -28,7 +28,7 @@ function FieldCard({ f }: { f: FieldInsight }) {
     <section className={card}>
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="truncate text-[13px] font-semibold">{f.label}</h3>
-        <span className="shrink-0 text-[11px] text-[#8C9099]">{f.answered} yanıt · %{Math.round(f.fillRate * 100)} dolu</span>
+        <span className="shrink-0 text-[11px] text-[#5F6570] dark:text-[#8C9099]">{f.answered} yanıt · %{Math.round(f.fillRate * 100)} dolu</span>
       </div>
       <div className="mt-3 space-y-3">
         {f.nps !== undefined && <p className="text-[12px]"><span className="text-[22px] font-semibold">{f.nps}</span> NPS · ortalama {f.average}</p>}
@@ -36,9 +36,9 @@ function FieldCard({ f }: { f: FieldInsight }) {
         {f.distribution && <Bars data={f.type === "rating" || f.type === "scale" ? f.distribution : f.distribution} total={f.answered} />}
         {f.topDomains && f.topDomains.length > 0 && <Bars data={f.topDomains} total={f.answered} />}
         {f.topWords && f.topWords.length > 0 && (
-          <p className="flex flex-wrap gap-1.5">{f.topWords.map((w) => <span key={w.word} className="rounded-full bg-[#F4F5F7] px-2 py-0.5 text-[11px] dark:bg-[#1C1E24]">{w.word} <span className="text-[#8C9099]">{w.count}</span></span>)}</p>
+          <p className="flex flex-wrap gap-1.5">{f.topWords.map((w) => <span key={w.word} className="rounded-full bg-[#F4F5F7] px-2 py-0.5 text-[11px] dark:bg-[#1C1E24]">{w.word} <span className="text-[#5F6570] dark:text-[#8C9099]">{w.count}</span></span>)}</p>
         )}
-        {f.avgLength !== undefined && <p className="text-[11px] text-[#8C9099]">Ortalama uzunluk: {f.avgLength} karakter</p>}
+        {f.avgLength !== undefined && <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Ortalama uzunluk: {f.avgLength} karakter</p>}
       </div>
     </section>
   );
@@ -61,9 +61,9 @@ export default async function FormAnalyticsPage({ params, searchParams }: { para
     <div className="space-y-5">
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
-          <Link href={`/admin/forms/${id}`} className="text-[11px] text-[#8C9099] hover:underline">← {form.name}</Link>
+          <Link href={`/admin/forms/${id}`} className="text-[11px] text-[#5F6570] dark:text-[#8C9099] hover:underline">← {form.name}</Link>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Form analizi</h1>
-          <p className="text-[12px] text-[#8C9099]">Gönderim içeriğinden çıkarılan özet. Yalnızca gönderimler sayılır; görüntülenme izlenmez (sayfalarda istemci JavaScript'i yoktur).</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Gönderim içeriğinden çıkarılan özet. Yalnızca gönderimler sayılır; görüntülenme izlenmez (sayfalarda istemci JavaScript'i yoktur).</p>
         </div>
         <div className="flex items-center gap-2">
           {me.role === "admin" && <a href={`/api/admin/forms/export?form=${id}`} className={`inline-flex h-8 items-center gap-1.5 rounded-md border ${border} px-3 text-[12px] font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}><Download className="h-3.5 w-3.5" /> CSV</a>}
@@ -74,7 +74,7 @@ export default async function FormAnalyticsPage({ params, searchParams }: { para
       </div>
 
       {a.total === 0 ? (
-        <div className={`${card} py-14 text-center text-[12px] text-[#8C9099]`}>Son {days} günde bu forma gönderim yok.</div>
+        <div className={`${card} py-14 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]`}>Son {days} günde bu forma gönderim yok.</div>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -87,7 +87,7 @@ export default async function FormAnalyticsPage({ params, searchParams }: { para
           <div className="grid gap-3 lg:grid-cols-3">
             <section className={card}><h2 className="mb-3 text-[13px] font-semibold">Haftanın günü</h2><Columns data={a.weekday.map((count, i) => ({ label: DAYS[i]!, count }))} label="Haftanın gününe göre" /></section>
             <section className={card}><h2 className="mb-3 text-[13px] font-semibold">Günün saati</h2><Columns data={a.hour.map((count, i) => ({ label: `${String(i).padStart(2, "0")}:00`, count }))} label="Saate göre" /></section>
-            <section className={card}><h2 className="mb-3 text-[13px] font-semibold">Hangi sayfalardan</h2>{a.topPages.length ? <Bars data={a.topPages} total={accepted} /> : <p className="text-[12px] text-[#8C9099]">—</p>}</section>
+            <section className={card}><h2 className="mb-3 text-[13px] font-semibold">Hangi sayfalardan</h2>{a.topPages.length ? <Bars data={a.topPages} total={accepted} /> : <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">—</p>}</section>
           </div>
           <h2 className="pt-2 text-[13px] font-semibold">Alan içgörüleri</h2>
           <div className="grid gap-3 lg:grid-cols-2">{a.fields.map((f) => <FieldCard key={f.name} f={f} />)}</div>

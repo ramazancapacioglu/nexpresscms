@@ -64,18 +64,18 @@ export function NotificationBell() {
         <div role="dialog" aria-label="Bildirimler" className={`absolute right-0 top-8 z-50 w-80 overflow-hidden rounded-lg border ${border} bg-white shadow-xl dark:bg-[#15171C]`}>
           <div className={`flex items-center justify-between border-b ${border} px-3 py-2 text-[12px]`}>
             <strong>Bildirimler</strong>
-            {count > 0 && <button type="button" onClick={() => void post({ action: "readAll" })} className="text-[#266DF0] hover:underline">Tümünü okundu say</button>}
+            {count > 0 && <button type="button" onClick={() => void post({ action: "readAll" })} className="text-[#1D5ED8] dark:text-[#7AA7FF] hover:underline">Tümünü okundu say</button>}
           </div>
           {!data || data.items.length === 0 ? (
-            <p className="px-3 py-8 text-center text-[12px] text-[#8C9099]">{data ? "Bildirim yok." : "Yükleniyor…"}</p>
+            <p className="px-3 py-8 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">{data ? "Bildirim yok." : "Yükleniyor…"}</p>
           ) : (
             <ul className="max-h-96 divide-y divide-[#E6E7EA] overflow-y-auto dark:divide-[#23262E]">
               {data.items.map((n) => (
                 <li key={n.id}>
-                  <Link href={n.href || "/admin/notifications"} onClick={() => { setOpen(false); if (!n.read) void post({ action: "read", ids: [n.id] }); }} className={`flex gap-2 px-3 py-2 text-[12px] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] ${n.read ? "opacity-60" : ""}`}>
+                  <Link href={n.href || "/admin/notifications"} onClick={() => { setOpen(false); if (!n.read) void post({ action: "read", ids: [n.id] }); }} className={`flex gap-2 px-3 py-2 text-[12px] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] ${n.read ? "bg-[#F9FAFB] dark:bg-[#121317]" : ""}`}>
                     <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${DOT[n.severity]}`} aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="flex justify-between gap-2"><span className="truncate font-medium">{n.title}{n.count > 1 ? ` ×${n.count}` : ""}</span><span className="shrink-0 text-[10px] text-[#8C9099]">{ago(n.updatedAt)}</span></span>
+                      <span className="flex justify-between gap-2"><span className="truncate font-medium">{n.title}{n.count > 1 ? ` ×${n.count}` : ""}</span><span className="shrink-0 text-[10px] text-[#5F6570] dark:text-[#8C9099]">{ago(n.updatedAt)}</span></span>
                       {n.body && <span className="line-clamp-2 text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">{n.body}</span>}
                     </span>
                   </Link>
@@ -83,7 +83,7 @@ export function NotificationBell() {
               ))}
             </ul>
           )}
-          <Link href="/admin/notifications" onClick={() => setOpen(false)} className={`block border-t ${border} px-3 py-2 text-center text-[12px] text-[#266DF0] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}>Tüm bildirimler</Link>
+          <Link href="/admin/notifications" onClick={() => setOpen(false)} className={`block border-t ${border} px-3 py-2 text-center text-[12px] text-[#1D5ED8] dark:text-[#7AA7FF] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}>Tüm bildirimler</Link>
         </div>
       )}
     </div>

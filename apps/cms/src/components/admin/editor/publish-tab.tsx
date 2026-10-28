@@ -45,7 +45,7 @@ export function PublishTab() {
                         <label className="block text-[10px] text-muted-foreground mb-1">
                           Durum
                         </label>
-                        <select
+                        <select aria-label="Durum"
                           value={status}
                           onChange={(e) =>
                             setStatus(e.target.value as ContentStatus)
@@ -61,7 +61,7 @@ export function PublishTab() {
                         <label className="block text-[10px] text-muted-foreground mb-1">
                           Görünürlük
                         </label>
-                        <select
+                        <select aria-label="Görünürlük"
                           value={visibility}
                           onChange={(e) => setVisibility(e.target.value as any)}
                           className="h-8 w-full rounded border border-border bg-background px-2"
@@ -115,7 +115,7 @@ export function PublishTab() {
                       </Link>
                     </div>
 
-                    <div className="max-h-44 overflow-y-auto rounded border border-border bg-muted/20 p-2 space-y-1.5">
+                    <div className="max-h-44 overflow-y-auto rounded border border-border bg-muted/20 p-2 space-y-1.5" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
                       {flatCategoryTree.map((cat) => {
                         const checked = selectedCategories.includes(cat.slug);
                         return (

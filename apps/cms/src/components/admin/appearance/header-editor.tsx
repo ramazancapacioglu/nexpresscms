@@ -106,7 +106,7 @@ export function HeaderEditor({ initial }: { initial: HeaderConfig }) {
             onChange={(e) => setMain({ ctaHref: e.target.value })}
           />
         </div>
-        <p className="text-[11px] text-[#8C9099]">Menü bağlantıları bu ekranda durmaz. Menü sayfasından düzenlenir.</p>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Menü bağlantıları bu ekranda durmaz. Menü sayfasından düzenlenir.</p>
       </section>
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">
         <label className="flex items-center justify-between">
@@ -138,7 +138,7 @@ export function HeaderEditor({ initial }: { initial: HeaderConfig }) {
                 setLinks(links.map((row) => (row.id === link.id ? { ...row, href: e.target.value } : row)))
               }
             />
-            <button type="button" className="text-[#8C9099]" onClick={() => setLinks(links.filter((row) => row.id !== link.id))}>
+            <button type="button" className="text-[#5F6570] dark:text-[#8C9099]" onClick={() => setLinks(links.filter((row) => row.id !== link.id))}>
               Sil
             </button>
           </div>

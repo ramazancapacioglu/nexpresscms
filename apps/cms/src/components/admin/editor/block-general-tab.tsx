@@ -51,7 +51,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] font-semibold mb-1">
                                   Sütunlar Arası Boşluk (Gap)
                                 </label>
-                                <select
+                                <select aria-label="Sütunlar Arası Boşluk (Gap)"
                                   value={String(selectedBlock.props.gap ?? "24px")}
                                   onChange={(e) =>
                                     updateSelectedBlockProps({ gap: e.target.value })
@@ -69,7 +69,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] font-semibold mb-1">
                                   Dikey Hizalama
                                 </label>
-                                <select
+                                <select aria-label="Dikey Hizalama"
                                   value={String(
                                     selectedBlock.props.verticalAlign ?? "stretch"
                                   )}
@@ -95,7 +95,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Üst Rozet (Badge)
                                 </label>
-                                <input
+                                <input aria-label="Üst Rozet (Badge)"
                                   type="text"
                                   value={String(selectedBlock.props.badge ?? "")}
                                   onChange={(e) =>
@@ -108,7 +108,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Ana Başlık
                                 </label>
-                                <input
+                                <input aria-label="Ana Başlık"
                                   type="text"
                                   value={String(selectedBlock.props.title ?? "")}
                                   onChange={(e) =>
@@ -121,7 +121,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Alt Açıklama
                                 </label>
-                                <textarea
+                                <textarea aria-label="Alt Açıklama"
                                   rows={3}
                                   value={String(selectedBlock.props.subtitle ?? "")}
                                   onChange={(e) =>
@@ -169,7 +169,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Buton Etiketi
                                 </label>
-                                <input
+                                <input aria-label="Buton Etiketi"
                                   type="text"
                                   value={String(selectedBlock.props.label ?? "")}
                                   onChange={(e) =>
@@ -182,7 +182,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Hedef Link (Href)
                                 </label>
-                                <input
+                                <input aria-label="Hedef Link (Href)"
                                   type="text"
                                   value={String(selectedBlock.props.href ?? "")}
                                   onChange={(e) =>
@@ -235,7 +235,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Görsel URL
                                 </label>
-                                <input
+                                <input aria-label="Görsel URL"
                                   type="text"
                                   value={String(selectedBlock.props.url ?? "")}
                                   onChange={(e) =>
@@ -248,7 +248,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Alt Metni (Zorunlu Görsel SEO)
                                 </label>
-                                <input
+                                <input aria-label="Alt Metni (Zorunlu Görsel SEO)"
                                   type="text"
                                   value={String(selectedBlock.props.altText ?? "")}
                                   onChange={(e) =>
@@ -263,7 +263,7 @@ export function BlockGeneralTab() {
                                 <label className="block text-[11px] text-muted-foreground mb-1">
                                   Görsel Altı Açıklama (Figcaption)
                                 </label>
-                                <input
+                                <input aria-label="Görsel Altı Açıklama (Figcaption)"
                                   type="text"
                                   value={String(selectedBlock.props.caption ?? "")}
                                   onChange={(e) =>
@@ -282,7 +282,7 @@ export function BlockGeneralTab() {
                               <label className="block text-[11px] font-semibold">
                                 Liste Tipi
                               </label>
-                              <select
+                              <select aria-label="Liste Tipi"
                                 value={String(
                                   selectedBlock.props.listType ?? "check"
                                 )}
@@ -300,7 +300,7 @@ export function BlockGeneralTab() {
                               <label className="block text-[11px] font-semibold">
                                 Maddeler (Her satıra 1 madde)
                               </label>
-                              <textarea
+                              <textarea aria-label="Maddeler (Her satıra 1 madde)"
                                 rows={5}
                                 value={
                                   Array.isArray(selectedBlock.props.items)

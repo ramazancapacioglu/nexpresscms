@@ -25,7 +25,7 @@ export function PreviewLinkButton({ contentId, locale, dirty }: { contentId?: st
       {open && contentId && (
         <div className="absolute right-0 top-9 z-50 w-80 space-y-2 rounded-lg border border-border bg-background p-3 text-xs shadow-lg">
           <p>Bağlantıya sahip herkes bu sayfanın <strong>son kaydedilmiş</strong> halini, yayında olmasa bile görür. Arama motorlarına kapalıdır.</p>
-          {dirty && <p className="text-amber-600">Kaydedilmemiş değişiklikler görünmez; önce kaydedin.</p>}
+          {dirty && <p className="text-amber-800">Kaydedilmemiş değişiklikler görünmez; önce kaydedin.</p>}
           <label className="flex items-center gap-2">Geçerlilik
             <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="h-7 rounded border border-border bg-background px-1">
               <option value={1}>1 gün</option><option value={7}>7 gün</option><option value={30}>30 gün</option>

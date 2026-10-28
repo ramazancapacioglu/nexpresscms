@@ -72,10 +72,10 @@ export function ThemeCard({ theme, previewPath }: { theme: ThemeCardData; previe
       </div>
       <div className="flex-1 space-y-1.5 p-3.5">
         <h3 className="text-[13px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">
-          {theme.name} <span className="font-mono text-[10px] font-normal text-[#8C9099]">v{theme.version}</span>
+          {theme.name} <span className="font-mono text-[10px] font-normal text-[#5F6570] dark:text-[#8C9099]">v{theme.version}</span>
         </h3>
         {theme.description && <p className="text-[12px] leading-relaxed text-[#5C5F66] dark:text-[#9CA3AF]">{theme.description}</p>}
-        <p className="flex flex-wrap gap-1.5 text-[10px] text-[#8C9099]">
+        <p className="flex flex-wrap gap-1.5 text-[10px] text-[#5F6570] dark:text-[#8C9099]">
           {theme.author && <span>{theme.author}</span>}
           <span>{theme.pages} sayfa</span>
           <span>{theme.hasChrome ? "şablon" : "şablonsuz"}</span>
@@ -83,7 +83,7 @@ export function ThemeCard({ theme, previewPath }: { theme: ThemeCardData; previe
           <span className="font-mono" title="Paket özeti (SHA-256)">#{theme.checksum.slice(0, 8)}</span>
         </p>
         {msg && (
-          <p role={msg.tone === "err" ? "alert" : "status"} className={`text-[11px] ${msg.tone === "ok" ? "text-emerald-700 dark:text-emerald-300" : "text-red-600"}`}>
+          <p role={msg.tone === "err" ? "alert" : "status"} className={`text-[11px] ${msg.tone === "ok" ? "text-emerald-800 dark:text-emerald-300" : "text-red-600"}`}>
             {msg.text}
           </p>
         )}

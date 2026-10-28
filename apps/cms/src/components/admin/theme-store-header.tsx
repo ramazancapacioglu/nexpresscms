@@ -44,6 +44,8 @@ export function ThemeStoreHeader({ s }: { s: ThemeStoreState }) {
                   key={d.id}
                   type="button"
                   onClick={() => setPreviewDevice(d.id)}
+                  aria-label={d.id === "desktop" ? "Masaüstü önizleme" : d.id === "tablet" ? "Tablet önizleme" : "Mobil önizleme"}
+                  aria-pressed={previewDevice === d.id}
                   className={`rounded p-1.5 transition ${
                     previewDevice === d.id
                       ? "bg-blue-600 text-white"

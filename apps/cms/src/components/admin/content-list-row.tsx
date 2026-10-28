@@ -27,6 +27,8 @@ export function ContentListRow({ s, item }: { s: ContentListState; item: Content
         <td className="px-3.5 py-3 align-top">
           <button
             type="button"
+            aria-label={`${item.title} seç`}
+            aria-pressed={isSelected}
             onClick={() => toggleSelectRow(item.contentId)}
             className="mt-0.5 text-muted-foreground hover:text-foreground"
           >
@@ -78,10 +80,10 @@ export function ContentListRow({ s, item }: { s: ContentListState; item: Content
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                 item.status === "published"
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+                  ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20"
                   : item.status === "scheduled"
                     ? "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20"
-                    : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
+                    : "bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20"
               }`}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -152,10 +154,10 @@ export function ContentListRow({ s, item }: { s: ContentListState; item: Content
             <span
               className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-bold ${
                 score >= 85
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"
                   : score >= 70
                     ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
-                    : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                    : "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30"
               }`}
             >
               {grade}

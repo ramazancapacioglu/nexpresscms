@@ -25,7 +25,7 @@ export function MarketplaceStudio({
     <div className="space-y-6">
       <header>
         <h1 className="text-[18px] font-semibold">Pazar yerleri</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Her kanal ayrı bir mağaza hesabıdır. Yeni pazar yeri, sürücü kaydıyla eklenir; çekirdek ekran değişmez.
         </p>
       </header>
@@ -34,7 +34,7 @@ export function MarketplaceStudio({
         {drivers.map((item) => (
           <article key={item.id} className="rounded-lg border border-[#E6E7EA] p-3 dark:border-[#23262E]">
             <h2 className="text-[13px] font-semibold">{item.name}</h2>
-            <p className="mt-1 text-[11px] leading-5 text-[#8C9099]">{item.summary}</p>
+            <p className="mt-1 text-[11px] leading-5 text-[#5F6570] dark:text-[#8C9099]">{item.summary}</p>
           </article>
         ))}
       </section>
@@ -43,7 +43,7 @@ export function MarketplaceStudio({
         <h2 className="mb-3 text-[13px] font-semibold">Kanal ekle</h2>
         <div className="grid max-w-lg gap-3">
           <label className="block space-y-1">
-            <span className="text-[11px] text-[#8C9099]">Pazar yeri</span>
+            <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Pazar yeri</span>
             <select className={fieldClass} value={driverId} onChange={(e) => setDriverId(e.target.value)}>
               {drivers.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -53,7 +53,7 @@ export function MarketplaceStudio({
             </select>
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] text-[#8C9099]">Kanal adı</span>
+            <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Kanal adı</span>
             <input
               className={fieldClass}
               value={label}
@@ -86,7 +86,7 @@ export function MarketplaceStudio({
       <section>
         <h2 className="mb-2 text-[13px] font-semibold">Bağlı kanallar</h2>
         {channels.length === 0 ? (
-          <p className="text-[12px] text-[#8C9099]">Henüz kanal yok.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Henüz kanal yok.</p>
         ) : (
           <ul className="divide-y divide-[#E6E7EA] rounded-lg border border-[#E6E7EA] dark:divide-[#23262E] dark:border-[#23262E]">
             {channels.map((channel) => (
@@ -95,11 +95,11 @@ export function MarketplaceStudio({
                   <Link href={`/admin/commerce/marketplaces/${channel.id}`} className="font-medium hover:underline">
                     {channel.label}
                   </Link>
-                  <p className="text-[11px] text-[#8C9099]">
+                  <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
                     {channel.driverId} · {channel.environment} · {channel.connectionStatus}
                   </p>
                 </div>
-                <span className={channel.enabled ? "text-emerald-600" : "text-[#8C9099]"}>
+                <span className={channel.enabled ? "text-emerald-800 dark:text-emerald-400" : "text-[#5F6570] dark:text-[#8C9099]"}>
                   {channel.enabled ? "Açık" : "Kapalı"}
                 </span>
               </li>

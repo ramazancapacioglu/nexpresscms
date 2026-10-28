@@ -9,7 +9,7 @@ import { NotificationActions } from "./notification-actions";
 export const dynamic = "force-dynamic";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
-const SEV = { critical: ["Kritik", "bg-red-500/10 text-red-700 dark:text-red-300"], warning: ["Uyarı", "bg-amber-500/10 text-amber-700 dark:text-amber-300"], info: ["Bilgi", "bg-[#266DF0]/10 text-[#266DF0]"] } as const;
+const SEV = { critical: ["Kritik", "bg-red-500/10 text-red-700 dark:text-red-300"], warning: ["Uyarı", "bg-amber-500/10 text-amber-800 dark:text-amber-300"], info: ["Bilgi", "bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]"] } as const;
 
 export default async function NotificationsPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
   const me = await requireUser();
@@ -24,7 +24,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Bildirim merkezi</h1>
-          <p className="text-[12px] text-[#8C9099]">Form gönderimleri, zamanlanmış yayınlar, e-posta ve IndexNow hataları, içe aktarma sonuçları ve sistem sağlığı uyarıları. Sistem uyarıları sorun düzelince kendiliğinden kapanır; kayıtlar 30 gün görünür.</p>
+          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Form gönderimleri, zamanlanmış yayınlar, e-posta ve IndexNow hataları, içe aktarma sonuçları ve sistem sağlığı uyarıları. Sistem uyarıları sorun düzelince kendiliğinden kapanır; kayıtlar 30 gün görünür.</p>
         </div>
         <div className="flex items-center gap-2">
           <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:bg-[#1C1E24]">
@@ -45,12 +45,12 @@ export default async function NotificationsPage({ searchParams }: { searchParams
           {items.map((n) => {
             const [label, cls] = SEV[n.severity];
             return (
-              <li key={n.id} className={`flex flex-wrap items-start gap-3 px-4 py-3 text-[12px] ${n.read ? "opacity-70" : ""}`}>
-                <span className={`mt-0.5 rounded px-2 py-0.5 text-[11px] font-medium ${n.resolved ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : cls}`}>{n.resolved ? "Çözüldü" : label}</span>
+              <li key={n.id} className={`flex flex-wrap items-start gap-3 px-4 py-3 text-[12px] ${n.read ? "bg-[#F9FAFB] dark:bg-[#121317]" : ""}`}>
+                <span className={`mt-0.5 rounded px-2 py-0.5 text-[11px] font-medium ${n.resolved ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : cls}`}>{n.resolved ? "Çözüldü" : label}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-[#14151A] dark:text-[#F3F4F6]">{n.title}{n.count > 1 ? <span className="ml-1 text-[#8C9099]">×{n.count}</span> : null}{!n.read && <span aria-label="okunmamış" className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[#266DF0] align-middle" />}</p>
+                  <p className="font-medium text-[#14151A] dark:text-[#F3F4F6]">{n.title}{n.count > 1 ? <span className="ml-1 text-[#5F6570] dark:text-[#8C9099]">×{n.count}</span> : null}{!n.read && <span aria-label="okunmamış" className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[#266DF0] align-middle" />}</p>
                   {n.body && <p className="text-[#5C5F66] dark:text-[#9CA3AF]">{n.body}</p>}
-                  <p className="mt-0.5 text-[11px] text-[#8C9099]">{n.updatedAt.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}{n.audience === "admin" ? " · yalnızca yöneticiler" : ""}</p>
+                  <p className="mt-0.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">{n.updatedAt.toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" })}{n.audience === "admin" ? " · yalnızca yöneticiler" : ""}</p>
                 </div>
                 {n.href && <Link href={n.href} className={`inline-flex h-7 items-center rounded-md border ${border} px-2.5 font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]`}>Aç</Link>}
               </li>

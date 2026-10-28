@@ -23,12 +23,12 @@ export function LinkAuditCard({ contents, locales }: { contents: ContentDto[]; l
     <section className="rounded-xl border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] p-4 space-y-2">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">İç bağlantı denetimi</h2>
-        <span className="text-[11px] text-[#8C9099]">
+        <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           {result.internalChecked} iç, {result.externalCount} dış bağlantı · dış bağlantılar denetlenmez
         </span>
       </div>
       {result.issues.length === 0 ? (
-        <p className="text-xs text-emerald-700 dark:text-emerald-300">Kırık veya taşınmış iç bağlantı bulunamadı.</p>
+        <p className="text-xs text-emerald-800 dark:text-emerald-300">Kırık veya taşınmış iç bağlantı bulunamadı.</p>
       ) : (
         <ul className="space-y-1 text-xs">
           {[...broken, ...moved].map((i, n) => (
@@ -37,7 +37,7 @@ export function LinkAuditCard({ contents, locales }: { contents: ContentDto[]; l
                 {i.fromTitle}
               </a>
               <code className="text-[11px]">{i.url}</code>
-              <span className={i.kind === "broken" ? "text-red-600" : "text-amber-700 dark:text-amber-300"}>
+              <span className={i.kind === "broken" ? "text-red-600" : "text-amber-800 dark:text-amber-300"}>
                 {i.kind === "broken" ? "kırık" : `301 → ${i.target}`}
               </span>
             </li>

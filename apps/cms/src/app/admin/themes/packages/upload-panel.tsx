@@ -51,9 +51,9 @@ export function UploadPanel() {
         }}
         className={`flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-6 py-8 text-center transition ${drag ? "border-[#266DF0] bg-[#266DF0]/5" : border}`}
       >
-        <Upload className="h-6 w-6 text-[#8C9099]" />
+        <Upload className="h-6 w-6 text-[#5F6570] dark:text-[#8C9099]" />
         <p className="text-[13px] font-medium text-[#14151A] dark:text-[#F3F4F6]">{busy ? "Doğrulanıyor…" : "Tema paketini (.nxtheme) buraya bırakın"}</p>
-        <p className="max-w-[60ch] text-[12px] text-[#8C9099]">
+        <p className="max-w-[60ch] text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Paket kod çalıştırmaz: token, üst/alt şablon, başlangıç sayfaları ve kapsamlı CSS içerir. Yükleme temayı <strong>etkinleştirmez</strong>; önce önizleyebilirsiniz. En çok 8 MB.
         </p>
         <button type="button" disabled={busy} onClick={() => input.current?.click()} className="h-8 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-3 text-[12px] font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] disabled:opacity-50">

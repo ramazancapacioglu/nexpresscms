@@ -55,7 +55,7 @@ export default async function AdminCommerceOrdersPage({
     <div className="space-y-4">
       <header>
         <h1 className="text-[18px] font-semibold">Siparişler</h1>
-        <p className="text-[12px] text-[#8C9099]">Kaynak sütunu siparişin siteden mi pazardan mı geldiğini gösterir.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Kaynak sütunu siparişin siteden mi pazardan mı geldiğini gösterir.</p>
       </header>
       <div className="flex gap-2 text-[12px]">
         {(["all", "site", "marketplace"] as const).map((item) => (
@@ -72,10 +72,10 @@ export default async function AdminCommerceOrdersPage({
         </Link>
       </div>
       {rows.length === 0 ? (
-        <p className="text-[12px] text-[#8C9099]">Kayıt yok.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Kayıt yok.</p>
       ) : (
         <table className="w-full text-left text-[12px]">
-          <thead className="text-[#8C9099]">
+          <thead className="text-[#5F6570] dark:text-[#8C9099]">
             <tr>
               <th className="py-2">No</th>
               <th>Müşteri</th>

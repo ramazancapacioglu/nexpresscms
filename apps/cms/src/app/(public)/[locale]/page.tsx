@@ -143,7 +143,7 @@ export default async function PublicHomePage({
                     >
                       {item.type} • @{item.schemaType}
                     </span>
-                    <span className="font-mono text-emerald-700 font-semibold">
+                    <span className="font-mono text-emerald-800 font-semibold">
                       SEO: {item.seoScore}/100
                     </span>
                   </div>

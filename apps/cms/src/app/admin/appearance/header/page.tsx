@@ -8,7 +8,7 @@ export default async function HeaderAppearancePage() {
     <div className="space-y-4">
       <header className="border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <h1 className="text-[18px] font-semibold">Header</h1>
-        <p className="text-[12px] text-[#8C9099]">
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Duyuru, ana şerit ve alt şerit. Menü bağlantıları ayrı sayfadadır. Şablon kayda kopyalanır, sonra düzenlenir.
         </p>
       </header>
