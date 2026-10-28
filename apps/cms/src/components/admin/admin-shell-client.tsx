@@ -17,6 +17,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { createTranslator } from "@nexpress/i18n";
+import { NotificationBell } from "./notification-bell";
 import { NAV_LABEL_KEYS, QUICK_COMMANDS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
 
 interface AdminShellClientProps {
@@ -324,6 +325,7 @@ export function AdminShellClient({
               </Link>
             </div>
 
+            <NotificationBell />
             <button
               type="button"
               onClick={() => setCmdOpen(true)}

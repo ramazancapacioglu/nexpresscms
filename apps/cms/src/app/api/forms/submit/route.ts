@@ -4,6 +4,7 @@ import { getFormDefinitionRepository, getFormSubmissionRepository, getScopedRepo
 import "@/plugins/register";
 import { ipDigest, verifyFormToken } from "@/lib/form-token";
 import { notifySubmission } from "@/lib/form-notify";
+import { notify } from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
   const status = spamReasons(result.values).length > 0 ? "spam" : "new";
   const title = bound?.name ?? (typeof props.title === "string" ? props.title : "");
   const id = await inbox.create({ pagePath: path, locale, formId: bound?.id ?? block.id, formTitle: title, fields: result.values, status, ipHash });
+  if (status === "new") after(() => notify(siteId, { kind: "form.new", severity: "info", title: `«${title || "Form"}»: yeni gönderim`, href: `/admin/forms/inbox${bound ? `?form=${bound.id}` : ""}`, dedupeKey: `form-new:${bound?.id ?? block.id}`, audience: "all" }));
   if (bound) after(() => notifySubmission({ siteId, form: bound, submissionId: id, values: result.values, pagePath: path, status }).catch(() => undefined));
   const target = bound ? safeInternalPath(bound.spec.redirectUrl) : "";
   return target ? NextResponse.redirect(new URL(target, request.url), 303) : back("sent", blockId);

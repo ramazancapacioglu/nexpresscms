@@ -1,6 +1,7 @@
 import "server-only";
 import { cmsHooks } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
+import { notify } from "./notify";
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const PLUGIN_ID = "@nexpress/indexnow";
@@ -26,7 +27,7 @@ export function registerIndexNow(): void {
         if (site?.settings?.seo?.enableIndexNow === false) return;
         const target = new URL(url, process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
         if (target.hostname === "localhost" || target.hostname.endsWith(".localhost")) return;
-        await fetch(ENDPOINT, {
+        const res = await fetch(ENDPOINT, {
           method: "POST",
           headers: { "content-type": "application/json; charset=utf-8" },
           body: JSON.stringify({
@@ -37,7 +38,9 @@ export function registerIndexNow(): void {
           }),
           signal: AbortSignal.timeout(4000),
         });
+        if (!res.ok) await notify(siteId, { kind: "indexnow.failed", severity: "warning", title: "IndexNow bildirimi reddedildi", body: `Arama motoru HTTP ${res.status} döndü. Anahtarı ve /indexnow-key.txt adresini denetleyin.`, href: "/admin/system", dedupeKey: "indexnow-failed", audience: "admin" });
       } catch (error) {
+        await notify(siteId, { kind: "indexnow.failed", severity: "warning", title: "IndexNow bildirimi gönderilemedi", body: error instanceof Error ? error.message.slice(0, 200) : "Ağ hatası", href: "/admin/system", dedupeKey: "indexnow-failed", audience: "admin" });
         console.warn("[IndexNow] bildirim gönderilemedi:", error instanceof Error ? error.message : error);
       }
     }

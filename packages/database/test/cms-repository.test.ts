@@ -712,3 +712,51 @@ test("medya klasörleri: ağaç kuralları, taşıma, sayaç, silinince içerik 
   assert.equal((await repo.listMediaAssets()).find((x) => x.id === "med_klasor_1")!.folderId, f1.id);
   assert.equal(await a.remove(kapakId), false);
 });
+
+test("bildirim merkezi: tekrar toplama (pencere/açık), kullanıcıya özel okundu, kitle, çözme, budama, kiracıya kapalı", async () => {
+  const { getNotificationRepository } = await import("../src/notification-repository");
+  const a = getNotificationRepository("default");
+  const b = getNotificationRepository("baska-site");
+  const t0 = new Date("2026-10-28T10:00:00Z");
+  const hour = 3_600_000;
+  const id1 = await a.emit({ kind: "form.new", severity: "info", title: "Yeni gönderim", dedupeKey: "form-new:f1", audience: "all" }, t0);
+  const id2 = await a.emit({ kind: "form.new", severity: "info", title: "Yeni gönderim", dedupeKey: "form-new:f1", audience: "all" }, new Date(t0.getTime() + hour));
+  assert.equal(id2, id1, "pencere içinde aynı satır");
+  const id3 = await a.emit({ kind: "form.new", severity: "info", title: "Yeni gönderim", dedupeKey: "form-new:f1", audience: "all" }, new Date(t0.getTime() + 25 * hour));
+  assert.notEqual(id3, id1, "pencere dışında yeni satır");
+  const sys1 = await a.emit({ kind: "system.health", severity: "warning", title: "Disk", body: "az", dedupeKey: "sys:health:disk", window: "open" }, t0);
+  const sys2 = await a.emit({ kind: "system.health", severity: "critical", title: "Disk", body: "çok az", dedupeKey: "sys:health:disk", window: "open" }, new Date(t0.getTime() + 100 * hour));
+  assert.equal(sys2, sys1, "açık uyarı süre geçse de tek satır");
+
+  const now = new Date(t0.getTime() + 26 * hour);
+  const admin = await a.list("u_admin", "admin", { now });
+  const editor = await a.list("u_editor", "editor", { now });
+  assert.equal(admin.length, 3);
+  assert.deepEqual(editor.map((n) => n.kind), ["form.new", "form.new"], "yönetici kitlesi editöre görünmez");
+  assert.equal(admin.find((n) => n.id === id1)!.count, 2);
+  const disk = admin.find((n) => n.id === sys1)!;
+  assert.deepEqual([disk.severity, disk.body, disk.count], ["critical", "çok az", 1], "açık uyarı güncellenir, sayaç artmaz");
+  assert.deepEqual(await a.unread("u_admin", "admin", now), { count: 3, top: "critical" });
+  assert.equal((await a.unread("u_editor", "editor", now)).top, "info");
+
+  assert.equal(await a.markRead("u_admin", [id1, "ntf_yok"], now), 1);
+  assert.equal(await a.markRead("u_admin", [id1], now), 0, "tekrar işaretlenmez");
+  assert.equal((await a.unread("u_admin", "admin", now)).count, 2);
+  assert.equal((await a.unread("u_editor", "editor", now)).count, 2, "okundu kullanıcıya özel");
+  assert.equal(await b.markRead("u_x", [id3]), 0, "başka kiracı işaretleyemez");
+  assert.equal((await b.list("u_x", "admin", { now })).length, 0);
+  assert.equal(await a.markAllRead("u_admin", "admin", now), 2);
+  assert.equal((await a.unread("u_admin", "admin", now)).count, 0);
+
+  // çözme: etkin anahtarlar dışındaki sistem uyarıları kapanır; çözülmüş olan okunmuş ve sayım dışı görünür
+  assert.equal(await a.resolveSystemExcept([], now), 1);
+  assert.equal((await a.list("u_admin", "admin", { now })).find((n) => n.id === sys1)!.resolved, true);
+  assert.equal(await a.resolveSystemExcept([], now), 0);
+  const again = await a.emit({ kind: "system.health", severity: "warning", title: "Disk", dedupeKey: "sys:health:disk", window: "open" }, now);
+  assert.notEqual(again, sys1, "çözülen sorun tekrar çıkarsa yeni satır");
+
+  // budama: çözülmüş 14 gün, diğerleri 60 gün sonra
+  assert.equal(await a.purge(new Date(now.getTime() + 15 * 24 * hour)), 1, "yalnızca çözülmüş eski satır");
+  assert.equal(await a.purge(new Date(now.getTime() + 90 * 24 * hour)) > 0, true);
+  assert.equal((await a.list("u_admin", "admin", { now: new Date(now.getTime() + 90 * 24 * hour) })).length, 0);
+});

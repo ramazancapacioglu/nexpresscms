@@ -42,6 +42,7 @@ export const tr = {
       trash: "Çöp kutusu",
       redirects: "Yönlendirmeler & 404",
       backup: "Yedekleme",
+      notifications: "Bildirimler",
       system: "Sistem durumu",
       translations: "Çeviriler",
       forms: "Formlar",

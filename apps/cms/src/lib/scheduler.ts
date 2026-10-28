@@ -2,6 +2,7 @@ import "server-only";
 import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { invalidateSite } from "./cache";
+import { notify, syncSystemNotifications } from "./notify";
 
 const lastRun = new Map<string, number>();
 const MIN_INTERVAL_MS = 60_000;
@@ -21,6 +22,8 @@ export async function runScheduler(siteId: string, force = false): Promise<{ pub
     const purged = await repo.purgeExpiredTrash();
     // KVKK: form gönderimleri 365 günden uzun tutulmaz
     await getFormSubmissionRepository(siteId).purgeOlderThan(365).catch(() => 0);
+    if (published.length > 0) await notify(siteId, { kind: "content.scheduled_published", severity: "info", title: `${published.length} zamanlanmış içerik yayınlandı`, href: "/admin/schedule", audience: "all", window: 0 });
+    void syncSystemNotifications(siteId);
     if (published.length > 0 || purged > 0) {
       try {
         await invalidateSite(siteId);

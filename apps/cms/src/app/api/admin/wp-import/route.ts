@@ -3,6 +3,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdminApi } from "@/lib/admin-api";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
+import { notify } from "@/lib/notify";
 import { WP_IMPORT_LIMITS, planFromXml, runWpImport } from "@/lib/wp-import";
 
 export const runtime = "nodejs";
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
 
   const report = await runWpImport(session.siteId, plan, { locale, types, includeDrafts: flag("includeDrafts", true), createRedirects: flag("createRedirects", true), downloadImages: flag("downloadImages", false), update: flag("update", false) }, { id: session.sub, email: session.email });
   await recordAudit({ id: session.sub, email: session.email }, "wp-import.run", { detail: `${report.created} yeni, ${report.updated} güncel, ${report.failed.length} hata`, siteId: session.siteId });
+  await notify(session.siteId, { kind: "wp-import.done", severity: report.failed.length ? "warning" : "info", title: "WordPress içe aktarma tamamlandı", body: `${report.created} yeni, ${report.updated} güncel, ${report.failed.length} hata`, href: "/admin/posts", audience: "admin", window: 0 });
   await invalidateSite(session.siteId);
   for (const p of ["/admin", "/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/redirects", "/admin/media"]) await revalidatePath(p);
   return NextResponse.json({ ok: true, report });

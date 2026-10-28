@@ -902,3 +902,41 @@ export const sqliteMediaFolders = sqliteTable(
   },
   (t) => [index("media_folders_site_id_idx").on(t.siteId), index("media_folders_parent_idx").on(t.siteId, t.parentId)]
 );
+
+/**
+ * BİLDİRİM MERKEZİ — panel içi bildirimler. `dedupeKey` aynı olayın tekrarını tek satırda toplar (`count`);
+ * sistem sağlığından gelenler düzelince `resolvedAt` ile kapanır. Okundu durumu kullanıcıya özeldir (`notification_reads`).
+ */
+export const sqliteNotifications = sqliteTable(
+  "notifications",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    kind: text("kind").notNull(),
+    /** info | warning | critical */
+    severity: text("severity").default("info").notNull(),
+    title: text("title").notNull(),
+    body: text("body").default("").notNull(),
+    href: text("href").default("").notNull(),
+    dedupeKey: text("dedupe_key"),
+    count: integer("count").default(1).notNull(),
+    /** admin: yalnızca yöneticiler | all: tüm panel kullanıcıları */
+    audience: text("audience").default("admin").notNull(),
+    resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("notifications_site_id_idx").on(t.siteId), index("notifications_updated_idx").on(t.siteId, t.updatedAt), index("notifications_dedupe_idx").on(t.siteId, t.dedupeKey)]
+);
+
+export const sqliteNotificationReads = sqliteTable(
+  "notification_reads",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    notificationId: text("notification_id").notNull(),
+    userId: text("user_id").notNull(),
+    readAt: integer("read_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("notification_reads_site_id_idx").on(t.siteId), index("notification_reads_user_idx").on(t.siteId, t.userId)]
+);

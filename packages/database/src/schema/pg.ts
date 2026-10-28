@@ -903,3 +903,41 @@ export const pgMediaFolders = pgTable(
   },
   (t) => [index("media_folders_site_id_idx").on(t.siteId), index("media_folders_parent_idx").on(t.siteId, t.parentId)]
 );
+
+/**
+ * BİLDİRİM MERKEZİ — panel içi bildirimler. `dedupeKey` aynı olayın tekrarını tek satırda toplar (`count`);
+ * sistem sağlığından gelenler düzelince `resolvedAt` ile kapanır. Okundu durumu kullanıcıya özeldir (`notification_reads`).
+ */
+export const pgNotifications = pgTable(
+  "notifications",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    kind: text("kind").notNull(),
+    /** info | warning | critical */
+    severity: text("severity").default("info").notNull(),
+    title: text("title").notNull(),
+    body: text("body").default("").notNull(),
+    href: text("href").default("").notNull(),
+    dedupeKey: text("dedupe_key"),
+    count: integer("count").default(1).notNull(),
+    /** admin: yalnızca yöneticiler | all: tüm panel kullanıcıları */
+    audience: text("audience").default("admin").notNull(),
+    resolvedAt: timestamp("resolved_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("notifications_site_id_idx").on(t.siteId), index("notifications_updated_idx").on(t.siteId, t.updatedAt), index("notifications_dedupe_idx").on(t.siteId, t.dedupeKey)]
+);
+
+export const pgNotificationReads = pgTable(
+  "notification_reads",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    notificationId: text("notification_id").notNull(),
+    userId: text("user_id").notNull(),
+    readAt: timestamp("read_at").defaultNow().notNull(),
+  },
+  (t) => [index("notification_reads_site_id_idx").on(t.siteId), index("notification_reads_user_idx").on(t.siteId, t.userId)]
+);

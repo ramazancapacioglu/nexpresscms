@@ -3,6 +3,7 @@ import type { FormDefinitionDto } from "@nexpress/database";
 import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import type { SubmittedValue } from "@nexpress/core";
 import { sendMail } from "./mailer";
+import { notify } from "./notify";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const fill = (tpl: string, vars: Record<string, string>) => tpl.replace(/\{(form|site)\}/g, (_, k: string) => vars[k] ?? "");
@@ -39,4 +40,5 @@ export async function notifySubmission(input: { siteId: string; form: FormDefini
     else errors.push(r.error);
   }
   await repo.setNotify(submissionId, errors.length ? "failed" : sent ? "sent" : "skipped", errors.join(" · "));
+  if (errors.length) await notify(siteId, { kind: "form.mail_failed", severity: "warning", title: `«${form.name}»: e-posta gönderilemedi`, body: errors[0], href: `/admin/forms/inbox?form=${form.id}`, dedupeKey: `form-mail:${form.id}`, audience: "admin" });
 }

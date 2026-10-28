@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Bildirim merkezi
+- ✅ `notifications` + `notification_reads` (göç `0012`, iki motor), `core/notifications` (türetilmiş uyarılar: sağlık, yedek hatırlatması, giriş hatası), `NotificationRepository` (tekrar toplama penceresi/"open", kullanıcıya özel okundu, kitle, çözme, budama).
+- ✅ Kaynaklar: form yeni gönderim / e-posta hatası, zamanlanmış yayın, IndexNow hatası, WordPress içe aktarma, sistem sağlığı (10 dk'da bir `syncSystemNotifications`; zamanlayıcıdan ve sayfadan). Zil + açılır panel + `/admin/notifications`, nav "Bildirimler" (G U).
+- ✅ Gerçek derlemede doğrulandı: gerçek ortam uyarıları (AUTH_SECRET yer tutucusu kritik), form gönderimi → bildirim, kapalı SMTP → "e-posta gönderilemedi", okundu/tümünü okundu, yetkisiz 401, geçersiz eylem 400. Testler: core (3), database (iki motor).
+- ⚠️ Sistem uyarılarının "çözüldü" geçişi ve yedek hatırlatması gerçek ortamda uçtan uca izlenmedi (depo ve saf mantık testleri kapsıyor). Zamanlanmış yayın ve IndexNow bildirimleri canlı denenmedi.
+
 ### [2026-10-28] — Medya klasörleri, toplu/sürükle-bırak yükleme, kullanılmayanlar
 - ✅ `media_folders` + `media_assets.folder_id` (göç `0011`, iki motor; push-parity testi sonradan eklenen indeksleri de tabandan sayar). Saf kurallar `core/media-folders` (ad, en çok 3 düzey, döngü, aynı kardeş adı, ağaç) ve `MediaFolderRepository` (kiracıya kapalı; silince içerik/alt klasör üste). Klasörler yedeğe girer.
 - ✅ `/admin/media`: klasör ağacı, `MediaBulkUpload` (çoklu + sürükle-bırak, `/api/media/upload` `folderId`), `MediaGrid` toplu seçim, taşıma, "Kullanılmayanlar" (`findUnusedIds`). Gerçek derlemede doğrulandı (klasör oluşturma, 3 dosya yükleme klasöre, toplu taşıma). Testler: core (klasör kuralları), database (iki motor).

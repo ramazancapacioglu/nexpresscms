@@ -28,6 +28,7 @@ import {
   Route,
   Activity,
   FormInput,
+  Bell,
   Archive,
 } from "lucide-react";
 
@@ -236,6 +237,12 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/notifications",
+        label: "Bildirimler",
+        icon: Bell,
+        shortcut: "G U",
+      },
+      {
         href: "/admin/system",
         label: "Sistem durumu",
         icon: Activity,
@@ -269,6 +276,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/trash": "admin.nav.trash",
   "/admin/redirects": "admin.nav.redirects",
   "/admin/system": "admin.nav.system",
+  "/admin/notifications": "admin.nav.notifications",
   "/admin/backup": "admin.nav.backup",
   "/admin/requests": "admin.nav.requests",
   "/admin/forms": "admin.nav.forms",

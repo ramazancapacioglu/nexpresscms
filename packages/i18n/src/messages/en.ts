@@ -39,6 +39,7 @@ export const en: Messages = {
       trash: "Trash",
       redirects: "Redirects & 404",
       backup: "Backup",
+      notifications: "Notifications",
       system: "System status",
       translations: "Translations",
       forms: "Forms",
