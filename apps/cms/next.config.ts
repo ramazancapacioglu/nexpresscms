@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
     "@nexpress/wp-importer",
     "@nexpress-pro/agentic-seo",
   ],
+  // Yerel/yerel-ikili sürücüler paketlenmez (webpack README/LICENSE ve .node dosyalarını ayrıştıramaz)
+  serverExternalPackages: ["@libsql/client", "libsql", "postgres", "sharp"],
   experimental: {
     serverActions: {
       bodySizeLimit: "4mb",
