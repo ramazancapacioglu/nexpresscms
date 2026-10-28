@@ -54,6 +54,28 @@ export class MediaAdminRepository {
       );
   }
 
+  /**
+   * Hiçbir yerde başvurulmayan görsellerin kimlikleri: içerik blokları, öne çıkan görsel, yayın öznitelikleri,
+   * taksonomi görselleri, menü/yerleşim ve site ayarları taranır (`/media/{id}` başvuruları).
+   * Not: bu tarama dışında kullanılan (ör. kodla gömülü) görseller "kullanılmıyor" görünebilir; silmeden önce kullanım denetimi yine yapılır.
+   */
+  public async findUnusedIds(): Promise<string[]> {
+    const { db, t } = this.backend;
+    const s = this.siteId;
+    const [assets, trans, contents, taxes, navs, sites] = await Promise.all([
+      db.select({ id: t.mediaAssets.id }).from(t.mediaAssets).where(eq(t.mediaAssets.siteId, s)),
+      db.select({ blocks: t.contentTranslations.blocks }).from(t.contentTranslations).where(eq(t.contentTranslations.siteId, s)),
+      db.select({ f: t.contents.featuredImage, a: t.contents.schemaAttributes }).from(t.contents).where(eq(t.contents.siteId, s)),
+      db.select({ i: t.taxonomies.imageUrl }).from(t.taxonomies).where(eq(t.taxonomies.siteId, s)),
+      db.select().from(t.navigationLayouts).where(eq(t.navigationLayouts.siteId, s)),
+      db.select({ settings: t.sites.settings, tokens: t.sites.designTokens, profile: t.sites.siteProfile }).from(t.sites).where(eq(t.sites.siteId, s)),
+    ]);
+    const haystack = JSON.stringify([trans, contents, taxes, navs, sites]);
+    const used = new Set<string>();
+    for (const m of haystack.matchAll(/\/media\/(med_[A-Za-z0-9_-]+)/g)) used.add(m[1]!);
+    return assets.map((a) => a.id).filter((id) => !used.has(id));
+  }
+
   /** Kaydı siler; dosyaları silmek çağıranın işidir. Silindiyse `true`. */
   public async deleteAsset(mediaId: string): Promise<boolean> {
     const { db, t } = this.backend;

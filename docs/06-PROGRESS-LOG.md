@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Medya klasörleri, toplu/sürükle-bırak yükleme, kullanılmayanlar
+- ✅ `media_folders` + `media_assets.folder_id` (göç `0011`, iki motor; push-parity testi sonradan eklenen indeksleri de tabandan sayar). Saf kurallar `core/media-folders` (ad, en çok 3 düzey, döngü, aynı kardeş adı, ağaç) ve `MediaFolderRepository` (kiracıya kapalı; silince içerik/alt klasör üste). Klasörler yedeğe girer.
+- ✅ `/admin/media`: klasör ağacı, `MediaBulkUpload` (çoklu + sürükle-bırak, `/api/media/upload` `folderId`), `MediaGrid` toplu seçim, taşıma, "Kullanılmayanlar" (`findUnusedIds`). Gerçek derlemede doğrulandı (klasör oluşturma, 3 dosya yükleme klasöre, toplu taşıma). Testler: core (klasör kuralları), database (iki motor).
+- ⚠️ Sürükle-bırak yalnızca dosya seçiciyle denendi (OS dosya sürüklemesi otomatikleştirilemedi). Alt klasör oluşturma/silme arayüzü elle denenmedi (depo testleri kapsıyor).
+
 ### [2026-10-28] — Gerçek WordPress (WXR) içe aktarma
 - ✅ `packages/wp-importer` yeniden yazıldı: `parseWxr` (fast-xml-parser, ENTITY reddi), `convertWpHtml` (htmlparser2, Gutenberg/klasik/sayfa oluşturucu), `buildPlan` (eşleme, SEO, slug, yönlendirme yolu), `isPublicIp` (SSRF). Önceki **örnek veri simülasyonu ve `runWpMigrationAction` kaldırıldı**.
 - ✅ `lib/wp-import.ts` + `lib/safe-fetch.ts` + `/api/admin/wp-import` + yeni `/admin/migration` arayüzü (çözümle → seçenekler → içe aktar). `SaveContentInput.publishedAt` eklendi (yalnızca yeni içerik).

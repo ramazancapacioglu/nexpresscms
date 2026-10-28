@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, after, type NextRequest } from "next/server";
 import { buildMediaRef } from "@nexpress/core";
-import { getScopedRepository } from "@nexpress/database";
+import { getMediaFolderRepository, getScopedRepository } from "@nexpress/database";
 import { getSession } from "@/lib/auth/session";
 import { MAX_UPLOAD_BYTES, inspectUpload } from "@/lib/media/process";
 import { prewarmVariants } from "@/lib/media/prewarm";
@@ -39,6 +39,9 @@ export async function POST(request: NextRequest) {
   }
 
   const siteId = session.siteId;
+  // Klasör (isteğe bağlı): bu kiracıya ait olmalı; değilse kökte kalır
+  const wantedFolder = String(form?.get("folderId") ?? "");
+  const folderId = wantedFolder && (await getMediaFolderRepository(siteId).list()).some((f) => f.id === wantedFolder) ? wantedFolder : null;
   const id = `med_${randomBytes(9).toString("base64url")}`;
   await putOriginal(siteId, id, data);
   const media = await getScopedRepository(siteId).saveMediaAsset({
@@ -50,6 +53,7 @@ export async function POST(request: NextRequest) {
     height: info.height,
     sizeBytes: data.length,
     altText: String(form?.get("altText") ?? "").trim(),
+    folderId,
   });
   after(() =>
     prewarmVariants(siteId, id, info.width, info.hasAlpha).catch((error) =>

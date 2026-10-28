@@ -665,3 +665,50 @@ test("e-posta ayarları: kısmi kaydedilir, parola yedeğe girmez ve replace'te 
   assert.equal(after.host, "smtp.x.test");
   assert.ok(await getFormDefinitionRepository("default").get(form.id), "form geri yüklendi");
 });
+
+test("medya klasörleri: ağaç kuralları, taşıma, sayaç, silinince içerik üst klasöre, kiracıya kapalı, kullanılmayan görseller", async () => {
+  const { getMediaFolderRepository } = await import("../src/media-folder-repository");
+  const { getMediaAdminRepository } = await import("../src/media-admin-repository");
+  const a = getMediaFolderRepository("default");
+  const b = getMediaFolderRepository("baska-site");
+  const urun = await a.create("  Ürünler ", null);
+  assert.ok(urun.ok);
+  const f1 = urun.ok ? urun.folder : null!;
+  const kapak = await a.create("Kapak", f1.id);
+  const yil = await a.create("2026", kapak.ok ? kapak.folder.id : "");
+  assert.ok(kapak.ok && yil.ok);
+  assert.equal((await a.create("Dördüncü", yil.ok ? yil.folder.id : "")).ok, false, "en çok 3 düzey");
+  assert.equal((await a.create("ürünler", null)).ok, false, "aynı kardeş adı");
+  assert.equal((await a.update(f1.id, { parentId: yil.ok ? yil.folder.id : null })).ok, false, "alt klasörüne taşınamaz");
+  assert.equal((await b.list()).length, 0);
+  assert.equal(await b.remove(f1.id), false, "başka kiracı silemez");
+  assert.equal((await b.update(f1.id, { name: "Ele geçirildi" })).ok, false);
+
+  const m1 = await repo.saveMediaAsset({ id: "med_klasor_1", filename: "a.webp", url: "/media/med_klasor_1?w=10&h=10", altText: "Kapak görseli alt metni", folderId: kapak.ok ? kapak.folder.id : null });
+  const m2 = await repo.saveMediaAsset({ id: "med_klasor_2", filename: "b.webp", url: "/media/med_klasor_2?w=10&h=10", altText: "" });
+  assert.equal(m1.folderId, kapak.ok ? kapak.folder.id : null);
+  assert.equal(m2.folderId, null);
+  const kapakId = kapak.ok ? kapak.folder.id : "";
+  await repo.saveMediaAsset({ id: "med_klasor_2", filename: "b2.webp", url: m2.url, altText: "güncel" });
+  assert.equal((await repo.listMediaAssets()).find((x) => x.id === "med_klasor_2")!.folderId, null, "folderId verilmeden güncelleme klasörü korur");
+  assert.equal(await a.moveAssets(["med_klasor_2"], kapakId), 1);
+  assert.equal(await a.moveAssets(["med_klasor_2"], "fld_yok"), 0, "olmayan klasöre taşınmaz");
+  await b.moveAssets(["med_klasor_2"], null); // başka kiracı: etkisiz (aşağıda doğrulanır)
+  assert.equal((await repo.listMediaAssets()).find((x) => x.id === "med_klasor_2")!.folderId, kapakId);
+  const counts = await a.counts();
+  assert.equal(counts[kapakId], 2);
+
+  // Kullanılmayanlar: biri bir içerikte geçer
+  await repo.saveContent(baseInput({ slug: "medya-kullanimi", title: "Medya", status: "published", blocks: [{ id: "i1", type: "image_figure", props: { url: "/media/med_klasor_1?w=10&h=10", altText: "x" } }] as never }));
+  const unused = await getMediaAdminRepository("default").findUnusedIds();
+  assert.ok(!unused.includes("med_klasor_1"));
+  assert.ok(unused.includes("med_klasor_2"));
+
+  // Silme: dosyalar ve alt klasörler üste çıkar
+  assert.equal(await a.remove(kapakId), true);
+  const left = await a.list();
+  assert.equal(left.find((f) => f.id === kapakId), undefined);
+  assert.equal(left.find((f) => f.id === (yil.ok ? yil.folder.id : ""))!.parentId, f1.id, "alt klasör üste çıktı");
+  assert.equal((await repo.listMediaAssets()).find((x) => x.id === "med_klasor_1")!.folderId, f1.id);
+  assert.equal(await a.remove(kapakId), false);
+});

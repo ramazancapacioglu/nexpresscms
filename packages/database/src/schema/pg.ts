@@ -290,9 +290,11 @@ export const pgMediaAssets = pgTable(
     caption: text("caption"),
     focalPoint: jsonb("focal_point").$type<{ x: number; y: number }>().default({ x: 50, y: 50 }),
     seoScore: integer("seo_score").default(95).notNull(),
+    /** Klasör (`media_folders.id`); boşsa kök */
+    folderId: text("folder_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [index("media_assets_site_id_idx").on(t.siteId)]
+  (t) => [index("media_assets_site_id_idx").on(t.siteId), index("media_assets_folder_idx").on(t.siteId, t.folderId)]
 );
 
 /**
@@ -883,4 +885,21 @@ export const pgForms = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => [index("forms_site_id_idx").on(t.siteId), index("forms_site_status_idx").on(t.siteId, t.status)]
+);
+
+/**
+ * MEDYA KLASÖRLERİ — medya kitaplığını düzenlemek için ağaç yapısı (en çok 3 düzey). Dosyalar `media_assets.folder_id` ile bağlanır;
+ * klasör silinince içindekiler üst klasöre (yoksa köke) taşınır.
+ */
+export const pgMediaFolders = pgTable(
+  "media_folders",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    name: text("name").notNull(),
+    parentId: text("parent_id"),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("media_folders_site_id_idx").on(t.siteId), index("media_folders_parent_idx").on(t.siteId, t.parentId)]
 );

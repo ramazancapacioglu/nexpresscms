@@ -24,6 +24,7 @@ export * from "./lifecycle";
 export * from "./system-health";
 export * from "./forms";
 export * from "./form-spec";
+export * from "./media-folders";
 export * from "./form-templates";
 export * from "./form-analytics";
 export * from "./media";

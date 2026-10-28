@@ -34,6 +34,8 @@ export class CmsMediaRepository extends CmsNavigationRepository {
     titleText?: string;
     caption?: string;
     focalPoint?: { x: number; y: number };
+    /** Verilmezse (undefined) var olan klasör korunur; `null` köke alır */
+    folderId?: string | null;
   }): Promise<MediaAssetDto> {
     const id = input.id ?? `med_${Date.now()}`;
     const now = new Date();
@@ -56,6 +58,7 @@ export class CmsMediaRepository extends CmsNavigationRepository {
       caption: input.caption ?? null,
       focalPoint: input.focalPoint ?? { x: 50, y: 50 },
       seoScore,
+      folderId: input.folderId ?? null,
       createdAt: now,
     };
 
@@ -74,6 +77,7 @@ export class CmsMediaRepository extends CmsNavigationRepository {
           caption: record.caption,
           focalPoint: record.focalPoint,
           seoScore: record.seoScore,
+          ...(input.folderId !== undefined ? { folderId: input.folderId } : {}),
         },
       });
   

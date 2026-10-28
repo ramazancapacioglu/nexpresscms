@@ -100,6 +100,7 @@ export interface MediaAssetDto {
   caption: string | null;
   focalPoint: { x: number; y: number };
   seoScore: number;
+  folderId: string | null;
   createdAt: Date;
 }
 

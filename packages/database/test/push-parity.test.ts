@@ -46,12 +46,14 @@ test(`push.ts veritabanı (${pgUrl ? "PostgreSQL" : "SQLite"}) Drizzle şemasıy
   // Sonraki göçlerin eklediği sütunlar da tabana ait değildir (ALTER TABLE ... ADD)
   const dir = path.resolve(import.meta.dirname, "..", "migrations", pgUrl ? "pg" : "sqlite");
   const later = new Set<string>();
+  const laterIndexes = new Set<string>();
   for (const f of fs.readdirSync(dir).filter((n) => /^\d{4}_.*\.sql$/.test(n) && !n.startsWith("0000_"))) {
     for (const m of fs.readFileSync(path.join(dir, f), "utf8").matchAll(/ALTER TABLE [`"](\w+)[`"] ADD (?:COLUMN )?[`"](\w+)[`"]/g)) later.add(`${m[1]}.${m[2]}`);
+    for (const m of fs.readFileSync(path.join(dir, f), "utf8").matchAll(/CREATE (?:UNIQUE )?INDEX (?:IF NOT EXISTS )?[`"](\w+)[`"] ON [`"](\w+)[`"]/g)) laterIndexes.add(`${m[2]}.${m[1]}`);
   }
   const expected = all
     .filter((t) => baselineTables.has(t.name))
-    .map((t) => ({ ...t, columns: new Map([...t.columns].filter(([col]) => !later.has(`${t.name}.${col}`))) }));
+    .map((t) => ({ ...t, columns: new Map([...t.columns].filter(([col]) => !later.has(`${t.name}.${col}`))), indexes: new Set([...t.indexes].filter((i) => !laterIndexes.has(`${t.name}.${i}`))) }));
   assert.ok(expected.length >= 31, `taban tablo sayısı: ${expected.length}`);
   const problems = compareWithSchema(actual, expected);
   assert.deepEqual(problems, []);

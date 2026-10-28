@@ -1,19 +1,39 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import type { MediaAssetDto } from "@nexpress/database";
-import { thumbnailUrl } from "@nexpress/core";
+import type { MediaAssetDto, MediaFolderDto } from "@nexpress/database";
+import { folderSubtreeIds, thumbnailUrl } from "@nexpress/core";
 import { saveMediaAssetAction } from "@/app/admin/actions";
+import { moveMediaAction } from "@/app/admin/media/actions";
 import { MediaDelete } from "./media-delete";
-import { MediaUpload } from "./media-upload";
+import { MediaBulkUpload } from "./media-bulk-upload";
+import { MediaFolderTree, type FolderFilter } from "./media-folder-tree";
+import { MediaGrid } from "./media-grid";
 import { Image as ImageIcon, Plus, Check, Sparkles, Sliders } from "lucide-react";
+
+/** Kökten klasöre kadar klasör zinciri (girinti için). */
+function folderPath(folders: MediaFolderDto[], id: string): MediaFolderDto[] {
+  const out: MediaFolderDto[] = [];
+  for (let cur = folders.find((f) => f.id === id); cur && out.length < 4; cur = folders.find((f) => f.id === cur!.parentId)) out.unshift(cur);
+  return out;
+}
 
 export function MediaStudioClient({
   initialMedia,
+  initialFolders,
+  initialUnusedIds,
 }: {
   initialMedia: MediaAssetDto[];
+  initialFolders: MediaFolderDto[];
+  initialUnusedIds: string[];
 }) {
   const [assets, setAssets] = useState<MediaAssetDto[]>(initialMedia);
+  const [folders, setFolders] = useState<MediaFolderDto[]>(initialFolders);
+  const [filter, setFilter] = useState<FolderFilter>("all");
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [lastChecked, setLastChecked] = useState<string | null>(null);
+  const [unused, setUnused] = useState<Set<string>>(new Set(initialUnusedIds));
+  const [moveTarget, setMoveTarget] = useState("");
   const [selectedId, setSelectedId] = useState<string>(
     initialMedia[0]?.id ?? ""
   );
@@ -35,6 +55,36 @@ export function MediaStudioClient({
 
   const [banner, setBanner] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const scope = filter === "all" || filter === "none" || filter === "unused" ? null : new Set(folderSubtreeIds(folders, filter));
+  const visible = assets.filter((a) => (filter === "all" ? true : filter === "none" ? !a.folderId : filter === "unused" ? unused.has(a.id) : scope!.has(a.folderId ?? "")));
+  const counts: Record<string, number> = {};
+  for (const a of assets) counts[a.folderId ?? ""] = (counts[a.folderId ?? ""] ?? 0) + 1;
+  const currentFolder = scope ? folders.find((f) => f.id === filter) : undefined;
+
+  const toggle = (id: string, range: boolean) => {
+    setChecked((cur) => {
+      const next = new Set(cur);
+      if (range && lastChecked) {
+        const ids = visible.map((a) => a.id);
+        const [a, b] = [ids.indexOf(lastChecked), ids.indexOf(id)];
+        if (a >= 0 && b >= 0) for (const x of ids.slice(Math.min(a, b), Math.max(a, b) + 1)) next.add(x);
+      } else if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setLastChecked(id);
+  };
+
+  const moveChecked = (target: string | null) =>
+    startTransition(async () => {
+      const ids = [...checked];
+      const res = await moveMediaAction({ ids, folderId: target });
+      if (!res.ok) return setBanner(res.error);
+      setAssets((prev) => prev.map((a) => (checked.has(a.id) ? { ...a, folderId: target } : a)));
+      setChecked(new Set());
+      setBanner(`${res.moved} görsel taşındı.`);
+    });
 
   const handleSelect = (item: MediaAssetDto) => {
     setSelectedId(item.id);
@@ -123,53 +173,46 @@ export function MediaStudioClient({
         </div>
       )}
 
-      <MediaUpload
+      <div className="grid gap-4 lg:grid-cols-[210px_minmax(0,1fr)] items-start">
+      <MediaFolderTree
+        folders={folders}
+        counts={counts}
+        total={assets.length}
+        unused={assets.filter((a) => unused.has(a.id)).length}
+        filter={filter}
+        onFilter={(f) => { setFilter(f); setChecked(new Set()); }}
+        onFolders={setFolders}
+        onDeleted={(id, parentId) => setAssets((prev) => prev.map((a) => (a.folderId === id ? { ...a, folderId: parentId } : a)))}
+      />
+      <div className="space-y-4 min-w-0">
+      <MediaBulkUpload
+        folderId={currentFolder?.id ?? null}
+        folderName={currentFolder?.name ?? "Klasörsüz"}
         onUploaded={(media) => {
           setAssets((prev) => [media, ...prev]);
-          handleSelect(media);
+          setUnused((u) => new Set(u).add(media.id));
           setBanner(`"${media.filename}" yüklendi (${media.width}×${media.height}).`);
         }}
       />
 
+      {checked.size > 0 && (
+        <div role="region" aria-label="Toplu işlem" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#266DF0]/40 bg-[#266DF0]/5 px-3 py-2 text-[12px]">
+          <strong>{checked.size} görsel seçili</strong>
+          <select value={moveTarget} onChange={(e) => setMoveTarget(e.target.value)} className="h-7 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-transparent px-1" aria-label="Taşınacak klasör">
+            <option value="">Klasör seçin…</option>
+            <option value="__root">Klasörsüz (kök)</option>
+            {folders.map((f) => <option key={f.id} value={f.id}>{"— ".repeat(folderPath(folders, f.id).length - 1)}{f.name}</option>)}
+          </select>
+          <button type="button" disabled={!moveTarget || isPending} onClick={() => moveChecked(moveTarget === "__root" ? null : moveTarget)} className="h-7 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-50">Taşı</button>
+          <button type="button" onClick={() => setChecked(new Set(visible.map((a) => a.id)))} className="text-[#266DF0] underline">Görünenlerin hepsi</button>
+          <button type="button" onClick={() => setChecked(new Set())} className="text-[#5C5F66] underline">Seçimi temizle</button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* Sol: Görsel Izgarası + Yeni Medya Kayıt Kartı */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {assets.map((item) => {
-              const isSelected = item.id === selected?.id;
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => handleSelect(item)}
-                  className={`rounded-lg border overflow-hidden cursor-pointer transition ${
-                    isSelected
-                      ? "border-[#266DF0] ring-2 ring-[#266DF0]/15 bg-white dark:bg-[#15171C]"
-                      : "border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] hover:border-[#B8BCC6]"
-                  }`}
-                >
-                  <div className="h-36 bg-slate-900 overflow-hidden relative">
-                    <img
-                      src={thumbnailUrl(item.url)}
-                      alt={item.altText}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute top-2 right-2 rounded bg-black/75 text-emerald-400 px-1.5 py-0.5 font-mono text-[10px] font-bold">
-                      SEO {item.seoScore}/100
-                    </span>
-                  </div>
-                  <div className="p-3 space-y-1 text-[11px]">
-                    <div className="font-semibold truncate">{item.filename}</div>
-                    <div className="text-[10px] text-[#8C9099] font-mono">
-                      {item.width}×{item.height}px • {(item.sizeBytes / 1024).toFixed(1)} KB
-                    </div>
-                    <p className="text-[10px] text-[#5C5F66] line-clamp-1">
-                      alt: {item.altText || "⚠️ Eksik alt metin"}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <MediaGrid items={visible} selectedId={selected?.id} checked={checked} folders={folders} onOpen={handleSelect} onToggle={toggle} />
 
           {/* Yeni Görsel Ekleme Kutusu */}
           <form
@@ -336,11 +379,33 @@ export function MediaStudioClient({
               {isPending ? "Güncelleniyor..." : "Görsel SEO Ayarlarını Kaydet"}
             </button>
 
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono uppercase text-[#8C9099]" htmlFor="media-folder-select">Klasör</label>
+              <select
+                id="media-folder-select"
+                value={selected.folderId ?? ""}
+                disabled={isPending}
+                onChange={(e) => {
+                  const target = e.target.value || null;
+                  startTransition(async () => {
+                    const res = await moveMediaAction({ ids: [selected.id], folderId: target });
+                    if (res.ok) setAssets((prev) => prev.map((a) => (a.id === selected.id ? { ...a, folderId: target } : a)));
+                    else setBanner(res.error);
+                  });
+                }}
+                className="h-8 w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2 text-[11px]"
+              >
+                <option value="">Klasörsüz (kök)</option>
+                {folders.map((f) => <option key={f.id} value={f.id}>{"— ".repeat(folderPath(folders, f.id).length - 1)}{f.name}</option>)}
+              </select>
+            </div>
+
             <MediaDelete
               key={selected.id}
               media={selected}
               onDeleted={(id) => {
                 const rest = assets.filter((a) => a.id !== id);
+                setChecked((c) => { const n = new Set(c); n.delete(id); return n; });
                 setAssets(rest);
                 if (rest[0]) handleSelect(rest[0]);
                 setBanner("Görsel silindi.");
@@ -348,6 +413,8 @@ export function MediaStudioClient({
             />
           </div>
         )}
+      </div>
+      </div>
       </div>
     </div>
   );

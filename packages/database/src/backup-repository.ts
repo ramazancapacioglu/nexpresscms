@@ -16,6 +16,7 @@ export const BACKUP_TABLES = [
   "commentsReviews",
   "taxonomies",
   "navigationLayouts",
+  "mediaFolders",
   "mediaAssets",
   "redirects",
   "installedThemes",
