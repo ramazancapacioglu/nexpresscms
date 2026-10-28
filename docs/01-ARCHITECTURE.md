@@ -60,7 +60,7 @@ nexpresscms/
 │   ├── editor/                      # Blok kütüphanesi ve AI sayfa şeması (metin motoru admin'de TipTap)
 │   ├── seo-core/                    # Ücretsiz teknik SEO, GEO/Hreflang, Sitemap, temel llms.txt
 │   ├── rag/                         # Arama dizini: gömme sağlayıcıları, dizinleme, vektör arama, benzerlik raporu
-│   └── wp-importer/                 # WordPress sitelerini NexPress blok AST'sine taşıyan göç aracı
+│   └── wp-importer/                 # WordPress dışa aktarmasını (WXR) NexPress içeriğine çeviren saf mantık: okuyucu, HTML→blok, plan, SSRF IP denetimi
 ├── plugins-pro/                     # Pro eklentiler. Çekirdeğe yalnızca apps/cms/src/plugins/register.ts bağlar
 │   ├── agentic-seo-pro/
 │   └── content-ops-pro/

@@ -169,6 +169,8 @@ export interface SaveContentInput {
   canonicalUrl?: string;
   noIndex?: boolean;
   seoScore?: number;
+  /** Yalnızca YENİ içerikte kullanılır (içe aktarma: özgün yayın tarihi); varsayılan şimdi */
+  publishedAt?: Date;
   /** Çeviri başka dilden üretildiyse kaynak dil ve o andaki kaynak özeti (`translationSourceHash`) */
   sourceLocale?: string;
   sourceHash?: string;

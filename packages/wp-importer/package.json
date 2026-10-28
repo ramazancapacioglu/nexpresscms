@@ -7,11 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
   },
   "dependencies": {
     "@nexpress/core": "workspace:*",
-    "@nexpress/database": "workspace:*"
+    "@nexpress/database": "workspace:*",
+    "domhandler": "^6.0.1",
+    "fast-xml-parser": "^5.11.2",
+    "htmlparser2": "^12.0.0",
+    "@nexpress/seo-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",

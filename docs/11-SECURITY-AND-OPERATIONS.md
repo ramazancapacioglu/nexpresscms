@@ -85,6 +85,8 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 
 - **Taslak önizleme bağlantısı:** `?nx_draft=` belirteci yalnızca belirtilen `siteId` + `contentId` için geçerlidir ve sayfanın slug'ı o içeriğe ait olmalıdır; süre ≤ 30 gün. Ara katman bu parametreyi görünce yanıtı `private, no-store` + `X-Robots-Tag: noindex` yapar, sayfa `robots: noindex` verir ve üstte "Taslak önizleme" bandı gösterir. Belirteç imzası `safeEqual` benzeri sabit zamanlı karşılaştırılır; denetim günlüğüne `content.preview-link` yazılır.
 
+- **WordPress içe aktarma (`/api/admin/wp-import`, yalnızca admin):** dosya ≤ 64 MB, ≤ 20.000 öğe; XML'de `ENTITY` tanımı reddedilir, iyi biçimlilik doğrulanır. İçerik HTML'i `htmlparser2` ile ayrıştırılıp yalnızca bilinen bloklara çevrilir (betik, stil, form, yabancı iframe atılır; satır içi HTML `sanitizeInlineHtml`'den geçer). Görsel indirme (isteğe bağlı) `lib/safe-fetch.ts` ile yapılır: yalnızca http/https ve 80/443, kimlik bilgili adres yok, bağlantı anında çözülen her IP `isPublicIp` ile doğrulanır (özel/yerel/bulut meta verisi/CGNAT/ULA/IPv4-gömülü IPv6 reddedilir), en çok 3 yönlendirme (her adım yeniden doğrulanır), 10 sn zaman aşımı, akışta 12 MB sınırı, içerik `sharp` ile doğrulanır. Denetim günlüğüne `wp-import.run` yazılır.
+
 ## 9. Derleme izolasyonu
 
 Doğrulama derlemeleri `NEXT_DIST_DIR=.next-verify` ile ayrı klasöre alınır (`next.config.ts` `distDir`; `check-budget` aynı değişkeni okur). Aynı klasörde çalışan bir `next dev` ile `next start` birbirinin `.next` çıktısını ezebilir: bu oturumda üretim sunucusu `ChunkLoadError` verdi çünkü `.next` sonradan geliştirme düzeniyle yeniden yazılmıştı (kod hatası değildi). Yerel doğrulama ve CI için ayrı `distDir` kullanın.

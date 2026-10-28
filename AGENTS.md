@@ -79,4 +79,5 @@ Geliştirme yaparken her zaman aşağıdaki dokümanları referans alın:
 - Eklenti sistemi, tema paketleri ve panel eksikleri planı: `./docs/13-PLUGINS-AND-THEME-PACKAGES.md`
 - Çok dilli altyapı planı: `./docs/14-MULTILINGUAL-PLAN.md`
 - Form modülü: `./docs/16-FORMS.md`
+- WordPress içe aktarma: `./docs/17-WORDPRESS-IMPORT.md`
 - Agentic SEO Pro taşıma planı ve modül durumu: `./docs/15-AGENTIC-PRO-MIGRATION.md`

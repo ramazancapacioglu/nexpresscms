@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-28] — Gerçek WordPress (WXR) içe aktarma
+- ✅ `packages/wp-importer` yeniden yazıldı: `parseWxr` (fast-xml-parser, ENTITY reddi), `convertWpHtml` (htmlparser2, Gutenberg/klasik/sayfa oluşturucu), `buildPlan` (eşleme, SEO, slug, yönlendirme yolu), `isPublicIp` (SSRF). Önceki **örnek veri simülasyonu ve `runWpMigrationAction` kaldırıldı**.
+- ✅ `lib/wp-import.ts` + `lib/safe-fetch.ts` + `/api/admin/wp-import` + yeni `/admin/migration` arayüzü (çözümle → seçenekler → içe aktar). `SaveContentInput.publishedAt` eklendi (yalnızca yeni içerik).
+- ✅ Gerçek derlemede doğrulandı: çözümleme, yazma, gerçek bir genel görselin indirilmesi, loopback ve bulut meta verisi adreslerinin engellenmesi, eski adresin 301/308 ile yeni adrese gitmesi, kategori üst-alt ilişkisi, özgün tarih, taslağın ziyaretçiye 404, tekrar yüklemede idempotent atlama. 11 birim testi (HTML, WXR, plan, IP).
+- ⚠️ Gerçek bir WordPress/WooCommerce dışa aktarma dosyasıyla denenmedi (yalnızca el yapımı örnek); WooCommerce fiyat/stok aktarılmaz.
+
 ### [2026-10-28] — Paylaşılabilir taslak önizleme bağlantısı
 - ✅ `@nexpress/core/draft-preview` (HMAC belirteç, test edilir), `?nx_draft=` ile `/{dil}/{slug}` sayfasında yayında olmayan içeriği oturumsuz gösterme, `private, no-store` + noindex, sayfada bant, editörde `PreviewLinkButton` + `createDraftPreviewLinkAction` (denetim günlüğü). Gerçek derlemede doğrulandı: belirtecsiz/bozuk/başka içeriğe ait belirteç 404, geçerli belirteç 200.
 

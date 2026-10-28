@@ -8,12 +8,6 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
-import {
-  DEMO_WORDPRESS_EXPORT_PAYLOAD,
-  convertWpPostsToNexPress,
-  type WpMigrationReport,
-  type WpRawPostInput,
-} from "@nexpress/wp-importer";
 import { resolvePublishing, resolveSiteSettings, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
@@ -375,60 +369,6 @@ export async function saveCommentReviewAction(input: {
   await revalidatePath("/admin/comments");
   await revalidatePath("/tr");
   return { ok: true, item: saved };
-}
-
-export async function runWpMigrationAction(input?: {
-  customPosts?: WpRawPostInput[];
-}): Promise<WpMigrationReport> {
-  await requireAdmin("cms.runWpMigration");
-  const reqHeaders = await headers();
-  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
-  const repo = getScopedRepository(siteId);
-  const payload =
-    input?.customPosts && input.customPosts.length > 0
-      ? input.customPosts
-      : DEMO_WORDPRESS_EXPORT_PAYLOAD;
-
-  const converted = convertWpPostsToNexPress(payload, "tr");
-  let totalShortcodesStripped = 0;
-
-  for (const item of converted) {
-    totalShortcodesStripped += item.strippedShortcodesCount;
-    await repo.saveContent({
-      contentId: `cnt_wp_${item.wpId}`,
-      type: item.targetType,
-      status: "published",
-      importanceScore: item.importanceScore,
-      schemaType: item.schemaType,
-      schemaAttributes: {
-        migratedFrom: "wordpress",
-        originalPermalink: item.redirect301.fromPath,
-        redirect301To: item.redirect301.toPath,
-      },
-      locale: "tr",
-      region: "TR",
-      slug: item.slug,
-      title: item.title,
-      tldr: item.tldr,
-      blocks: item.blocks,
-      seoScore: 95,
-    });
-  }
-
-  await revalidatePath("/admin");
-  await revalidatePath("/admin/contents");
-  await revalidatePath("/admin/migration");
-  await revalidatePath("/tr");
-  await revalidatePath("/llms.txt");
-  await revalidatePath("/llms-full.txt");
-  await revalidatePath("/ai-sitemap.json");
-
-  return {
-    siteId,
-    totalProcessed: converted.length,
-    totalShortcodesStripped,
-    items: converted,
-  };
 }
 
 export async function saveChromeAction(input: {

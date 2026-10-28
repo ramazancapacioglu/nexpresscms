@@ -227,8 +227,8 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         schemaType: input.schemaType ?? "WebPage",
         schemaAttributes,
         featuredImage: input.featuredImage ?? null,
-        publishedAt: now,
-        createdAt: now,
+        publishedAt: input.publishedAt ?? now,
+        createdAt: input.publishedAt ?? now,
         updatedAt: now,
       })
       .onConflictDoUpdate({
