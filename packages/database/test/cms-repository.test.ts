@@ -785,3 +785,30 @@ test("yönetim araması: içerik/form/taksonomi/medya bulunur, çöp ve başka k
   assert.equal(JSON.stringify(admin).includes("passwordHash") || JSON.stringify(admin).includes('"x"'), false);
   assert.deepEqual(await s.search("a", "admin"), []);
 });
+
+test("tasarım kütüphanesi: ekleme, liste/tür süzgeci, yeniden adlandırma, silme, boyut ve ad sınırı, kiracıya kapalı, yedeğe girer", async () => {
+  const { getDesignLibraryRepository } = await import("../src/design-library-repository");
+  const { getBackupRepository } = await import("../src/backup-repository");
+  const a = getDesignLibraryRepository("default");
+  const b = getDesignLibraryRepository("baska-site");
+  const r1 = await a.create({ kind: "section", name: "  Vitrin   bölümü ", payload: { blocks: [{ type: "hero" }] }, source: "ai", prompt: "kurumsal vitrin", report: { score: 90 }, placeholderData: true, createdBy: "a@b.co" });
+  assert.ok(r1.ok);
+  const item = r1.ok ? r1.item : null!;
+  assert.equal(item.name, "Vitrin bölümü");
+  assert.deepEqual([item.source, item.placeholderData, item.report.score], ["ai", true, 90]);
+  await a.create({ kind: "page", name: "Hakkımızda", payload: { page: {} }, source: "manual" });
+  assert.equal((await a.list()).length, 2);
+  assert.deepEqual((await a.list("page")).map((x) => x.name), ["Hakkımızda"]);
+  assert.equal((await b.list()).length, 0, "başka kiracı görmez");
+  assert.equal(await b.remove(item.id), false);
+  assert.equal(await b.rename(item.id, { name: "Ele geçirildi" }), false);
+  assert.equal((await a.create({ kind: "x" as never, name: "n", payload: {}, source: "ai" })).ok, false);
+  assert.equal((await a.create({ kind: "page", name: "   ", payload: {}, source: "ai" })).ok, false);
+  assert.equal((await a.create({ kind: "page", name: "Dev", payload: { s: "x".repeat(500_000) }, source: "ai" })).ok, false, "boyut sınırı");
+  assert.equal(await a.rename(item.id, { name: "Yeni ad" }), true);
+  assert.equal((await a.get(item.id))!.name, "Yeni ad");
+  const data = await getBackupRepository("default").exportData({ personal: false });
+  assert.ok(data.tables.designLibrary!.some((r) => r.id === item.id), "tasarımlar yedeğe girer");
+  assert.equal(await a.remove(item.id), true);
+  assert.equal(await a.get(item.id), null);
+});

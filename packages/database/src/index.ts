@@ -14,6 +14,7 @@ export * from "./form-definition-repository";
 export * from "./media-folder-repository";
 export * from "./notification-repository";
 export * from "./admin-search-repository";
+export * from "./design-library-repository";
 export * from "./backup-repository";
 export * from "./repository";
 export * from "./site-identity-repository";

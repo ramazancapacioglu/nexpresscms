@@ -41,6 +41,9 @@ importers:
       '@nexpress-pro/agentic-seo':
         specifier: workspace:^
         version: link:../../plugins-pro/agentic-seo-pro
+      '@nexpress-pro/ai-design':
+        specifier: workspace:*
+        version: link:../../plugins-pro/ai-design
       '@nexpress/commerce':
         specifier: workspace:*
         version: link:../../packages/commerce
@@ -362,6 +365,25 @@ importers:
       '@types/react':
         specifier: ^19.0.8
         version: 19.3.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  plugins-pro/ai-design:
+    dependencies:
+      '@nexpress/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@nexpress/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@nexpress/themes':
+        specifier: workspace:*
+        version: link:../../packages/themes
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.20.5
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

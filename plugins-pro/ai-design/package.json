@@ -1,0 +1,22 @@
+{
+  "name": "@nexpress-pro/ai-design",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@nexpress/core": "workspace:*",
+    "@nexpress/database": "workspace:*",
+    "@nexpress/themes": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3"
+  }
+}

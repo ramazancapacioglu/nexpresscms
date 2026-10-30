@@ -22,6 +22,7 @@ export const BACKUP_TABLES = [
   "installedThemes",
   "sitePlugins",
   "forms",
+  "designLibrary",
   "formSubmissions",
 ] as const;
 export type BackupTable = (typeof BACKUP_TABLES)[number];

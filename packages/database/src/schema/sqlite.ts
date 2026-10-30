@@ -940,3 +940,30 @@ export const sqliteNotificationReads = sqliteTable(
   },
   (t) => [index("notification_reads_site_id_idx").on(t.siteId), index("notification_reads_user_idx").on(t.siteId, t.userId)]
 );
+
+/**
+ * TASARIM KÜTÜPHANESİ — kullanıcının kaydettiği bölüm, sayfa ve tema tasarımları (elle veya AI ile üretilmiş).
+ * AI çıktısı buraya yalnızca doğrulanıp kullanıcı onayıyla yazılır; `payload` uygulama anında yeniden doğrulanır.
+ */
+export const sqliteDesignLibrary = sqliteTable(
+  "design_library",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    /** section | page | theme */
+    kind: text("kind").notNull(),
+    name: text("name").notNull(),
+    description: text("description").default("").notNull(),
+    category: text("category").default("text").notNull(),
+    payload: text("payload", { mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    /** ai | manual */
+    source: text("source").default("manual").notNull(),
+    prompt: text("prompt").default("").notNull(),
+    report: text("report", { mode: "json" }).$type<Record<string, unknown>>().default({}).notNull(),
+    placeholderData: integer("placeholder_data", { mode: "boolean" }).default(false).notNull(),
+    createdBy: text("created_by").default("").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("design_library_site_id_idx").on(t.siteId), index("design_library_kind_idx").on(t.siteId, t.kind, t.updatedAt)]
+);

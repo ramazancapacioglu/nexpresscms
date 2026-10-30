@@ -11,7 +11,7 @@ export interface ChatConfig {
 export interface ChatClient {
   model: string;
   /** Modelin döndürdüğü JSON metni (nesne) ya da hata fırlatır. */
-  completeJson(input: { system: string; user: string; temperature?: number }): Promise<string>;
+  completeJson(input: { system: string; user: string; temperature?: number; maxTokens?: number }): Promise<string>;
 }
 
 export class ChatError extends Error {
@@ -29,7 +29,7 @@ export function createChatClient(config: ChatConfig): ChatClient {
   const retries = config.maxRetries ?? 2;
   return {
     model,
-    async completeJson({ system, user, temperature = 0.4 }) {
+    async completeJson({ system, user, temperature = 0.4, maxTokens }) {
       let lastError: ChatError | null = null;
       for (let attempt = 0; attempt <= retries; attempt++) {
         const ctl = new AbortController();
@@ -41,6 +41,7 @@ export function createChatClient(config: ChatConfig): ChatClient {
             body: JSON.stringify({
               model,
               temperature,
+              ...(maxTokens ? { max_tokens: maxTokens } : {}),
               response_format: { type: "json_object" },
               messages: [
                 { role: "system", content: system },

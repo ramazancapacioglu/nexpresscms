@@ -1,8 +1,6 @@
-import { getPluginSettings, isPluginModuleEnabled, pluginActions, resolvePublishing } from "@nexpress/core";
+import { createChatClient, createRateLimiter, getPluginSettings, isPluginModuleEnabled, pluginActions, resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { PLUGIN_ID } from "../module-gate";
-import { createChatClient } from "./openai-chat";
-import { createRateLimiter } from "./rate-limit";
 import { buildDnaSystemPrompt, buildDnaUserPrompt, dnaSamples, parseDna, pickStyleExamples, type BrandSample } from "./brand";
 import { parseList, suggestSeoCopy, type BrandRules } from "./suggest";
 

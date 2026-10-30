@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { ChatError, createChatClient, type ChatClient } from "../src/ai/openai-chat";
+import { ChatError, createChatClient, type ChatClient } from "@nexpress/core";
 import { LIMITS, buildSystemPrompt, parseList, parseSuggestions, suggestSeoCopy } from "../src/ai/suggest";
 
 const good = JSON.stringify({ tldr: "NexPress, 0 KB istemci JS ile hızlı sayfa sunar.", metaTitle: "NexPress hızlı CMS", metaDescription: "Açıklama", faq: [{ question: "Nedir?", answer: "Bir CMS." }, { question: "", answer: "x" }] });
@@ -71,7 +71,7 @@ test("OpenAI istemcisi: istek biçimi, 429'da yeniden deneme, 401'de anlamlı ha
   }
 });
 
-import { createRateLimiter } from "../src/ai/rate-limit";
+import { createRateLimiter } from "@nexpress/core";
 
 test("hız sınırı: pencere içinde sınırı aşan reddedilir, süre geçince açılır, anahtarlar bağımsız", () => {
   let t = 0;

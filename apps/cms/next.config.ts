@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
     "@nexpress/rag",
     "@nexpress/wp-importer",
     "@nexpress-pro/agentic-seo",
+    "@nexpress-pro/ai-design",
   ],
   // Yerel/yerel-ikili sürücüler paketlenmez (webpack README/LICENSE ve .node dosyalarını ayrıştıramaz)
   serverExternalPackages: ["@libsql/client", "libsql", "postgres", "sharp"],

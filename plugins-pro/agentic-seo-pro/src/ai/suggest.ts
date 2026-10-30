@@ -1,6 +1,6 @@
 import { DEFAULT_FORBIDDEN_PHRASES } from "../content-ops/guardrails";
 import { brandContextBlock, type BrandProfile } from "./brand";
-import type { ChatClient } from "./openai-chat";
+import type { ChatClient } from "@nexpress/core";
 
 export interface BrandRules extends BrandProfile {
   tone?: string;

@@ -21,6 +21,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@libsql/client": "^0.14.0",
     "@nexpress-pro/agentic-seo": "workspace:^",
+    "@nexpress-pro/ai-design": "workspace:*",
     "@nexpress/commerce": "workspace:*",
     "@nexpress/core": "workspace:*",
     "@nexpress/database": "workspace:*",

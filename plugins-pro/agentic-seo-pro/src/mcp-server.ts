@@ -3,7 +3,7 @@ import { safeEqual } from "@nexpress/core/password";
 import { providerFromEnv, searchCorpus } from "@nexpress/rag";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
 import { KIND_LABEL, validateAgentRequest, type AgentKind } from "./agent/requests";
-import { createRateLimiter } from "./ai/rate-limit";
+import { createRateLimiter } from "@nexpress/core";
 import { PLUGIN_ID } from "./module-gate";
 import { buildAskResult } from "./geo/ask";
 

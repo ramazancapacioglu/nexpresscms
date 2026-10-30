@@ -2,6 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { registerRagIndexing } from "@nexpress/rag";
 import { registerAgenticSeoProPlugin } from "@nexpress-pro/agentic-seo";
+import { registerAiDesignProPlugin } from "@nexpress-pro/ai-design";
 import { registerIndexNow } from "@/lib/indexnow";
 import { pluginRegistry } from "@nexpress/core";
 import { installPluginGate } from "@/lib/plugin-state";
@@ -19,6 +20,7 @@ export function registerWorkspacePlugins(): void {
   // Yayında içeriği dizinler; gömme çağrısı yanıttan sonra çalışır (kayıt akışını bekletmez)
   registerRagIndexing({ runAfterResponse: (task) => after(task) });
   registerAgenticSeoProPlugin();
+  registerAiDesignProPlugin();
 }
 
 registerWorkspacePlugins();
