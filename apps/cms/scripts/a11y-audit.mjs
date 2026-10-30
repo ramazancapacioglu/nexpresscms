@@ -75,7 +75,13 @@ for (const mode of ["mobil", "masaüstü"]) {
   for (const p of ADMIN_PATHS) await scan(page, `${mode}/yönetim`, p);
   // Form kurucusu: boş form oluşturup kurucuyu tara
   await page.goto(`${BASE}/admin/forms/new`, { waitUntil: "networkidle" });
-  await Promise.all([page.waitForURL(/\/admin\/forms\/frm_/, { timeout: 30000 }), page.getByRole("button", { name: /Boş form/ }).click()]);
+  // Tıklama, istemci bileşeni hazır olmadan boşa gidebilir (yavaş CI): URL değişene kadar en çok 3 kez dene
+  for (let attempt = 1; attempt <= 3 && !/\/admin\/forms\/frm_/.test(page.url()); attempt++) {
+    await page.waitForTimeout(500 * attempt);
+    await page.getByRole("button", { name: /Boş form/ }).click();
+    await page.waitForURL(/\/admin\/forms\/frm_/, { timeout: 15000 }).catch(() => undefined);
+  }
+  if (!/\/admin\/forms\/frm_/.test(page.url())) throw new Error("Boş form oluşturulamadı (kurucu sayfasına gidilemedi)");
   const builder = new URL(page.url()).pathname;
   await scan(page, `${mode}/yönetim`, builder);
   await scan(page, `${mode}/yönetim`, `${builder}/analytics`);
