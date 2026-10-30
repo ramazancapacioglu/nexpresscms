@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-30] — Dokunma hedefleri (WCAG 2.2 AA)
+- ✅ axe `target-size` kuralı CI taramasına açıldı (varsayılan kapalıdır). Ölçüm: 17 sayfa mobilde yalnızca 6 ihlal (medya kartı onay kutusu 20 px, stüdyo cihaz düğmeleri); düzeltildi (24 px, `aria-pressed`/ad eklendi). 72 tarama 0 hata. Ham sayım (24 px altı eleman) ~25–39 görünse de çoğu aralık istisnası kapsamındadır.
+- ⚠️ AAA 44 px hedeflenmedi; gerçek dokunmatik cihazda elle kullanılabilirlik testi yapılmadı.
+
 ### [2026-10-30] — Stüdyo/tema özelleştirici dar ekran incelemesi
 - ✅ Playwright 390 px: tema özelleştirici ve tema paketleri sorunsuz; **stüdyo kullanılamıyordu** (sol 255 px + denetçi + kanvas yan yana). Düzeltme: <1024 px'te paneller varsayılan kapalı çekmece (yapı sol, denetçi sağ, arka plan tıklamasıyla kapanır), üst çubuk yatay kaydırma, kanvas tam genişlik. Ayrıca `setRightSidebarOpen` denetçi API'sine eklendi.
 - ✅ a11y CI listesine `/admin/contents?type=page&new=1` ve `/admin/themes/packages` eklendi; yeni sayfalar 5 gerçek ihlal buldu (isimsiz TipTap alanı/slug/simge düğmeleri, renge dayalı bağlantı) ve düzeltildi: 72 tarama 0 hata.

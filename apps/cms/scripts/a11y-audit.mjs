@@ -42,7 +42,7 @@ async function scan(page, label, path) {
   await page.waitForTimeout(400);
   await page.evaluate(axeSource);
   const out = await page.evaluate(async () => {
-    const r = await axe.run({ exclude: [["[data-axe-skip]"]] }, { resultTypes: ["violations"] });
+    const r = await axe.run({ exclude: [["[data-axe-skip]"]] }, { resultTypes: ["violations"], rules: { "target-size": { enabled: true } } });
     return {
       violations: r.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, sample: v.nodes[0].html.replace(/\s+/g, " ").slice(0, 140), help: v.help })),
       overflow: document.documentElement.scrollWidth - window.innerWidth,

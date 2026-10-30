@@ -35,7 +35,7 @@ export function MediaGrid({ items, selectedId, checked, folders, onOpen, onToggl
               aria-checked={isChecked}
               aria-label={`${item.filename} seç`}
               onClick={(e) => onToggle(item.id, e.shiftKey)}
-              className={`absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded border ${isChecked ? "border-[#266DF0] bg-[#266DF0] text-white" : "border-white/80 bg-black/40 text-transparent hover:text-white"}`}
+              className={`absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded border ${isChecked ? "border-[#266DF0] bg-[#266DF0] text-white" : "border-white/80 bg-black/40 text-transparent hover:text-white"}`}
             >
               <Check className="h-3.5 w-3.5" />
             </button>

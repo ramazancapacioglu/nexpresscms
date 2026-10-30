@@ -51,11 +51,13 @@ export function StudioViewBar() {
               key={device.id}
               type="button"
               title={device.title}
+              aria-label={device.title}
+              aria-pressed={viewport === device.id}
               onClick={() => {
                 setViewport(device.id);
                 setStyleDevice(device.id);
               }}
-              className={`rounded p-1 ${
+              className={`inline-flex h-6 w-6 items-center justify-center rounded ${
                 viewport === device.id ? "bg-blue-600 text-white" : "text-muted-foreground"
               }`}
             >
