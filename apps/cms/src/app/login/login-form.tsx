@@ -18,6 +18,7 @@ export function LoginForm({ next }: { next: string }) {
         Parola
         <input name="password" type="password" autoComplete="current-password" required className={field} />
       </label>
+      <a href="/forgot-password" className="block text-xs underline">Parolamı unuttum</a>
       {state.error ? (
         <p role="alert" className="text-xs text-red-600">
           {state.error}

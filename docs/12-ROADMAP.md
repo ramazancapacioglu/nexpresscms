@@ -7,7 +7,7 @@
 | Faz | İş | Durum |
 | :--- | :--- | :--- |
 | **F8** | Performans bütçesi testi + GitHub Actions (typecheck, test, build) | ✅ Tamam (CI GitHub'da henüz çalıştırılmadı) |
-| **F9** | Kullanıcı yönetimi, profil/parola, oturum iptali, denetim günlüğü, **Ayarlar** sayfası | ✅ Tamam (2FA ve davet e-postası ayrı iş) |
+| **F9** | Kullanıcı yönetimi, profil/parola, oturum iptali, denetim günlüğü, **Ayarlar** sayfası | ✅ Tamam (davet/parola sıfırlama e-postası eklendi; 2FA ayrı iş) |
 | **F10** | Drizzle migration + şema paritesi testi + dialect dallarının sadeleştirilmesi + büyük dosyaların bölünmesi | ✅ Tamam (kalan: dondurulmuş `push.ts`) |
 | **F11** | RAG: gerçek anahtarla kalite ölçümü, hibrit arama, site içi arama; bot politikası arayüzü (`robots.txt`); RSS, JSON-LD doğrulayıcı, kırık bağlantı denetimi | ✅ Tamam (kalan: gerçek OpenAI anahtarıyla kalite ölçümü, dış bağlantı denetimi, "bu siteye sor" yanıtı, dile göre llms/ai-sitemap) |
 | **F12** | **Çok dilli altyapı** (L1–L5, `docs/14`) | ✅ Tamam (kalan, gerekçeli: ticaret çevirisi, insan için dil önerisi, AI çeviri taslağı, panel sayfa içi metinleri, dil başına site ayarları; `docs/14` §0) |
@@ -29,7 +29,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 > Panel arayüzü eksikleri, eklenti ve tema yükleme/etkinleştirme planı: `docs/13`. Çok dilli altyapı: `docs/14`.
 
-- ~~Kullanıcı yönetimi, profil/parola, rol, denetim günlüğü, oturum iptali~~ yapıldı (F9, `docs/11` §1, §8). Kalanlar: (a) e-posta ile davet / parola sıfırlama bağlantısı (e-posta gönderim altyapısı yok; bugün yönetici parola belirler); (b) 2FA (TOTP) ve kurtarma kodları; (c) giriş denemesi sınırının Redis'e taşınması; (d) denetim günlüğünde eylem **sonucu** (başarı/hata) ve içerik başlığı gibi hedef ayrıntısı — bugün çoğu `cms.*` kaydı yalnızca yetkilendirilmiş çağrıdır; (e) denetim günlüğü saklama süresi / dışa aktarma; (f) kullanıcı silme ve hesap devri; (g) `author`/`shop-manager` rolleri ve izin matrisi.
+- ~~Kullanıcı yönetimi, profil/parola, rol, denetim günlüğü, oturum iptali~~ yapıldı (F9, `docs/11` §1, §8). ~~e-posta ile davet / parola sıfırlama~~ yapıldı (`docs/11` §1). Kalanlar: (b) 2FA (TOTP) ve kurtarma kodları; (c) giriş denemesi sınırının Redis'e taşınması; (d) denetim günlüğünde eylem **sonucu** (başarı/hata) ve içerik başlığı gibi hedef ayrıntısı — bugün çoğu `cms.*` kaydı yalnızca yetkilendirilmiş çağrıdır; (e) denetim günlüğü saklama süresi / dışa aktarma; (f) kullanıcı silme ve hesap devri; (g) `author`/`shop-manager` rolleri ve izin matrisi.
 - Yorum / inceleme gönderimi için spam koruması ve hız sınırı (genel uçlar).
 - Giriş akışı için otomatik uçtan uca test (şimdilik elle, gerçek form gönderimiyle doğrulandı; bkz. doc 11).
 - Admin sayfalarının tarayıcıda (görsel) regresyon testi: bölünen denetçi sekmeleri yalnızca tip kontrolü ve SSR 200 ile doğrulandı.

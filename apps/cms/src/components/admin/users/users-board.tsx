@@ -10,8 +10,9 @@ import {
   setUserStatusAction,
   type UserActionResult,
 } from "@/app/admin/users/actions";
+import { inviteUserAction, sendResetLinkAction, type InviteResult } from "@/app/admin/users/invite-actions";
 import { PASSWORD_MIN_LENGTH, type UserRole } from "@nexpress/core";
-import { UserPlus } from "lucide-react";
+import { Mail, UserPlus } from "lucide-react";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const field = `h-8 rounded border ${border} bg-transparent px-2 text-[12px] outline-none focus:ring-1 focus:ring-[#266DF0]`;
@@ -25,6 +26,15 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
   const [resetFor, setResetFor] = useState<string | null>(null);
   const [resetPw, setResetPw] = useState("");
   const [form, setForm] = useState({ email: "", name: "", role: "editor" as UserRole, password: "" });
+  const [byMail, setByMail] = useState(true);
+  const [manualLink, setManualLink] = useState<string | null>(null);
+
+  /** Davet/sıfırlama sonucu: gönderildiyse bilgi; SMTP yoksa bağlantı yöneticiye gösterilir. */
+  const report = (res: InviteResult, sent: string) => {
+    if (!res.ok) return setMessage({ kind: "error", text: res.error });
+    setManualLink(res.link ?? null);
+    setMessage({ kind: res.mailed ? "ok" : "error", text: res.mailed ? sent : (res.note ?? "E-posta gönderilemedi.") });
+  };
 
   const run = (fn: () => Promise<UserActionResult>, ok: string, apply?: () => void) =>
     start(async () => {
@@ -52,6 +62,13 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
         <p role={message.kind === "error" ? "alert" : "status"} className={`rounded-md border px-3 py-2 text-[12px] ${message.kind === "error" ? "border-red-500/30 bg-red-500/10 text-red-700" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-800"}`}>
           {message.text}
         </p>
+      )}
+
+      {manualLink && (
+        <div className={`rounded-md border ${border} px-3 py-2 text-[12px] space-y-1`}>
+          <div className="font-medium">Bağlantı (yalnızca burada gösterilir; güvenli kanaldan iletin)</div>
+          <input readOnly aria-label="Bağlantı" value={manualLink} onFocus={(e) => e.currentTarget.select()} className={`${field} w-full font-mono`} />
+        </div>
       )}
 
       <div className={`overflow-x-auto rounded-lg border ${border} bg-white dark:bg-[#15171C]`} tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
@@ -111,6 +128,12 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                             Parola sıfırla
                           </button>
                         )}
+                        {!self && u.status === "active" && (
+                          <button type="button" disabled={pending} className={`h-7 rounded border ${border} px-2`}
+                            onClick={() => start(async () => report(await sendResetLinkAction({ id: u.id }), `Sıfırlama bağlantısı ${u.email} adresine gönderildi.`))}>
+                            Bağlantı gönder
+                          </button>
+                        )}
                         <button type="button" disabled={pending} className={`h-7 rounded border ${border} px-2`}
                           onClick={() => run(() => revokeUserSessionsAction({ id: u.id }), "Oturumlar kapatıldı.")}>
                           Oturumları kapat
@@ -144,6 +167,15 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
         onSubmit={(e) => {
           e.preventDefault();
           start(async () => {
+            if (byMail) {
+              const res = await inviteUserAction({ email: form.email, name: form.name, role: form.role });
+              if (res.ok && res.user) {
+                setUsers((list) => [...list, { ...res.user!, createdAt: new Date(res.user!.createdAt), lastLoginAt: null }]);
+                setForm({ email: "", name: "", role: "editor", password: "" });
+              }
+              report(res, "Davet e-postası gönderildi.");
+              return;
+            }
             const res = await createUserAction(form);
             if (res.ok && res.user) {
               setUsers((list) => [...list, { ...res.user!, createdAt: new Date(res.user!.createdAt), lastLoginAt: null }]);
@@ -154,14 +186,18 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
         }}
       >
         <div className="flex items-center gap-1.5 text-[12px] font-semibold"><UserPlus className="h-3.5 w-3.5" /> Yeni kullanıcı</div>
+        <label className="flex items-center gap-2 text-[12px]">
+          <input type="checkbox" checked={byMail} onChange={(e) => setByMail(e.target.checked)} />
+          <Mail className="h-3.5 w-3.5" /> E-postayla davet et (kişi parolasını kendisi belirler)
+        </label>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           <input required type="email" aria-label="E-posta" placeholder="E-posta" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={field} />
           <input aria-label="Ad" placeholder="Ad Soyad" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
           <select aria-label="Rol" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })} className={field}>
             {(["editor", "admin"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
           </select>
-          <input required type="password" autoComplete="new-password" aria-label="İlk parola" placeholder={`İlk parola (${PASSWORD_MIN_LENGTH}+ karakter)`} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={field} />
-          <button type="submit" disabled={pending} className="h-8 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-60">Oluştur</button>
+          {!byMail && <input required type="password" autoComplete="new-password" aria-label="İlk parola" placeholder={`İlk parola (${PASSWORD_MIN_LENGTH}+ karakter)`} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={field} />}
+          <button type="submit" disabled={pending} className="h-8 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-60">{byMail ? "Davet gönder" : "Oluştur"}</button>
         </div>
       </form>
     </div>

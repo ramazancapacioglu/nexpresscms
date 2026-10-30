@@ -22,6 +22,8 @@ export interface UserSummaryDto {
 
 export interface UserDto extends UserSummaryDto {
   passwordHash: string;
+  /** Son parola değişimi; hesap bağlantısı belirteçleri buna bağlıdır (tek kullanım). */
+  passwordChangedAt: Date | null;
 }
 
 type Row = {
@@ -36,10 +38,11 @@ type Row = {
   uiLocale: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
+  passwordChangedAt: Date | null;
 };
 
 const toDto = (r: Row): UserDto => ({ ...r });
-export const toSummary = ({ passwordHash: _h, ...rest }: UserDto): UserSummaryDto => rest;
+export const toSummary = ({ passwordHash: _h, passwordChangedAt: _p, ...rest }: UserDto): UserSummaryDto => rest;
 
 export class UserRepository {
   constructor(

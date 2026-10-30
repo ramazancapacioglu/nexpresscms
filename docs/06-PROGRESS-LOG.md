@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-30] — E-postayla davet ve parola sıfırlama
+- ✅ `@nexpress/core/account-token` (Node'a özgü alt yol): durumsuz HMAC belirteç `amaç.kullanıcı.parolaZamanı.bitiş.imza`; imzaya site ve amaç girer, sıfırlama 1 saat / davet 7 gün, **tek kullanım** = kullanıcının `passwordChangedAt` değeri (saniye çözünürlüğü) belirteçle eşleşmeli; parola değişince eski bağlantı bayatlar. Ek tablo/göç yok. Testli (süre, kurcalama, başka site/amaç, tek kullanım).
+- ✅ `/forgot-password` (yanıt hesap varlığını sızdırmaz; e-posta `after()` ile yanıttan sonra; e-posta + IP başına saatte 5 istek), `/reset-password?t=…` (`referrer: no-referrer`, parola politikası, başarıda oturum açılır, eski oturumlar kapanır), giriş sayfasında "Parolamı unuttum".
+- ✅ Yönetici: Kullanıcılar sayfasında "E-postayla davet et" (rastgele kullanılamaz parola, kişi kendi parolasını belirler) ve satırda "Bağlantı gönder". SMTP kapalı/başarısızsa bağlantı yalnızca yöneticinin ekranında gösterilir. Denetim: `user.invited`, `user.invite_accepted`, `user.reset_link`, `auth.reset_requested`, `auth.password_reset_done`.
+- ✅ Doğrulama: gerçek tarayıcı + SMTP kabul sunucusuyla uçtan uca (davet → parola → giriş, kullanılmış bağlantı reddi, kayıtlı/kayıtsız e-posta aynı yanıt, kayıtsıza e-posta gitmez, zayıf parola reddi, sıfırlamada eski oturum kapanır, kurcalanmış belirteç reddi).
+
 ### [2026-10-30] — Dokunma hedefleri (WCAG 2.2 AA)
 - ✅ axe `target-size` kuralı CI taramasına açıldı (varsayılan kapalıdır). Ölçüm: 17 sayfa mobilde yalnızca 6 ihlal (medya kartı onay kutusu 20 px, stüdyo cihaz düğmeleri); düzeltildi (24 px, `aria-pressed`/ad eklendi). 72 tarama 0 hata. Ham sayım (24 px altı eleman) ~25–39 görünse de çoğu aralık istisnası kapsamındadır.
 - ⚠️ AAA 44 px hedeflenmedi; gerçek dokunmatik cihazda elle kullanılabilirlik testi yapılmadı.

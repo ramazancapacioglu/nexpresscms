@@ -24,7 +24,7 @@ const ADMIN_PATHS = [
   "/admin/translations", "/admin/users", "/admin/audit", "/admin/appearance/header", "/admin/plugins", "/admin/seo", "/admin/commerce",
   "/admin/design-library", "/admin/seo/audit", "/admin/integrations", "/admin/help", "/admin/contents?type=page&new=1", "/admin/themes/packages",
 ];
-const PUBLIC_PATHS = ["/tr", "/login"];
+const PUBLIC_PATHS = ["/tr", "/login", "/forgot-password", "/reset-password"];
 const BLOCKING = new Set(["critical", "serious"]);
 
 const browser = await chromium.launch({ executablePath: process.env.A11Y_CHROME || undefined, args: ["--no-sandbox"] });
