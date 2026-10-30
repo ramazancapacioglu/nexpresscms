@@ -36,3 +36,7 @@ test("panel dili: yalnızca kataloğu olan diller geçerli", () => {
   assert.equal(isUiLocale(null), false);
   assert.equal(createTranslator("en")("admin.nav.translations"), "Translations");
 });
+
+test("geçersiz dil etiketi çeviriciyi bozmaz (ör. /favicon.ico yol parçası)", () => {
+  assert.equal(createTranslator("favicon.ico")("common.notFoundTitle").length > 0, true);
+});

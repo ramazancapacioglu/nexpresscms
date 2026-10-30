@@ -1,4 +1,4 @@
-import { lintThemeTokens, slugifyTr } from "@nexpress/core";
+import { autoFixContrast, lintThemeTokens, slugifyTr } from "@nexpress/core";
 import { THEME_ID_RE, ThemeJsonSchema, TokensSchema, type ThemeJson, type ThemeTokens } from "./schema";
 
 export interface ThemeOutput {
@@ -23,9 +23,12 @@ export function validateThemeOutput(raw: unknown): ThemeOutput {
   if (!THEME_ID_RE.test(id)) id = slugifyTr(id || name).slice(0, 39);
   if (!THEME_ID_RE.test(id)) errors.push("tema kimliği üretilemedi");
   if (!name) errors.push("tema adı boş");
-  const lint = lintThemeTokens(o.tokens);
+  // Kontrast hatalarını modele bırakmadan, tonu koruyarak belirleyici biçimde onar ve raporla
+  const repaired = autoFixContrast(o.tokens);
+  const lint = lintThemeTokens(repaired.tokens);
+  if (repaired.fixes.length > 0) lint.warnings.unshift(`${repaired.fixes.length} renk kontrast için otomatik ayarlandı (${repaired.fixes.slice(0, 4).map((f) => f.key + (f.mode === "koyu" ? " [koyu]" : "")).join(", ")}${repaired.fixes.length > 4 ? "…" : ""})`);
   errors.push(...lint.errors);
-  const parsedTokens = TokensSchema.safeParse(o.tokens);
+  const parsedTokens = TokensSchema.safeParse(repaired.tokens);
   if (!parsedTokens.success) errors.push(...parsedTokens.error.issues.slice(0, 6).map((i) => `tokens.${i.path.join(".")}: ${i.message}`));
   const theme = ThemeJsonSchema.safeParse({
     id,

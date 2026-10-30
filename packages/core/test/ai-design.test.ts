@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AI_BLOCK_CATALOG, buildDesignSystemPrompt, contrastRatio, extractJson, lintDesign, lintDesignOutput, lintThemeTokens, safeHref } from "../src";
+import { AI_BLOCK_CATALOG, autoFixContrast, buildDesignSystemPrompt, contrastRatio, extractJson, lintDesign, lintDesignOutput, lintThemeTokens, safeHref } from "../src";
 
 const hero = (over: Record<string, unknown> = {}) => ({ type: "hero", props: { title: "İzmir'de kurumsal web tasarım", subtitle: "Hızlı, güvenli ve aranabilir siteler.", primaryCtaLabel: "Teklif iste", primaryCtaHref: "/tr/iletisim", ...over } });
 const tldr = { type: "tldr_box", props: { summary: "Firma, KOBİ'ler için hızlı ve aranabilir kurumsal web siteleri tasarlar; teklif ve kurulum süreci iki haftada tamamlanır." } };
@@ -111,4 +111,38 @@ test("bilgi paketi: katalogdan üretilir, bağlamı ve kuralları içerir, kapal
   assert.ok(buildDesignSystemPrompt("page").includes("Medya kitaplığı boş"));
   const theme = buildDesignSystemPrompt("theme");
   assert.ok(theme.includes("primaryForeground") && theme.includes("≥ 4.5") && !theme.includes("BLOK KATALOĞU"));
+});
+
+test("model alanları props yerine bloğun köküne yazarsa toplanır (gerçek model davranışı); props varsa üstündür", () => {
+  const r = lintDesign([{ type: "hero", title: "Kök başlık", subtitle: "Alt", primaryCtaLabel: "Git", primaryCtaHref: "/tr/a" }, { type: "tldr_box", summary: "x".repeat(60), props: { summary: "y".repeat(60) } }], "section");
+  assert.equal(r.errors.length, 0, r.errors.join("|"));
+  assert.equal(r.blocks[0]!.props.title, "Kök başlık");
+  assert.equal(String(r.blocks[1]!.props.summary)[0], "y");
+});
+
+test("kontrast onarımı: tonu koruyarak yeterli orana çeker, koyu kipi darkColors'a yazar, geçersiz renge dokunmaz", () => {
+  const colors = { primary: "#1d4ed8", primaryForeground: "#ffffff", secondary: "#e2e8f0", secondaryForeground: "#0f172a", accent: "#0f766e", accentForeground: "#ffffff", background: "#ffffff", foreground: "#0f172a", muted: "#f1f5f9", mutedForeground: "#bbbbbb", border: "#cbd5e1" };
+  const tokens = { colors, darkColors: { background: "#0b1220", foreground: "#e5e7eb", muted: "#111827", mutedForeground: "#444444", primary: "#0b2a6b" }, typography: { headingFont: "Georgia, serif", bodyFont: "system-ui, sans-serif", monoFont: "ui-monospace, monospace", baseSizePx: 16, scaleRatio: 1.25 }, geometry: { borderRadius: "8px", containerMaxWidth: "1200px", sectionSpacingY: "64px", cardShadow: "sm" } };
+  assert.equal(lintThemeTokens(tokens).ok, false);
+  const { tokens: fixed, fixes } = autoFixContrast(tokens);
+  assert.ok(fixes.length >= 2);
+  assert.equal(lintThemeTokens(fixed).ok, true, lintThemeTokens(fixed).errors.join("|"));
+  const f = fixed as typeof tokens;
+  assert.equal(f.colors.background, "#ffffff", "zemin değişmez");
+  assert.ok(contrastRatio(f.colors.mutedForeground, f.colors.muted) >= 4.5);
+  assert.notEqual(f.darkColors.mutedForeground, "#444444");
+  assert.equal(f.colors.mutedForeground.length, 7);
+  assert.ok(fixes.some((x) => x.mode === "koyu"));
+  assert.deepEqual(tokens.colors.mutedForeground, "#bbbbbb", "girdi değişmez");
+  const bad = autoFixContrast({ colors: { ...colors, primary: "rgb(1,2,3)" } });
+  assert.equal((bad.tokens as { colors: { primary: string } }).colors.primary, "rgb(1,2,3)");
+  assert.deepEqual(autoFixContrast(null).fixes, []);
+});
+
+test("kontrast onarımı: orta tonlu zeminde beyaz metin karşı yöne (koyuya) çekilir", () => {
+  const base = { primary: "#1d4ed8", primaryForeground: "#ffffff", secondary: "#66b3a5", secondaryForeground: "#ffffff", accent: "#2ecc71", accentForeground: "#ffffff", background: "#f5f5f5", foreground: "#333333", muted: "#cccccc", mutedForeground: "#333333", border: "#999999" };
+  const { tokens, fixes } = autoFixContrast({ colors: base });
+  const c = (tokens as { colors: Record<string, string> }).colors;
+  assert.ok(contrastRatio(c.secondaryForeground!, c.secondary!) >= 4.5 && contrastRatio(c.accentForeground!, c.accent!) >= 4.5);
+  assert.ok(fixes.some((f) => f.key === "secondaryForeground"));
 });

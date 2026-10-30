@@ -156,7 +156,11 @@ export function lintDesign(input: unknown, kind: DesignKind, ctx: DesignContext 
     if (!spec) { issues.errors.push(`${path}: bilinmeyen veya AI'a kapalı blok türü`); return; }
     counts[type] = (counts[type] ?? 0) + 1;
     if (spec.maxPerPage && counts[type]! > spec.maxPerPage) { issues.errors.push(`${path}: sayfada en çok ${spec.maxPerPage} adet olabilir`); return; }
-    const props = obj.props && typeof obj.props === "object" ? (obj.props as Record<string, unknown>) : {};
+    // Modeller alanları sık sık bloğun köküne düz yazar (props yerine): düz alanlar props'a toplanır
+    const RESERVED = new Set(["id", "type", "variant", "gridSpan", "style", "props", "children"]);
+    const flat = Object.fromEntries(Object.entries(obj).filter(([k]) => !RESERVED.has(k)));
+    const nested = obj.props && typeof obj.props === "object" ? (obj.props as Record<string, unknown>) : {};
+    const props = { ...flat, ...nested };
     const clean: Record<string, unknown> = {};
     for (const [k, s] of Object.entries(spec.props)) {
       const v = cleanValue(s, props[k], `${path}.${k}`, c);

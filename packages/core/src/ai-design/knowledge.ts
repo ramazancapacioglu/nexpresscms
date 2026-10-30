@@ -87,7 +87,8 @@ Kontrast çiftleri (en az oran): ${CONTRAST_PAIRS.map(([a, b, m]) => `${a}/${b} 
 Güvenli yazı tipleri: ${SAFE_FONT_FAMILIES.join(", ")}. Web yazı tipi dosyası yüklenmez; yedek olarak serif | sans-serif | monospace | system-ui yazın.`;
 
 const SHAPES: Record<DesignMode, string> = {
-  section: `ÇIKTI (yalnızca JSON): { "name": "kısa ad", "description": "tek cümle", "category": "hero|text|cards|bento|social|pricing|forms|data|editorial", "blocks": [ { "type": "...", "variant": "(isteğe bağlı)", "gridSpan": {"desktop":12,"tablet":12,"mobile":12}, "props": { ... }, "style": { ${AI_BLOCK_STYLE_KEYS.join(", ")} (isteğe bağlı; renkler #rrggbb, kontrast ≥4.5:1) } } ] }  — 1 ile 3 blok.`,
+  section: `ÇIKTI (yalnızca JSON). Blok alanları HER ZAMAN "props" nesnesinin içindedir, bloğun köküne yazılmaz. Örnek blok: { "type": "hero", "props": { "title": "…", "subtitle": "…", "primaryCtaLabel": "…", "primaryCtaHref": "/tr/iletisim" } }.
+{ "name": "kısa ad", "description": "tek cümle", "category": "hero|text|cards|bento|social|pricing|forms|data|editorial", "blocks": [ { "type": "...", "variant": "(isteğe bağlı)", "gridSpan": {"desktop":12,"tablet":12,"mobile":12}, "props": { ... }, "style": { ${AI_BLOCK_STYLE_KEYS.join(", ")} (isteğe bağlı; renkler #rrggbb, kontrast ≥4.5:1) } } ] }  — 1 ile 3 blok.`,
   page: `ÇIKTI (yalnızca JSON): { "title": "sayfa başlığı", "slug": "kucuk-harf-tireli", "type": "page", "schemaType": "WebPage|AboutPage|FAQPage|Product", "tldr": "40–260 karakter özet", "metaTitle": "≤60 karakter", "metaDescription": "70–160 karakter", "blocks": [ ...blok düğümleri (bölüm biçimiyle aynı) ] }`,
   theme: `ÇIKTI (yalnızca JSON): { "id": "kucuk-harf-tire", "name": "Tema adı", "tagline": "≤120 karakter", "description": "≤300 karakter", "tokens": { ... } }  (üst/alt bilgi şablonlarına dokunulmaz; yalnızca tasarım jetonları üretilir)`,
 };

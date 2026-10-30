@@ -32,7 +32,13 @@ const PLURAL = /\{(\w+),\s*plural,\s*one\s*\{([^}]*)\}\s*other\s*\{([^}]*)\}\}/g
 
 /** `{ad}` değişkenleri ve `{n, plural, one {…} other {…}}` (Intl.PluralRules; `#` sayıyı yazar). */
 export function format(template: string, vars: Record<string, string | number> = {}, locale = "tr"): string {
-  const rules = new Intl.PluralRules(locale);
+  // Geçersiz dil etiketi (ör. /favicon.ico gibi bir yol parçası) istek hatasına dönüşmesin
+  let rules: Intl.PluralRules;
+  try {
+    rules = new Intl.PluralRules(locale);
+  } catch {
+    rules = new Intl.PluralRules("tr");
+  }
   return template
     .replace(PLURAL, (_m, name: string, one: string, other: string) => {
       const n = Number(vars[name] ?? 0);

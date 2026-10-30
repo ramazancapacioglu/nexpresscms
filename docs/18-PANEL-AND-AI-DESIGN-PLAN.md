@@ -36,4 +36,11 @@ Görsel (resim) üretimi, modelin site verisine yazma erişimi, otomatik yayın,
 
 Tüm sıra maddeleri uygulandı. Doğrulama: çekirdek (112), editör sözleşme testi, eklenti (5), veritabanı (iki motor) testleri; gerçek derlemede **sahte OpenAI sunucusuyla** uçtan uca (sayfa üretimi → hatalı ilk çıktı → otomatik onarım → kayıt → taslak sayfa oluşturma; bölüm; tema → onarım → kurulum; yapıştırılan hatalı JSON'un reddi ve kaydet düğmesinin kilitlenmesi; editör "Benim tasarımlarım"; SEO sekmesi alanları ve ölçerleri); axe taraması 34 sayfa × 2 görünüm.
 
-**Doğrulanmayanlar:** gerçek bir model/anahtarla üretim kalitesi (komut ve doğrulayıcı gerçek model çıktısıyla denenmedi); AI çıktısının görsel kalitesi yalnızca bir örnek sayfa için editörde göz önünde kontrol edildi.
+### Gerçek modelle doğrulama (2026-10-30, gpt-4o-mini)
+
+Gerçek OpenAI anahtarıyla sayfa, bölüm ve tema üretimi uçtan uca denendi (üretim → doğrulama → kayıt → taslak sayfa → tema kurulumu). İlk koşu **iki gerçek hata** buldu, düzeltildi ve testlendi:
+1. Model blok alanlarını `props` yerine bloğun köküne düz yazıyordu → tüm zorunlu alanlar boş sayılıp sayfa 0/100 oluyordu. `lintDesign` artık düz alanları `props`'a toplar (`props` varsa üstündür); komut da "alanlar HER ZAMAN props içindedir" örneğiyle netleştirildi.
+2. Tema renklerinde kontrast hatası (ör. orta tonlu zeminde beyaz metin) tek onarım turunda düzelmiyordu → `autoFixContrast`: kontrast belirleyici biçimde, tonu koruyarak onarılır (önce zeminden uzaklaşan yön, olmazsa karşı yön), koyu kip düzeltmeleri `darkColors`a yazılır ve raporda "N renk kontrast için otomatik ayarlandı" uyarısı çıkar.
+Sonuç (üç tarif): sayfa 100/100 (9 blok, 206 sözcük, ilk denemede, editörde SEO 91/100), bölüm 95, tema 95 — hepsi tek model çağrısıyla. Ayrıca public `[locale]` sayfası geçersiz dil parçasında (`/favicon.ico`) `RangeError` ile 500 veriyordu; `format()` artık geçersiz dil etiketinde `tr` kurallarına düşer.
+
+**Doğrulanmayanlar:** yalnızca gpt-4o-mini denendi (daha büyük modellerle kalite karşılaştırması yok); tek tarifli küçük örneklem; üretilen sayfanın metin kalitesi (içerik doğruluğu) editör tarafından gözden geçirilmelidir.

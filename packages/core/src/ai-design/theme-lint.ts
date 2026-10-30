@@ -99,3 +99,61 @@ export function lintThemeTokens(input: unknown): ThemeLintResult {
   if (sp !== null && (sp < 24 || sp > 160)) warnings.push("geometry.sectionSpacingY: 24–160 px önerilir");
   return { ok: errors.length === 0, errors, warnings, contrast };
 }
+
+function toHex([r, g, b]: [number, number, number]): string {
+  return `#${[r, g, b].map((v) => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** `hex`i hedef renge (siyah/beyaz) `t` oranında karıştırır; tonu korur, açıklığı değiştirir. */
+function mix(hex: string, toward: "black" | "white", t: number): string {
+  const [r, g, b] = rgb(hex);
+  const target = toward === "black" ? 0 : 255;
+  return toHex([r + (target - r) * t, g + (target - g) * t, b + (target - b) * t]);
+}
+
+/**
+ * `fg`yi `bg` üzerinde en az `min` kontrasta çıkarır. Önce zeminden uzaklaşan yönde (açık zeminde koyulaştır, koyuda aç),
+ * olmazsa (ör. orta tonlu zeminde zaten beyaz metin) karşı yönde dener; hiç tutmazsa null.
+ */
+function fixedForeground(fg: string, bg: string, min: number): string | null {
+  const preferred = luminance(bg) > 0.5 ? "black" : "white";
+  for (const dir of [preferred, preferred === "black" ? "white" : "black"] as const) {
+    for (let i = 1; i <= 40; i++) {
+      const c = mix(fg, dir, i / 40);
+      if (contrastRatio(c, bg) >= min) return c;
+    }
+  }
+  return null;
+}
+
+export interface ContrastFix {
+  mode: "açık" | "koyu";
+  key: string;
+  from: string;
+  to: string;
+}
+
+/**
+ * Kontrast hatasını modele yaptırmak yerine belirleyici biçimde onarır: eşleşmeyen çiftte ön plan rengi, tonu korunarak
+ * yeterli oranı verene kadar koyulaştırılır/açılır. Koyu kip düzeltmeleri `darkColors`a yazılır. Geçersiz renklere dokunmaz.
+ */
+export function autoFixContrast(input: unknown): { tokens: unknown; fixes: ContrastFix[] } {
+  const t = input && typeof input === "object" ? (structuredClone(input) as Record<string, any>) : null;
+  if (!t || typeof t.colors !== "object" || !t.colors) return { tokens: input, fixes: [] };
+  const fixes: ContrastFix[] = [];
+  const run = (mode: "açık" | "koyu", get: (k: string) => unknown, set: (k: string, v: string) => void) => {
+    for (const [fg, bg, min] of CONTRAST_PAIRS) {
+      const a = get(fg);
+      const b = get(bg);
+      if (typeof a !== "string" || typeof b !== "string" || !isHexColor(a) || !isHexColor(b)) continue;
+      if (contrastRatio(a, b) >= min) continue;
+      const fixed = fixedForeground(a, b, min);
+      if (fixed) { fixes.push({ mode, key: fg, from: a, to: fixed }); set(fg, fixed); }
+    }
+  };
+  run("açık", (k) => t.colors[k], (k, v) => (t.colors[k] = v));
+  if (t.darkColors && typeof t.darkColors === "object") {
+    run("koyu", (k) => t.darkColors[k] ?? t.colors[k], (k, v) => (t.darkColors[k] = v));
+  }
+  return { tokens: t, fixes };
+}
