@@ -28,6 +28,7 @@ export interface StudioInspectorApi {
   setViewport: Dispatch<SetStateAction<DeviceKey>>;
   openLibrary: () => void;
   rightSidebarOpen: boolean;
+  setRightSidebarOpen: Dispatch<SetStateAction<boolean>>;
   rightTab: RightTab;
   setRightTab: Dispatch<SetStateAction<RightTab>>;
   blockInspectorSubTab: InspectorSubTab;

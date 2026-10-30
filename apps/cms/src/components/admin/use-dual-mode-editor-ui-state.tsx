@@ -17,6 +17,13 @@ export function useDualModeEditorUiState(p: ReturnType<typeof useDualModeEditorP
   const [rightTab, setRightTab] = useState<"publish" | "seo" | "block" | "engage">(
     "block"
   );
+  // Dar ekranda (<1024px) paneller çekmecedir: kanvas tam genişlikte açılır, paneller isteğe bağlı açılır
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      setLeftDrawerOpen(false);
+      setRightSidebarOpen(false);
+    }
+  }, []);
   const [blockInspectorSubTab, setBlockInspectorSubTab] = useState<
     "general" | "style" | "advanced"
   >("general");

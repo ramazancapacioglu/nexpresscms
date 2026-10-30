@@ -40,7 +40,7 @@ export default async function ThemePackagesPage() {
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Tema paketleri</h1>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            <Link href="/admin/themes" className="text-[#1D5ED8] dark:text-[#7AA7FF] hover:underline">← Tema mağazası</Link> · Yüklenen veri temaları: önizleyin, etkinleştirin, dışa aktarın.
+            <Link href="/admin/themes" className="text-[#1D5ED8] dark:text-[#7AA7FF] underline">← Tema mağazası</Link> · Yüklenen veri temaları: önizleyin, etkinleştirin, dışa aktarın.
           </p>
         </div>
         <a href="/api/admin/themes/export?current=1" className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#E6E7EA] dark:border-[#23262E] px-3 text-[12px] font-medium hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">

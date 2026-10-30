@@ -31,6 +31,8 @@ export function StudioViewBar() {
               key={mode.id}
               type="button"
               onClick={() => setEditorMode(mode.id)}
+              aria-label={mode.label}
+              aria-pressed={active}
               className={`inline-flex h-7 items-center gap-1 rounded px-2 text-[11px] font-medium ${
                 active ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
               }`}

@@ -9,8 +9,8 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
   return (
     <>
       {/* ÜST STÜDYO ÇUBUĞU (BAĞLAM KİLİTLİ — KARIŞIK TÜR FİLTRESİ YOK!) */}
-      <header className="flex h-10 shrink-0 items-center justify-end gap-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] px-3">
-        <div className="flex min-w-0 items-center gap-2">
+      <header className="flex h-10 shrink-0 items-center justify-start gap-2 overflow-x-auto border-b lg:justify-end border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] px-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2">
           {isDirty && (
             <span className="hidden sm:inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-300">
               Kaydedilmedi

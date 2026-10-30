@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-30] — Stüdyo/tema özelleştirici dar ekran incelemesi
+- ✅ Playwright 390 px: tema özelleştirici ve tema paketleri sorunsuz; **stüdyo kullanılamıyordu** (sol 255 px + denetçi + kanvas yan yana). Düzeltme: <1024 px'te paneller varsayılan kapalı çekmece (yapı sol, denetçi sağ, arka plan tıklamasıyla kapanır), üst çubuk yatay kaydırma, kanvas tam genişlik. Ayrıca `setRightSidebarOpen` denetçi API'sine eklendi.
+- ✅ a11y CI listesine `/admin/contents?type=page&new=1` ve `/admin/themes/packages` eklendi; yeni sayfalar 5 gerçek ihlal buldu (isimsiz TipTap alanı/slug/simge düğmeleri, renge dayalı bağlantı) ve düzeltildi: 72 tarama 0 hata.
+- ✅ `OPENAI_API_KEY` kullanıcının isteğiyle yerel `.env`'e (git dışı) yazıldı.
+- ⚠️ Stüdyo mobilde gözle kontrol edildi (kanvas, çekmeceler); blok sürükle-bırak ve dokunmatik düzenleme ayrıca denenmedi; dokunma hedefleri (24 px altı) hâlâ ölçülüp düzeltilmedi.
+
 ### [2026-10-30] — Panel düzenlemesi, eksik sayfalar, AI Tasarım Pro, sayfa içi SEO
 - ✅ **Plan:** `docs/18`. **AI altyapısı:** ortak sohbet istemcisi ve hız sınırı çekirdeğe taşındı (`@nexpress/core`); `core/ai-design` (blok kataloğu, `lintDesign`, `lintThemeTokens`, `buildDesignSystemPrompt`, ayrıştırıcı) + kütüphane sözleşme testi; `design_library` (göç `0013`, iki motor, yedeğe girer); `loadDesignSiteContext`; tema çıktısı doğrulayıcısı `@nexpress/themes/package`.
 - ✅ **Eklenti:** `@nexpress-pro/ai-design` (`plugins-pro/ai-design`): üretim hattı + tek onarım turu + hız sınırı, 5 test (sahte sohbet istemcisi).

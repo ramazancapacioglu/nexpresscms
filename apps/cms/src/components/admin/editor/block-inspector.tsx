@@ -13,6 +13,7 @@ import { SeoTab } from "./seo-tab";
 export function BlockInspector() {
   const {
     rightSidebarOpen,
+    setRightSidebarOpen,
     rightTab,
     setRightTab,
     blockInspectorSubTab,
@@ -26,8 +27,9 @@ export function BlockInspector() {
   return (
     <>
         {/* 3. SAĞ DENETÇİ */}
+        {rightSidebarOpen && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" aria-hidden="true" onClick={() => setRightSidebarOpen(false)} />}
         {rightSidebarOpen && (
-          <aside className="flex w-72 xl:w-[21.5rem] shrink-0 flex-col border-l border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] h-full overflow-hidden">
+          <aside aria-label="Denetçi paneli" className="fixed inset-y-0 right-0 z-40 flex w-[22rem] max-w-[92vw] shrink-0 flex-col shadow-xl lg:static lg:z-auto lg:w-72 lg:max-w-none lg:shadow-none xl:w-[21.5rem] border-l border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] h-full overflow-hidden">
             {/* Yapışkan Üst Sekme Başlıkları */}
             <div className="grid grid-cols-4 border-b border-border bg-muted/30 p-1 text-[11px] font-semibold shrink-0">
               {(

@@ -505,6 +505,9 @@ export function ProseField({
     editorProps: {
       attributes: {
         class: rich ? "nx-prose text-sm leading-relaxed" : "nx-prose-inline",
+        role: "textbox",
+        "aria-multiline": rich ? "true" : "false",
+        "aria-label": rich ? "Zengin metin alanı" : "Metin alanı",
       },
       handleKeyDown: (_view, event) => {
         if (variant === "inline" && event.key === "Enter") {

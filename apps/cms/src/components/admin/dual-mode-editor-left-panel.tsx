@@ -10,9 +10,11 @@ export function DualModeEditorLeftPanel({ s }: { s: DualModeEditorState }) {
   return (
     <>
         {/* 1. SOL PANEL: YAPI GEZGİNİ VE BLOK EKLEME */}
+        {leftDrawerOpen && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" aria-hidden="true" onClick={() => setLeftDrawerOpen(false)} />}
         <aside
+          aria-label="Yapı paneli"
           className={`flex shrink-0 flex-col overflow-hidden border-r border-[#E6E7EA] bg-white dark:border-[#23262E] dark:bg-[#111317] ${
-            leftDrawerOpen ? "w-64" : "w-11"
+            leftDrawerOpen ? "fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] shadow-xl lg:static lg:z-auto lg:w-64 lg:max-w-none lg:shadow-none" : "w-11"
           }`}
         >
             <div className="flex items-center gap-1 border-b border-border px-1.5 py-1.5">
@@ -134,6 +136,7 @@ export function DualModeEditorLeftPanel({ s }: { s: DualModeEditorState }) {
                                   moveBlockStep(prev, block.id, "up")
                                 );
                               }}
+                              aria-label={`${block.type} bloğunu yukarı taşı`}
                               className="p-0.5 hover:opacity-80"
                             >
                               <ArrowUp className="h-2.5 w-2.5" />
@@ -146,6 +149,7 @@ export function DualModeEditorLeftPanel({ s }: { s: DualModeEditorState }) {
                                   removeBlockById(prev, block.id)
                                 );
                               }}
+                              aria-label={`${block.type} bloğunu sil`}
                               className="p-0.5 hover:opacity-80"
                             >
                               <Trash2 className="h-2.5 w-2.5" />

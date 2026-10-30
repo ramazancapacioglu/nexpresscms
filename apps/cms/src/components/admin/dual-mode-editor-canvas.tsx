@@ -23,6 +23,7 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                 <input
                   type="text"
                   value={slug}
+                  aria-label="Sayfa adresi (slug)"
                   onChange={(e) => setSlug(e.target.value)}
                   className="min-w-0 flex-1 bg-transparent font-mono text-xs text-foreground focus:outline-none"
                 />
