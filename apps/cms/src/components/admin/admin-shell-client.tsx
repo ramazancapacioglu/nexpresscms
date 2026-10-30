@@ -90,30 +90,15 @@ export function AdminShellClient({
   const studioBackHref = studioIsPost ? "/admin/posts" : "/admin/pages";
   const studioBackLabel = studioIsPost ? "Blog Yazılarına Dön" : "Sayfalara Dön";
 
-  const currentBreadcrumb =
-    pathname === "/admin"
-      ? "Records & Telemetry"
-      : pathname.startsWith("/admin/contents")
-        ? "Visual Canvas & Block Studio"
-        : pathname.startsWith("/admin/themes")
-          ? "Design / Theme Tokens"
-          : pathname.startsWith("/admin/seo")
-            ? "SEO / Motor"
-            : pathname.startsWith("/admin/commerce/marketplaces")
-              ? "Commerce / Pazar yerleri"
-              : pathname.startsWith("/admin/commerce")
-              ? "Commerce / Mağaza"
-              : pathname.startsWith("/admin/appearance")
-              ? "Design / Site Chrome"
-              : pathname.startsWith("/admin/migration")
-                ? "Tools / WP Importer"
-                : pathname.startsWith("/admin/plugins")
-                  ? "Sistem / Eklentiler"
-                  : pathname.startsWith("/admin/requests")
-                    ? "Workspace / Talepler"
-                    : pathname.startsWith("/admin/translations")
-                      ? "Workspace / Çeviriler"
-                      : "Workspace";
+  // Üst çubuk yolu: bölüm / sayfa; en uzun eşleşen menü öğesi (alt sayfalar üst öğenin adını taşır)
+  const navMatch = WORKSPACE_SECTIONS.flatMap((section) => section.items.map((item) => ({ section, item })))
+    .filter(({ item }) => pathname === item.href || pathname.startsWith(`${item.href}/`))
+    .sort((a, b) => b.item.href.length - a.item.href.length)[0];
+  const currentBreadcrumb = studioOpen
+    ? t("admin.nav.studio")
+    : navMatch
+      ? `${NAV_LABEL_KEYS[navMatch.item.href] ? t(NAV_LABEL_KEYS[navMatch.item.href]!) : navMatch.item.label}`
+      : "Yönetim";
 
   return (
     <div className="min-h-screen flex bg-[#FBFBFB] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
@@ -190,14 +175,7 @@ export function AdminShellClient({
                   </div>
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive =
-                      item.href === "/admin"
-                        ? pathname === "/admin"
-                        : item.href === "/admin/commerce"
-                          ? pathname === "/admin/commerce" ||
-                            (pathname.startsWith("/admin/commerce/") &&
-                              !pathname.startsWith("/admin/commerce/marketplaces"))
-                          : pathname.startsWith(item.href);
+                    const isActive = navMatch?.item.href === item.href;
 
                     return (
                       <Link

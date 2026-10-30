@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { ChatClient } from "@nexpress/core";
-import { generateDesign, validateThemeOutput } from "../src";
+import { validateThemeOutput } from "@nexpress/themes/package";
+import { generateDesign } from "../src";
 
 type Call = { system: string; user: string; temperature?: number; maxTokens?: number };
 function fake(replies: Array<string | Error>): { client: ChatClient; calls: Call[] } {

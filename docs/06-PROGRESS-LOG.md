@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-30] — Panel düzenlemesi, eksik sayfalar, AI Tasarım Pro, sayfa içi SEO
+- ✅ **Plan:** `docs/18`. **AI altyapısı:** ortak sohbet istemcisi ve hız sınırı çekirdeğe taşındı (`@nexpress/core`); `core/ai-design` (blok kataloğu, `lintDesign`, `lintThemeTokens`, `buildDesignSystemPrompt`, ayrıştırıcı) + kütüphane sözleşme testi; `design_library` (göç `0013`, iki motor, yedeğe girer); `loadDesignSiteContext`; tema çıktısı doğrulayıcısı `@nexpress/themes/package`.
+- ✅ **Eklenti:** `@nexpress-pro/ai-design` (`plugins-pro/ai-design`): üretim hattı + tek onarım turu + hız sınırı, 5 test (sahte sohbet istemcisi).
+- ✅ **Sayfalar:** `/admin/design-library`, `/admin/seo/audit`, `/admin/integrations`, `/admin/help`; editörde "Benim tasarımlarım" + doğrulamalı JSON aktarma; ⌘K ve menü girdileri.
+- ✅ **Sayfa içi SEO:** meta/TL;DR ayrıldı, uzunluk ölçerleri, gerçek adresli SERP + mobil, sosyal kart, noindex ve canonical (öncesinde arayüzü yoktu).
+- ✅ **Genel:** Türkçe/menüden türetilen üst çubuk yolu, en uzun eşleşmeli etkin menü, `loading`/`error`/`not-found`, başlangıç kontrol listesi, panoda sahte varsayılan puan (95) kaldırıldı, plugin kartlarında kontrast.
+- ⚠️ Gerçek OpenAI anahtarıyla denenmedi (sahte sunucu); axe CI listesine yeni sayfalar eklendi.
+
 ### [2026-10-28] — Erişilebilirlik taraması CI'da
 - ✅ `apps/cms/scripts/a11y-audit.mjs` (axe-core 4.10 + playwright-core 1.49, devDependency) ve CI işi `a11y` (tohumlu SQLite, üretim derlemesi, Chromium önbelleği, rapor çıktısı). Yerel CI benzeri koşuda ilk tarama gerçek bulgular çıkardı (tohum verisinde yorum durumu seçicileri etiketsiz, yıldız metni kontrastı, okunmamış noktası geçersiz `aria-label`) ve düzeltildi; sonunda 60 tarama (30 sayfa × 2 görünüm) 0 hata.
 - ✅ Betik düzeltmesi: `axe.run` hariç tutma bağlamı (`data-axe-skip`) ilk sürümde seçenek olarak geçilip yok sayılıyordu.

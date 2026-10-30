@@ -22,6 +22,7 @@ const ADMIN_PATHS = [
   "/admin/media", "/admin/notifications", "/admin/settings", "/admin/system", "/admin/backup", "/admin/migration",
   "/admin/redirects", "/admin/taxonomies", "/admin/comments", "/admin/themes", "/admin/trash", "/admin/schedule",
   "/admin/translations", "/admin/users", "/admin/audit", "/admin/appearance/header", "/admin/plugins", "/admin/seo", "/admin/commerce",
+  "/admin/design-library", "/admin/seo/audit", "/admin/integrations", "/admin/help",
 ];
 const PUBLIC_PATHS = ["/tr", "/login"];
 const BLOCKING = new Set(["critical", "serious"]);

@@ -106,7 +106,10 @@ function cleanValue(spec: FieldSpec, raw: unknown, path: string, c: Ctx2): unkno
       return arr.slice(0, spec.maxItems).map((it, i) => {
         const obj = it && typeof it === "object" ? (it as Record<string, unknown>) : {};
         const out: Record<string, unknown> = {};
-        for (const [k, s] of Object.entries(spec.item)) out[k] = cleanValue(s, obj[k], `${path}[${i}].${k}`, c);
+        for (const [k, s] of Object.entries(spec.item)) {
+          const v = cleanValue(s, obj[k], `${path}[${i}].${k}`, c);
+          if (v !== "") out[k] = v;
+        }
         return out;
       });
     }
@@ -155,7 +158,10 @@ export function lintDesign(input: unknown, kind: DesignKind, ctx: DesignContext 
     if (spec.maxPerPage && counts[type]! > spec.maxPerPage) { issues.errors.push(`${path}: sayfada en çok ${spec.maxPerPage} adet olabilir`); return; }
     const props = obj.props && typeof obj.props === "object" ? (obj.props as Record<string, unknown>) : {};
     const clean: Record<string, unknown> = {};
-    for (const [k, s] of Object.entries(spec.props)) clean[k] = cleanValue(s, props[k], `${path}.${k}`, c);
+    for (const [k, s] of Object.entries(spec.props)) {
+      const v = cleanValue(s, props[k], `${path}.${k}`, c);
+      if (v !== "") clean[k] = v; // boş isteğe bağlı alanlar yazılmaz: yoksa ikincil düğme gibi bileşenler boş çizilmez
+    }
     const extra = Object.keys(props).filter((k) => !(k in spec.props));
     if (extra.length) issues.warnings.push(`${path}: bilinmeyen alanlar atıldı (${extra.slice(0, 4).join(", ")})`);
     if (type === "form_block" && ctx.formIds && !ctx.formIds.includes(String(clean.formId))) issues.errors.push(`${path}: bu formId sitede yok`);

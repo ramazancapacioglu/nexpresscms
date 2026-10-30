@@ -7,6 +7,15 @@ const tldr = { type: "tldr_box", props: { summary: "Firma, KOBİ'ler için hızl
 const body = (text: string) => ({ type: "paragraph", props: { text } });
 const long = "Sitenizin hızlı açılması aramada görünürlüğü ve dönüşümü doğrudan etkiler. ".repeat(6);
 
+test("boş isteğe bağlı alanlar yazılmaz (ikincil düğme boş çizilmez); zorunlu boş alan hata", () => {
+  const r = lintDesign([{ type: "hero", props: { title: "Başlık", primaryCtaLabel: "Git", primaryCtaHref: "/tr/a", secondaryCtaLabel: "", secondaryCtaHref: "" } }], "section");
+  assert.equal(r.errors.length, 0);
+  assert.deepEqual(Object.keys(r.blocks[0]!.props).sort(), ["primaryCtaHref", "primaryCtaLabel", "title"]);
+  assert.ok(lintDesign([{ type: "hero", props: { title: "" } }], "section").errors.some((e) => e.includes("title")));
+  const l = lintDesign([{ type: "bento_features", props: { title: "T", items: [{ title: "a", description: "b" }, { title: "c", description: "d" }, { title: "e", description: "" }] } }], "section");
+  assert.ok(l.errors.some((e) => e.includes("description")), "liste öğesinde zorunlu alan boşsa hata");
+});
+
 test("güvenli bağlantı: yol, çapa, http(s), mailto, tel kabul; //x, javascript:, data: ve boşluklu reddedilir", () => {
   for (const ok of ["/tr/iletisim", "#bolum-1", "https://ornek.com/a", "mailto:a@b.co", "tel:+90 232 000 00 00"]) assert.equal(safeHref(ok), ok);
   for (const bad of ["//evil.com", "javascript:alert(1)", "data:text/html,x", "/a b", "ftp://x.y/z", "vbscript:x"]) assert.equal(safeHref(bad), null, bad);

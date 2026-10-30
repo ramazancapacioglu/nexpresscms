@@ -31,3 +31,9 @@ Durum günlüğü `docs/06-PROGRESS-LOG.md`'dedir. Bu doküman kapsamı, sınır
 ## 3. Kapsam dışı (bilinçli)
 
 Görsel (resim) üretimi, modelin site verisine yazma erişimi, otomatik yayın, çoklu model karşılaştırması, gerçek anahtarla kalite ölçümü.
+
+## 4. Durum (2026-10-30)
+
+Tüm sıra maddeleri uygulandı. Doğrulama: çekirdek (112), editör sözleşme testi, eklenti (5), veritabanı (iki motor) testleri; gerçek derlemede **sahte OpenAI sunucusuyla** uçtan uca (sayfa üretimi → hatalı ilk çıktı → otomatik onarım → kayıt → taslak sayfa oluşturma; bölüm; tema → onarım → kurulum; yapıştırılan hatalı JSON'un reddi ve kaydet düğmesinin kilitlenmesi; editör "Benim tasarımlarım"; SEO sekmesi alanları ve ölçerleri); axe taraması 34 sayfa × 2 görünüm.
+
+**Doğrulanmayanlar:** gerçek bir model/anahtarla üretim kalitesi (komut ve doğrulayıcı gerçek model çıktısıyla denenmedi); AI çıktısının görsel kalitesi yalnızca bir örnek sayfa için editörde göz önünde kontrol edildi.

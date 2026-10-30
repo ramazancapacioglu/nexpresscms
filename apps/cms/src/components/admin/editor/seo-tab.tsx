@@ -1,6 +1,7 @@
 "use client";
 
 import { AiSuggestPanel } from "./ai-suggest-panel";
+import { LengthMeter, SerpPreview, SocialPreview } from "./seo-previews";
 import { SchemaIssues } from "./schema-issues";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -24,7 +25,17 @@ export function SeoTab() {
     setSchemaType,
     importanceScore,
     setImportanceScore,
+    noIndex,
+    setNoIndex,
+    canonicalUrl,
+    setCanonicalUrl,
+    featuredImageUrl,
+    locale,
   } = useStudioInspector();
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const pageUrl = `${base || (typeof window !== "undefined" ? window.location.origin : "")}/${locale}/${slug}`;
+  const effTitle = metaTitle || title;
+  const effDesc = metaDescription || tldr;
 
   return (
                 <div className="space-y-4">
@@ -64,49 +75,25 @@ export function SeoTab() {
                     />
                   </div>
 
-                  {/* SERP Önizleme */}
-                  <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Canlı Google & AI SERP Önizlemesi
-                    </div>
-                    <div className="text-[11px] text-emerald-800 dark:text-emerald-400 font-mono truncate">
-                      https://localhost:3000/tr/{slug}
-                    </div>
-                    <div className="text-sm font-semibold text-blue-600 line-clamp-1">
-                      {metaTitle || title}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground line-clamp-2">
-                      {metaDescription || tldr}
-                    </div>
-                  </div>
+                  <SerpPreview title={effTitle} description={effDesc} url={canonicalUrl || pageUrl} />
 
                   {/* Meta Alanları */}
                   <div className="space-y-2.5">
                     <div>
-                      <label className="block text-[11px] font-medium mb-1">
-                        SEO Başlığı ({(metaTitle || title).length}/60)
-                      </label>
-                      <input
-                        type="text"
-                        value={metaTitle}
-                        onChange={(e) => setMetaTitle(e.target.value)}
-                        className="h-8 w-full rounded border border-border bg-background px-2"
-                      />
+                      <label htmlFor="seo-meta-title" className="block text-[11px] font-medium mb-1">SEO başlığı</label>
+                      <input id="seo-meta-title" type="text" value={metaTitle} placeholder={title} onChange={(e) => setMetaTitle(e.target.value)} className="h-8 w-full rounded border border-border bg-background px-2" />
+                      <LengthMeter value={effTitle.length} min={30} max={60} label="Başlık uzunluğu" />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium mb-1">
-                        Answer-First TL;DR & Meta Açıklama (
-                        {(metaDescription || tldr).length}/160)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={tldr}
-                        onChange={(e) => {
-                          setTldr(e.target.value);
-                          setMetaDescription(e.target.value);
-                        }}
-                        className="w-full rounded border border-border bg-background p-2"
-                      />
+                      <label htmlFor="seo-meta-desc" className="block text-[11px] font-medium mb-1">Meta açıklama <span className="font-normal text-muted-foreground">(boşsa TL;DR kullanılır)</span></label>
+                      <textarea id="seo-meta-desc" rows={3} value={metaDescription} placeholder={tldr} onChange={(e) => setMetaDescription(e.target.value)} className="w-full rounded border border-border bg-background p-2" />
+                      <LengthMeter value={effDesc.length} min={70} max={160} label="Açıklama uzunluğu" />
+                    </div>
+                    <div>
+                      <label htmlFor="seo-tldr" className="block text-[11px] font-medium mb-1">TL;DR — Answer-First özet <span className="font-normal text-muted-foreground">(sayfada gösterilir; yapay zeka alıntısı için)</span></label>
+                      <textarea id="seo-tldr" rows={3} value={tldr} onChange={(e) => setTldr(e.target.value)} className="w-full rounded border border-border bg-background p-2" />
+                      <LengthMeter value={tldr.length} min={40} max={260} label="TL;DR uzunluğu" />
+                      {tldr && tldr !== metaDescription && <button type="button" onClick={() => setMetaDescription(tldr.slice(0, 160))} className="mt-1 text-[10px] font-medium text-blue-700 underline dark:text-blue-300">TL;DR'yi meta açıklamaya kopyala (160 karaktere kırpar)</button>}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
@@ -142,6 +129,22 @@ export function SeoTab() {
                       </div>
                     </div>
                   </div>
+
+                  <SocialPreview title={effTitle} description={effDesc} image={featuredImageUrl} host={base ? base.replace(/^https?:\/\//, "") : "site"} />
+
+                  <details className="rounded-lg border border-border p-3 text-[11px]" open={noIndex || Boolean(canonicalUrl)}>
+                    <summary className="cursor-pointer font-semibold">Gelişmiş: dizinleme ve canonical</summary>
+                    <div className="mt-2 space-y-2.5">
+                      <label className="flex items-start gap-2"><input type="checkbox" checked={noIndex} onChange={(e) => setNoIndex(e.target.checked)} className="mt-0.5" /><span><strong>Arama motorlarına kapat (noindex)</strong><span className="block text-muted-foreground">Sayfa sitemap, llms.txt ve beslemelerden de çıkar. Yayındaki bir sayfayı kapatırsanız sıralamadan düşer.</span></span></label>
+                      {noIndex && status === "published" && <p role="alert" className="rounded bg-amber-500/15 px-2 py-1 text-amber-800 dark:text-amber-300">Yayındaki sayfa noindex: arama sonuçlarında görünmeyecek.</p>}
+                      <div>
+                        <label htmlFor="seo-canonical" className="mb-1 block font-medium">Canonical adres <span className="font-normal text-muted-foreground">(boşsa sayfanın kendi adresi)</span></label>
+                        <input id="seo-canonical" type="text" value={canonicalUrl} onChange={(e) => setCanonicalUrl(e.target.value)} placeholder={pageUrl} className="h-8 w-full rounded border border-border bg-background px-2 font-mono" />
+                        {canonicalUrl && !/^(https?:\/\/|\/)/.test(canonicalUrl) && <p role="alert" className="mt-1 text-red-600">https:// ile veya / ile başlamalı.</p>}
+                        {canonicalUrl && /^https?:\/\//.test(canonicalUrl) && base && !canonicalUrl.startsWith(base) && <p className="mt-1 text-amber-800 dark:text-amber-300">Canonical başka bir alan adına işaret ediyor: bu sayfa o adresin kopyası sayılır.</p>}
+                      </div>
+                    </div>
+                  </details>
 
                   <AiSuggestPanel />
 

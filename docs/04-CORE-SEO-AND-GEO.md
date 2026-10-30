@@ -130,3 +130,9 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **Site içi arama:** `/{locale}/ara?q=` — sunucuda BM25, düz GET formu, istemci JS'i yok, `noindex`. Ücretli gömme çağrısı **yapmaz** (anonim ziyaretçi maliyet saldırısı olmasın). Menüye eklemek için bağlantı `/{locale}/ara` olarak verilir.
 - **İç bağlantı denetimi:** `auditLinks` (`core/src/link-audit.ts`, testli) yayındaki içeriklerin Markdown'ındaki iç bağlantıları çözer; kırık ve `slugHistory` ile taşınmış (301) olanları `/admin/seo` kartında listeler. Dış bağlantılar yalnızca sayılır.
 - **`Link` başlığı:** içerik sayfaları `Link: <…?format=md>; rel="alternate"; type="text/markdown"` ile Markdown karşılığını bildirir (middleware).
+
+
+## 11. Site geneli SEO denetimi ve sayfa içi SEO (2026-10-30)
+
+- **`/admin/seo/audit`** (`core/seo-audit`, saf ve testli): yayındaki içerikler için başlık (20–60), meta açıklama (70–160), TL;DR, ince içerik (<150 sözcük; ürünlerde yok), puan (<70 uyarı, <50 hata), alt metni olmayan görsel, odak anahtar kelime, noindex ve aynı dilde **yinelenen başlık/açıklama**. Sayfa başına ağırlıklı sıralama, sorun türüne göre süzgeç, dil sekmeleri, her satır düzenleyiciye gider.
+- **Editör SEO sekmesi:** meta açıklama ve TL;DR artık ayrı alanlardır (meta boşsa TL;DR kullanılır; kayıt `metaDescription || tldr`), uzunluk ölçerleri (metinle de durum söyler), gerçek site adresiyle masaüstü/mobil arama sonucu önizlemesi, sosyal paylaşım kartı, **noindex** (yayındaki sayfada uyarı) ve **canonical** (biçim/alan adı uyarısı) alanları. Önceden noindex/canonical için arayüz yoktu.

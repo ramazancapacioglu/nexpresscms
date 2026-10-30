@@ -28,7 +28,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
           <div className="flex items-center justify-between">
             <span className={muted}>Kanibalizasyon ve benzer içerik</span>
             {report?.indexed && report.similar[0] && (
-              <span className={`font-mono text-[11px] font-medium ${report.similar[0].cannibalizing ? "text-red-600" : "text-emerald-600"}`}>
+              <span className={`font-mono text-[11px] font-medium ${report.similar[0].cannibalizing ? "text-red-600" : "text-emerald-700 dark:text-emerald-400"}`}>
                 en yüksek {report.similar[0].similarity.toFixed(2)}
               </span>
             )}
@@ -38,7 +38,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
           ) : !report?.indexed ? (
             <p className="text-[11px] text-[#8C9099]">Bu içerik henüz dizinlenmedi (yayınlanınca otomatik, ya da SEO sayfasından “Dizini yeniden oluştur”).</p>
           ) : report.similar.length === 0 ? (
-            <p className="text-[11px] text-emerald-600">Benzer başka içerik bulunamadı.</p>
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-400">Benzer başka içerik bulunamadı.</p>
           ) : (
             <ul className="space-y-1">
               {report.similar.map((s) => (

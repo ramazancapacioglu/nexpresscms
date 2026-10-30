@@ -84,7 +84,7 @@ export async function BotTelemetryCard({ siteId }: { siteId: string }) {
                     className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${
                       canVerify && s.verified > 0
                         ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                        : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                        : "bg-amber-500/10 text-amber-800 dark:text-amber-400"
                     }`}
                   >
                     {canVerify ? `rDNS %${Math.round((s.verified / s.total) * 100)}` : "UA iddiası"}

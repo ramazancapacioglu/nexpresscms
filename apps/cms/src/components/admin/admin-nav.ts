@@ -29,6 +29,10 @@ import {
   Activity,
   FormInput,
   Bell,
+  Wand2,
+  SearchCheck,
+  Plug,
+  LifeBuoy,
   Archive,
 } from "lucide-react";
 
@@ -160,11 +164,24 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "Tasarım & Motorlar",
     items: [
       {
+        href: "/admin/design-library",
+        label: "Tasarım Kütüphanesi",
+        icon: Wand2,
+        count: "AI",
+        shortcut: "G 2",
+      },
+      {
         href: "/admin/themes",
         label: "Tema & Özelleştirici",
         icon: Palette,
         count: "Canlı",
         shortcut: "G T",
+      },
+      {
+        href: "/admin/seo/audit",
+        label: "SEO Denetimi",
+        icon: SearchCheck,
+        shortcut: "G G",
       },
       {
         href: "/admin/seo",
@@ -237,6 +254,19 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/integrations",
+        label: "Entegrasyonlar",
+        icon: Plug,
+        shortcut: "G 1",
+        adminOnly: true,
+      },
+      {
+        href: "/admin/help",
+        label: "Yardım",
+        icon: LifeBuoy,
+        shortcut: "G 3",
+      },
+      {
         href: "/admin/notifications",
         label: "Bildirimler",
         icon: Bell,
@@ -277,6 +307,10 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/redirects": "admin.nav.redirects",
   "/admin/system": "admin.nav.system",
   "/admin/notifications": "admin.nav.notifications",
+  "/admin/design-library": "admin.nav.designLibrary",
+  "/admin/seo/audit": "admin.nav.seoAudit",
+  "/admin/integrations": "admin.nav.integrations",
+  "/admin/help": "admin.nav.help",
   "/admin/backup": "admin.nav.backup",
   "/admin/requests": "admin.nav.requests",
   "/admin/forms": "admin.nav.forms",

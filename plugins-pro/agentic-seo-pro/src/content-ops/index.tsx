@@ -54,7 +54,7 @@ export function registerContentOps(): void {
             <span className="text-[12px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">
               8 Kaynaklı Hibrit Soru Madenciliği (Question-Intel)
             </span>
-            <span className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-700 dark:text-amber-400">
+            <span className="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-800 dark:text-amber-400">
               Demo verisi
             </span>
             <span className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#1C1E24] px-1.5 py-0.5 font-mono text-[10px] text-[#5C5F66] dark:text-[#9CA3AF]">

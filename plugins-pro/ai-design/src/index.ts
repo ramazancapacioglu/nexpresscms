@@ -2,7 +2,7 @@ import { pluginRegistry } from "@nexpress/core";
 import { AI_DESIGN_MANIFEST } from "./manifest";
 import { registerAiDesign } from "./register";
 
-export { generateDesign, validateThemeOutput, type GeneratedDesign, type ThemeOutput } from "./generate";
+export { generateDesign, type GeneratedDesign } from "./generate";
 export { AI_DESIGN_MANIFEST, AI_DESIGN_PLUGIN_ID } from "./manifest";
 
 let registered = false;

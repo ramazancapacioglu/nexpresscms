@@ -80,4 +80,5 @@ Geliştirme yaparken her zaman aşağıdaki dokümanları referans alın:
 - Çok dilli altyapı planı: `./docs/14-MULTILINGUAL-PLAN.md`
 - Form modülü: `./docs/16-FORMS.md`
 - WordPress içe aktarma: `./docs/17-WORDPRESS-IMPORT.md`
+- Panel düzenlemesi, eksik sayfalar ve AI tasarım planı: `./docs/18-PANEL-AND-AI-DESIGN-PLAN.md`
 - Agentic SEO Pro taşıma planı ve modül durumu: `./docs/15-AGENTIC-PRO-MIGRATION.md`

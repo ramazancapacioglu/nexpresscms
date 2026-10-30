@@ -90,6 +90,8 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 
 - **Bildirimler:** `GET/POST /api/admin/notifications` oturum ister (editör de), `POST` çapraz kaynak isteğini reddeder; bildirimler kitleye göre süzülür (`audience=admin` editöre görünmez) ve işaretleme yalnızca kendi kiracısındaki kimlikler için çalışır. Bildirim metinleri ham gönderim içeriği taşımaz (form adı ve sayı); kişisel veri bildirime yazılmaz. Üretim hatası asıl işi bozmaz (`notify` hatayı yutar).
 
+- **AI tasarım:** model çıktısı hiçbir zaman doğrudan yazılmaz. `core/ai-design` bilinmeyen blok/alanı atar, metni düz metne indirger (HTML/betik/stil/iframe yok), bağlantıyı şemalarla sınırlar (`javascript:`/`data:`/`//` reddedilir), görseli medya kitaplığına, `form_block`'u var olan forma bağlar, blok renklerini `#rrggbb` + kontrast (4.5:1) ile sınırlar. Kayıt, taslak sayfa ve tema kurulumu aşamalarında tasarım **sunucuda yeniden doğrulanır** (istemci verisine güvenilmez). Hız sınırı 10 dk'da 8; istem 2000 karakter. Modele yalnızca site yapısı (yollar, medya kimlik/alt, form adları, marka alanları) gider; kullanıcı, gönderim ve sır verisi gitmez. API anahtarı `OPENAI_API_KEY` ortamda kalır, panelde gösterilmez (`/admin/integrations` yalnızca varlığı bildirir).
+
 ## 9. Derleme izolasyonu
 
 Doğrulama derlemeleri `NEXT_DIST_DIR=.next-verify` ile ayrı klasöre alınır (`next.config.ts` `distDir`; `check-budget` aynı değişkeni okur). Aynı klasörde çalışan bir `next dev` ile `next start` birbirinin `.next` çıktısını ezebilir: bu oturumda üretim sunucusu `ChunkLoadError` verdi çünkü `.next` sonradan geliştirme düzeniyle yeniden yazılmıştı (kod hatası değildi). Yerel doğrulama ve CI için ayrı `distDir` kullanın.

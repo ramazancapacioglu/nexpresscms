@@ -81,6 +81,10 @@ export interface StudioInspectorApi {
   setMetaTitle: Dispatch<SetStateAction<string>>;
   metaDescription: string;
   setMetaDescription: Dispatch<SetStateAction<string>>;
+  noIndex: boolean;
+  setNoIndex: Dispatch<SetStateAction<boolean>>;
+  canonicalUrl: string;
+  setCanonicalUrl: Dispatch<SetStateAction<string>>;
   schemaType: string;
   setSchemaType: Dispatch<SetStateAction<string>>;
   importanceScore: number;

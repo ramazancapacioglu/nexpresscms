@@ -4,6 +4,8 @@ import Link from "next/link";
 import { cmsHooks, getCmsMode, PluginSlot } from "@nexpress/core";
 import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
+import { getSession } from "@/lib/auth/session";
+import { SetupChecklist } from "@/components/admin/setup-checklist";
 import {
   Plus,
   ArrowUpRight,
@@ -21,7 +23,8 @@ export default async function AdminOverviewPage() {
   const repo = getScopedRepository(siteId);
 
   const site = await repo.getSite();
-  const contents = await repo.listContents({ locale: "tr" });
+  const session = await getSession();
+  const contents = await repo.listContents({ locale: site?.defaultLocale ?? "tr" });
   const entityLinks = await repo.listEntityLinks();
   const activeTheme = getThemeManifest(
     site?.activeThemeId ?? "corporate-aurora"
@@ -33,10 +36,11 @@ export default async function AdminOverviewPage() {
       ? Math.round(
           contents.reduce((acc, c) => acc + c.seoScore, 0) / contents.length
         )
-      : 95;
+      : null;
 
   return (
     <div className="space-y-5">
+      {session?.role === "admin" && <SetupChecklist siteId={siteId} />}
       {/* ATTIO CRM TARZI KOMPAKT SAYFA BAŞLIĞI VE GÖRÜNÜM ÇUBUĞU */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6E7EA] dark:border-[#23262E] pb-4">
         <div className="space-y-0.5">
@@ -50,7 +54,7 @@ export default async function AdminOverviewPage() {
             </span>
           </div>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            Çift motorlu içerik tablosu, @id varlık grafiği ve sıfır maliyetli Markdown akışı.
+            İçerik, SEO ve yapay zeka görünürlüğünün özeti.
           </p>
         </div>
 
@@ -110,8 +114,8 @@ export default async function AdminOverviewPage() {
           </div>
           <div className="flex items-baseline justify-between pt-1">
             <span className="text-xl font-semibold tabular-nums tracking-tight">
-              {avgSeoScore}
-              <span className="text-xs font-normal text-[#5F6570] dark:text-[#8C9099]">/100</span>
+              {avgSeoScore ?? "—"}
+              {avgSeoScore !== null && <span className="text-xs font-normal text-[#5F6570] dark:text-[#8C9099]">/100</span>}
             </span>
             <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
               TL;DR + @graph

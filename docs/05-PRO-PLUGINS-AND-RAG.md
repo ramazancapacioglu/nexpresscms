@@ -57,3 +57,14 @@ Editörün sağ çekmecesine (`editor.sidebar.tabs`) ve ana panele (`dashboard.o
 | MCP `nexpress_search_corpus` | Vektör araması (dizin varsa), yoksa anahtar kelime |
 | Klişe kalkanı (`content:beforeSave`) | Çalışır |
 
+
+
+## AI Tasarım Pro (`@nexpress-pro/ai-design`, `plugins-pro/ai-design`)
+
+Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/src/plugins/register.ts` → `registerAiDesignProPlugin()`; eylem `ai-design.generate` (`pluginActions`, panelde `requireUser` + denetim günlüğü `design.generate`).
+
+- **CMS bilgisi tek kaynaktır:** `@nexpress/core/ai-design` — `AI_BLOCK_CATALOG` (AI'a açık 21 blok, alan türleri, uzunluk/adet sınırları, değişkenler), `lintDesign` (temizler + SEO/GEO denetler), `lintThemeTokens` (WCAG kontrastı, yazı tipi ve geometri sınırları), `buildDesignSystemPrompt` (komut katalogtan ve kural listesinden üretilir). `packages/editor/test/library-contract.test.ts` gerçek tasarım kütüphanesinin katalogla ayrışmadığını doğrular.
+- **Site bağlamı:** `loadDesignSiteContext` (database): var olan herkese açık sayfa yolları, medya kimlikleri + alt metinleri, aktif formlar, marka alanları ve Site DNA. Model yalnızca bunları bilir; olmayan yol/görsel/form uyarı veya hata olur.
+- **Hat:** komut → model (OpenAI uyumlu, `OPENAI_API_KEY`; model `designModel` → `AI_DESIGN_MODEL` → `AI_WRITER_MODEL`) → doğrulama → hata varsa hata listesi + önceki çıktıyla **tek onarım turu** → en az hatalı sonuç. Hız sınırı 10 dakikada 8 üretim. Anahtar yoksa `unconfigured`; "Komutu kopyala" ve JSON yapıştırma yolu anahtarsız çalışır (aynı doğrulama).
+- **Yazmaz:** çıktı panelde önizlenir (skor, hata/uyarı, yapı, tema renkleri + kontrast tablosu) ve kullanıcı onayıyla `design_library` tablosuna (göç `0013`) kaydedilir. Kayıtta tasarım **sunucuda yeniden doğrulanır**; hatalı olan kaydedilmez. Sayfa tasarımı yalnızca **taslak** sayfa olur; tema yalnızca **kurulur** (etkinleştirme ayrı).
+- Tema üretimi şimdilik yalnızca **tasarım jetonlarıdır**; üst/alt bilgi şablonlarına ve özel CSS'e dokunulmaz.

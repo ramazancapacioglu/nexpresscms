@@ -26,6 +26,7 @@ export * from "./forms";
 export * from "./form-spec";
 export * from "./ai-chat";
 export * from "./ai-design";
+export * from "./seo-audit";
 export * from "./rate-limit";
 export * from "./admin-search";
 export * from "./notifications";

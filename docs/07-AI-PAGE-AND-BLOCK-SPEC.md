@@ -188,3 +188,10 @@ Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST format�
   }
 }
 ```
+
+
+---
+
+## Güncelleme (2026-10-30): sözleşmenin makine karşılığı
+
+Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekten uyması gereken sözleşme `@nexpress/core/ai-design` kataloğudur (`AI_BLOCK_CATALOG`) ve komut metni oradan üretilir. Panel (`/admin/design-library`) ve editörün "JSON aktar" sekmesi sitenize özel komutu (sayfalarınız, medyanız, formlarınız, SEO ve kontrast sınırlarıyla) üretir ve yapıştırılan JSON'u aynı doğrulayıcıdan geçirir. Katalog dışı bloklar (slider, geri sayım, harita, kullanıcı kartı, galeri…) AI'a bilinçli olarak kapalıdır; elle eklenmeye devam eder. Bkz. `docs/18` ve `docs/05` "AI Tasarım Pro".
