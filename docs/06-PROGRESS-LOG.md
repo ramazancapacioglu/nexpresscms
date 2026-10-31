@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — Düzeltme: aynı saniyede parola değişiminde bağlantı tek kullanımlıktı değil
+- 🐞 CI'daki yeni `auth:e2e` gerçek bir hata yakaladı: hesap oluşturulduktan aynı saniye içinde parola belirlenirse `passwordChangedAt` (saniye çözünürlüğü) değişmiyor, davet bağlantısı yeniden kullanılabiliyordu. `UserRepository.setPassword` zaman damgasını her zaman önceki saniyeyi geçecek şekilde yazar; test (SQLite + PostgreSQL) eklendi.
+
 ### [2026-10-31] — Besleme süzgeçleri, canonical düzeltmesi, yedek testi, temizlik
 - ✅ `/feed.xml|atom.xml?category=|tag=` (testli `termMatches`). `autoCanonical` artık etkili. `lib/backup.ts` saf `backup-package.ts` + sunucu tarafı olarak bölündü; ayrıştırıcı için 6 test eklendi (F14'ten kalan borç). Kökteki kalıntı dosyalar silindi. Speakable/Person/`sameAs`(yazar) yapılmadı: ziyaretçi sayfasında tldr gösterilmediği ve yazar profili verisi olmadığı için eksik işaretleme üretirdi.
 

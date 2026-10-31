@@ -145,7 +145,11 @@ export class UserRepository {
   }
   /** Parolayı değiştirir ve tüm mevcut oturumları geçersiz kılar; yeni sürümü döner. */
   public async setPassword(id: string, passwordHash: string): Promise<number> {
-    await this.patch(id, { passwordHash, passwordChangedAt: new Date() });
+    // Hesap bağlantısı belirteçleri parola zamanını SANİYE çözünürlüğüyle karşılaştırır: aynı saniyede iki değişim
+    // (ör. davetle açılıp hemen parola belirleme) belirteci bayatlatmazdı; zaman damgası her zaman önceki saniyeyi geçer.
+    const prev = (await this.findById(id))?.passwordChangedAt?.getTime() ?? 0;
+    const at = new Date(Math.max(Date.now(), (Math.floor(prev / 1000) + 1) * 1000));
+    await this.patch(id, { passwordHash, passwordChangedAt: at });
     return this.revokeSessions(id);
   }
   /** Kurulum başlatır: şifreli anahtarı yazar, açık 2FA'yı kapatır (kurulum bitene kadar giriş ikinci adım istemez). */

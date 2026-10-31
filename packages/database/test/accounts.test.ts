@@ -165,3 +165,16 @@ test("denetim günlüğü: bitiş süzgeci ve eski kayıtları temizleme yalnız
   assert.equal(await a.purgeOlderThan(new Date(now - 30 * day)), 0, "ikinci çağrı silecek bir şey bulmaz");
   assert.equal(await b.count(), 1, "başka kiracının kaydı korunur");
 });
+
+test("parola zamanı: aynı saniyede arka arkaya değişimde bile saniye cinsinden ilerler (tek kullanımlık bağlantılar için)", async () => {
+  const a = users.getUserRepository("site-pwd-stamp");
+  const u = await a.create({ email: "damga@example.com", passwordHash: "h", role: "editor" });
+  const sec = (d: Date | null) => Math.floor((d?.getTime() ?? 0) / 1000);
+  let prev = sec((await a.findById(u.id))!.passwordChangedAt);
+  for (const h of ["h2", "h3", "h4"]) {
+    await a.setPassword(u.id, h);
+    const cur = sec((await a.findById(u.id))!.passwordChangedAt);
+    assert.ok(cur > prev, "her değişim önceki saniyeyi geçer");
+    prev = cur;
+  }
+});
