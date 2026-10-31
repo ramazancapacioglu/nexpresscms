@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — Denetim günlüğü: CSV dışa aktarma ve elle temizleme
+- ✅ `/admin/audit`: başlangıç/bitiş günü süzgeçleri; `GET /api/admin/audit/export` CSV (BOM, CRLF, formül enjeksiyonuna karşı kaçış — mevcut `toCsv` yeniden kullanıldı; 50.000 satır üst sınırı). `AuditRepository`: `until` süzgeci ve `purgeOlderThan` (kiracıya kapalı). `@nexpress/core`: `auditCsvRow`, `auditPurgeCutoff` (en az 30 gün).
+- ✅ Temizleme `audit.purged` olarak günlüğe yazılır. Testler: çekirdek (CSV, sınır), depo (SQLite + PostgreSQL, kiracı yalıtımı). Tarayıcıyla doğrulandı (401, CSV, süzgeç, 400, temizleme). Zamanlanmış saklama yok.
+
 ### [2026-10-31] — İki adımlı doğrulama (TOTP) ve kurtarma kodları
 - ✅ `@nexpress/core/totp`: RFC 6238 (SHA-1/6/30), base32, ±1 adım penceresi, yeniden kullanım engeli, `otpauth` adresi, kurtarma kodları (özet + tek kullanım). RFC test vektörleriyle testli. `account-token`a 5 dakikalık `mfa` amacı eklendi (parola belirlemede geçmez).
 - ✅ Göç `0014_two_factor` (`users`: `totp_secret`, `totp_enabled_at`, `totp_last_step`, `recovery_codes`); `UserRepository`: `setTotpPending / enableTotp / disableTotp / advanceTotpStep / replaceRecoveryCodes` (atomik, kiracıya kapalı). Test: SQLite + PostgreSQL.

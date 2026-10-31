@@ -146,3 +146,22 @@ test("iki adımlı doğrulama: kurulum bekler, açılır, adım yalnızca ilerle
 });
 
 const toSummaryFlag = (u: import("../src/user-repository").UserDto) => users.toSummary(u).twoFactorEnabled;
+
+test("denetim günlüğü: bitiş süzgeci ve eski kayıtları temizleme yalnızca kendi kiracısını etkiler", async () => {
+  const a = audit.getAuditRepository("site-purge-a");
+  const b = audit.getAuditRepository("site-purge-b");
+  const day = 86_400_000;
+  const now = Date.now();
+  for (const [age, who] of [[100, "eski1"], [60, "eski2"], [10, "yeni"]] as const) {
+    await a.record({ action: "x.y", actorEmail: `${who}@example.com`, at: new Date(now - age * day) });
+  }
+  await b.record({ action: "x.y", actorEmail: "baska@example.com", at: new Date(now - 200 * day) });
+
+  assert.equal(await a.count({ until: new Date(now - 30 * day) }), 2);
+  assert.equal(await a.count({ since: new Date(now - 70 * day), until: new Date(now - 30 * day) }), 1);
+
+  assert.equal(await a.purgeOlderThan(new Date(now - 30 * day)), 2);
+  assert.deepEqual((await a.list()).map((r) => r.actorEmail), ["yeni@example.com"]);
+  assert.equal(await a.purgeOlderThan(new Date(now - 30 * day)), 0, "ikinci çağrı silecek bir şey bulmaz");
+  assert.equal(await b.count(), 1, "başka kiracının kaydı korunur");
+});

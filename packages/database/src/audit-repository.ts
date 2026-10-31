@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, lte, sql } from "drizzle-orm";
 import { getCmsContext, type DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
@@ -33,6 +33,8 @@ export interface AuditQuery {
   /** `content.` gibi ön ek veya tam eylem adı */
   actionPrefix?: string;
   since?: Date;
+  /** Bu andan (dahil) önceki kayıtlar */
+  until?: Date;
 }
 
 const MAX_DETAIL = 500;
@@ -69,7 +71,8 @@ export class AuditRepository {
           eq(audit.siteId, this.siteId),
           query.actorEmail ? eq(audit.actorEmail, query.actorEmail.toLowerCase()) : undefined,
           query.actionPrefix ? sql`${audit.action} LIKE ${`${likeEscape(query.actionPrefix)}%`} ESCAPE '!'` : undefined,
-          query.since ? gte(audit.at, query.since) : undefined
+          query.since ? gte(audit.at, query.since) : undefined,
+          query.until ? lte(audit.at, query.until) : undefined
         )
       )
       .orderBy(desc(audit.at))
@@ -78,7 +81,7 @@ export class AuditRepository {
     return rows;
   }
 
-  public async count(query: Pick<AuditQuery, "actorEmail" | "actionPrefix" | "since"> = {}): Promise<number> {
+  public async count(query: Pick<AuditQuery, "actorEmail" | "actionPrefix" | "since" | "until"> = {}): Promise<number> {
     const { db, audit } = backendFor(this.dialect);
     const rows = await db
       .select({ n: sql<number>`count(*)` })
@@ -88,10 +91,22 @@ export class AuditRepository {
           eq(audit.siteId, this.siteId),
           query.actorEmail ? eq(audit.actorEmail, query.actorEmail.toLowerCase()) : undefined,
           query.actionPrefix ? sql`${audit.action} LIKE ${`${likeEscape(query.actionPrefix)}%`} ESCAPE '!'` : undefined,
-          query.since ? gte(audit.at, query.since) : undefined
+          query.since ? gte(audit.at, query.since) : undefined,
+          query.until ? lte(audit.at, query.until) : undefined
         )
       );
     return Number(rows[0]?.n ?? 0);
+  }
+  /**
+   * Bu andan ESKİ kayıtları siler ve silinen sayıyı döner (yalnızca bu kiracı). Günlük normalde yalnızca eklenir;
+   * bu, yönetici eyleminin açık ve denetime yazılan istisnasıdır. Alt sınır kuralı çağıranın işidir (`auditPurgeCutoff`).
+   */
+  public async purgeOlderThan(cutoff: Date): Promise<number> {
+    const { db, audit } = backendFor(this.dialect);
+    const where = and(eq(audit.siteId, this.siteId), lt(audit.at, cutoff));
+    const n = Number((await db.select({ n: sql<number>`count(*)` }).from(audit).where(where))[0]?.n ?? 0);
+    if (n > 0) await db.delete(audit).where(where);
+    return n;
   }
 }
 
