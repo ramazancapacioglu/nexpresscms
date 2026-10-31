@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — llms ve ai-sitemap dile göre
+- ✅ `/{locale}/ai-sitemap.json` ve `/{locale}/llms-full.txt` eklendi (mantık `lib/ai-sitemap-response.ts`, `lib/llms-full-response.ts`); `ai-sitemap.json` artık `localeEndpoints` ile tüm dillerin adreslerini verir. Hata düzeltildi: `llms-full.txt` bağlantıları dilden bağımsız `/tr/` yazıyordu. Etkin olmayan dil, mevcut `llms.txt` gibi varsayılana düşer. Yalnızca `tr` etkin olan seed sitede elle doğrulandı; ikinci dilli site denenmedi.
+
 ### [2026-10-31] — Kimlik akışları için CI uçtan uca testi
 - ✅ `apps/cms/scripts/auth-e2e.mjs` (`auth:e2e`): davet → parola → tek kullanımlık bağlantı → unuttum yanıtı → 2FA kurulum/giriş/yeniden kullanım/kurtarma kodu/kapatma (20 doğrulama, yerelde geçti); CI `a11y` işinde axe taramasından sonra koşar. Yorum/inceleme için herkese açık uç olmadığı görüldü; roadmap düzeltildi.
 
