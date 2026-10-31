@@ -83,6 +83,12 @@ jobs:
           A11Y_PASSWORD: ${{ env.ADMIN_DEFAULT_PASSWORD }}
           A11Y_OUT: ${{ github.workspace }}/a11y-report.json
         run: pnpm --filter @nexpress/cms a11y
+      - name: Kimlik akışları uçtan uca (davet, parola, 2FA)
+        env:
+          AUTH_E2E_BASE_URL: http://localhost:3000
+          AUTH_E2E_EMAIL: ${{ env.ADMIN_DEFAULT_EMAIL }}
+          AUTH_E2E_PASSWORD: ${{ env.ADMIN_DEFAULT_PASSWORD }}
+        run: pnpm --filter @nexpress/cms auth:e2e
       - name: Rapor
         if: always()
         uses: actions/upload-artifact@v4

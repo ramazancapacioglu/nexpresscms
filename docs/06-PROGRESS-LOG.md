@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — Kimlik akışları için CI uçtan uca testi
+- ✅ `apps/cms/scripts/auth-e2e.mjs` (`auth:e2e`): davet → parola → tek kullanımlık bağlantı → unuttum yanıtı → 2FA kurulum/giriş/yeniden kullanım/kurtarma kodu/kapatma (20 doğrulama, yerelde geçti); CI `a11y` işinde axe taramasından sonra koşar. Yorum/inceleme için herkese açık uç olmadığı görüldü; roadmap düzeltildi.
+
 ### [2026-10-31] — Denetim günlüğü: CSV dışa aktarma ve elle temizleme
 - ✅ `/admin/audit`: başlangıç/bitiş günü süzgeçleri; `GET /api/admin/audit/export` CSV (BOM, CRLF, formül enjeksiyonuna karşı kaçış — mevcut `toCsv` yeniden kullanıldı; 50.000 satır üst sınırı). `AuditRepository`: `until` süzgeci ve `purgeOlderThan` (kiracıya kapalı). `@nexpress/core`: `auditCsvRow`, `auditPurgeCutoff` (en az 30 gün).
 - ✅ Temizleme `audit.purged` olarak günlüğe yazılır. Testler: çekirdek (CSV, sınır), depo (SQLite + PostgreSQL, kiracı yalıtımı). Tarayıcıyla doğrulandı (401, CSV, süzgeç, 400, temizleme). Zamanlanmış saklama yok.
