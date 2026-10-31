@@ -22,7 +22,7 @@ export function TwoFactorCard({ enabled: initial }: { enabled: boolean }) {
   const [pending, start] = useTransition();
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
-  const [setup, setSetup] = useState<{ secret: string; uri: string } | null>(null);
+  const [setup, setSetup] = useState<{ secret: string; uri: string; qrSvg: string } | null>(null);
   const [recovery, setRecovery] = useState<string[] | null>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
@@ -72,7 +72,7 @@ export function TwoFactorCard({ enabled: initial }: { enabled: boolean }) {
       )}
 
       {mode === "setup" && !setup && (
-        <form className="space-y-2 max-w-sm" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await beginTwoFactorSetupAction({ password }); if (r.ok) { setSetup({ secret: r.secret, uri: r.uri }); setPassword(""); setMessage(null); } else fail(r.error); }); }}>
+        <form className="space-y-2 max-w-sm" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await beginTwoFactorSetupAction({ password }); if (r.ok) { setSetup({ secret: r.secret, uri: r.uri, qrSvg: r.qrSvg }); setPassword(""); setMessage(null); } else fail(r.error); }); }}>
           <label className="block space-y-1 text-[12px] font-medium">Mevcut parolanız<input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className={field} /></label>
           <div className="flex gap-2"><button type="submit" disabled={pending} className={btn}>Devam</button><button type="button" className={btnGhost} onClick={() => reset()}>Vazgeç</button></div>
         </form>
@@ -80,7 +80,8 @@ export function TwoFactorCard({ enabled: initial }: { enabled: boolean }) {
 
       {mode === "setup" && setup && (
         <form className="space-y-2 max-w-md" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await confirmTwoFactorSetupAction({ code }); if (r.ok) { setEnabled(true); setRecovery(r.recoveryCodes); reset(); setMessage({ kind: "ok", text: "İki adımlı doğrulama açıldı." }); } else fail(r.error); }); }}>
-          <p className="text-[12px]">Doğrulayıcı uygulamanızda <b>anahtar girerek</b> yeni hesap ekleyin (zaman tabanlı) ve aşağıdaki kodu yazın:</p>
+          <p className="text-[12px]">Doğrulayıcı uygulamanızla QR kodunu tarayın ya da <b>anahtarı elle girin</b> (zaman tabanlı), sonra uygulamadaki kodu yazın:</p>
+          <div role="img" aria-label="Kurulum QR kodu" className="h-40 w-40 rounded bg-white p-1" dangerouslySetInnerHTML={{ __html: setup.qrSvg }} />
           <code aria-label="Kurulum anahtarı" className={`block select-all break-all rounded border ${border} px-2 py-1.5 font-mono text-[13px] tracking-wider`}>{setup.secret}</code>
           <a href={setup.uri} className="text-[11px] underline">Uygulamada aç (otpauth)</a>
           <label className="block space-y-1 text-[12px] font-medium">Uygulamadaki 6 haneli kod<input inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={(e) => setCode(e.target.value)} className={field} /></label>

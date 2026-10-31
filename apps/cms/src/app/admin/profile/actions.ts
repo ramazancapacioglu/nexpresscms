@@ -12,7 +12,7 @@ import { requireUser } from "@/lib/auth/session";
 export type ProfileResult = { ok: true } | { ok: false; error: string };
 
 export async function updateProfileAction(input: { name: string }): Promise<ProfileResult> {
-  const me = await requireUser({ audit: "profile.update" });
+  const me = await requireUser({ audit: "profile.update", allowWithout2fa: true });
   const name = input.name.trim();
   if (name.length > 80) return { ok: false, error: "Ad en çok 80 karakter olabilir." };
   await getUserRepository(me.siteId).setName(me.sub, name);
@@ -24,7 +24,7 @@ export async function updateProfileAction(input: { name: string }): Promise<Prof
  * Mevcut parola yanlışsa denetim günlüğüne `auth.passwordChangeFailed` yazılır.
  */
 export async function changePasswordAction(input: { current: string; next: string }): Promise<ProfileResult> {
-  const me = await requireUser();
+  const me = await requireUser({ allowWithout2fa: true });
   const repo = getUserRepository(me.siteId);
   const user = await repo.findById(me.sub);
   if (!user || !(await verifyPassword(input.current, user.passwordHash))) {
@@ -43,14 +43,14 @@ export async function changePasswordAction(input: { current: string; next: strin
 
 /** Bu cihaz dahil tüm oturumları kapatır. */
 export async function signOutEverywhereAction(): Promise<void> {
-  const me = await requireUser({ audit: "auth.signOutEverywhere" });
+  const me = await requireUser({ audit: "auth.signOutEverywhere", allowWithout2fa: true });
   await getUserRepository(me.siteId).revokeSessions(me.sub);
   redirect("/login");
 }
 
 /** Kullanıcının panel arayüz dilini kaydeder (yalnızca kataloğu olan diller). İçerik dilini etkilemez. */
 export async function setUiLocaleAction(input: { locale: string }): Promise<ProfileResult> {
-  const me = await requireUser({ audit: "profile.uiLocale" });
+  const me = await requireUser({ audit: "profile.uiLocale", allowWithout2fa: true });
   if (!isUiLocale(input.locale)) return { ok: false, error: "Desteklenmeyen dil." };
   await getUserRepository(me.siteId).setUiLocale(me.sub, input.locale);
   return { ok: true };

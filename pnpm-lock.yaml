@@ -110,6 +110,9 @@ importers:
       postgres:
         specifier: ^3.4.5
         version: 3.4.9
+      qrcode-generator:
+        specifier: ^2.0.4
+        version: 2.0.4
       react:
         specifier: ^19.0.0
         version: 19.3.1
@@ -1893,6 +1896,9 @@ packages:
   prosemirror-view@1.42.7:
     resolution: {integrity: sha512-aTIAUN4zdD+VS7gsv9Po9Sty81B6yl6D3HggCosry9DLYTmVo4omjcqICDIOPnPJmskRUsqLInxBjaH7I+BQ4Q==}
 
+  qrcode-generator@2.0.4:
+    resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
+
   react-dom@19.3.1:
     resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
     peerDependencies:
@@ -3228,6 +3234,8 @@ snapshots:
       prosemirror-model: 1.25.12
       prosemirror-state: 1.4.4
       prosemirror-transform: 1.12.4
+
+  qrcode-generator@2.0.4: {}
 
   react-dom@19.3.1(react@19.3.1):
     dependencies:

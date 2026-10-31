@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getCmsMode, PluginSlot } from "@nexpress/core";
 import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { logoutAction } from "@/app/login/actions";
-import { getSession } from "@/lib/auth/session";
+import { getSession, mustSetUpTwoFactor } from "@/lib/auth/session";
 import { ThemeBoundary } from "@/components/admin/theme-boundary";
 import { createTranslator } from "@nexpress/i18n";
 import { AdminShellClient } from "@/components/admin/admin-shell-client";
@@ -22,6 +22,7 @@ export default async function AdminLayout({
 
   const session = await getSession();
   if (!session) redirect("/login");
+  if (mustSetUpTwoFactor(session) && !(reqHeaders.get("x-nexpress-pathname") ?? "").startsWith("/admin/profile")) redirect("/admin/profile?2fa=required");
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
   const t = createTranslator(session.uiLocale);

@@ -26,6 +26,7 @@ export async function middleware(request: NextRequest) {
       previewing = true;
     }
   }
+  requestHeaders.set("x-nexpress-pathname", pathname);
   // Sayfa dili (kök <html lang/dir> için): ilk yol parçası dil etiketi gibiyse o, değilse boş
   const lang = pathname.match(/^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/|$)/)?.[1];
   if (lang) requestHeaders.set("x-nexpress-locale", lang);

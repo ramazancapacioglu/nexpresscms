@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — 2FA: QR kodu ve yönetici zorunluluğu
+- ✅ Kurulumda QR kodu (sunucuda SVG, `qrcode-generator`). `REQUIRE_ADMIN_2FA=1`: 2FA'sı olmayan yönetici girişten sonra `/admin/profile?2fa=required` sayfasına düşer; diğer admin sayfaları/eylemleri oraya yönlendirir (`SessionUser.twoFactor`, `mustSetUpTwoFactor`, middleware `x-nexpress-pathname`). Tarayıcıyla doğrulandı; QR bir okuyucuyla çözülerek denenmedi.
+
 ### [2026-10-31] — llms ve ai-sitemap dile göre
 - ✅ `/{locale}/ai-sitemap.json` ve `/{locale}/llms-full.txt` eklendi (mantık `lib/ai-sitemap-response.ts`, `lib/llms-full-response.ts`); `ai-sitemap.json` artık `localeEndpoints` ile tüm dillerin adreslerini verir. Hata düzeltildi: `llms-full.txt` bağlantıları dilden bağımsız `/tr/` yazıyordu. Etkin olmayan dil, mevcut `llms.txt` gibi varsayılana düşer. Yalnızca `tr` etkin olan seed sitede elle doğrulandı; ikinci dilli site denenmedi.
 

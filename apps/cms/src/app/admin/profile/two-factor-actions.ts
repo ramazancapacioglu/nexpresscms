@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { verifyPassword } from "@nexpress/core/password";
 import { decryptSecret, encryptSecret } from "@nexpress/core/secret-box";
 import { generateRecoveryCodes, generateTotpSecret, hashRecoveryCode, otpauthUri, verifyTotp } from "@nexpress/core/totp";
+import qrcode from "qrcode-generator";
 import { getScopedRepository, getUserRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { issueSession } from "@/lib/auth/issue";
@@ -15,20 +16,24 @@ export type TwoFactorResult<T extends object = object> = ({ ok: true } & T) | { 
 const BAD_PASSWORD = "Mevcut parola hatalı.";
 
 async function loadMe(audit: string) {
-  const me = await requireUser({ audit });
+  const me = await requireUser({ audit, allowWithout2fa: true });
   const user = await getUserRepository(me.siteId).findById(me.sub);
   return { me, user };
 }
 
 /** Kurulumu başlatır (mevcut parola şart): yeni anahtar üretilir, kod doğrulanana kadar 2FA AÇILMAZ. */
-export async function beginTwoFactorSetupAction(input: { password: string }): Promise<TwoFactorResult<{ secret: string; uri: string }>> {
+export async function beginTwoFactorSetupAction(input: { password: string }): Promise<TwoFactorResult<{ secret: string; uri: string; qrSvg: string }>> {
   const { me, user } = await loadMe("profile.2fa-begin");
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) return { ok: false, error: BAD_PASSWORD };
   if (user.totpEnabledAt) return { ok: false, error: "İki adımlı doğrulama zaten açık." };
   const secret = generateTotpSecret();
   await getUserRepository(me.siteId).setTotpPending(user.id, encryptSecret(secret));
   const site = await getScopedRepository(me.siteId).getSite();
-  return { ok: true, secret, uri: otpauthUri(secret, user.email, site?.name || "NexPress") };
+  const uri = otpauthUri(secret, user.email, site?.name || "NexPress");
+  const qr = qrcode(0, "M");
+  qr.addData(uri);
+  qr.make();
+  return { ok: true, secret, uri, qrSvg: qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) };
 }
 
 /** Uygulamadaki ilk kodu doğrular, 2FA'yı açar ve kurtarma kodlarını BİR KEZ gösterilmek üzere döner. */
