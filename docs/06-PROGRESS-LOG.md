@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — İki adımlı doğrulama (TOTP) ve kurtarma kodları
+- ✅ `@nexpress/core/totp`: RFC 6238 (SHA-1/6/30), base32, ±1 adım penceresi, yeniden kullanım engeli, `otpauth` adresi, kurtarma kodları (özet + tek kullanım). RFC test vektörleriyle testli. `account-token`a 5 dakikalık `mfa` amacı eklendi (parola belirlemede geçmez).
+- ✅ Göç `0014_two_factor` (`users`: `totp_secret`, `totp_enabled_at`, `totp_last_step`, `recovery_codes`); `UserRepository`: `setTotpPending / enableTotp / disableTotp / advanceTotpStep / replaceRecoveryCodes` (atomik, kiracıya kapalı). Test: SQLite + PostgreSQL.
+- ✅ Giriş: parola doğruysa `nx_mfa` çerezi + `/login/verify`; sıfırlama bağlantısı 2FA'lı hesapta oturum açmaz. Profilde "İki adımlı doğrulama" kartı (kur / kapat / kodları yenile); yönetici "2FA'yı sıfırla".
+- ✅ Doğrulama: gerçek tarayıcıyla (yanlış parola/kod reddi, kod girilmeden /admin kapalı, doğru kodla giriş, aynı kod ikinci kez reddi, kurtarma kodu bir kez, kapatma). QR kodu yok (anahtar elle girilir).
+
 ### [2026-10-30] — E-postayla davet ve parola sıfırlama
 - ✅ `@nexpress/core/account-token` (Node'a özgü alt yol): durumsuz HMAC belirteç `amaç.kullanıcı.parolaZamanı.bitiş.imza`; imzaya site ve amaç girer, sıfırlama 1 saat / davet 7 gün, **tek kullanım** = kullanıcının `passwordChangedAt` değeri (saniye çözünürlüğü) belirteçle eşleşmeli; parola değişince eski bağlantı bayatlar. Ek tablo/göç yok. Testli (süre, kurcalama, başka site/amaç, tek kullanım).
 - ✅ `/forgot-password` (yanıt hesap varlığını sızdırmaz; e-posta `after()` ile yanıttan sonra; e-posta + IP başına saatte 5 istek), `/reset-password?t=…` (`referrer: no-referrer`, parola politikası, başarıda oturum açılır, eski oturumlar kapanır), giriş sayfasında "Parolamı unuttum".

@@ -13,6 +13,7 @@
     "./secret-box": "./src/secret-box.ts",
     "./draft-preview": "./src/draft-preview.ts",
     "./account-token": "./src/account-token.ts",
+    "./totp": "./src/totp.ts",
     "./markdown": "./src/markdown-compiler.ts",
     "./types": "./src/types.ts"
   },

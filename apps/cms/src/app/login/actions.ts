@@ -9,6 +9,7 @@ import { SESSION_COOKIE } from "@/lib/auth/config";
 import { issueSession } from "@/lib/auth/issue";
 import { getSession } from "@/lib/auth/session";
 import { recordAudit } from "@/lib/audit";
+import { startMfaChallenge } from "@/lib/auth/mfa";
 import { clearLoginFailures, isLoginBlocked, recordLoginFailure } from "@/lib/auth/login-limiter";
 
 export interface LoginState {
@@ -56,6 +57,11 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
     return { error: "E-posta veya parola hatalı." };
   }
 
+  // İkinci adım açıksa oturum burada AÇILMAZ: parola doğru olsa da kod doğrulanana kadar giriş yoktur
+  if (user.totpEnabledAt) {
+    await startMfaChallenge(siteId, user);
+    redirect(`/login/verify?next=${encodeURIComponent(next)}`);
+  }
   clearLoginFailures(limitKey);
   await repo.touchLogin(user.id);
   await issueSession(user);

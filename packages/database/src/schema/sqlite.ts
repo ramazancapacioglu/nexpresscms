@@ -660,6 +660,13 @@ export const sqliteUsers = sqliteTable(
     uiLocale: text("ui_locale"),
     status: text("status").$type<"active" | "disabled">().default("active").notNull(),
     passwordChangedAt: integer("password_changed_at", { mode: "timestamp" }),
+    /** İki adımlı doğrulama: `secret-box` ile şifreli TOTP anahtarı; `totpEnabledAt` doluysa giriş ikinci adım ister */
+    totpSecret: text("totp_secret"),
+    totpEnabledAt: integer("totp_enabled_at", { mode: "timestamp" }),
+    /** Son kabul edilen TOTP adımı (aynı kodun yeniden kullanımını engeller) */
+    totpLastStep: integer("totp_last_step"),
+    /** Kurtarma kodu SHA-256 özetleri (JSON dizi) */
+    recoveryCodes: text("recovery_codes"),
   },
   (t) => [
     index("users_site_id_idx").on(t.siteId),

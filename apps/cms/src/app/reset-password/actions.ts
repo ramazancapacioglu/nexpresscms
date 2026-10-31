@@ -35,6 +35,8 @@ export async function resetPasswordAction(_prev: ResetState, form: FormData): Pr
   await repo.setPassword(found.user.id, await hashPassword(password)); // parola zamanı değişir: bağlantı bayatlar, eski oturumlar kapanır
   const fresh = await repo.findById(found.user.id);
   await recordAudit({ id: found.user.id, email: found.user.email }, found.purpose === "invite" ? "user.invite_accepted" : "auth.password_reset_done", { siteId });
+  // İki adımlı doğrulaması açık hesap sıfırlamadan sonra doğrudan oturum açmaz: parola + kod ister
+  if (fresh?.totpEnabledAt) redirect("/login");
   if (fresh) {
     await repo.touchLogin(fresh.id);
     await issueSession(fresh);

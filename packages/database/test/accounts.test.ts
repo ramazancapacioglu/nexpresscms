@@ -108,3 +108,41 @@ test("panel arayüz dili: varsayılan boş, kaydedilir, başka kiracıdaki kulla
   await a.setUiLocale(u.id, null);
   assert.equal((await a.findById(u.id))!.uiLocale, null);
 });
+
+test("iki adımlı doğrulama: kurulum bekler, açılır, adım yalnızca ilerler, kod tek kullanımlık, kapanınca silinir, kiracıya kapalı", async () => {
+  const a = users.getUserRepository("site-2fa-a");
+  const b = users.getUserRepository("site-2fa-b");
+  const u = await a.create({ email: "iki@example.com", passwordHash: "h", role: "admin" });
+  assert.equal(toSummaryFlag(u), false);
+
+  await a.setTotpPending(u.id, "enc:gizli");
+  let cur = (await a.findById(u.id))!;
+  assert.equal(cur.totpSecret, "enc:gizli");
+  assert.equal(cur.totpEnabledAt, null, "kurulum bitmeden giriş ikinci adım istemez");
+
+  await a.enableTotp(u.id, 100, ["h1", "h2"]);
+  cur = (await a.findById(u.id))!;
+  assert.equal(toSummaryFlag(cur), true);
+  assert.equal(cur.totpLastStep, 100);
+
+  assert.equal(await a.advanceTotpStep(u.id, 100), false, "aynı adım");
+  assert.equal(await a.advanceTotpStep(u.id, 99), false, "eski adım");
+  assert.equal(await a.advanceTotpStep(u.id, 101), true);
+  assert.equal(await a.advanceTotpStep(u.id, 101), false, "yeniden kullanım");
+  assert.equal(await b.advanceTotpStep(u.id, 500), false, "başka kiracı");
+
+  const json = cur.recoveryCodes;
+  assert.equal(await a.replaceRecoveryCodes(u.id, json, ["h2"]), true);
+  assert.equal(await a.replaceRecoveryCodes(u.id, json, ["h1"]), false, "eski listeye dayalı ikinci kullanım reddedilir");
+  assert.deepEqual(JSON.parse((await a.findById(u.id))!.recoveryCodes!), ["h2"]);
+
+  const sv = cur.sessionVersion;
+  await a.disableTotp(u.id);
+  cur = (await a.findById(u.id))!;
+  assert.equal(cur.totpSecret, null);
+  assert.equal(cur.recoveryCodes, null);
+  assert.equal(toSummaryFlag(cur), false);
+  assert.ok(cur.sessionVersion > sv, "oturumlar kapanır");
+});
+
+const toSummaryFlag = (u: import("../src/user-repository").UserDto) => users.toSummary(u).twoFactorEnabled;

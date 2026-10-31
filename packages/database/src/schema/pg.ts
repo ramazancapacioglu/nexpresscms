@@ -664,6 +664,13 @@ export const pgUsers = pgTable(
     uiLocale: text("ui_locale"),
     status: text("status").$type<"active" | "disabled">().default("active").notNull(),
     passwordChangedAt: timestamp("password_changed_at"),
+    /** İki adımlı doğrulama: `secret-box` ile şifreli TOTP anahtarı; `totpEnabledAt` doluysa giriş ikinci adım ister */
+    totpSecret: text("totp_secret"),
+    totpEnabledAt: timestamp("totp_enabled_at"),
+    /** Son kabul edilen TOTP adımı (aynı kodun yeniden kullanımını engeller) */
+    totpLastStep: integer("totp_last_step"),
+    /** Kurtarma kodu SHA-256 özetleri (JSON dizi) */
+    recoveryCodes: text("recovery_codes"),
   },
   (t) => [
     index("users_site_id_idx").on(t.siteId),

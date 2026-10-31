@@ -11,6 +11,7 @@ import {
   type UserActionResult,
 } from "@/app/admin/users/actions";
 import { inviteUserAction, sendResetLinkAction, type InviteResult } from "@/app/admin/users/invite-actions";
+import { adminDisableTwoFactorAction } from "@/app/admin/users/two-factor-actions";
 import { PASSWORD_MIN_LENGTH, type UserRole } from "@nexpress/core";
 import { Mail, UserPlus } from "lucide-react";
 
@@ -126,6 +127,12 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                         {!self && (
                           <button type="button" disabled={pending} className={`h-7 rounded border ${border} px-2`} onClick={() => { setResetFor(resetFor === u.id ? null : u.id); setResetPw(""); }}>
                             Parola sıfırla
+                          </button>
+                        )}
+                        {!self && u.twoFactorEnabled && (
+                          <button type="button" disabled={pending} className={`h-7 rounded border ${border} px-2`}
+                            onClick={() => { if (window.confirm(`${u.email} için iki adımlı doğrulama kapatılsın mı? Oturumları kapanır.`)) run(() => adminDisableTwoFactorAction({ id: u.id }), "İki adımlı doğrulama kapatıldı.", () => patch(u.id, { twoFactorEnabled: false })); }}>
+                            2FA'yı sıfırla
                           </button>
                         )}
                         {!self && u.status === "active" && (

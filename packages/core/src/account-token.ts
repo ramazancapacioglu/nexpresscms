@@ -5,11 +5,12 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * Biçim: `<amaç>.<kullanıcıKimliği>.<parolaDeğişimMs>.<bitişSn>.<hmac>`.
  * Tek kullanımlıktır ve ek tablo gerektirmez: belirteç kullanıcının SON PAROLA DEĞİŞİM zamanına bağlıdır; parola
  * belirlenince (veya başka bir yoldan değişince) zaman damgası değiştiği için aynı belirteç bir daha doğrulanmaz.
+ * `mfa` amacı: parola doğrulandıktan sonra ikinci adım için 5 dakikalık geçici belirteç.
  * İmza `AUTH_SECRET` ile atılır; amaç imzaya girer (sıfırlama belirteci davet olarak kullanılamaz).
  */
-export type AccountTokenPurpose = "reset" | "invite";
+export type AccountTokenPurpose = "reset" | "invite" | "mfa";
 
-export const ACCOUNT_TOKEN_TTL_SECONDS: Record<AccountTokenPurpose, number> = { reset: 60 * 60, invite: 7 * 24 * 60 * 60 };
+export const ACCOUNT_TOKEN_TTL_SECONDS: Record<AccountTokenPurpose, number> = { reset: 60 * 60, invite: 7 * 24 * 60 * 60, mfa: 5 * 60 };
 
 /** SQLite zaman damgasını saniye tutar; karşılaştırma saniye çözünürlüğündedir. */
 const stamp = (d: Date | null) => (d ? Math.floor(d.getTime() / 1000) * 1000 : 0);
@@ -37,7 +38,7 @@ export function verifyAccountToken(secret: string, siteId: string, token: string
   const parts = token.split(".");
   if (parts.length !== 5) return null;
   const [purpose, userId, pwdRaw, expRaw, given] = parts as [string, string, string, string, string];
-  if (purpose !== "reset" && purpose !== "invite") return null;
+  if (purpose !== "reset" && purpose !== "invite" && purpose !== "mfa") return null;
   const pwdMs = Number(pwdRaw);
   const exp = Number(expRaw);
   if (!ID_RE.test(userId) || !Number.isInteger(pwdMs) || pwdMs < 0 || !Number.isInteger(exp) || !given) return null;

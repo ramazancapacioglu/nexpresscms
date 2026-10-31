@@ -37,7 +37,7 @@ export async function sendAccountMail(siteId: string, userId: string, purpose: A
 /** Belirteçten kullanıcıyı çözer; imza, süre, tek kullanım (parola zamanı), etkin hesap denetlenir. */
 export async function resolveAccountToken(siteId: string, token: string) {
   const parsed = verifyAccountToken(getAuthSecret(), siteId, token);
-  if (!parsed) return null;
+  if (!parsed || parsed.purpose === "mfa") return null; // ikinci adım belirteci parola belirlemede geçmez
   const user = await getUserRepository(siteId).findById(parsed.userId);
   if (!user || user.status !== "active" || !isTokenCurrent(parsed, user)) return null;
   return { user, purpose: parsed.purpose };

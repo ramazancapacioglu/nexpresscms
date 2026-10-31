@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, lt, or, sql } from "drizzle-orm";
 import { getCmsContext, type DbDialect, type UserRole } from "@nexpress/core";
 import { backendFor } from "./dialect";
 import { getDbDialect } from "./client";
@@ -18,12 +18,20 @@ export interface UserSummaryDto {
   uiLocale: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
+  /** İki adımlı doğrulama açık mı (anahtar ve kodlar arayüze verilmez) */
+  twoFactorEnabled: boolean;
 }
 
-export interface UserDto extends UserSummaryDto {
+export interface UserDto extends Omit<UserSummaryDto, "twoFactorEnabled"> {
   passwordHash: string;
   /** Son parola değişimi; hesap bağlantısı belirteçleri buna bağlıdır (tek kullanım). */
   passwordChangedAt: Date | null;
+  /** `secret-box` ile şifreli TOTP anahtarı (kurulum bekliyorsa da dolu olabilir) */
+  totpSecret: string | null;
+  totpEnabledAt: Date | null;
+  totpLastStep: number | null;
+  /** Kurtarma kodu özetleri (JSON dizi) */
+  recoveryCodes: string | null;
 }
 
 type Row = {
@@ -39,10 +47,14 @@ type Row = {
   createdAt: Date;
   lastLoginAt: Date | null;
   passwordChangedAt: Date | null;
+  totpSecret: string | null;
+  totpEnabledAt: Date | null;
+  totpLastStep: number | null;
+  recoveryCodes: string | null;
 };
 
 const toDto = (r: Row): UserDto => ({ ...r });
-export const toSummary = ({ passwordHash: _h, passwordChangedAt: _p, ...rest }: UserDto): UserSummaryDto => rest;
+export const toSummary = ({ passwordHash: _h, passwordChangedAt: _p, totpSecret: _s, totpLastStep: _l, recoveryCodes: _r, totpEnabledAt, ...rest }: UserDto): UserSummaryDto => ({ ...rest, twoFactorEnabled: totpEnabledAt !== null });
 
 export class UserRepository {
   constructor(
@@ -99,6 +111,10 @@ export class UserRepository {
       createdAt: now,
       lastLoginAt: null,
       passwordChangedAt: now,
+      totpSecret: null,
+      totpEnabledAt: null,
+      totpLastStep: null,
+      recoveryCodes: null,
     };
     await db.insert(users).values(record);
     return toDto(record);
@@ -131,6 +147,40 @@ export class UserRepository {
   public async setPassword(id: string, passwordHash: string): Promise<number> {
     await this.patch(id, { passwordHash, passwordChangedAt: new Date() });
     return this.revokeSessions(id);
+  }
+  /** Kurulum başlatır: şifreli anahtarı yazar, açık 2FA'yı kapatır (kurulum bitene kadar giriş ikinci adım istemez). */
+  public setTotpPending(id: string, encryptedSecret: string) {
+    return this.patch(id, { totpSecret: encryptedSecret, totpEnabledAt: null, totpLastStep: null, recoveryCodes: null });
+  }
+  /** Kurulum doğrulanınca 2FA'yı açar ve kurtarma kodu özetlerini yazar. */
+  public enableTotp(id: string, step: number, recoveryHashes: string[]) {
+    return this.patch(id, { totpEnabledAt: new Date(), totpLastStep: step, recoveryCodes: JSON.stringify(recoveryHashes) });
+  }
+  /** 2FA'yı kapatır, anahtarı ve kodları siler; oturumlar kapanır. */
+  public async disableTotp(id: string) {
+    await this.patch(id, { totpSecret: null, totpEnabledAt: null, totpLastStep: null, recoveryCodes: null });
+    await this.revokeSessions(id);
+  }
+  /** Adımı atomik "ilerlet": yalnızca daha yeni bir adımsa başarılı olur (aynı kodun yarışla iki kez kabulü olmaz). */
+  public async advanceTotpStep(id: string, step: number): Promise<boolean> {
+    const { db, users } = this.b;
+    const rows = await db
+      .update(users)
+      .set({ totpLastStep: step })
+      .where(this.scope(and(eq(users.id, id), or(isNull(users.totpLastStep), lt(users.totpLastStep, step)))!))
+      .returning({ id: users.id });
+    return rows.length > 0;
+  }
+  /** Kurtarma kodu listesini karşılaştır-ve-değiştir ile günceller (kullanılan kod tek seferlik). */
+  public async replaceRecoveryCodes(id: string, expectedJson: string | null, hashes: string[]): Promise<boolean> {
+    const { db, users } = this.b;
+    const cond = expectedJson === null ? isNull(users.recoveryCodes) : eq(users.recoveryCodes, expectedJson);
+    const rows = await db
+      .update(users)
+      .set({ recoveryCodes: JSON.stringify(hashes) })
+      .where(this.scope(and(eq(users.id, id), cond)!))
+      .returning({ id: users.id });
+    return rows.length > 0;
   }
   /** Oturum sürümünü artırır (atomik) ve yeni değeri döner. */
   public async revokeSessions(id: string): Promise<number> {
