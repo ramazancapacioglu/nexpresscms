@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { BlockNode } from "@nexpress/core";
-import { analyzeSeo, slugify, truncateSmart } from "../src/engine";
+import { analyzeSeo, resolveSeoMeta, slugify, truncateSmart } from "../src/engine";
 
 const blocks: BlockNode[] = [
   { id: "h", type: "heading", props: { text: "Alt başlık", level: 2 } },
@@ -57,4 +57,13 @@ test("SEO dil profili: Türkçe I/ı kuralı yalnızca tr/az'da; okunabilirlik e
   assert.equal(en.status, "pass", "İngilizce: INTERNET başlıktaki internet ile eşleşir");
   const tr = analyzeSeo({ ...base, locale: "tr" }).checks.find((c) => c.id === "kw_title")!;
   assert.equal(tr.status, "fail", "Türkçe kuralıyla ınternet ≠ internet (profil farkı)");
+});
+
+test("autoCanonical: açıkken sayfa adresi yazılır, kapalıyken yalnızca elle verilen canonical kalır", () => {
+  const base = { siteName: "S", baseUrl: "https://x.test", locale: "tr", path: "/tr/yazi", title: "Başlık" };
+  assert.equal(resolveSeoMeta({ ...base, settings: { autoCanonical: true } }).canonical, "https://x.test/tr/yazi");
+  const off = resolveSeoMeta({ ...base, settings: { autoCanonical: false } });
+  assert.equal(off.canonical, undefined);
+  assert.equal(off.openGraph.url, "https://x.test/tr/yazi", "OG adresi canonical'sız da dolu");
+  assert.equal(resolveSeoMeta({ ...base, canonicalUrl: " https://basla.test/a ", settings: { autoCanonical: false } }).canonical, "https://basla.test/a");
 });

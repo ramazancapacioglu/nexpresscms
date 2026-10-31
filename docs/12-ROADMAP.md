@@ -40,7 +40,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 ## P2 — GEO / SEO derinliği
 
 - ~~`Link` başlığı~~ yapıldı; ~~dile göre `llms.txt`/`ai-sitemap.json`/`llms-full.txt`~~ yapıldı.
-- ~~RSS / Atom~~ yapıldı; kalan: kategori/etiket bazlı beslemeler, tam içerik (`content:encoded`), Google Haberler/Discover görsel şartları.
+- ~~RSS / Atom~~ yapıldı; ~~kategori/etiket bazlı beslemeler~~ yapıldı (`/feed.xml?category=ad`, `?tag=ad`, `/atom.xml` için de); kalan: tam içerik (`content:encoded`), Google Haberler/Discover görsel şartları.
 - ~~Şema doğrulayıcı~~ yapıldı (editörde canlı); kalan: kayıtta engelleme/uyarı eşiği, `Speakable`, `Person` yazar varlıkları, `sameAs`.
 - İç bağlantı önerisi: vektörsüz ilk sürüm (başlık / varlık eşleşmesi).
 - 404 ve yönlendirme zincirleri raporu; ~~kırık iç bağlantı denetimi~~ yapıldı (iç bağlantılar); kalan: dış bağlantı denetimi (SSRF korumalı arka plan işi), 404 günlüğü.
@@ -51,5 +51,5 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - ~~Çift şema ve elle SQL~~ **Yapıldı (F10).** Bkz. `docs/02` §Göçler. Şemalar birbirine ve gerçek `push.ts` veritabanlarına testle bağlı; göçler `drizzle-kit` ile üretilir ve `pnpm db:migrate` ile uygulanır; 4 depo + seed + küçük depolar tek kod yoluna indi (yalnızca `chunk-repository` vektör SQL'i dallanır). Kalanlar: (a) `push.ts` (890 satır) **dondurulmuş eski taban** olarak duruyor; tüm kurulumlar göç günlüğüne geçince silinebilir; (b) ilk gerçek göç `0001_content_revisions` üretildi ve uygulandı; yeni şema değişikliğinde `pnpm db:generate` kullanılır; (c) ~~kiracıya kapalı upsert~~ tüm kimlikli yazmalarda (`upsertScoped`/`setWhere siteId`) tamam; başka kiracının kimliğiyle yazma artık sessizce yok sayılıyor (taksonomi/medya/yorum/içerik metotları başarı döndürebilir ama satır yazılmaz; hata döndürmek istenirse sonuç doğrulaması eklenmeli); (d) çok dilli işler (`docs/14`) göç ile eklenecek.
 - **Dosya boyutu (AGENTS.md kural 7).** Bölünenler: `renderer.tsx` (1109 → 102), `block-inspector.tsx` (1262 → 134), `repository.ts` (1528 → 18 + 7 alan dosyası ≤ 290 satır), `seed.ts` (1346 → 231 + 4 veri modülü), `editor/src/index.ts` (870 → 14 + 5 modül), `admin-shell-client.tsx` (659 → 390 + `admin-nav.ts`), `content-list-client` (1011), `theme-store-client` (833), `taxonomy-studio-client` (666) → kanca + alan bileşenleri. `dual-mode-editor-client.tsx` (1390) kanca zinciri + 8 bileşene bölündü (istemci 27 satır). Hâlâ büyük: `push.ts` (dondurulmuş), `commerce-repository.ts` (436), `commerce-ops-repository.ts` (412), `content-list-row.tsx`/`theme-store-preview-canvas.tsx` (~200).
 - `block-*` dosyalarında `any` kalıntıları ve tip daraltma.
-- `seo-core/engine.ts` içinde `autoCanonical` iki dalda aynı değeri üretiyor; ayar fiilen etkisiz.
-- Kökte kalıntı dosyalar: `HTTP`, `cursor_abi_project_review.md`, `*.Zone.Identifier`.
+- ~~`autoCanonical` etkisizdi~~ düzeltildi: kapalıyken elle girilmeyen sayfada canonical etiketi yazılmaz.
+- ~~Kökte kalıntı dosyalar~~ temizlendi (`HTTP`, `cursor_abi_project_review.md`, `*.Zone.Identifier`).

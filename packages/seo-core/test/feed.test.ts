@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildAtomFeed, buildRssFeed, FEED_MAX_ITEMS, sortFeedItems, type FeedInput, type FeedItem } from "../src";
+import { termMatches, buildAtomFeed, buildRssFeed, FEED_MAX_ITEMS, sortFeedItems, type FeedInput, type FeedItem } from "../src";
 
 const item = (n: number, extra: Partial<FeedItem> = {}): FeedItem => ({
   title: `Yazı ${n} & <b>`,
@@ -35,4 +35,14 @@ test("Atom: ISO tarihler ve boş besleme geçerli kalır", () => {
   assert.match(xml, /<updated>2026-02-02T00:00:00\.000Z<\/updated>/);
   assert.match(buildAtomFeed(base([])), /<feed xmlns=/);
   assert.match(buildRssFeed(base([])), /<channel>/);
+});
+
+test("besleme terim süzgeci: ad ve slug eşleşir, boş süzgeç hepsini geçirir", () => {
+  assert.equal(termMatches(["Haberler", "Rehber"], "haberler"), true);
+  assert.equal(termMatches(["Yapay Zeka"], "yapay-zeka"), true);
+  assert.equal(termMatches(["İstanbul"], "istanbul"), true);
+  assert.equal(termMatches(["Rehber"], "haber"), false);
+  assert.equal(termMatches([], "x"), false);
+  assert.equal(termMatches([], ""), true);
+  assert.equal(termMatches(["a"], "   "), true);
 });

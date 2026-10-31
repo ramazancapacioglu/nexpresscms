@@ -416,7 +416,8 @@ export interface ResolveMetaInput {
 export interface ResolvedSeoMeta {
   title: string;
   description: string;
-  canonical: string;
+  /** Boş: otomatik canonical kapalı ve elle adres yok (canonical etiketi yazılmaz) */
+  canonical: string | undefined;
   robots: string;
   openGraph: {
     title: string;
@@ -475,8 +476,8 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
     "";
   const description = truncateSmart(rawDesc, 160);
 
-  const canonical =
-    input.canonicalUrl?.trim() || (s.autoCanonical ? `${base}${input.path}` : `${base}${input.path}`);
+  const pageUrl = `${base}${input.path}`;
+  const canonical = input.canonicalUrl?.trim() || (s.autoCanonical ? pageUrl : undefined);
 
   const robots = [
     input.noIndex ? "noindex" : "index",
@@ -506,7 +507,7 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
     openGraph: {
       title: ogTitle,
       description: ogDesc,
-      url: canonical,
+      url: canonical ?? pageUrl,
       type: input.ogType ?? "website",
       siteName: input.siteName,
       locale: input.locale === "tr" ? "tr_TR" : input.locale,

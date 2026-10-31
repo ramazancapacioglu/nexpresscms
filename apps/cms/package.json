@@ -12,7 +12,7 @@
     "prebuild": "node scripts/link-env.mjs",
     "prestart": "node scripts/link-env.mjs",
     "budget": "node scripts/check-budget.mjs",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs && tsx --test test/*.test.ts",
     "a11y": "node scripts/a11y-audit.mjs",
     "auth:e2e": "node scripts/auth-e2e.mjs"
   },

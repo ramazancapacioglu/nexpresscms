@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolvePublishing } from "@nexpress/core";
-import { buildAtomFeed, buildRssFeed, type FeedItem } from "@nexpress/seo-core";
+import { buildAtomFeed, buildRssFeed, termMatches, type FeedItem } from "@nexpress/seo-core";
 import { listPublishedContents } from "@/lib/public-data";
 import { requestLocale } from "@/lib/request-locale";
 
@@ -10,8 +10,16 @@ export async function feedResponse(request: NextRequest, format: "rss" | "atom")
   const { site, locale } = await requestLocale(request, siteId);
   const contents = await listPublishedContents(siteId, locale);
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  // Kategori/etiket beslemesi: ?category=ad veya ?tag=ad (yalnızca tek terim; sınırlı uzunluk)
+  const q = new URL(request.url).searchParams;
+  const category = (q.get("category") ?? "").trim().slice(0, 80);
+  const tag = (q.get("tag") ?? "").trim().slice(0, 80);
   const items: FeedItem[] = contents
-    .filter((c) => c.type === "post" && !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public")
+    .filter((c) => {
+      if (c.type !== "post" || c.noIndex) return false;
+      const pub = resolvePublishing(c.schemaAttributes);
+      return pub.visibility === "public" && termMatches(pub.categories, category, locale) && termMatches(pub.tags, tag, locale);
+    })
     .map((c) => ({
       title: c.title,
       url: `${base}/${locale}/${c.slug}`,
@@ -23,10 +31,10 @@ export async function feedResponse(request: NextRequest, format: "rss" | "atom")
     }));
   const build = format === "rss" ? buildRssFeed : buildAtomFeed;
   const xml = build({
-    siteName: site?.name ?? "NexPress CMS",
+    siteName: [site?.name ?? "NexPress CMS", category || tag].filter(Boolean).join(" — "),
     description: site?.tagline || site?.name || "",
     homeUrl: `${base}/${locale}`,
-    selfUrl: `${base}/${format === "rss" ? "feed.xml" : "atom.xml"}`,
+    selfUrl: `${base}/${format === "rss" ? "feed.xml" : "atom.xml"}${category ? `?category=${encodeURIComponent(category)}` : tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
     language: locale,
     items,
   });

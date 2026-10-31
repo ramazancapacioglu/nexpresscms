@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-10-31] — Besleme süzgeçleri, canonical düzeltmesi, yedek testi, temizlik
+- ✅ `/feed.xml|atom.xml?category=|tag=` (testli `termMatches`). `autoCanonical` artık etkili. `lib/backup.ts` saf `backup-package.ts` + sunucu tarafı olarak bölündü; ayrıştırıcı için 6 test eklendi (F14'ten kalan borç). Kökteki kalıntı dosyalar silindi. Speakable/Person/`sameAs`(yazar) yapılmadı: ziyaretçi sayfasında tldr gösterilmediği ve yazar profili verisi olmadığı için eksik işaretleme üretirdi.
+
 ### [2026-10-31] — 2FA: QR kodu ve yönetici zorunluluğu
 - ✅ Kurulumda QR kodu (sunucuda SVG, `qrcode-generator`). `REQUIRE_ADMIN_2FA=1`: 2FA'sı olmayan yönetici girişten sonra `/admin/profile?2fa=required` sayfasına düşer; diğer admin sayfaları/eylemleri oraya yönlendirir (`SessionUser.twoFactor`, `mustSetUpTwoFactor`, middleware `x-nexpress-pathname`). Tarayıcıyla doğrulandı; QR bir okuyucuyla çözülerek denenmedi.
 

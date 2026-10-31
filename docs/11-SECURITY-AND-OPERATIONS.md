@@ -43,6 +43,7 @@ Tüm yollarda `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`;
 
 | Paket | Kapsam |
 | :--- | :--- |
+| `apps/cms/test` | performans bütçesi değerlendirmesi (`budget.test.mjs`) ve yedek paketi ayrıştırıcısı (`backup-package.test.ts`: zip sınırları, güvenli olmayan adlar, özet, sürüm, satır şekli, medya) |
 | `packages/core/test` | oturum belirteci, parola, sır kutusu, tarih korumalı JSON, parola politikası / son yönetici kuralı, parçalayıcı ve yerel gömme, medya başvurusu / türev adı, bot algılama / ters DNS soneki / istek türü, blok ağacı, Markdown derleyici, HTML temizleyici, kiracı çözümleme |
 | `packages/database/test` | bot sayaç özeti, UTC gün anahtarı, LIKE kaçışı, hesaplar ve denetim günlüğü, **şema paritesi, push/göç sistemi, CMS ve ticaret depoları (kiracı yalıtımı dahil)** — SQLite; `DB_TEST_PG_URL` (sunucu adresi) ile PostgreSQL |
 | `packages/rag/test` | OpenAI sağlayıcısı (sahte fetch), dizinleme / arama / benzerlik (SQLite; `RAG_TEST_PG_URL` ile pgvector) |

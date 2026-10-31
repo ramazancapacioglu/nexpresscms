@@ -1,3 +1,4 @@
+import { slugify } from "./engine";
 import { xmlEscape } from "./sitemap";
 
 export interface FeedItem {
@@ -22,6 +23,14 @@ export interface FeedInput {
 }
 
 export const FEED_MAX_ITEMS = 50;
+
+/** Besleme süzgeci için terim eşleşmesi: ad veya slug biçimi (büyük/küçük harf ve yazım farkı gözetmez). */
+export function termMatches(terms: string[], wanted: string, locale = "tr"): boolean {
+  const w = wanted.trim();
+  if (!w) return true;
+  const wSlug = slugify(w, locale);
+  return terms.some((t) => t.trim().toLocaleLowerCase(locale) === w.toLocaleLowerCase(locale) || (wSlug !== "" && slugify(t, locale) === wSlug));
+}
 
 /** En yeni yayından başlayarak sınırlı sayıda öğe; geçersiz tarihli öğeler atılır. */
 export function sortFeedItems(items: FeedItem[]): FeedItem[] {
