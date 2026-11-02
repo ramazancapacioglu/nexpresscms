@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Şablon dışa/içe aktarma (`.nxtemplates.json`)
+- ✅ `@nexpress/core/template-package` (saf, 7 test): paket üretme/ayrıştırma, medya boşaltma, güvensiz adres ve CSS temizliği, boyut/derinlik sınırları, özet doğrulaması. API + yönetim arayüzü. Tarayıcıyla doğrulandı: 9 şablonluk paket indirildi ve geri alındı (ad çakışması `(2)`, varsayılan değil), kötü niyetli paket uyarılarla temizlendi, bozuk dosya reddedildi, oturumsuz 401.
+
 ### [2026-11-03] — Tema oluşturucu: şablonlar, şema tabanlı denetçi, şema kütüphanesi
 - ✅ **Kök neden (kütüphane tasarımları düzenlenemiyordu):** denetçi yalnızca üst düzey metin alanlarını ve "başlık | açıklama" satırlarını gösteriyordu; fiyat planı, özellik kartı, SSS gibi iç içe öğeler alansızdı. `buildEditorFields` + `SchemaFields` ile her blok tam düzenlenebilir (liste ekle/sil/sırala, bağlantı seçici, görsel seçici). Tarayıcıyla doğrulandı (fiyat planı düzenleme → tuval güncellendi, 4 plan sınırı, silme).
 - ✅ **Şablon sistemi:** 9 tür, 15 hazır şablon, `tpl_*` yuva blokları, atama (içerik/terim/varsayılan), header/footer/kenar çubuğu/sayfa/yazı/kategori/etiket/ürün-içerik uygulaması, doğrulama. Göç `0017`. Şablonlar taslak kalır ve hiçbir yüzeye sızmaz (depo testi + tarayıcı: site haritası, llms.txt, slug 404).

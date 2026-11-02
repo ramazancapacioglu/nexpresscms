@@ -44,4 +44,5 @@ export * from "./dynamic-content";
 export * from "./block-fields";
 export * from "./templates";
 export * from "./page-schema";
+export * from "./template-package";
 export * from "./editor-draft";
