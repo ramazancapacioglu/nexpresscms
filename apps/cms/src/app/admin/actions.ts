@@ -377,6 +377,8 @@ export async function saveCommentReviewAction(input: {
 }
 
 export async function saveChromeAction(input: {
+  /** Menünün dili; etkin diller dışındaki değer varsayılan dile düşer */
+  locale?: string;
   headerConfig?: HeaderConfig;
   menuItems?: NavigationMenuItem[];
   footerConfig?: FooterConfig;
@@ -387,10 +389,18 @@ export async function saveChromeAction(input: {
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
+  const site = await repo.getSite();
+  const defaultLocale = site?.defaultLocale ?? "tr";
+  const locale = input.locale && site?.supportedLocales.includes(input.locale) ? input.locale : defaultLocale;
+  const { locale: _l, ...rest } = input;
+  // Yeni bir dil için ilk kayıtta header/footer varsayılan dilden devralınır (menü o dile özgü olur)
+  const base = locale !== defaultLocale && !(await repo.getNavigationLayout(locale)) ? await repo.getNavigationLayout(defaultLocale) : null;
   // Menü sunucuda temizlenir: sınırlar, güvenli adresler (javascript: yok), en çok 3 düzey
   await repo.saveNavigationLayout({
-    locale: "tr",
-    ...input,
+    locale,
+    headerConfig: base?.headerConfig,
+    footerConfig: base?.footerConfig,
+    ...rest,
     ...(input.menuItems ? { menuItems: sanitizeMenu(input.menuItems) } : {}),
   });
 
@@ -399,7 +409,7 @@ export async function saveChromeAction(input: {
   await revalidatePath("/admin/appearance/menus");
   await revalidatePath("/admin/appearance/footer");
   await revalidatePath("/admin/appearance/sidebar");
-  await revalidatePath("/tr", "layout");
+  await revalidatePath(`/${locale}`, "layout");
   return { ok: true };
 }
 

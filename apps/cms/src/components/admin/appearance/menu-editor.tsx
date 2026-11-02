@@ -16,13 +16,13 @@ const panel = "rounded-lg border border-[#D5D8DE] bg-white dark:border-[#2E333D]
  * Menü ağacı (WordPress benzeri): soldan sayfa/yazı/kategori/etiket/ürün ekle, ağaçta sırala ve girintile (en çok 3 düzey),
  * seçili öğenin ayarları ve kök öğede mega menü yapılandırması. Bağlantılar kimlikle bağlıdır: slug değişince kendiliğinden güncellenir.
  */
-export function MenuEditor({ initial, lists }: { initial: NavigationMenuItem[]; lists: MenuSourceLists }) {
+export function MenuEditor({ initial, lists, locale, locales, defaultLocale, hasOwn }: { initial: NavigationMenuItem[]; lists: MenuSourceLists; locale: string; locales: string[]; defaultLocale: string; hasOwn: boolean }) {
   const [items, setItems] = useState<NavigationMenuItem[]>(initial);
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null);
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
-  const lookup = useMemo(() => buildClientLookup(lists), [lists]);
+  const lookup = useMemo(() => buildClientLookup(lists, locale), [lists, locale]);
   const selected = selectedId ? findMenuNode(items, selectedId) : null;
   const total = countMenuNodes(items);
 
@@ -47,7 +47,7 @@ export function MenuEditor({ initial, lists }: { initial: NavigationMenuItem[]; 
 
   const save = () =>
     start(async () => {
-      await saveChromeAction({ menuItems: items });
+      await saveChromeAction({ menuItems: items, locale });
       setDirty(false);
       setNotice("Menü kaydedildi ve yayında.");
     });
@@ -55,6 +55,15 @@ export function MenuEditor({ initial, lists }: { initial: NavigationMenuItem[]; 
   return (
     <div className="space-y-4">
       <AppearanceTabs current="menu" />
+      {locales.length > 1 && (
+        <nav aria-label="Menü dili" className="flex flex-wrap items-center gap-1 text-[13px]">
+          <span className="mr-1 font-medium">Dil:</span>
+          {locales.map((l) => (
+            <a key={l} href={`/admin/appearance/menus?locale=${l}`} aria-current={l === locale ? "page" : undefined} className={`rounded px-2.5 py-1 font-semibold uppercase ${l === locale ? "bg-[#14151A] text-white dark:bg-[#F3F4F6] dark:text-[#14151A]" : "border border-[#D5D8DE] dark:border-[#2E333D]"}`}>{l}</a>
+          ))}
+          {locale !== defaultLocale && !hasOwn && <span className="ml-2 text-[12px] text-amber-800 dark:text-amber-300">Bu dilin ayrı menüsü yok; varsayılan dilin menüsü gösteriliyor. Kaydedince bu dile özel olur.</span>}
+        </nav>
+      )}
       <SaveBar title={dirty ? "Menü ağacı • kaydedilmemiş değişiklik var" : "Menü ağacı"} pending={pending} notice={notice} onSave={save} />
       <details className={`${panel} px-3 py-2 text-[13px]`}>
         <summary className="cursor-pointer font-medium">Hazır menü şablonları</summary>
@@ -73,7 +82,7 @@ export function MenuEditor({ initial, lists }: { initial: NavigationMenuItem[]; 
         </div>
       </details>
       <div className="grid items-start gap-4 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_360px]">
-        <MenuAddPanel lists={lists} onAdd={add} />
+        <MenuAddPanel lists={lists} onAdd={add} locale={locale} />
         <section aria-label="Menü yapısı" className={panel}>
           <div className="flex items-center justify-between border-b border-[#D5D8DE] px-3 py-2 dark:border-[#2E333D]">
             <span className="text-[13px] font-semibold">Menü yapısı</span>

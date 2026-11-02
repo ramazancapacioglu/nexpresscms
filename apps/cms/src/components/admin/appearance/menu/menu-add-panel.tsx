@@ -25,7 +25,7 @@ const norm = (s: string) => s.normalize("NFKD").toLowerCase().replace(/ı/g, "i"
 const box = "w-full rounded border border-[#D5D8DE] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:ring-2 focus:ring-[#266DF0]/40 dark:border-[#2E333D] dark:bg-[#121317]";
 
 /** WordPress benzeri "Menüye ekle": sayfa/yazı/kategori/etiket/ürün listesinde arayıp işaretleyerek ya da özel bağlantı yazarak ekler. */
-export function MenuAddPanel({ lists, onAdd }: { lists: MenuSourceLists; onAdd: (items: AddRequest[]) => void }) {
+export function MenuAddPanel({ lists, onAdd, locale = "tr" }: { lists: MenuSourceLists; onAdd: (items: AddRequest[]) => void; locale?: string }) {
   const [tab, setTab] = useState<Tab>("pages");
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -34,10 +34,10 @@ export function MenuAddPanel({ lists, onAdd }: { lists: MenuSourceLists; onAdd: 
   const rows = useMemo(() => {
     const needle = norm(q.trim());
     const match = (s: string) => !needle || norm(s).includes(needle);
-    if (tab === "pages") return lists.contents.filter((c) => c.type === "page" && match(c.title)).map((c) => ({ key: c.id, title: c.title, note: c.published ? `/${c.slug}` : "Taslak — yayında görünmez", req: { label: c.title, href: `/tr/${c.slug}`, source: { kind: "content", refId: c.id } as MenuSource } }));
-    if (tab === "posts") return lists.contents.filter((c) => c.type !== "page" && c.type !== "product" && match(c.title)).map((c) => ({ key: c.id, title: c.title, note: c.published ? `/${c.slug}` : "Taslak — yayında görünmez", req: { label: c.title, href: `/tr/${c.slug}`, source: { kind: "content", refId: c.id } as MenuSource } }));
-    if (tab === "category" || tab === "tag") return lists.taxonomies.filter((t) => t.type === tab && match(t.name)).map((t) => ({ key: t.id, title: t.name, note: `/${tab === "category" ? "kategori" : "etiket"}/${t.slug}`, req: { label: t.name, href: `/tr/${tab === "category" ? "kategori" : "etiket"}/${t.slug}`, source: { kind: tab, refId: t.id } as MenuSource } }));
-    if (tab === "product") return lists.products.filter((p) => match(p.name)).map((p) => ({ key: p.id, title: p.name, note: p.published ? `/magaza/${p.slug}` : "Taslak — yayında görünmez", req: { label: p.name, href: `/tr/magaza/${p.slug}`, source: { kind: "product", refId: p.id } as MenuSource } }));
+    if (tab === "pages") return lists.contents.filter((c) => c.type === "page" && match(c.title)).map((c) => ({ key: c.id, title: c.title, note: c.published ? `/${c.slug}` : "Taslak — yayında görünmez", req: { label: c.title, href: `/${locale}/${c.slug}`, source: { kind: "content", refId: c.id } as MenuSource } }));
+    if (tab === "posts") return lists.contents.filter((c) => c.type !== "page" && c.type !== "product" && match(c.title)).map((c) => ({ key: c.id, title: c.title, note: c.published ? `/${c.slug}` : "Taslak — yayında görünmez", req: { label: c.title, href: `/${locale}/${c.slug}`, source: { kind: "content", refId: c.id } as MenuSource } }));
+    if (tab === "category" || tab === "tag") return lists.taxonomies.filter((t) => t.type === tab && match(t.name)).map((t) => ({ key: t.id, title: t.name, note: `/${tab === "category" ? "kategori" : "etiket"}/${t.slug}`, req: { label: t.name, href: `/${locale}/${tab === "category" ? "kategori" : "etiket"}/${t.slug}`, source: { kind: tab, refId: t.id } as MenuSource } }));
+    if (tab === "product") return lists.products.filter((p) => match(p.name)).map((p) => ({ key: p.id, title: p.name, note: p.published ? `/magaza/${p.slug}` : "Taslak — yayında görünmez", req: { label: p.name, href: `/${locale}/magaza/${p.slug}`, source: { kind: "product", refId: p.id } as MenuSource } }));
     return [];
   }, [tab, q, lists]);
 
@@ -60,8 +60,8 @@ export function MenuAddPanel({ lists, onAdd }: { lists: MenuSourceLists; onAdd: 
         {tab === "custom" ? (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => onAdd([{ label: "Ana sayfa", href: "/tr", source: { kind: "home" } }])} className="rounded border border-[#D5D8DE] px-2 py-1.5 text-[12px] hover:bg-[#F1F3F6] dark:border-[#2E333D] dark:hover:bg-[#1C1F26]">+ Ana sayfa</button>
-              <button type="button" onClick={() => onAdd([{ label: "Mağaza", href: "/tr/magaza", source: { kind: "store" } }])} className="rounded border border-[#D5D8DE] px-2 py-1.5 text-[12px] hover:bg-[#F1F3F6] dark:border-[#2E333D] dark:hover:bg-[#1C1F26]">+ Mağaza</button>
+              <button type="button" onClick={() => onAdd([{ label: "Ana sayfa", href: `/${locale}`, source: { kind: "home" } }])} className="rounded border border-[#D5D8DE] px-2 py-1.5 text-[12px] hover:bg-[#F1F3F6] dark:border-[#2E333D] dark:hover:bg-[#1C1F26]">+ Ana sayfa</button>
+              <button type="button" onClick={() => onAdd([{ label: "Mağaza", href: `/${locale}/magaza`, source: { kind: "store" } }])} className="rounded border border-[#D5D8DE] px-2 py-1.5 text-[12px] hover:bg-[#F1F3F6] dark:border-[#2E333D] dark:hover:bg-[#1C1F26]">+ Mağaza</button>
             </div>
             <label className="block text-[12px] font-medium">Bağlantı metni<input value={custom.label} onChange={(e) => setCustom({ ...custom, label: e.target.value })} className={`${box} mt-1`} /></label>
             <label className="block text-[12px] font-medium">Adres<input value={custom.href} onChange={(e) => setCustom({ ...custom, href: e.target.value })} placeholder="https://… veya /tr/sayfa veya #bolum" className={`${box} mt-1 font-mono`} /></label>

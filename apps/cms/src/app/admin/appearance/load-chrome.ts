@@ -30,11 +30,21 @@ export const fallbackFooter: FooterConfig = {
   bottomLinks: [],
 };
 
-export async function loadChrome() {
+export async function loadChrome(locale?: string) {
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
-  const nav = await getScopedRepository(siteId).getNavigationLayout("tr");
+  const repo = getScopedRepository(siteId);
+  const site = await repo.getSite();
+  const defaultLocale = site?.defaultLocale ?? "tr";
+  const wanted = locale && site?.supportedLocales.includes(locale) ? locale : defaultLocale;
+  const own = await repo.getNavigationLayout(wanted);
+  const nav = own ?? (await repo.getNavigationLayout(defaultLocale));
   return {
+    locale: wanted,
+    locales: site?.supportedLocales ?? [defaultLocale],
+    defaultLocale,
+    /** Seçilen dilin kendi menü kaydı var mı (yoksa varsayılan dilinki gösterilir) */
+    hasOwn: Boolean(own),
     header: nav?.headerConfig ?? fallbackHeader,
     menu: nav?.menuItems ?? [],
     footer: nav?.footerConfig ?? fallbackFooter,

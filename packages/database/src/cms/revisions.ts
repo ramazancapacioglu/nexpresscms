@@ -52,19 +52,21 @@ export class CmsRevisionRepository extends CmsContentReadRepository {
     const { db, t } = this.backend;
     const hash = snapshotHash(snapshot);
     const latest = await db
-      .select({ hash: t.contentRevisions.snapshotHash })
+      .select({ hash: t.contentRevisions.snapshotHash, createdAt: t.contentRevisions.createdAt })
       .from(t.contentRevisions)
       .where(and(eq(t.contentRevisions.siteId, this.siteId), eq(t.contentRevisions.contentId, contentId), eq(t.contentRevisions.locale, locale)))
       .orderBy(desc(t.contentRevisions.createdAt))
       .limit(1);
     if (latest[0]?.hash === hash) return false;
+    // Aynı milisaniyedeki arka arkaya kayıtlar sıralamayı ve budamayı belirsizleştirirdi: zaman her zaman bir öncekinden ileridir
+    const at = new Date(Math.max(Date.now(), (latest[0]?.createdAt ? new Date(latest[0].createdAt).getTime() : 0) + 1));
 
     await db.insert(t.contentRevisions).values({
       id: randomUUID(),
       siteId: this.siteId,
       contentId,
       locale,
-      createdAt: new Date(),
+      createdAt: at,
       authorId: actor?.id ?? null,
       authorEmail: actor?.email.toLowerCase() ?? "",
       status: snapshot.status,

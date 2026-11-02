@@ -66,9 +66,9 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## Panel düzeni ve dinamik içerik (2026-11-02) — kalanlar
 
-- Menü yalnızca `tr` için; dil başına menü ve menü konumları (birden çok menü) yok.
+- ~~Dil başına menü~~ yapıldı (`/admin/appearance/menus?locale=`; kayıt yoksa varsayılan dil gösterilir, ilk kayıtta header/footer devralınır). Kalan: header/footer'ın dil başına düzenlenmesi ve birden çok menü konumu.
 - Ürün kategorisi veri modelinde olmadığı için menüde "ürün kategorisi" kaynağı yok (ürün ve mağaza var).
-- ~~Kategori/etiket arşivleri sitemap'te~~ yapıldı (`archive-1.xml`, yalnızca yayını olanlar, varsayılan dil). Kalan: arşiv sayfalaması (en çok 24 yayın).
+- ~~Kategori/etiket arşivleri sitemap'te~~ yapıldı (`archive-1.xml`, yalnızca yayını olanlar, varsayılan dil). ~~Arşiv sayfalaması~~ yapıldı (`?sayfa=`, 12'şer, rel prev/next, sayfa başına canonical; site haritasında yalnızca ilk sayfa).
 - Dinamik liste: sayfalama, alan yetkili filtre (yazar, tarih aralığı), özel ürün alanları yok; Markdown/llms çıktısına girmez.
 - AI yazım: gerçek modelle (gpt-4o-mini) denendi; yeniden yaz/kısalt/düzeltte model yeni cümle ekleme eğilimindeydi → paragraf kırpma + uzunluk uyarısı (`guardEdit`) eklendi, yine de uygulamadan önce karşılaştırma gerekir. Seçili metin parçası yerine tüm blok işlenir; çok blokluk taslak/taslak sayfa üretimi yok (AI tasarım eklentisi ayrıdır).
 - Panel yazı ölçeği CSS katmanıyla ayarlanır (bileşenlerde sabit px sınıfları kaldı); ayrı kullanıcı tercihi (yazı boyutu) yok.

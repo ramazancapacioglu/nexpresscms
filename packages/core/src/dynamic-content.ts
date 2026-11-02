@@ -88,8 +88,20 @@ export interface DynamicCandidate {
 
 export type DynamicItem = Omit<DynamicCandidate, "categories" | "tags" | "kind">;
 
+/** Sayfalama (saf): sayfa numarası geçerli aralığa sıkıştırılır. */
+export function paginate<T>(items: T[], page: number, size: number): { items: T[]; page: number; pages: number; total: number } {
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  const p = Math.min(pages, Math.max(1, Math.floor(page) || 1));
+  return { items: items.slice((p - 1) * size, p * size), page: p, pages, total: items.length };
+}
+
 /** Adayları sorguya göre süzer, sıralar ve sınırlar. Kaynak, kategori, etiket ve geçerli sayfa dışlaması uygulanır. */
 export function selectDynamicItems(candidates: DynamicCandidate[], q: DynamicQuery, currentId?: string | null): DynamicItem[] {
+  return filterDynamicItems(candidates, q, currentId).slice(0, q.limit);
+}
+
+/** Süzer ve sıralar, adet sınırı UYGULAMAZ (arşiv sayfalaması için). */
+export function filterDynamicItems(candidates: DynamicCandidate[], q: DynamicQuery, currentId?: string | null): DynamicItem[] {
   const out = candidates.filter((c) => {
     if (c.kind !== q.source) return false;
     if (q.excludeCurrent && currentId && c.id === currentId) return false;
@@ -105,7 +117,7 @@ export function selectDynamicItems(candidates: DynamicCandidate[], q: DynamicQue
         ? (a, b) => time(a) - time(b)
         : (a, b) => time(b) - time(a)
   );
-  return out.slice(0, q.limit).map(({ kind: _k, categories: _c, tags: _t, ...item }) => item);
+  return out.map(({ kind: _k, categories: _c, tags: _t, ...item }) => item);
 }
 
 /** Bloklar arasında (iç içe dahil) dinamik liste bloklarını bulur. */

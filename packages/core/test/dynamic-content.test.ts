@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { collectDynamicBlocks, normalizeDynamicQuery, selectDynamicItems, termSlug, type DynamicCandidate } from "../src/dynamic-content";
+import { collectDynamicBlocks, filterDynamicItems, normalizeDynamicQuery, paginate, selectDynamicItems, termSlug, type DynamicCandidate } from "../src/dynamic-content";
 
 const c = (id: string, over: Partial<DynamicCandidate> = {}): DynamicCandidate => ({ id, kind: "posts", title: `Yazı ${id}`, url: `/tr/${id}`, excerpt: "", categories: [], tags: [], date: `2026-0${(id.charCodeAt(0) % 9) + 1}-01T00:00:00Z`, ...over });
 
@@ -49,4 +49,17 @@ test("dinamik blokları iç içe ağaçta bulur", () => {
   const blocks = [{ id: "s", type: "section", props: {}, children: [{ id: "d1", type: "dynamic_list", props: {} }, { id: "col", type: "columns", props: {}, children: [{ id: "d2", type: "dynamic_list", props: {} }] }] }, { id: "d3", type: "dynamic_list", props: {} }] as never;
   assert.deepEqual(collectDynamicBlocks(blocks).map((b) => b.id), ["d1", "d2", "d3"]);
   assert.deepEqual(collectDynamicBlocks([] as never), []);
+});
+
+test("sayfalama: sayfa sıkıştırılır, son sayfa kalanı verir; süzme adet sınırı uygulamaz", () => {
+  const items = Array.from({ length: 30 }, (_, i) => i);
+  assert.deepEqual(paginate(items, 1, 12).items.length, 12);
+  assert.deepEqual(paginate(items, 3, 12), { items: [24, 25, 26, 27, 28, 29], page: 3, pages: 3, total: 30 });
+  assert.equal(paginate(items, 99, 12).page, 3, "taşan sayfa sona sıkışır");
+  assert.equal(paginate(items, -4, 12).page, 1);
+  assert.equal(paginate(items, Number.NaN, 12).page, 1);
+  assert.deepEqual(paginate([], 1, 12), { items: [], page: 1, pages: 1, total: 0 });
+  const many = Array.from({ length: 40 }, (_, i) => ({ id: String(i), kind: "posts" as const, title: `Y${i}`, url: "/", excerpt: "", categories: [], tags: [], date: null }));
+  assert.equal(filterDynamicItems(many, normalizeDynamicQuery({ limit: 3 })).length, 40);
+  assert.equal(selectDynamicItems(many, normalizeDynamicQuery({ limit: 3 })).length, 3);
 });

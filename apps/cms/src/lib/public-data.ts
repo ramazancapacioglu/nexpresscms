@@ -36,9 +36,14 @@ export const getPublicTranslations = cachedRead("translations", (siteId: string,
   getScopedRepository(siteId).getTranslationsForContent(contentId)
 );
 
-export const getPublicNavigation = cachedRead("nav", (siteId: string, locale: string) =>
-  getScopedRepository(siteId).getNavigationLayout(locale)
-);
+/** Dil başına yerleşim; o dil için kayıt yoksa varsayılan dilinki kullanılır (menü/header/footer boş kalmaz). */
+export const getPublicNavigation = cachedRead("nav", async (siteId: string, locale: string) => {
+  const repo = getScopedRepository(siteId);
+  const own = await repo.getNavigationLayout(locale);
+  if (own) return own;
+  const site = await repo.getSite();
+  return site && site.defaultLocale !== locale ? repo.getNavigationLayout(site.defaultLocale) : null;
+});
 
 export const listPublicReviews = cachedRead("reviews", (siteId: string, contentId: string) =>
   getScopedRepository(siteId).listCommentsReviews(contentId)

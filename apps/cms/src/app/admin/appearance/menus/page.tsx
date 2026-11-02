@@ -9,13 +9,14 @@ import { loadChrome } from "../load-chrome";
 
 export const dynamic = "force-dynamic";
 
-export default async function MenuAppearancePage() {
+export default async function MenuAppearancePage({ searchParams }: { searchParams: Promise<{ locale?: string }> }) {
   await requireUser();
+  const sp = await searchParams;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
-  const [chrome, contents, taxonomies, products] = await Promise.all([
-    loadChrome(),
-    repo.listContents({ locale: "tr" }),
+  const chrome = await loadChrome(sp.locale);
+  const [contents, taxonomies, products] = await Promise.all([
+    repo.listContents({ locale: chrome.locale }),
     repo.listTaxonomies(),
     getCommerceRepository(siteId).listProducts().catch(() => []),
   ]);
@@ -34,7 +35,7 @@ export default async function MenuAppearancePage() {
           Sayfa, yazı, kategori, etiket ve ürünleri listeden seçerek ekleyin; ağaçta sıralayın ve girintileyin (en çok 3 düzey). Kök öğelere mega menü tanımlayabilirsiniz.
         </p>
       </header>
-      <MenuEditor initial={chrome.menu} lists={lists} />
+      <MenuEditor key={chrome.locale} initial={chrome.menu} lists={lists} locale={chrome.locale} locales={chrome.locales} defaultLocale={chrome.defaultLocale} hasOwn={chrome.hasOwn} />
     </div>
   );
 }

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { archiveMetadata, TaxonomyArchive } from "@/components/public/taxonomy-archive";
 
 type Params = Promise<{ locale: string; slug: string }>;
+type Search = Promise<{ sayfa?: string }>;
 
-export const generateMetadata = ({ params }: { params: Params }): Promise<Metadata> => archiveMetadata("tag", params);
+export const generateMetadata = ({ params, searchParams }: { params: Params; searchParams: Search }): Promise<Metadata> => archiveMetadata("tag", params, searchParams);
 
-export default function Page({ params }: { params: Params }) {
-  return <TaxonomyArchive kind="tag" params={params} />;
+export default function Page({ params, searchParams }: { params: Params; searchParams: Search }) {
+  return <TaxonomyArchive kind="tag" params={params} searchParams={searchParams} />;
 }
