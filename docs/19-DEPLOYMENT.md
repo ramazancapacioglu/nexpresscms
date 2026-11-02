@@ -51,11 +51,20 @@ Ziyaretçi trafiği dakikada bir zamanlayıcıyı tetikler; trafiksiz sitede yay
 
 ## 6. Yedek
 
+**Zamanlanmış yedek:** `CRON_SECRET` tanımlıyken günde bir çağırın; yedek `BACKUP_DIR` (varsayılan `apps/cms/data/backups`) klasörüne yazılır, en yeni `BACKUP_KEEP` (7) dosya tutulur, dosyalar yalnızca sahibi tarafından okunur (0600). `?media=1` görsel özgünlerini ekler; kişisel veri (form gönderimi/yorum) bu yola girmez. Son yedeğin yaşı *Sistem durumu*'nda görünür (48 saatten eskiyse uyarı).
+
+```bash
+17 3 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" "https://alanadiniz.com/api/cron/backup?media=1" > /dev/null
+```
+
+Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne depolama, sağlayıcı anlık görüntüsü). Aşağıdakiler de geçerli:
+
 - Panel: **Yedek** → `.nxbackup` (içerik, çeviri, taksonomi, menü, ayarlar, tema, görsel özgünleri). **Belge/video/ses dosyaları, kullanıcılar, parolalar, oturumlar, denetim günlüğü ve ticaret yedeğe girmez.**
-- Bu yüzden ayrıca **veritabanı** (SQLite dosyası ya da `pg_dump`) ve **`MEDIA_DIR` klasörü** sunucu düzeyinde yedeklenmeli. Zamanlanmış/CLI yedek henüz yoktur.
+- Bu yüzden ayrıca **veritabanı** (SQLite dosyası ya da `pg_dump`) ve **`MEDIA_DIR` klasörü** sunucu düzeyinde yedeklenmeli. Komut satırı (`db:export`) yedeği yoktur; geri yükleme panelden yapılır.
 
 ## 7. Güvenlik denetim listesi
 
+- [ ] İçerik Güvenliği Politikası açık (`curl -I` ile `Content-Security-Policy` görülüyor; ek betik gerekiyorsa `CSP_EXTRA_SCRIPT_SRC`).
 - [ ] `AUTH_SECRET` güçlü, `ADMIN_DEFAULT_*` kaldırıldı, yönetici 2FA açık.
 - [ ] HTTPS ve `NEXT_PUBLIC_APP_URL` doğru; `curl -I` ile `Strict-Transport-Security` görülüyor.
 - [ ] Panelde *Sistem durumu*: ortam, göçler, medya klasörü, arama dizini yeşil.

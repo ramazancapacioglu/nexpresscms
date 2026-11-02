@@ -255,7 +255,7 @@ export function registerAgenticSeoProPlugin(): void {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             <span>WebMCP Gateway</span>
           </span>
-          <span className="font-mono text-[10px] text-[#8C9099]">v5.8</span>
+          <span className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">v5.8</span>
         </a>
         <a
           href="/ai-sitemap.json"
@@ -266,7 +266,7 @@ export function registerAgenticSeoProPlugin(): void {
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
             <span>Entity Graph Feed</span>
           </span>
-          <span className="font-mono text-[10px] text-[#8C9099]">JSON</span>
+          <span className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">JSON</span>
         </a>
       </div>
       </ModuleGate>

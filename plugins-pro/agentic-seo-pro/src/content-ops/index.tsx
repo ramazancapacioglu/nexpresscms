@@ -75,7 +75,7 @@ export function registerContentOps(): void {
               Cosine &gt; 0.92
             </span>
           </div>
-          <span className="font-mono text-[11px] text-[#8C9099]">
+          <span className="font-mono text-[11px] text-[#5F6570] dark:text-[#8C9099]">
             GSC Pos 4–20 • Serper PAA • WebMCP
           </span>
         </div>

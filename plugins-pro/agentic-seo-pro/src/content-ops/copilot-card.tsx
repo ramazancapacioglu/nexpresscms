@@ -16,7 +16,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
   return (
     <div className={`border-t ${border} pt-4 space-y-3`}>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8C9099]">Content Ops Co-Pilot</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">Content Ops Co-Pilot</span>
         <span className={`inline-flex items-center gap-1 rounded border ${border} px-1.5 py-0.5 font-mono text-[10px] ${muted}`}>
           <span className={`h-1.5 w-1.5 rounded-full ${provider.semantic ? "bg-emerald-500" : "bg-amber-500"}`} />
           {provider.semantic ? "anlamsal" : "sözcüksel"}
@@ -34,9 +34,9 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
             )}
           </div>
           {!contentId ? (
-            <p className="text-[11px] text-[#8C9099]">İçeriği kaydedip yayınlayınca benzer içerikler burada listelenir.</p>
+            <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">İçeriği kaydedip yayınlayınca benzer içerikler burada listelenir.</p>
           ) : !report?.indexed ? (
-            <p className="text-[11px] text-[#8C9099]">Bu içerik henüz dizinlenmedi (yayınlanınca otomatik, ya da SEO sayfasından “Dizini yeniden oluştur”).</p>
+            <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Bu içerik henüz dizinlenmedi (yayınlanınca otomatik, ya da SEO sayfasından “Dizini yeniden oluştur”).</p>
           ) : report.similar.length === 0 ? (
             <p className="text-[11px] text-emerald-700 dark:text-emerald-400">Benzer başka içerik bulunamadı.</p>
           ) : (
@@ -55,7 +55,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
             </ul>
           )}
           {report?.indexed && (
-            <p className="text-[10px] text-[#8C9099]">
+            <p className="text-[10px] text-[#5F6570] dark:text-[#8C9099]">
               ⚠ = {report.threshold.toFixed(2)} üzeri: aynı konuyu işliyor olabilir; birleştirmeyi veya farklılaştırmayı düşünün.
               {!report.semantic && " Yerel model yalnızca ortak sözcüklere bakar."}
             </p>
@@ -65,7 +65,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
         <div className="p-2.5 space-y-1.5">
           <div className="flex items-center justify-between">
             <span className={muted}>Guardrail klişe kalkanı</span>
-            <span className="font-mono text-[10px] text-[#8C9099]">{DEFAULT_FORBIDDEN_PHRASES.length} kural aktif</span>
+            <span className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{DEFAULT_FORBIDDEN_PHRASES.length} kural aktif</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {DEFAULT_FORBIDDEN_PHRASES.slice(0, 4).map((p) => (

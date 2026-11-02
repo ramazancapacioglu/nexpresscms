@@ -16,7 +16,7 @@ export async function FreshnessCard({ siteId }: { siteId: string }) {
     <div className="mt-4 overflow-hidden rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C]">
       <div className="flex items-center justify-between border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-4 py-2.5">
         <span className="text-[12px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">İçerik tazeliği</span>
-        <span className="text-[11px] text-[#8C9099]">
+        <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           {stale.length === 0 ? "Güncel" : `${stale.length} içerik ${STALE_AFTER_DAYS}+ gündür güncellenmedi`}
         </span>
       </div>

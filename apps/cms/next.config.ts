@@ -2,10 +2,35 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
+/**
+ * İçerik Güvenliği Politikası (yalnızca üretim; geliştirme `eval` kullanır). Next.js'in RSC verisi için satır içi betik
+ * gerektiğinden `script-src` 'unsafe-inline' içerir; asıl kazanım: eklenti/nesne yok, dış betik yok, taban adresi ve
+ * form hedefi kısıtlı, çerçeveleme yalnızca aynı kökenden, görsel/medya/çerçeve kaynakları sınırlı.
+ * `CSP_MODE=report` yalnızca raporlar (ihlali engellemez), `off` kapatır; varsayılan `enforce`.
+ * Ek kaynak (ör. analitik) gerekirse `CSP_EXTRA_SCRIPT_SRC="https://x.test"` (boşlukla ayrılmış).
+ */
+const cspMode = process.env.CSP_MODE ?? "enforce";
+const extraScript = (process.env.CSP_EXTRA_SCRIPT_SRC ?? "").replace(/[;\r\n]/g, " ").trim();
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${extraScript ? ` ${extraScript}` : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "media-src 'self' blob: https:",
+  "font-src 'self' data:",
+  `connect-src 'self'${extraScript ? ` ${extraScript}` : ""}`,
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+  ...(isProd && cspMode !== "off" ? [{ key: cspMode === "report" ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy", value: csp }] : []),
   ...(isProd
     ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
     : []),

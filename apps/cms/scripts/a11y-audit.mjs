@@ -30,8 +30,14 @@ const BLOCKING = new Set(["critical", "serious"]);
 const browser = await chromium.launch({ executablePath: process.env.A11Y_CHROME || undefined, args: ["--no-sandbox"] });
 const report = { base: BASE, results: [] };
 let failures = 0;
+const cspViolations = [];
 
 async function scan(page, label, path) {
+  if (!page.__cspHooked) {
+    page.__cspHooked = true;
+    // Üretimde CSP ihlali (engellenen betik/stil/görsel/çerçeve) tarayıcı konsoluna düşer: bulunursa tarama başarısız olur
+    page.on("console", (m) => { if (/Content Security Policy|Refused to (load|execute|apply|frame|connect)/i.test(m.text())) cspViolations.push(`${page.url()} → ${m.text().slice(0, 200)}`); });
+  }
   const res = await page.goto(BASE + path, { waitUntil: "networkidle" }).catch(() => null);
   if (!res || res.status() >= 400) {
     report.results.push({ label, path, error: `HTTP ${res?.status() ?? "yok"}` });
@@ -90,5 +96,10 @@ for (const mode of ["mobil", "masaüstü"]) {
 await browser.close();
 fs.writeFileSync(process.env.A11Y_OUT ?? "a11y-report.json", JSON.stringify(report, null, 2));
 const total = report.results.length;
+if (cspViolations.length) {
+  console.log(`\nCSP ihlali (${cspViolations.length}):`);
+  for (const v of [...new Set(cspViolations)].slice(0, 20)) console.log(`  ${v}`);
+  failures++;
+}
 console.log(`\n${total} tarama, ${failures} başarısız.`);
 process.exit(failures ? 1 : 0);

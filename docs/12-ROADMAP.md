@@ -57,8 +57,9 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 ## Yayın öncesi kalanlar (2026-11-02)
 
 - Bellek içi hız sınırları ve ön yüz önbelleği tek sunucu içindir; çok sunucu için Redis katmanı yok.
-- Zamanlanmış/CLI yedek yok; belge/video/ses ve veritabanı sunucu düzeyinde yedeklenmeli (`docs/19`).
-- İçerik Güvenliği Politikası (CSP) başlığı yok (yönetim paneli Next.js satır içi betiklerine dayanır; nonce'lu CSP ayrı iş).
+- ~~Zamanlanmış yedek~~ yapıldı (`/api/cron/backup`). Kalan: komut satırı yedeği, yedeğin sunucu dışına kopyası, belge/video/ses ve veritabanının sunucu düzeyinde yedeği (`docs/19`).
+- ~~CSP başlığı~~ yapıldı (üretimde, `'unsafe-inline'` ile). Kalan: nonce'lu sıkı CSP (Next.js satır içi betikleri nedeniyle ayrı iş).
+- Dockerfile yok: bu ortamda Docker çalışmadığı için doğrulanamadı, denenmemiş dosya eklenmedi.
 - Görsel türev adresleri (`/media/{id}/1280.webp`) açıklayıcı ad taşımaz; görsel olmayan dosyalar taşır.
 - Medya seçici için axe taraması yok (kitaplık sayfası taranıyor).
 - "Yakında" Pro modülleri: citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, search-console (dış servis/anahtar).

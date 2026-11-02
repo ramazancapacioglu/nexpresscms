@@ -54,7 +54,7 @@ export async function BotTelemetryCard({ siteId }: { siteId: string }) {
       </div>
 
       {summary.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[12px] text-[#8C9099]">
+        <p className="px-4 py-6 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Henüz bilinen bir bot isteği kaydedilmedi. Kayıt, botlar sayfaları, <code>llms.txt</code>, site haritasını veya <code>/api/mcp</code>
           adresini çektikçe oluşur.
         </p>
@@ -69,11 +69,11 @@ export async function BotTelemetryCard({ siteId }: { siteId: string }) {
                 <div className="min-w-0">
                   <div className="font-medium text-[#14151A] dark:text-[#F3F4F6] truncate">
                     {sig?.name ?? s.botId}
-                    <span className="ml-2 text-[10px] font-normal text-[#8C9099]">
+                    <span className="ml-2 text-[10px] font-normal text-[#5F6570] dark:text-[#8C9099]">
                       {sig ? `${sig.vendor} • ${CATEGORY_LABEL[sig.category]}` : ""}
                     </span>
                   </div>
-                  <div className="font-mono text-[10px] text-[#8C9099] truncate">
+                  <div className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099] truncate">
                     {kinds.map(([k, n]) => `${KIND_LABEL[k] ?? k} ${n}`).join(" • ")}
                   </div>
                 </div>
@@ -89,14 +89,14 @@ export async function BotTelemetryCard({ siteId }: { siteId: string }) {
                   >
                     {canVerify ? `rDNS %${Math.round((s.verified / s.total) * 100)}` : "UA iddiası"}
                   </span>
-                  <span className="text-[#8C9099] w-20 text-right">{ago(s.lastSeenAt)}</span>
+                  <span className="text-[#5F6570] dark:text-[#8C9099] w-20 text-right">{ago(s.lastSeenAt)}</span>
                 </div>
               </div>
             );
           })}
         </div>
       )}
-      <p className={`px-4 py-2 border-t ${border} text-[10px] text-[#8C9099]`}>
+      <p className={`px-4 py-2 border-t ${border} text-[10px] text-[#5F6570] dark:text-[#8C9099]`}>
         IP ve User-Agent saklanmaz; yalnızca günlük sayaç tutulur. CDN önbelleğinden dönen istekler uygulamaya ulaşmaz ve sayılmaz.
       </p>
     </div>

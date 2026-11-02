@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { evaluateEnv, evaluateIndex, type HealthCheck } from "@nexpress/core";
 import { getBotStatsRepository, getChunkRepository, getFormSubmissionRepository, getDbDialect, getAgentRequestRepository, getRedirectRepository, getScopedRepository, migrationStatus } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
+import { latestBackup } from "@/lib/backup-schedule";
 import { mediaRoot } from "@/lib/media/storage";
 
 const accessP = promisify(access);
@@ -48,6 +49,11 @@ export async function collectSystemStatus(siteId: string): Promise<{ checks: Hea
     const free = Number(fsInfo.value.bavail) * Number(fsInfo.value.bsize);
     add("Depolama", "media-dir", "Medya klasörü", free < 512 * 1024 ** 2 ? "warn" : "ok", `Yazılabilir · ${fmtBytes(free)} boş`);
   } else add("Depolama", "media-dir", "Medya klasörü", "ok", "Yazılabilir.");
+
+  // Zamanlanmış yedek (/api/cron/backup): son yedeğin yaşı
+  const backup = await safe(() => latestBackup(siteId));
+  if (backup.ok && backup.value) add("Depolama", "backup", "Zamanlanmış yedek", backup.value.ageHours > 48 ? "warn" : "ok", `Son yedek ${backup.value.ageHours} saat önce (${backup.value.file})${backup.value.ageHours > 48 ? " — zamanlayıcı çalışmıyor olabilir" : ""}`);
+  else add("Depolama", "backup", "Zamanlanmış yedek", "warn", process.env.CRON_SECRET ? "Henüz yedek alınmadı: /api/cron/backup'ı günde bir çağırın." : "Kapalı: CRON_SECRET tanımlayıp /api/cron/backup'ı günde bir çağırın (docs/19).");
 
   // Arama dizini
   const provider = providerFromEnv();

@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-02] — Yayın öncesi: CSP, zamanlanmış yedek, kontrast düzeltmesi
+- ✅ **CSP** (üretim): bkz. `docs/11`; CI axe taraması üretim derlemesinde CSP ihlallerini yakalar. Yerelde üretim derlemesiyle 76/76 tarama, **0 CSP ihlali**.
+- ✅ **Zamanlanmış yedek:** `/api/cron/backup` (`CRON_SECRET`, 0600 dosya, son `BACKUP_KEEP` tutulur); üretilen yedek `parseBackup` ile doğrulandı; *Sistem durumu*'nda son yedek yaşı. `.env.example` ve `docs/19` güncellendi.
+- 🐞 Eklenti kartlarında/kenar çubuğunda WCAG kontrast hatası (`#8C9099` açık zeminde) düzeltildi (üretim derlemesindeki taramada 34 sayfada yakalandı).
+
 ### [2026-11-02] — Elle meta, WordPress benzeri medya, medya SEO'su, Pro modüller, yayına hazırlık
 - ✅ **Elle meta:** başlığın altında "Arama sonucu" şeridi (Otomatik/Elle etiketi, "Otomatiğe dön"); kayıtta başlık/TL;DR artık meta alanlarına kopyalanmıyor (eski kayıtlar otomatik sayılır); SEO denetimi "uzun meta başlık / eksik açıklama" ölçer.
 - ✅ **Medya kitaplığı:** ızgara/liste, arama (Türkçe I/İ duyarlı), tür / sorun / sıralama süzgeçleri, ayrıntı paneli (başlık, alt metin, alt yazı, açıklama, odak, canlı SEO denetimi); sahte URL ile ekleme formu kaldırıldı. **Medya seçici** (kitaplık + yükleme + bilgi düzenleme + "Kaydet ve ekle") öne çıkan görsel, görsel bloğu ve yeni `media_file` bloğu için. Göç `0015_media_seo` (`description`, `kind`).
