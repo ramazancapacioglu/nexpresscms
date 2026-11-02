@@ -60,6 +60,8 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
   );
   // Pro eklentinin zengin şema türleri (QAPage, Offer, TechArticle, SoftwareApplication)
   const [richSchema, setRichSchema] = useState<RichSchemaFields>(((initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as RichSchemaFields | undefined) ?? {});
+  // Görünüm şablonu ataması ("" = türün varsayılanı, "none" = yerleşik görünüm, aksi hâlde şablon kimliği)
+  const [templateId, setTemplateId] = useState<string>(String(((initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?._template as string | undefined) ?? ""));
   const [canonicalUrl, setCanonicalUrl] = useState<string>(
     initialDoc?.canonicalUrl ?? ""
   );
@@ -75,5 +77,5 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
   const [quickCatParentId, setQuickCatParentId] = useState<string>("");
   const [quickTagName, setQuickTagName] = useState("");
 
-  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
+  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, templateId, setTemplateId, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
 }

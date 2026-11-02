@@ -72,3 +72,13 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - Dinamik liste: sayfalama, alan yetkili filtre (yazar, tarih aralığı), özel ürün alanları yok; Markdown/llms çıktısına girmez.
 - AI yazım: gerçek modelle (gpt-4o-mini) denendi; yeniden yaz/kısalt/düzeltte model yeni cümle ekleme eğilimindeydi → paragraf kırpma + uzunluk uyarısı (`guardEdit`) eklendi, yine de uygulamadan önce karşılaştırma gerekir. Seçili metin parçası yerine tüm blok işlenir; çok blokluk taslak/taslak sayfa üretimi yok (AI tasarım eklentisi ayrıdır).
 - Panel yazı ölçeği CSS katmanıyla ayarlanır (bileşenlerde sabit px sınıfları kaldı); ayrı kullanıcı tercihi (yazı boyutu) yok.
+
+## Tema oluşturucu — kalanlar (2026-11-03)
+
+- Ürün ve mağaza şablon türleri oluşturulup düzenlenebiliyor; yalnızca `type: "product"` içerik sayfalarına uygulanıyor. `/magaza/*` ticaret rotaları henüz kendi şablonunu kullanmıyor.
+- Ana sayfa için ayrı şablon türü yok (ana sayfa genelde özel tasarımdır); şablon koşulları (ör. "yalnızca bu kategorideki yazılar") ve dil başına şablon yok.
+- Şablon dışa/içe aktarma (dağıtım paketi) ve `.nxtheme` içine şablon koyma yok: "hızlı geliştirip dağıtma" hedefi için sıradaki iş.
+- Header şablonunda yapışkan/şeffaf/küçülen header gibi davranış seçenekleri yok (sabit yapışkan, açık zemin). Footer'da bülten formu yuvası yok.
+- Sayfa/yazı şablonu uygulanırken paylaşım çubuğu ve yorum/inceleme bölümü şablonda yuva olmadığından çizilmez.
+- Şema kartları dört tür (yazılım, kampanya, soru-cevap, teknik künye); Product/LocalBusiness/Event gibi türler ve kartların çoklu varyantı yok.
+- Canvas üzerinde alan içi (inline) metin düzenleme yalnızca paragraf/başlıkta; diğer bloklar denetçiden düzenlenir.

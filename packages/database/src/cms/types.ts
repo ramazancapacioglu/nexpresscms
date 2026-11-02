@@ -80,6 +80,7 @@ export interface TaxonomyDto {
   color: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  templateId: string | null;
   imageUrl: string | null;
   sortOrder: number;
   itemCount: number;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ContentStatus } from "@nexpress/core";
 
+import { TemplatePicker } from "./template-picker";
 import { LanguageStrip } from "./language-strip";
 import { RevisionsPanel } from "./revisions-panel";
 import { useStudioInspector } from "./studio-inspector-context";
@@ -32,10 +33,19 @@ export function PublishTab() {
     setQuickTagName,
     handleQuickAddTag,
     slug,
+    templateId,
+    setTemplateId,
+    contentType,
   } = useStudioInspector();
+  const tplKind = contentType === "product" ? "product" : contentType === "page" || contentType === "campaign" ? "page" : "post";
 
   return (
                 <div className="space-y-4">
+                  <div className="rounded-lg border border-border p-3 space-y-2">
+                    <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">Görünüm şablonu</div>
+                    <TemplatePicker id="publish-template" kind={tplKind} value={templateId} onChange={setTemplateId} />
+                    <p className="text-[10px] text-muted-foreground">Tam genişlik tuval tasarımlı sayfalarda şablon uygulanmaz.</p>
+                  </div>
                   <div className="rounded-lg border border-border p-3 space-y-2.5">
                     <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Yayın & Erişim Kısıtlama

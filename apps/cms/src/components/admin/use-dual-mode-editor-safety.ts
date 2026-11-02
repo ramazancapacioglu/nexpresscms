@@ -31,6 +31,7 @@ export function useDualModeEditorSafety(p: ReturnType<typeof useDualModeEditorSa
     p.setMetaDescription(f.metaDescription);
     p.setCanonicalUrl(f.canonicalUrl);
     p.setRichSchema((f.richSchema ?? {}) as never);
+    p.setTemplateId(f.templateId ?? "");
     p.setNoIndex(f.noIndex);
     p.setSchemaType(f.schemaType);
     p.setImportanceScore(f.importanceScore);

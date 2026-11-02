@@ -5,7 +5,7 @@ import type { useDualModeEditorDirty } from "./use-dual-mode-editor-dirty";
 
 /** useDualModeEditor — aşama 6: Save */
 export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirty>) {
-  const { inspectorSlot, startTransition, contentId, setContentId, title, slug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, router, initialDoc, lockedType, setBlocks, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, authorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, setTaxonomies, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, editorMode, setEditorMode, viewport, setViewport, rightSidebarOpen, setRightSidebarOpen, rightTab, setRightTab, blockInspectorSubTab, setBlockInspectorSubTab, styleDevice, setStyleDevice, setSelectedBlockId, setLibraryOpen, setMediaPickerTarget, showToast, selectedBlock, selectedLocation, seoAnalysis, autoSchemaNodes, categories, tags, flatCategoryTree, updateSelectedBlockProps, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, markSaved, docSignature , richSchema, setRichSchema } = p;
+  const { inspectorSlot, startTransition, contentId, setContentId, title, slug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, router, initialDoc, lockedType, setBlocks, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, authorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, setTaxonomies, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, editorMode, setEditorMode, viewport, setViewport, rightSidebarOpen, setRightSidebarOpen, rightTab, setRightTab, blockInspectorSubTab, setBlockInspectorSubTab, styleDevice, setStyleDevice, setSelectedBlockId, setLibraryOpen, setMediaPickerTarget, showToast, selectedBlock, selectedLocation, seoAnalysis, autoSchemaNodes, categories, tags, flatCategoryTree, updateSelectedBlockProps, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, markSaved, docSignature , richSchema, setRichSchema, templateId, setTemplateId } = p;
   // Kaydet / Yayınla
   const handleSave = (overrideStatus?: ContentStatus) => {
     const nextStatus = overrideStatus ?? status;
@@ -33,6 +33,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         schemaAttributes: {
           ...(initialDoc?.schemaAttributes ?? {}),
           richSchema: Object.keys(richSchema).length > 0 ? richSchema : undefined,
+          _template: templateId || undefined,
           _publishing: {
             visibility,
             password: accessPassword || undefined,
@@ -143,6 +144,9 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setBlocks,
     updateSelectedBlockProps,
     bumpProseSync: () => p.setProseSyncToken((v: number) => v + 1),
+    contentType: lockedType,
+    templateKind: lockedType === "template" ? (((initialDoc?.schemaAttributes as { template?: { kind?: string } } | undefined)?.template?.kind) ?? null) : null,
+    blocks,
     updateSelectedBlockStyle,
     getActiveStyleValue,
     handleChangeColumnLayout,
@@ -186,6 +190,8 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setCanonicalUrl,
     richSchema,
     setRichSchema,
+    templateId,
+    setTemplateId,
     schemaType,
     setSchemaType,
     importanceScore,

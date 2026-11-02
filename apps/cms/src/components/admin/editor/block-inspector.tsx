@@ -1,5 +1,6 @@
 "use client";
 
+import { TemplateTab } from "./template-tab";
 import { BLOCK_TYPE_LABELS } from "./studio-model";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -22,6 +23,7 @@ export function BlockInspector() {
     selectedLocation,
     setSelectedBlockId,
     seoAnalysis,
+    templateKind,
   } = useStudioInspector();
 
   return (
@@ -31,14 +33,15 @@ export function BlockInspector() {
         {rightSidebarOpen && (
           <aside aria-label="Denetçi paneli" className="fixed inset-y-0 right-0 z-40 flex w-[22rem] max-w-[92vw] shrink-0 flex-col shadow-xl lg:static lg:z-auto lg:w-72 lg:max-w-none lg:shadow-none xl:w-[21.5rem] border-l border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#111317] h-full overflow-hidden">
             {/* Yapışkan Üst Sekme Başlıkları */}
-            <div className="grid grid-cols-4 border-b border-border bg-muted/30 p-1 text-[11px] font-semibold shrink-0">
-              {(
-                [
-                  { id: "block", label: "Blok & Stil" },
-                  { id: "publish", label: "Yayın & Kat." },
-                  { id: "seo", label: `SEO (${seoAnalysis.score})` },
-                  { id: "engage", label: "Medya & Etk." },
-                ] as const
+            <div className={`grid ${templateKind ? "grid-cols-2" : "grid-cols-4"} border-b border-border bg-muted/30 p-1 text-[11px] font-semibold shrink-0`}>
+              {(templateKind
+                ? ([{ id: "block", label: "Blok & Stil" }, { id: "template", label: "Şablon" }] as const)
+                : ([
+                    { id: "block", label: "Blok & Stil" },
+                    { id: "publish", label: "Yayın & Kat." },
+                    { id: "seo", label: `SEO (${seoAnalysis.score})` },
+                    { id: "engage", label: "Medya & Etk." },
+                  ] as const)
               ).map((t) => (
                 <button
                   key={t.id}
@@ -58,6 +61,7 @@ export function BlockInspector() {
             {/* Sekme İçeriği (Bağımsız Dikey Kaydırma) */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
               {/* BLOK DENETÇİSİ */}
+              {rightTab === "template" && templateKind && <TemplateTab />}
               {rightTab === "block" && (
                 <div className="space-y-4">
                   {!selectedBlock ? (

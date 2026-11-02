@@ -1,5 +1,6 @@
 import { DesignLibraryModal } from "@/components/admin/editor/design-library-modal";
 import { cloneBlockWithFreshIds } from "@/components/admin/editor/studio-model";
+import { SCHEMA_STARTERS, type SchemaCardKind } from "@nexpress/core";
 import { MediaPickerDialog } from "@/components/admin/media/media-picker-dialog";
 import { formatBytes } from "@/components/admin/media/media-filter";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
@@ -37,6 +38,14 @@ export function DualModeEditorModals({ s }: { s: DualModeEditorState }) {
         onClose={() => setLibraryOpen(false)}
         onInsert={(block) => {
           handleInsertBlock(block, null);
+          // Şema kartı: ilgili şema verisi boşsa başlangıç değerleriyle doldurulur (kullanıcı yalnızca düzenler)
+          if (block.type === "schema_card") {
+            const kind = String(block.props?.schema ?? "software") as SchemaCardKind;
+            const starter = SCHEMA_STARTERS[kind];
+            const group = (kind === "qa" ? "qa" : kind) as keyof typeof starter.rich;
+            if (starter && !(s.richSchema as Record<string, unknown>)[group]) s.setRichSchema((cur) => ({ ...cur, ...starter.rich }));
+            if (starter && (s.schemaType === "WebPage" || s.schemaType === "BlogPosting")) s.setSchemaType(starter.schemaType);
+          }
           setLibraryOpen(false);
         }}
         onApplyPack={(pack) => {

@@ -54,6 +54,7 @@ const TYPE_LABEL: Record<ContentType, string> = {
   ai_prompt: "Soru",
   product: "Ürün",
   campaign: "Kampanya",
+  template: "Şablon",
 };
 
 export function contentTypeLabel(type: ContentType) {

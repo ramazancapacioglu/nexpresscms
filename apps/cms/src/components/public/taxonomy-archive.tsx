@@ -4,8 +4,11 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { filterDynamicItems, normalizeDynamicQuery, paginate, type DynamicItem } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { getThemeManifest, DynamicListView } from "@nexpress/themes";
+import { getThemeManifest, DynamicListView, RscBlockRenderer } from "@nexpress/themes";
 import { getDynamicCandidates } from "@/lib/dynamic-content";
+import { getResolvedMenu } from "@/lib/menu-data";
+import { templateFor } from "@/lib/templates";
+import { buildTemplateContext } from "@/lib/template-context";
 import { getPublicSite } from "@/lib/public-data";
 
 type Kind = "category" | "tag";
@@ -49,6 +52,31 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   const data = await load(kind, locale, slug, page);
   if (!data) notFound();
   const tokens = data.site?.designTokens ?? getThemeManifest(data.site?.activeThemeId ?? "corporate-aurora").tokens;
+  const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  // Tema oluşturucu şablonu: terimin seçtiği şablon → türün varsayılanı → yerleşik görünüm
+  const tpl = await templateFor(siteId, kind, data.term.templateId);
+  if (tpl) {
+    const menu = await getResolvedMenu(siteId, locale);
+    const prefix = kind === "category" ? "kategori" : "etiket";
+    const ctx = buildTemplateContext({
+      site: data.site ? { name: data.site.name, tagline: data.site.tagline } : null,
+      locale,
+      menu,
+      tokens,
+      menuLabel: "Menü",
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: data.term.name, href: `/${locale}/${prefix}/${slug}` }],
+      archive: {
+        title: data.term.name,
+        description: data.term.description,
+        kindLabel: kind === "category" ? "Kategori" : "Etiket",
+        items: data.paged.items,
+        page: data.paged.page,
+        pages: data.paged.pages,
+        pageHref: (n) => `/${locale}/${prefix}/${slug}${n > 1 ? `?sayfa=${n}` : ""}`,
+      },
+    });
+    return <RscBlockRenderer blocks={tpl.blocks} themeId={data.site?.activeThemeId ?? "corporate-aurora"} tokens={tokens} locale={locale} tpl={ctx} />;
+  }
   const query = normalizeDynamicQuery({ source: "posts", layout: "cards", columns: 3, limit: 24, emptyText: "Bu başlık altında henüz yayın yok." });
   return (
     <div className="space-y-6">

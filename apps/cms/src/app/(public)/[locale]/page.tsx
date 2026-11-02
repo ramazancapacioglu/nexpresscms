@@ -88,6 +88,7 @@ export default async function PublicHomePage({
           mediaFocal={mediaFocal}
           locale={locale}
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId)}
+          pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
           form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
         />
       ) : (

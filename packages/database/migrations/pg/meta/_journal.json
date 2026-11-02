@@ -120,6 +120,13 @@
       "when": 1793620031765,
       "tag": "0016_mcp_log",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793629991534,
+      "tag": "0017_taxonomy_template",
+      "breakpoints": true
     }
   ]
 }

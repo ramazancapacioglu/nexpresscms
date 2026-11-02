@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Tema oluşturucu: şablonlar, şema tabanlı denetçi, şema kütüphanesi
+- ✅ **Kök neden (kütüphane tasarımları düzenlenemiyordu):** denetçi yalnızca üst düzey metin alanlarını ve "başlık | açıklama" satırlarını gösteriyordu; fiyat planı, özellik kartı, SSS gibi iç içe öğeler alansızdı. `buildEditorFields` + `SchemaFields` ile her blok tam düzenlenebilir (liste ekle/sil/sırala, bağlantı seçici, görsel seçici). Tarayıcıyla doğrulandı (fiyat planı düzenleme → tuval güncellendi, 4 plan sınırı, silme).
+- ✅ **Şablon sistemi:** 9 tür, 15 hazır şablon, `tpl_*` yuva blokları, atama (içerik/terim/varsayılan), header/footer/kenar çubuğu/sayfa/yazı/kategori/etiket/ürün-içerik uygulaması, doğrulama. Göç `0017`. Şablonlar taslak kalır ve hiçbir yüzeye sızmaz (depo testi + tarayıcı: site haritası, llms.txt, slug 404).
+- ✅ İçerik SEO sekmesi 5 alt sekme. ✅ Şema kütüphanesi: `schema_card` (yazılım/kampanya/QA/teknik); tek kaynak `richSchema`; JSON-LD ile aynı veri (SoftwareApplication ana varlıkla birleşir, yinelenen düğüm yok).
+- Doğrulama: çekirdek 151 (blok alanları, şablonlar, sayfa şeması), eklenti 34, tarayıcı e2e (şablon oluştur → stüdyo → varsayılan → ziyaretçi sayfası; kategori şablonu; şema kütüphanesi → ziyaretçi + JSON-LD).
+
 ### [2026-11-02] — Dil başına menü, arşiv sayfalaması, revizyon sıralama düzeltmesi
 - ✅ Menüler dil başına (`navigation_layouts` zaten dil başına tekildi): menü editöründe dil sekmeleri, kayıt yoksa varsayılan dil gösterilir/ziyaretçide kullanılır, yeni dilin ilk kaydında header/footer devralınır. İkinci dilli sitede tarayıcıyla doğrulandı (/en kendi menüsü, /tr değişmedi).
 - ✅ Kategori/etiket arşivleri sayfalı (`paginate`, testli).

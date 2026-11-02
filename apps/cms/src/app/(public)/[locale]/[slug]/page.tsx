@@ -3,10 +3,14 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { resolvePublishing } from "@nexpress/core";
+import { resolvePublishing, termSlug } from "@nexpress/core";
+import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
+import { getResolvedMenu } from "@/lib/menu-data";
+import { templateFor } from "@/lib/templates";
+import { buildTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
@@ -179,10 +183,42 @@ export default async function PublicDynamicContentPage({
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
   const canEdit = Boolean(await getSession());
+  const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId);
   const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
+
+  // Tema oluşturucu şablonu (sayfa / yazı / ürün): tam genişlik tuval tasarımlarında uygulanmaz; sayfada "none" seçilmişse yerleşik görünüm
+  const tplKind = content.type === "product" ? "product" : content.type === "page" || content.type === "campaign" ? "page" : "post";
+  const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null);
+  if (tpl) {
+    const [menu, catIndex] = await Promise.all([getResolvedMenu(siteId, locale), getScopedRepository(siteId).listTaxonomies("category")]);
+    const ctx = buildTemplateContext({
+      site: site ? { name: site.name, tagline: site.tagline } : null,
+      locale,
+      menu,
+      tokens,
+      menuLabel: t("site.menu"),
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: content.title, href: `/${locale}/${content.slug}` }],
+      post: {
+        title: content.title,
+        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} form={formCtx} />,
+        featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
+        date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
+        author: pub.authorName || content.authorName || null,
+        categories: categories.map((name) => ({ name, href: `/${locale}/kategori/${catIndex.find((c) => c.name === name)?.slug ?? termSlug(name)}` })),
+      },
+    });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }} />
+        {banner}
+        {switcher}
+        <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} />
+      </>
+    );
+  }
 
   if (canvas) {
     return (
@@ -199,7 +235,7 @@ export default async function PublicDynamicContentPage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
-          dynamic={dynamicData}
+          dynamic={dynamicData} pageSchema={pageSchema}
           form={formCtx}
         />
       </>
@@ -322,7 +358,7 @@ export default async function PublicDynamicContentPage({
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
         locale={locale}
-        dynamic={dynamicData}
+        dynamic={dynamicData} pageSchema={pageSchema}
         form={formCtx}
       />
 

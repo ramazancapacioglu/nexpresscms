@@ -15,6 +15,8 @@ export type LibraryCategory =
   | "data"
   | "aio_sge"
   | "editorial"
+  | "template"
+  | "schema"
   | "custom";
 
 export type LibraryPreviewKind =
@@ -75,5 +77,7 @@ export const LIBRARY_GROUPS: LibraryGroup[] = [
   { id: "commerce", label: "Ticaret", categories: ["commerce", "pricing"] },
   { id: "forms", label: "Formlar", categories: ["forms"] },
   { id: "data", label: "Veri", categories: ["data"] },
+  { id: "template", label: "Şablon yuvaları", categories: ["template"] },
+  { id: "schema", label: "Şema", categories: ["schema"] },
   { id: "custom", label: "Özel", categories: ["custom"] },
 ];

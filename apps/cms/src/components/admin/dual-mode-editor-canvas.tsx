@@ -2,6 +2,7 @@ import { SearchSnippetBar } from "@/components/admin/editor/search-snippet-bar";
 import { CanvasBlock } from "@/components/admin/editor/canvas-block";
 import { duplicateBlockById, moveBlockStep, normalizeImportedBlock, removeBlockById, type BlockNode } from "@nexpress/core";
 import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
+import { PageSchemaContext } from "@/components/admin/editor/page-schema-context";
 import { RscBlockRenderer } from "@nexpress/themes";
 import { Columns, Globe, Sparkles } from "lucide-react";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
@@ -9,8 +10,9 @@ import type { DualModeEditorState } from "./use-dual-mode-editor";
 /** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
   const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock } = s;
+  const pageSchema = { title, tldr: s.tldr, rich: s.richSchema as never };
   return (
-    <>
+    <PageSchemaContext.Provider value={pageSchema}>
         {/* 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */}
         <main
           onClick={() => setActiveColumnInsertId(null)}
@@ -126,6 +128,7 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                   blocks={blocks}
                   themeId="corporate-aurora"
                   tokens={siteTokens}
+                  pageSchema={pageSchema}
                 />
               </div>
             )}
@@ -197,6 +200,6 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
           </div>
           </div>
         </main>
-    </>
+    </PageSchemaContext.Provider>
   );
 }

@@ -251,6 +251,8 @@ export const sqliteTaxonomies = sqliteTable(
     color: text("color").default("#266DF0"),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
+    /** Bu terimin arşiv sayfası için seçilen şablon (`type: "template"` içerik kimliği); boşsa türün varsayılan şablonu */
+    templateId: text("template_id"),
     imageUrl: text("image_url"),
     sortOrder: integer("sort_order").default(0).notNull(),
     itemCount: integer("item_count").default(0).notNull(),

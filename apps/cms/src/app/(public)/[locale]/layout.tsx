@@ -7,6 +7,8 @@ import { runScheduler } from "@/lib/scheduler";
 import { after } from "next/server";
 import { headers } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/public/site-chrome";
+import { templateFor } from "@/lib/templates";
+import { buildTemplateContext } from "@/lib/template-context";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { getPublicNavigation, getPublicSite } from "@/lib/public-data";
 import {
@@ -16,6 +18,7 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { PluginSlot, resolveSiteSettings, type NavigationLink } from "@nexpress/core";
+import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
@@ -60,6 +63,10 @@ export default async function PublicLocaleLayout({
   const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
   const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, site?.settings?.customizer);
   const menu = await getResolvedMenu(siteId, locale);
+  // Tema oluşturucu şablonları: varsayılan header/footer/kenar çubuğu şablonu varsa yerleşik olanın yerine geçer
+  const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header"), templateFor(siteId, "footer"), templateFor(siteId, "sidebar")]);
+  const cust = resolveSiteSettings(site?.settings).customizer.header;
+  const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
   const sidebar = nav?.sidebarConfig?.enabled ? nav.sidebarConfig : null;
 
   return (
@@ -82,6 +89,13 @@ export default async function PublicLocaleLayout({
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
 
+      {headerTpl && tplCtx ? (
+        <header style={{ borderColor: tokens.colors.border }} className="nx-public-header sticky top-0 z-40 border-b bg-white/95 backdrop-blur-md">
+          <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto px-4 py-3 sm:px-6">
+            <RscBlockRenderer blocks={headerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
+          </div>
+        </header>
+      ) : (
       <SiteHeader
         siteName={site?.name ?? "NexPress CMS"}
         tagline={site?.tagline}
@@ -93,9 +107,13 @@ export default async function PublicLocaleLayout({
         custom={resolveSiteSettings(site?.settings).customizer.header}
         menuLabel={t("site.menu")}
       />
+      )}
 
       <div className={sidebar ? "mx-auto flex w-full flex-1" : "contents"}>
-        {sidebar?.position === "left" ? (
+        {sidebarTpl && tplCtx ? (
+          <aside aria-label="Kenar çubuğu" className="hidden w-72 shrink-0 px-4 py-10 md:block"><RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} /></aside>
+        ) : null}
+        {!sidebarTpl && sidebar?.position === "left" ? (
           <PublicSideColumn title={sidebar.title} links={sidebar.links} />
         ) : null}
         <main
@@ -104,12 +122,20 @@ export default async function PublicLocaleLayout({
         >
           {children}
         </main>
-        {sidebar?.position === "right" ? (
+        {!sidebarTpl && sidebar?.position === "right" ? (
           <PublicSideColumn title={sidebar.title} links={sidebar.links} />
         ) : null}
       </div>
 
-      <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={tokens} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} />
+      {footerTpl && tplCtx ? (
+        <footer style={{ borderColor: tokens.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
+          <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto">
+            <RscBlockRenderer blocks={footerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
+          </div>
+        </footer>
+      ) : (
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={tokens} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} />
+      )}
     </div>
   );
 }

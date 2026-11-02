@@ -813,3 +813,15 @@ test("tasarım kütüphanesi: ekleme, liste/tür süzgeci, yeniden adlandırma, 
   assert.equal(await a.remove(item.id), true);
   assert.equal(await a.get(item.id), null);
 });
+
+test("şablon içerikleri: her zaman taslak, varsayılan listelerde görünmez, yalnızca açıkça istenince listelenir", async () => {
+  const saved = await repo.saveContent(baseInput({ type: "template", slug: "tpl-test", title: "Test şablonu", status: "published", schemaAttributes: { template: { kind: "post", isDefault: true } } }));
+  const all = await repo.listContents({ locale: "tr" });
+  assert.ok(!all.some((c) => c.contentId === saved.contentId), "genel listede yok");
+  assert.ok(!(await repo.listContents({ locale: "tr", status: "published" })).some((c) => c.contentId === saved.contentId), "yayın listesinde yok");
+  const tpl = await repo.listContents({ locale: "tr", type: "template" });
+  const mine = tpl.find((c) => c.contentId === saved.contentId)!;
+  assert.equal(mine.status, "draft", "yayınla denese de taslak kalır");
+  assert.deepEqual((mine.schemaAttributes as { template?: unknown }).template, { kind: "post", isDefault: true });
+  await repo.deleteContents([saved.contentId]);
+});

@@ -41,4 +41,7 @@ export * from "./audit-export";
 export * from "./media-seo";
 export * from "./menu";
 export * from "./dynamic-content";
+export * from "./block-fields";
+export * from "./templates";
+export * from "./page-schema";
 export * from "./editor-draft";

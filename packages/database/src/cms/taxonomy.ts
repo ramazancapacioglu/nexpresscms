@@ -39,6 +39,8 @@ export class CmsTaxonomyRepository extends CmsCommentsRepository {
     color?: string;
     seoTitle?: string;
     seoDescription?: string;
+    /** undefined: mevcut atama korunur; null: şablonu kaldırır */
+    templateId?: string | null;
   }): Promise<TaxonomyDto> {
     const id = input.id && input.id.trim() ? input.id.trim() : `tax_${input.taxonomyType}_${Date.now()}`;
     const now = new Date();
@@ -61,6 +63,7 @@ export class CmsTaxonomyRepository extends CmsCommentsRepository {
       color: input.color ?? "#2563eb",
       seoTitle: input.seoTitle ?? input.name,
       seoDescription: input.seoDescription ?? input.description ?? null,
+      templateId: input.templateId ?? null,
       itemCount: 1,
       createdAt: now,
     };
@@ -82,6 +85,7 @@ export class CmsTaxonomyRepository extends CmsCommentsRepository {
           color: record.color,
           seoTitle: record.seoTitle,
           seoDescription: record.seoDescription,
+          ...(input.templateId !== undefined ? { templateId: record.templateId } : {}),
         },
       });
   

@@ -1,3 +1,4 @@
+import { TaxonomyTemplateSelect } from "./taxonomy-template-select";
 import { taxonomyPath } from "@nexpress/core";
 import { CornerDownRight, Edit3, Image as ImageIcon, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
 import type { TaxonomyStudioState } from "./use-taxonomy-studio";
@@ -205,6 +206,10 @@ export function TaxonomyStudioWorkspace({ s }: { s: TaxonomyStudioState }) {
                 className="w-full rounded border border-border bg-background p-2 text-[11px]"
               />
             </div>
+
+            {editingId && (activeType === "category" || activeType === "tag") && (
+              <TaxonomyTemplateSelect key={editingId} taxonomyId={editingId} kind={activeType} initial={items.find((x) => x.id === editingId)?.templateId ?? null} />
+            )}
 
             <button
               type="submit"

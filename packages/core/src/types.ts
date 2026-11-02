@@ -15,6 +15,7 @@ export type SiteProfile = "corporate" | "ecommerce" | "news";
  * 3. Polimorfik İçerik Türleri ve Yayın Durumları (Taslak, Yayında, Zamanlanmış, Kısıtlı)
  */
 export type ContentType =
+  | "template"    // Tema oluşturucu şablonu (header, footer, sayfa, blog, arşiv…): yayınlanmaz, hiçbir ziyaretçi yüzeyine girmez
   | "page"        // Kurumsal sayfalar & Görsel Kanvas açılış sayfaları
   | "post"        // Blog ve haber yazıları
   | "kb_tech"     // Teknik Bilgi Bankası (TechArticle / HowTo)
@@ -116,6 +117,17 @@ export type BlockType =
   | "image_figure"
   | "media_file"
   | "dynamic_list"
+  | "schema_card"
+  | "tpl_post_title"
+  | "tpl_post_content"
+  | "tpl_featured_image"
+  | "tpl_post_meta"
+  | "tpl_breadcrumb"
+  | "tpl_archive_title"
+  | "tpl_archive_list"
+  | "tpl_site_logo"
+  | "tpl_menu"
+  | "tpl_copyright"
   | "divider_spacer"
   | "review_box"
   | "section"
@@ -352,6 +364,17 @@ export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
       "image_figure",
       "media_file",
       "dynamic_list",
+      "schema_card",
+      "tpl_post_title",
+      "tpl_post_content",
+      "tpl_featured_image",
+      "tpl_post_meta",
+      "tpl_breadcrumb",
+      "tpl_archive_title",
+      "tpl_archive_list",
+      "tpl_site_logo",
+      "tpl_menu",
+      "tpl_copyright",
       "divider_spacer",
       "review_box",
       "section",

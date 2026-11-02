@@ -1,12 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { AiSuggestPanel } from "./ai-suggest-panel";
 import { RichSchemaPanel } from "./rich-schema-panel";
 import { LengthMeter, SerpPreview, SocialPreview } from "./seo-previews";
 import { SchemaIssues } from "./schema-issues";
 import { useStudioInspector } from "./studio-inspector-context";
 
+type SubTab = "general" | "schema" | "social" | "advanced" | "audit";
+const SUBTABS: Array<{ id: SubTab; label: string }> = [
+  { id: "general", label: "Genel" },
+  { id: "schema", label: "Şema" },
+  { id: "social", label: "Sosyal" },
+  { id: "advanced", label: "Gelişmiş" },
+  { id: "audit", label: "Denetim" },
+];
+
 export function SeoTab() {
+  const [sub, setSub] = useState<SubTab>("general");
   const {
     seoAnalysis,
     autoSchemaNodes,
@@ -41,29 +52,19 @@ export function SeoTab() {
   const effDesc = metaDescription || tldr;
 
   return (
-                <div className="space-y-4">
-                  {/* Skor Özeti */}
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 flex items-center justify-between">
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                        Çekirdek SEO & GEO Motoru
-                      </div>
-                      <div className="text-lg font-extrabold text-foreground">
-                        {seoAnalysis.score} / 100 Puan
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {
-                          seoAnalysis.checks.filter((c) => c.status === "pass")
-                            .length
-                        }{" "}
-                        / {seoAnalysis.checks.length} kriter tam uyumlu
-                      </div>
-                    </div>
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-600 text-lg font-black text-white">
-                      {seoAnalysis.grade}
-                    </div>
-                  </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
+        <div className="text-[12px]"><span className="font-extrabold">{seoAnalysis.score}/100</span> <span className="text-muted-foreground">SEO &amp; GEO • {seoAnalysis.checks.filter((c) => c.status === "pass").length}/{seoAnalysis.checks.length} kriter</span></div>
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-sm font-black text-white">{seoAnalysis.grade}</span>
+      </div>
+      <div role="tablist" aria-label="SEO bölümleri" className="flex gap-1 overflow-x-auto border-b border-border pb-1.5">
+        {SUBTABS.map((t) => (
+          <button key={t.id} type="button" role="tab" id={`seo-sub-${t.id}`} aria-selected={sub === t.id} aria-controls={`seo-panel-${t.id}`} onClick={() => setSub(t.id)} className={`shrink-0 rounded px-2.5 py-1 text-[12px] font-semibold ${sub === t.id ? "bg-blue-600 text-white" : "text-muted-foreground hover:bg-muted"}`}>{t.label}</button>
+        ))}
+      </div>
 
+      {sub === "general" && (
+        <div role="tabpanel" id="seo-panel-general" aria-labelledby="seo-sub-general" className="space-y-4">
                   {/* Odak Anahtar Kelime */}
                   <div>
                     <label className="block text-[11px] font-semibold mb-1">
@@ -79,7 +80,6 @@ export function SeoTab() {
                   </div>
 
                   <SerpPreview title={effTitle} description={effDesc} url={canonicalUrl || pageUrl} />
-
                   {/* Meta Alanları */}
                   <div className="space-y-2.5">
                     <div>
@@ -98,6 +98,14 @@ export function SeoTab() {
                       <LengthMeter value={tldr.length} min={40} max={260} label="TL;DR uzunluğu" />
                       {tldr && tldr !== metaDescription && <button type="button" onClick={() => setMetaDescription(tldr.slice(0, 160))} className="mt-1 text-[10px] font-medium text-blue-700 underline dark:text-blue-300">TL;DR'yi meta açıklamaya kopyala (160 karaktere kırpar)</button>}
                     </div>
+                  </div>
+          <AiSuggestPanel />
+        </div>
+      )}
+
+      {sub === "schema" && (
+        <div role="tabpanel" id="seo-panel-schema" aria-labelledby="seo-sub-schema" className="space-y-4">
+          <div className="space-y-2.5">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-[10px] text-muted-foreground mb-1">
@@ -133,28 +141,8 @@ export function SeoTab() {
                         />
                       </div>
                     </div>
-                  </div>
-
-                  <RichSchemaPanel value={richSchema} onChange={setRichSchema} />
-
-                  <SocialPreview title={effTitle} description={effDesc} image={featuredImageUrl} host={base ? base.replace(/^https?:\/\//, "") : "site"} />
-
-                  <details className="rounded-lg border border-border p-3 text-[11px]" open={noIndex || Boolean(canonicalUrl)}>
-                    <summary className="cursor-pointer font-semibold">Gelişmiş: dizinleme ve canonical</summary>
-                    <div className="mt-2 space-y-2.5">
-                      <label className="flex items-start gap-2"><input type="checkbox" checked={noIndex} onChange={(e) => setNoIndex(e.target.checked)} className="mt-0.5" /><span><strong>Arama motorlarına kapat (noindex)</strong><span className="block text-muted-foreground">Sayfa sitemap, llms.txt ve beslemelerden de çıkar. Yayındaki bir sayfayı kapatırsanız sıralamadan düşer.</span></span></label>
-                      {noIndex && status === "published" && <p role="alert" className="rounded bg-amber-500/15 px-2 py-1 text-amber-800 dark:text-amber-300">Yayındaki sayfa noindex: arama sonuçlarında görünmeyecek.</p>}
-                      <div>
-                        <label htmlFor="seo-canonical" className="mb-1 block font-medium">Canonical adres <span className="font-normal text-muted-foreground">(boşsa sayfanın kendi adresi)</span></label>
-                        <input id="seo-canonical" type="text" value={canonicalUrl} onChange={(e) => setCanonicalUrl(e.target.value)} placeholder={pageUrl} className="h-8 w-full rounded border border-border bg-background px-2 font-mono" />
-                        {canonicalUrl && !/^(https?:\/\/|\/)/.test(canonicalUrl) && <p role="alert" className="mt-1 text-red-600">https:// ile veya / ile başlamalı.</p>}
-                        {canonicalUrl && /^https?:\/\//.test(canonicalUrl) && base && !canonicalUrl.startsWith(base) && <p className="mt-1 text-amber-800 dark:text-amber-300">Canonical başka bir alan adına işaret ediyor: bu sayfa o adresin kopyası sayılır.</p>}
-                      </div>
-                    </div>
-                  </details>
-
-                  <AiSuggestPanel />
-
+          </div>
+          <RichSchemaPanel value={richSchema} onChange={setRichSchema} />
                   {/* Otomatik Algılanan Zengin Schema Düğümleri */}
                   <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-2.5 space-y-1">
                     <div className="text-[10px] font-bold uppercase text-blue-600">
@@ -179,6 +167,36 @@ export function SeoTab() {
                     <SchemaIssues nodes={autoSchemaNodes} />
                   </div>
 
+        </div>
+      )}
+
+      {sub === "social" && (
+        <div role="tabpanel" id="seo-panel-social" aria-labelledby="seo-sub-social" className="space-y-4">
+                  <SocialPreview title={effTitle} description={effDesc} image={featuredImageUrl} host={base ? base.replace(/^https?:\/\//, "") : "site"} />
+        </div>
+      )}
+
+      {sub === "advanced" && (
+        <div role="tabpanel" id="seo-panel-advanced" aria-labelledby="seo-sub-advanced" className="space-y-4">
+                  <details className="rounded-lg border border-border p-3 text-[11px]" open>
+                    <summary className="cursor-pointer font-semibold">Gelişmiş: dizinleme ve canonical</summary>
+                    <div className="mt-2 space-y-2.5">
+                      <label className="flex items-start gap-2"><input type="checkbox" checked={noIndex} onChange={(e) => setNoIndex(e.target.checked)} className="mt-0.5" /><span><strong>Arama motorlarına kapat (noindex)</strong><span className="block text-muted-foreground">Sayfa sitemap, llms.txt ve beslemelerden de çıkar. Yayındaki bir sayfayı kapatırsanız sıralamadan düşer.</span></span></label>
+                      {noIndex && status === "published" && <p role="alert" className="rounded bg-amber-500/15 px-2 py-1 text-amber-800 dark:text-amber-300">Yayındaki sayfa noindex: arama sonuçlarında görünmeyecek.</p>}
+                      <div>
+                        <label htmlFor="seo-canonical" className="mb-1 block font-medium">Canonical adres <span className="font-normal text-muted-foreground">(boşsa sayfanın kendi adresi)</span></label>
+                        <input id="seo-canonical" type="text" value={canonicalUrl} onChange={(e) => setCanonicalUrl(e.target.value)} placeholder={pageUrl} className="h-8 w-full rounded border border-border bg-background px-2 font-mono" />
+                        {canonicalUrl && !/^(https?:\/\/|\/)/.test(canonicalUrl) && <p role="alert" className="mt-1 text-red-600">https:// ile veya / ile başlamalı.</p>}
+                        {canonicalUrl && /^https?:\/\//.test(canonicalUrl) && base && !canonicalUrl.startsWith(base) && <p className="mt-1 text-amber-800 dark:text-amber-300">Canonical başka bir alan adına işaret ediyor: bu sayfa o adresin kopyası sayılır.</p>}
+                      </div>
+                    </div>
+                  </details>
+
+        </div>
+      )}
+
+      {sub === "audit" && (
+        <div role="tabpanel" id="seo-panel-audit" aria-labelledby="seo-sub-audit" className="space-y-4">
                   {/* 17-Noktalı Canlı Denetim Listesi */}
                   <div className="space-y-1.5">
                     <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -210,7 +228,9 @@ export function SeoTab() {
                     ))}
                   </div>
 
-                  {inspectorSlot}
-                </div>
+          {inspectorSlot}
+        </div>
+      )}
+    </div>
   );
 }

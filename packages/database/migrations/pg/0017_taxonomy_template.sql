@@ -1,0 +1,1 @@
+ALTER TABLE "taxonomies" ADD COLUMN "template_id" text;

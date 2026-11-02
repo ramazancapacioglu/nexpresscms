@@ -203,3 +203,8 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 ## Ek (2026-11-02): `dynamic_list` bloğu
 
 `dynamic_list`: `props = { source: "posts"|"pages"|"products", category?, tag?, limit (1-24), orderBy: "newest"|"oldest"|"title", excludeCurrent, layout: "cards"|"list", columns (1-4), showImage, showExcerpt, showDate, heading?, emptyText? }`. `category`/`tag` taksonomi **slug**'ıdır. Çözüm ziyaretçi isteğinde yapılır; Markdown/llms çıktısına girmez. **AI tasarım kataloğunda yoktur** (model sorgu uyduramaz).
+
+## Ek (2026-11-03): `schema_card` ve `tpl_*` blokları
+
+- `schema_card`: `props = { schema: "software"|"offer"|"qa"|"tech" }`; veri `schemaAttributes.richSchema`'dan gelir. **AI tasarım kataloğunda yoktur.**
+- `tpl_post_title`, `tpl_post_content`, `tpl_featured_image`, `tpl_post_meta`, `tpl_breadcrumb`, `tpl_archive_title`, `tpl_archive_list`, `tpl_site_logo`, `tpl_menu`, `tpl_copyright`: yalnızca şablonlarda anlamlıdır (yuva blokları); sayfa içeriğinde kullanılmaz ve AI kataloğunda yoktur.

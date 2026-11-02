@@ -16,7 +16,7 @@ import type { TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 import type { SnapshotLike } from "@nexpress/core";
 import type { SeoAnalysis } from "@nexpress/seo-core";
 
-type RightTab = "publish" | "seo" | "block" | "engage";
+type RightTab = "publish" | "seo" | "block" | "engage" | "template";
 type EditorMode = "visual" | "preview" | "code" | "markdown";
 type InspectorSubTab = "general" | "style" | "advanced";
 type Visibility = "public" | "private" | "password" | "members_only";
@@ -37,6 +37,9 @@ export interface StudioInspectorApi {
   styleDevice: DeviceKey;
   setStyleDevice: Dispatch<SetStateAction<DeviceKey>>;
   selectedBlock: BlockNode | null;
+  /** Şablon düzenleme modu: şablon türü (yoksa null) ve tüm bloklar (doğrulama için) */
+  templateKind: string | null;
+  blocks: BlockNode[];
   selectedLocation: BlockLocation | null;
   setSelectedBlockId: Dispatch<SetStateAction<string | null>>;
   setBlocks: (
@@ -88,6 +91,10 @@ export interface StudioInspectorApi {
   noIndex: boolean;
   setNoIndex: Dispatch<SetStateAction<boolean>>;
   canonicalUrl: string;
+  templateId: string;
+  setTemplateId: Dispatch<SetStateAction<string>>;
+  /** Düzenlenen içeriğin türü (şablon seçici hangi şablon türünü listeleyeceğini buradan bilir) */
+  contentType: string;
   richSchema: RichSchemaFields;
   setRichSchema: Dispatch<SetStateAction<RichSchemaFields>>;
   setCanonicalUrl: Dispatch<SetStateAction<string>>;

@@ -3,6 +3,11 @@
 import { AiComposePanel } from "./ai-compose-panel";
 import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
+import { SchemaFields } from "./schema-fields";
+import { SchemaCardFields } from "./schema-card-fields";
+
+/** Kendi özel alan arayüzü olan (veya düzenlenecek alanı olmayan) bloklar; kalan her blok şema tabanlı alanlarla düzenlenir. */
+const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element"]);
 import { COLUMN_LAYOUT_PRESETS } from "./studio-model";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -20,6 +25,7 @@ export function BlockGeneralTab() {
                         <div className="space-y-3">
                           {(selectedBlock.type === "paragraph" || selectedBlock.type === "heading" || selectedBlock.type === "paragraph_element" || selectedBlock.type === "heading_element") && <AiComposePanel />}
                           {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
+                          {selectedBlock.type === "schema_card" && <SchemaCardFields />}
                           {selectedBlock.type === "columns" && (
                             <div className="space-y-3">
                               <div>
@@ -345,7 +351,11 @@ export function BlockGeneralTab() {
                               />
                             </div>
                           )}
-                          <CatalogFields block={selectedBlock} onChange={updateSelectedBlockProps} />
+                          {selectedBlock.type === "form_block" ? (
+                            <CatalogFields block={selectedBlock} onChange={updateSelectedBlockProps} />
+                          ) : DEDICATED_UI.has(selectedBlock.type) ? null : (
+                            <SchemaFields type={selectedBlock.type} props={selectedBlock.props ?? {}} onChange={updateSelectedBlockProps} />
+                          )}
                         </div>
   );
 }

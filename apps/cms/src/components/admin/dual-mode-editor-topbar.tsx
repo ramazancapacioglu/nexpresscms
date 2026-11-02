@@ -5,7 +5,7 @@ import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** ÜST STÜDYO ÇUBUĞU (BAĞLAM KİLİTLİ — KARIŞIK TÜR FİLTRESİ YOK!) */
 export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
-  const { isPending, title, rightSidebarOpen, setRightSidebarOpen, setRightTab, seoAnalysis, handleSave, isDirty, recovery, restoreRecovery, dismissRecovery, contentId, locale } = s;
+  const { isPending, title, rightSidebarOpen, setRightSidebarOpen, setRightTab, seoAnalysis, handleSave, isDirty, recovery, restoreRecovery, dismissRecovery, contentId, locale, lockedType } = s;
   return (
     <>
       {/* ÜST STÜDYO ÇUBUĞU (BAĞLAM KİLİTLİ — KARIŞIK TÜR FİLTRESİ YOK!) */}
@@ -38,23 +38,23 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             </span>
           </button>
 
-          <button
+          {lockedType !== "template" && <button
             type="button"
             disabled={isPending}
             onClick={() => handleSave("draft")}
             className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted transition disabled:opacity-50"
           >
             Taslak Kaydet
-          </button>
+          </button>}
 
           <button
             type="button"
             disabled={isPending}
-            onClick={() => handleSave("published")}
+            onClick={() => handleSave(lockedType === "template" ? "draft" : "published")}
             className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
-            <span>{isPending ? "Kaydediliyor..." : "Yayınla"}</span>
+            <span>{isPending ? "Kaydediliyor..." : lockedType === "template" ? "Şablonu kaydet" : "Yayınla"}</span>
           </button>
 
           <button

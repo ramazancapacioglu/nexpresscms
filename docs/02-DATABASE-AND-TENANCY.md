@@ -90,3 +90,5 @@ Tüm tablolar `siteId` kapsamındadır:
 
 - `media_assets` (göç `0015_media_seo`): `description` (WordPress "Açıklama"), `kind` (`image` | `document` | `video` | `audio`). `seoScore` artık `scoreMediaSeo` (çekirdek, saf) ile hesaplanır; sabit/uydurma puan yoktur.
 - `mcp_request_log` (göç `0016_mcp_log`): `tool`, `agent` (User-Agent, en çok 80 karakter; ajan anahtarı ASLA yazılmaz), `ok`, `duration_ms`, `at`; `(site_id, at)` indeksi. Yalnızca Pro `mcp-log` modülü açıkken yazılır; 90 günden eski kayıtlar kendiliğinden silinir (`McpLogRepository`).
+
+- Göç `0017_taxonomy_template`: `taxonomies.template_id` (kategori/etiket arşivi şablonu; boş = türün varsayılanı). Şablonlar ayrı tablo değildir: `contents` içinde `type: "template"`, ayar `schemaAttributes.template = { kind, isDefault }`, atama `schemaAttributes._template`.

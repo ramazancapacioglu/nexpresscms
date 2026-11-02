@@ -49,3 +49,12 @@ test("boş/yok girdi hiçbir şey üretmez", () => {
   assert.deepEqual(buildRichNodes(null, ctx()), { extra: [], entityPatch: {} });
   assert.deepEqual(buildRichNodes({}, ctx()), { extra: [], entityPatch: {} });
 });
+
+test("SoftwareApplication: ad ve adres alanları (güvensiz adres atılır)", () => {
+  const ok = buildRichNodes({ software: { category: "BusinessApplication", os: "Web", name: "Uygulamam", url: "https://x.test/indir" } }, ctx()).extra[0]!;
+  assert.equal(ok.name, "Uygulamam");
+  assert.equal(ok.url, "https://x.test/indir");
+  const bad = buildRichNodes({ software: { category: "BusinessApplication", os: "Web", url: "javascript:x" } }, ctx()).extra[0]!;
+  assert.equal(bad.name, "Sayfa", "ad boşsa sayfa başlığı");
+  assert.equal("url" in bad, false);
+});

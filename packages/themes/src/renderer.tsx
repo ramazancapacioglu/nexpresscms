@@ -6,6 +6,8 @@ import {
   type BlockNode,
   type DesignTokens,
   type DynamicDataMap,
+  type PageSchemaData,
+  type SchemaCardKind,
 } from "@nexpress/core";
 import type { BlockRenderContext, FormRenderContext } from "./block-context";
 import type { MediaFocalMap } from "./responsive-image";
@@ -15,6 +17,9 @@ import { renderLayoutBlock } from "./blocks-layout";
 import { renderMarketingBlock } from "./blocks-marketing";
 import { INK_GRID_ID } from "./ink-grid";
 import { DynamicListView } from "./dynamic-list";
+import { renderTemplateBlock } from "./blocks-template";
+import { SchemaCardView } from "./schema-card";
+import type { TemplateRenderContext } from "./block-template-context";
 
 export interface RscBlockRendererProps {
   blocks: BlockNode[];
@@ -30,6 +35,12 @@ export interface RscBlockRendererProps {
   form?: FormRenderContext;
   /** `dynamic_list` blokları için sunucuda çözülmüş öğeler (blok kimliği → öğeler) */
   dynamic?: DynamicDataMap;
+  /** Şablon yuvaları (tpl_*) için sayfa verisi */
+  tpl?: TemplateRenderContext;
+  /** `schema_card` blokları için sayfanın şema verisi (SEO sekmesindeki Gelişmiş şema) */
+  pageSchema?: PageSchemaData;
+  /** Stüdyo önizlemesi: veri eksik olan şema kartı yönlendirme gösterir (ziyaretçide gizlenir) */
+  preview?: boolean;
 }
 
 /**
@@ -66,6 +77,9 @@ export function RscBlockRenderer({
   locale,
   form,
   dynamic,
+  tpl,
+  pageSchema,
+  preview,
 }: RscBlockRendererProps): React.ReactElement {
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
@@ -91,6 +105,9 @@ export function RscBlockRenderer({
           locale={locale}
           form={form}
           dynamic={dynamic}
+          tpl={tpl}
+          pageSchema={pageSchema}
+          preview={preview}
         />
       ))}
     </div>
@@ -100,6 +117,8 @@ export function RscBlockRenderer({
 type BlockRenderInput = Omit<BlockRenderContext, "renderChild">;
 
 function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
+  if (input.block.type === "schema_card") return <SchemaCardView kind={(input.block.props?.schema as SchemaCardKind) ?? "software"} data={input.pageSchema} tokens={input.tokens} locale={input.locale} preview={input.preview} />;
+  if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
   if (input.block.type === "dynamic_list") {
     return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id] ?? []} tokens={input.tokens} locale={input.locale} />;
   }
@@ -125,6 +144,9 @@ export function RscSingleBlock({
   locale,
   form,
   dynamic,
+  tpl,
+  pageSchema,
+  preview,
 }: {
   block: BlockNode;
   themeId: string;
@@ -136,6 +158,9 @@ export function RscSingleBlock({
   locale?: string;
   form?: FormRenderContext;
   dynamic?: DynamicDataMap;
+  tpl?: TemplateRenderContext;
+  pageSchema?: PageSchemaData;
+  preview?: boolean;
 }): React.ReactElement | null {
   const inner = renderBlockInner({
     block,
@@ -148,6 +173,9 @@ export function RscSingleBlock({
     locale,
     form,
     dynamic,
+    tpl,
+    pageSchema,
+    preview,
   });
   if (!inner) return null;
 

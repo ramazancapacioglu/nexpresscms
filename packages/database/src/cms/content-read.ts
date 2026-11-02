@@ -1,5 +1,5 @@
 import type { ContentWithTranslationDto, EntityLinkDto } from "./types";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, ne } from "drizzle-orm";
 import { mergeLocalizedAttributes, resolvePublishing, type ContentStatus, type ContentType } from "@nexpress/core";
 import { CmsTaxonomyRepository } from "./taxonomy";
 
@@ -32,7 +32,8 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       .where(
         and(
           eq(t.contents.siteId, this.siteId),
-          options?.type ? eq(t.contents.type, options.type) : undefined,
+          // Şablonlar (tema oluşturucu) yalnızca açıkça istenince listelenir: hiçbir içerik/yayın yüzeyine sızmaz
+          options?.type ? eq(t.contents.type, options.type) : ne(t.contents.type, "template"),
           // Ziyaretçi görünürlüğü: içerik VE çeviri yayında olmalı
           options?.status === "published" ? eq(t.contents.status, "published") : undefined,
           options?.status === "published" ? eq(t.contentTranslations.translationStatus, "published") : undefined

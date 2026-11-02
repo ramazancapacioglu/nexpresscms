@@ -19,8 +19,10 @@ export default async function AdminContentsEditorPage({
   const defaultLocale = site?.defaultLocale ?? "tr";
   const siteLocales = site?.supportedLocales ?? [defaultLocale];
   const locale = sp.locale && siteLocales.includes(sp.locale) ? sp.locale : defaultLocale;
+  const isTemplate = sp.type === "template";
   const [contents, taxonomies, mediaAssets] = await Promise.all([
-    repo.listContents({ locale }),
+    // Şablonlar yalnızca şablon düzenlenirken listelenir (genel listelerde görünmez)
+    repo.listContents(isTemplate ? { locale, type: "template" } : { locale }),
     repo.listTaxonomies(),
     repo.listMediaAssets(),
   ]);
@@ -29,7 +31,7 @@ export default async function AdminContentsEditorPage({
   const translations = sp.id ? await repo.translationOverview(sp.id) : [];
 
   const requestedType: ContentType =
-    sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign"
+    sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign" || sp.type === "template"
       ? (sp.type as ContentType)
       : "page";
 

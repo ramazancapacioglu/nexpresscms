@@ -9,7 +9,7 @@ export interface RichSchema {
   qa?: { enabled?: boolean };
   offer?: { price?: string; currency?: string; validThrough?: string; availability?: string; name?: string; url?: string };
   tech?: { level?: string; dependencies?: string };
-  software?: { category?: string; os?: string; version?: string; price?: string; currency?: string; features?: string };
+  software?: { name?: string; url?: string; category?: string; os?: string; version?: string; price?: string; currency?: string; features?: string };
 }
 
 export type RichModule = "faq-qa" | "campaign-offer" | "tech-article" | "software-app";
@@ -102,10 +102,11 @@ export function buildRichNodes(rich: RichSchema | null | undefined, ctx: RichCon
     extra.push({
       "@type": "SoftwareApplication",
       "@id": `${ctx.url}#software`,
-      name: ctx.title,
+      name: clip(s.name, 120) || ctx.title,
       applicationCategory: clip(s.category, 60),
       operatingSystem: clip(s.os, 80),
       ...(clip(s.version, 30) ? { softwareVersion: clip(s.version, 30) } : {}),
+      ...(safeUrl(s.url) ? { url: safeUrl(s.url) } : {}),
       ...(features.length ? { featureList: features } : {}),
       ...(p && c ? { offers: { "@type": "Offer", price: p, priceCurrency: c } } : {}),
     });

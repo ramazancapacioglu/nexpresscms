@@ -27,7 +27,7 @@ export const getPublicContentBySlug = cachedRead("by-slug", (siteId: string, slu
 /** Yayındaki içerikler; `private` görünürlüklü içerik hiçbir ziyaretçi/bot yüzeyine (llms, besleme, arama) girmez. */
 export const listPublishedContents = cachedRead("published", async (siteId: string, locale: string) =>
   (await getScopedRepository(siteId).listContents({ locale, status: "published" })).filter(
-    (c) => resolvePublishing(c.schemaAttributes).visibility !== "private"
+    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility !== "private"
   )
 );
 

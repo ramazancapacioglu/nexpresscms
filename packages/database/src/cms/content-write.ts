@@ -138,7 +138,9 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
    * 3. `content:beforeSave` kancasını tetikler.
    * 4. Veritabanına yazar ve `content:afterPublish` kancasını tetikler.
    */
-  public async saveContent(input: SaveContentInput): Promise<{ contentId: string; markdownCache: string; seoScore: number }> {
+  public async saveContent(rawInput: SaveContentInput): Promise<{ contentId: string; markdownCache: string; seoScore: number }> {
+    // Şablonlar ASLA yayınlanmaz: her kayıt taslaktır (ziyaretçi yüzeylerine girmez)
+    const input: SaveContentInput = rawInput.type === "template" ? { ...rawInput, status: "draft" } : rawInput;
     const contentId = input.contentId ?? `cnt_${Date.now()}`;
     const rawMarkdown = compileBlocksToMarkdown(input.blocks, {
       title: input.title,

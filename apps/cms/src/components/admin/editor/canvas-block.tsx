@@ -1,5 +1,6 @@
 "use client";
 
+import { usePageSchema } from "./page-schema-context";
 import {
   safeBlockDomId,
   type BlockNode,
@@ -66,6 +67,7 @@ function BlockActions({
 
 export function CanvasBlock(props: CanvasBlockProps) {
   const { block } = props;
+  const pageSchema = usePageSchema();
   const selected = props.selectedId === block.id;
   const domId = safeBlockDomId(block.id);
   const propsOf = block.props ?? {};
@@ -373,7 +375,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
           </div>
         ) : (
           <div className="pointer-events-none">
-            <RscBlockRenderer blocks={[block]} themeId="corporate-aurora" tokens={props.tokens} />
+            <RscBlockRenderer blocks={[block]} themeId="corporate-aurora" tokens={props.tokens} pageSchema={pageSchema} preview />
           </div>
         )}
       </div>

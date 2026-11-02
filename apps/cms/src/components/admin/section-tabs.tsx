@@ -45,6 +45,7 @@ export const SEO_TABS: SectionTab[] = [
 export const APPEARANCE_TABS: SectionTab[] = [
   { href: "/admin/themes", label: "Temalar & özelleştirici", match: [] },
   { href: "/admin/themes/packages", label: "Tema paketleri" },
+  { href: "/admin/appearance/templates", label: "Şablonlar" },
   { href: "/admin/appearance/menus", label: "Menüler" },
   { href: "/admin/appearance/header", label: "Header" },
   { href: "/admin/appearance/footer", label: "Footer" },

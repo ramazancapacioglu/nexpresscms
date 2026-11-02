@@ -1,3 +1,5 @@
+import type { TemplateRenderContext } from "./block-template-context";
+import type { PageSchemaData } from "@nexpress/core";
 import type { DynamicDataMap } from "@nexpress/core";
 import type React from "react";
 import type { BlockNode, DesignTokens } from "@nexpress/core";
@@ -28,6 +30,11 @@ export interface BlockRenderContext {
   form?: FormRenderContext;
   /** Dinamik liste blokları için sunucuda çözülmüş öğeler (blok kimliği → öğeler) */
   dynamic?: DynamicDataMap;
+  /** Şablon yuvaları (tpl_*) için sayfa verisi */
+  tpl?: TemplateRenderContext;
+  /** Şema kartları (schema_card) için sayfanın şema verisi */
+  pageSchema?: PageSchemaData;
+  preview?: boolean;
   /** İç içe blokları (bölüm, sütun) aynı bağlamla işler. */
   renderChild: (child: BlockNode) => React.ReactElement | null;
 }

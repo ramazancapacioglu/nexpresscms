@@ -11,6 +11,10 @@ const SHOW = "invisible opacity-0 group-hover:visible group-hover:opacity-100 gr
 
 const rel = (l: NavigationLink) => (l.target === "_blank" ? { target: "_blank", rel: "noopener noreferrer" } : {});
 
+export function MenuList(props: { links: NavigationLink[] }) {
+  return <SubList links={props.links} />;
+}
+
 function SubList({ links, depth = 0 }: { links: NavigationLink[]; depth?: number }) {
   return (
     <ul className={depth ? "mt-0.5 space-y-0.5 border-l border-current/15 pl-3" : "space-y-0.5"}>
@@ -79,7 +83,7 @@ export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuI
         const hasPanel = Boolean(item.megaMenu?.enabled) || Boolean(item.children?.length);
         return (
           <div key={item.id} className={`group flex h-full items-center ${item.megaMenu?.enabled ? "static" : "relative"}`}>
-            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1 text-sm font-medium ${linkCls}`}>
+            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1 whitespace-nowrap text-sm font-medium ${linkCls}`}>
               <span>{item.label}</span>
               {hasPanel ? <span aria-hidden="true" className="text-[9px] opacity-60">▼</span> : null}
             </a>
