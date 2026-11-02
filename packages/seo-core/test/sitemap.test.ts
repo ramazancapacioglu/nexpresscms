@@ -96,3 +96,10 @@ test("görsel site haritası: medya başvurusu WebP türevine çevrilir, veri UR
   assert.ok(xml.includes("<image:loc>https://cdn.test/a.jpg</image:loc>"));
   assert.ok(xml.includes("&lt;b&gt;"), "başlık/alt yazı kaçışlanır");
 });
+
+test("entryPath: arşiv girdileri sabit yol önekini korur, slug kodlanır", async () => {
+  const { entryPath } = await import("../src/sitemap");
+  assert.equal(entryPath({ locale: "tr", slug: "yapay zeka", pathPrefix: "kategori" }), "/tr/kategori/yapay%20zeka");
+  assert.equal(entryPath({ locale: "tr", slug: "a&b" }), "/tr/a%26b");
+  assert.equal(entryPath({ locale: "tr", slug: "ana-sayfa" }), "/tr");
+});

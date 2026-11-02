@@ -19,6 +19,7 @@ interface Result {
   remainingForbidden: string[];
   claims: string[];
   unverifiedNumbers: string[];
+  lengthWarning: string | null;
   refined: boolean;
   model: string;
 }
@@ -65,7 +66,7 @@ export function AiComposePanel() {
     setResult(null);
   };
 
-  const warnings = result ? [...(result.remainingForbidden.length ? [`Yasak kalıp kaldı: ${result.remainingForbidden.join(", ")}`] : []), ...(result.unverifiedNumbers.length ? [`Kaynakta olmayan rakam (uydurma olabilir): ${result.unverifiedNumbers.join(", ")}`] : []), ...(result.claims.length ? [`Doğrulayın: ${result.claims.join(" • ")}`] : [])] : [];
+  const warnings = result ? [...(result.lengthWarning ? [result.lengthWarning] : []), ...(result.remainingForbidden.length ? [`Yasak kalıp kaldı: ${result.remainingForbidden.join(", ")}`] : []), ...(result.unverifiedNumbers.length ? [`Kaynakta olmayan rakam (uydurma olabilir): ${result.unverifiedNumbers.join(", ")}`] : []), ...(result.claims.length ? [`Doğrulayın: ${result.claims.join(" • ")}`] : [])] : [];
 
   return (
     <section aria-label="AI ile yaz" className="space-y-2 rounded-lg border border-violet-500/30 bg-violet-500/5 p-2.5 text-[12px]">

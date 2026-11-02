@@ -49,8 +49,8 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
             : `nx-public-header z-40 border-b ${sticky === false ? "relative" : "sticky top-0"} ${glass === false ? "bg-white" : "bg-white/90 backdrop-blur-md"}`
         }
       >
-        <div style={{ maxWidth: ink ? "100%" : tokens.geometry.containerMaxWidth, minHeight: custom.height || 64 }} className="mx-auto flex items-center justify-between gap-6 px-4 sm:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-8">
+        <div style={{ maxWidth: ink ? "100%" : tokens.geometry.containerMaxWidth, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center justify-between gap-6 px-4 sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-8 self-stretch">
             <a href={`/${locale}`} className="flex min-w-0 items-center gap-2.5">
               {custom.logoImage ? (
                 // eslint-disable-next-line @next/next/no-img-element

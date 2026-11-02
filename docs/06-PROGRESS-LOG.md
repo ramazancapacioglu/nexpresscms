@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-02] — Mega menü konumu, AI yazım güvenlik ağı, arşiv site haritası
+- ✅ Mega panel header kapsayıcısına ortalandı (sağdan taşıyordu) ve menü öğesi header yüksekliğine uzatıldı (fare öğeden panele inerken kapanmıyor; tarayıcıyla doğrulandı).
+- ✅ AI yazım **gerçek modelle denendi** (yaz, yeniden yaz, düzelt, başlık). Bulgu: düzenleme görevlerinde model yeni cümle ekliyordu → bağlam yalnızca yaz/genişlette verilir, istemde "yeni içerik ekleme" yasağı, `guardEdit` (paragraf sayısı kırpma + uzunluk uyarısı). Testli.
+- ✅ Kategori/etiket arşivleri site haritasına (`archive-1.xml`); `SitemapEntry.pathPrefix`.
+
 ### [2026-11-02] — Panel düzeni, menü ağacı + mega menü, dinamik içerik, AI yazım
 - ✅ Kenar çubuğu 6 daraltılabilir gruba indi; SEO ve Görünüm tek öğe + sekme çubuğu; yazı ölçeği/renk katmanı (`.nx-admin`).
 - ✅ **Menü ağacı:** WordPress benzeri ekleme paneli (sayfa/yazı/kategori/etiket/ürün listesi + arama + özel bağlantı), 3 düzey, kimlikle bağlama, kırık hedef uyarısı, sunucuda temizleme; **mega menü** (alt öğelerden / elle kartlar, genişlik, tanıtım şeridi); ziyaretçi menüsü RSC + JS'siz mobil menü. Saf mantık `@nexpress/core/menu` (testli).

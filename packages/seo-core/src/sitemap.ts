@@ -20,6 +20,8 @@ export interface SitemapEntry {
   slug: string;
   updatedAt: Date;
   images?: SitemapImage[];
+  /** Slug'dan önce gelen sabit yol parçası (kategori/etiket arşivleri: `kategori`, `etiket`) */
+  pathPrefix?: string;
 }
 
 /** Bir sayfada bildirilecek en çok görsel (protokol sınırı 1000; kalabalığı önlemek için daha düşük). */
@@ -81,11 +83,11 @@ export function xmlEscape(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function entryPath(entry: Pick<SitemapEntry, "locale" | "slug">): string {
+export function entryPath(entry: Pick<SitemapEntry, "locale" | "slug" | "pathPrefix">): string {
   // Slug URL parçası olarak kodlanır (boşluk, &, Unicode); XML kaçışı ayrıca uygulanır.
   return entry.slug === "ana-sayfa"
     ? `/${entry.locale}`
-    : `/${entry.locale}/${encodeURIComponent(entry.slug)}`;
+    : `/${entry.locale}/${entry.pathPrefix ? `${entry.pathPrefix}/` : ""}${encodeURIComponent(entry.slug)}`;
 }
 
 export function hreflangOf(entry: Pick<SitemapEntry, "locale" | "region">): string {

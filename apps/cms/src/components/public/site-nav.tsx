@@ -5,7 +5,7 @@ import type { DesignTokens, MegaMenuConfig, NavigationLink, NavigationMenuItem }
  * Ziyaretçi menüsü (RSC, istemci JS'i yok). Masaüstü: açılır alt menü ve mega menü yalnızca CSS ile (hover + klavye odağı).
  * Mobil: `<details>` ile açılan iç içe liste. Bağlantılar düz `<a>`'dır (yönlendirici JS'i yüklenmez).
  */
-const WIDTH: Record<NonNullable<MegaMenuConfig["width"]>, string> = { narrow: "w-[420px]", wide: "w-[720px]", full: "w-[min(1100px,92vw)]" };
+const WIDTH: Record<NonNullable<MegaMenuConfig["width"]>, string> = { narrow: "w-[min(420px,92vw)]", wide: "w-[min(720px,92vw)]", full: "w-[min(1100px,92vw)]" };
 const COLS: Record<number, string> = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
 const SHOW = "invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100";
 
@@ -33,7 +33,7 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
   return (
     <div
       style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border, backgroundColor: tokens.colors.background, color: tokens.colors.foreground }}
-      className={`absolute left-0 top-full z-50 ${WIDTH[mega.width ?? "wide"]} border p-5 shadow-xl transition-all duration-150 ${SHOW}`}
+      className={`absolute left-1/2 top-full z-50 -translate-x-1/2 ${WIDTH[mega.width ?? "wide"]} border p-5 shadow-xl transition-all duration-150 ${SHOW}`}
     >
       {(mega.mode ?? (mega.items.length > 0 ? "custom" : "children")) === "custom" ? (
         <div className={`grid gap-4 ${cols}`}>
@@ -74,11 +74,11 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
 export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuItem[]; tokens: DesignTokens; ink: boolean; align: "left" | "center" | "right" }) {
   const linkCls = ink ? "text-zinc-300 hover:text-white" : "text-slate-700 hover:text-slate-950";
   return (
-    <nav aria-label="Ana menü" className={`hidden items-center gap-6 md:flex ${align === "center" ? "justify-self-center" : align === "right" ? "ml-auto" : ""}`}>
+    <nav aria-label="Ana menü" className={`hidden items-stretch gap-6 self-stretch md:flex ${align === "center" ? "justify-self-center" : align === "right" ? "ml-auto" : ""}`}>
       {menu.map((item) => {
         const hasPanel = Boolean(item.megaMenu?.enabled) || Boolean(item.children?.length);
         return (
-          <div key={item.id} className="group relative py-4">
+          <div key={item.id} className={`group flex h-full items-center ${item.megaMenu?.enabled ? "static" : "relative"}`}>
             <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1 text-sm font-medium ${linkCls}`}>
               <span>{item.label}</span>
               {hasPanel ? <span aria-hidden="true" className="text-[9px] opacity-60">▼</span> : null}

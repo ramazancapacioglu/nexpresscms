@@ -51,3 +51,29 @@ test("üretim: temiz çıktı tek çağrı; yasak kalıp varsa bir kez düzeltil
   const r3 = await composeText(stubborn, base, { forbiddenPhrases: ["dijital çağda"] });
   assert.deepEqual(r3.remainingForbidden, ["dijital çağda"]);
 });
+
+test("bağlam yalnızca yazma/genişletmede istemde yer alır; düzenleme görevlerinde yeni içerik yasaklanır", async () => {
+  const { composeUserPrompt } = await import("../src/ai/compose");
+  const withCtx = { ...base, context: "GİZLİ-BAĞLAM" };
+  assert.ok(composeUserPrompt({ ...withCtx, mode: "write" }).includes("GİZLİ-BAĞLAM"));
+  assert.ok(composeUserPrompt({ ...withCtx, mode: "expand" }).includes("GİZLİ-BAĞLAM"));
+  for (const mode of ["rewrite", "shorten", "fix"] as const) {
+    const p = composeUserPrompt({ ...withCtx, mode });
+    assert.ok(!p.includes("GİZLİ-BAĞLAM"), mode);
+    assert.ok(p.includes("yeni cümle, olgu veya adım ekleme"), mode);
+  }
+});
+
+test("düzenleme güvenlik ağı: fazla paragraf kırpılır, uzayan çıktı uyarılır; yaz/genişlet etkilenmez", async () => {
+  const { guardEdit } = await import("../src/ai/compose");
+  const input = "Kısa bir metin burada duruyor ve tek paragraftır.";
+  const r = guardEdit("rewrite", input, ["Aynı anlam, başka söyleyiş.", "Modelin eklediği yeni bir paragraf."]);
+  assert.equal(r.paragraphs.length, 1);
+  assert.ok(r.warning);
+  assert.equal(guardEdit("rewrite", input, ["Kısa bir metin duruyor burada ve tek paragraftır."]).warning, null);
+  assert.ok(guardEdit("shorten", input, [input + " Üstüne ekleme yapılmış uzun bir cümle daha."]).warning, "kısaltma uzadı");
+  assert.ok(guardEdit("fix", "a".repeat(200), ["a".repeat(400)]).warning, "düzeltme yarıya çıktı");
+  assert.deepEqual(guardEdit("write", "", ["a", "b", "c"]), { paragraphs: ["a", "b", "c"], warning: null });
+  assert.equal(guardEdit("expand", input, ["a", "b"]).paragraphs.length, 2);
+  assert.equal(guardEdit("rewrite", "iki\n\nparagraf", ["x", "y", "z"]).paragraphs.length, 2);
+});

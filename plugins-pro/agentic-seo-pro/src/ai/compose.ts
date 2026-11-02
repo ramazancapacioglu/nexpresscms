@@ -38,6 +38,8 @@ export interface ComposeResult {
   claims: string[];
   /** Çıktıda olup girdide/bağlamda geçmeyen rakamlar: model uydurmuş olabilir */
   unverifiedNumbers: string[];
+  /** Çıktı beklenenden uzun/çok paragraflı (model içerik eklemiş olabilir) */
+  lengthWarning: string | null;
   refined: boolean;
   model: string;
 }
@@ -72,7 +74,9 @@ export function composeUserPrompt(i: ComposeInput): string {
     `Görev: ${MODE_TEXT[i.mode]}`,
     i.instruction ? `İstek: ${i.instruction.slice(0, COMPOSE_LIMITS.instruction)}` : "",
     i.text ? `Metin:\n${i.text.slice(0, COMPOSE_LIMITS.text)}` : "",
-    i.context ? `Sayfanın çevresindeki içerik (yalnızca bağlam, kopyalama):\n${i.context.slice(0, COMPOSE_LIMITS.context)}` : "",
+    // Bağlam yalnızca yazma/genişletmede verilir: yeniden yazma, kısaltma ve düzeltmede metne dışarıdan içerik sızmasın
+    i.context && (i.mode === "write" || i.mode === "expand") ? `Sayfanın çevresindeki içerik (yalnızca bağlam, kopyalama):\n${i.context.slice(0, COMPOSE_LIMITS.context)}` : "",
+    i.mode === "rewrite" || i.mode === "shorten" || i.mode === "fix" ? "Önemli: yalnızca verilen metindeki bilgileri kullan; yeni cümle, olgu veya adım ekleme." : "",
     "",
     i.kind === "heading" ? 'JSON: {"paragraphs": ["<başlık>"]}' : 'JSON: {"paragraphs": ["<paragraf 1>", "<paragraf 2>"]}',
   ].filter(Boolean).join("\n");
@@ -136,6 +140,23 @@ export function findUnverifiedNumbers(output: string, source: string): string[] 
   return [...out].slice(0, 8);
 }
 
+const GROWTH: Partial<Record<ComposeMode, number>> = { rewrite: 1.6, shorten: 1, fix: 1.15 };
+
+/**
+ * Düzenleme görevlerinde (yeniden yaz, kısalt, düzelt) paragraf sayısı girdiyi aşamaz (fazlası kırpılır) ve çıktı uzunluğu
+ * sınırın üstündeyse uyarı döner: model bu görevlerde sık sık yeni cümle eklediğinden güvenlik ağıdır.
+ */
+export function guardEdit(mode: ComposeMode, input: string, paragraphs: string[]): { paragraphs: string[]; warning: string | null } {
+  const factor = GROWTH[mode];
+  if (factor === undefined) return { paragraphs, warning: null };
+  const inParas = Math.max(1, input.split(/\n\s*\n|\n/).filter((x) => x.trim()).length);
+  const kept = paragraphs.slice(0, inParas);
+  const dropped = paragraphs.length > kept.length;
+  const grew = kept.join(" ").length > Math.max(60, input.length * factor);
+  const warning = dropped || grew ? "Çıktı, düzenlenen metinden fazla içerik taşıyor olabilir (model yeni cümle eklemiş). Uygulamadan önce özgün metinle karşılaştırın." : null;
+  return { paragraphs: kept, warning };
+}
+
 export async function composeText(client: ChatClient, input: ComposeInput, rules: BrandRules = {}): Promise<ComposeResult> {
   const system = composeSystemPrompt(rules, input.kind);
   const phrases = forbiddenFor(rules);
@@ -152,7 +173,9 @@ export async function composeText(client: ChatClient, input: ComposeInput, rules
       /* ikinci geçiş başarısızsa ilk taslak ve uyarı kalır */
     }
   }
+  const guarded = guardEdit(input.mode, input.text, paragraphs);
+  paragraphs = guarded.paragraphs;
   const out = paragraphs.join("\n");
-  const source = [input.text, input.instruction, input.title, input.context].join("\n");
-  return { paragraphs, remainingForbidden: found, claims: findClaims(out), unverifiedNumbers: findUnverifiedNumbers(out, source), refined, model: client.model };
+  const source = [input.text, input.instruction, input.title, input.context].join("\n"); // bağlam kaynak sayılır: rakam doğrulaması buna göre
+  return { paragraphs, remainingForbidden: found, claims: findClaims(out), unverifiedNumbers: findUnverifiedNumbers(out, source), lengthWarning: guarded.warning, refined, model: client.model };
 }

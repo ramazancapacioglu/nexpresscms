@@ -68,7 +68,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - Menü yalnızca `tr` için; dil başına menü ve menü konumları (birden çok menü) yok.
 - Ürün kategorisi veri modelinde olmadığı için menüde "ürün kategorisi" kaynağı yok (ürün ve mağaza var).
-- Kategori/etiket arşivleri sitemap'te ve sayfalama yok (en çok 24 yayın).
+- ~~Kategori/etiket arşivleri sitemap'te~~ yapıldı (`archive-1.xml`, yalnızca yayını olanlar, varsayılan dil). Kalan: arşiv sayfalaması (en çok 24 yayın).
 - Dinamik liste: sayfalama, alan yetkili filtre (yazar, tarih aralığı), özel ürün alanları yok; Markdown/llms çıktısına girmez.
-- AI yazım: blok içi seçili metin parçası yerine tüm blok işlenir; çok blokluk taslak/taslak sayfa üretimi yok (AI tasarım eklentisi ayrıdır).
+- AI yazım: gerçek modelle (gpt-4o-mini) denendi; yeniden yaz/kısalt/düzeltte model yeni cümle ekleme eğilimindeydi → paragraf kırpma + uzunluk uyarısı (`guardEdit`) eklendi, yine de uygulamadan önce karşılaştırma gerekir. Seçili metin parçası yerine tüm blok işlenir; çok blokluk taslak/taslak sayfa üretimi yok (AI tasarım eklentisi ayrıdır).
 - Panel yazı ölçeği CSS katmanıyla ayarlanır (bileşenlerde sabit px sınıfları kaldı); ayrı kullanıcı tercihi (yazı boyutu) yok.
