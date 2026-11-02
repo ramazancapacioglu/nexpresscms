@@ -44,3 +44,13 @@ test("doğrulama: zorunlu yuva eksik/çift, header'da içerik yuvası, başlık 
   assert.equal(templateHasBlock(post.blocks, "tpl_post_meta"), true);
   assert.ok(Object.keys(TEMPLATE_KINDS).length === 9);
 });
+
+test("ürün/mağaza şablonları: satın alma kutusu yoksa uyarı, mağaza listesinde arşiv yuvası zorunlu", () => {
+  const prod = STARTER_TEMPLATES.find((s) => s.id === "product-default")!;
+  assert.deepEqual(validateTemplate("product", prod.blocks), []);
+  assert.ok(templateHasBlock(prod.blocks, "tpl_product_buy"));
+  const noBuy = validateTemplate("product", [{ id: "t", type: "tpl_post_title", props: {} }] as never);
+  assert.ok(noBuy.some((i) => i.level === "warning" && i.message.includes("tpl_product_buy")));
+  assert.ok(validateTemplate("shop", [{ id: "t", type: "tpl_archive_title", props: {} }] as never).some((i) => i.level === "error"));
+  for (const id of ["product-related", "shop-grid", "shop-list"]) assert.ok(STARTER_TEMPLATES.some((s) => s.id === id), id);
+});

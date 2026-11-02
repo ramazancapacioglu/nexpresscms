@@ -24,8 +24,8 @@ export const TEMPLATE_KINDS: Record<TemplateKind, TemplateKindInfo> = {
   post: { label: "Blog yazısı", description: "Yazıların görünümü: başlık, bilgi satırı, görsel, içerik.", requiredBlock: "tpl_post_content", slots: ["tpl_post_title", "tpl_post_meta", "tpl_featured_image", "tpl_post_content", "tpl_breadcrumb"] },
   category: { label: "Kategori sayfası", description: "Kategori arşivlerinin görünümü.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"] },
   tag: { label: "Etiket sayfası", description: "Etiket arşivlerinin görünümü.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"] },
-  product: { label: "Ürün sayfası", description: "Tek ürün görünümü (ürün sayfası şablonu).", slots: ["tpl_post_title", "tpl_featured_image", "tpl_post_content"] },
-  shop: { label: "Mağaza / ürün listesi", description: "Mağaza ve ürün listesi görünümü.", slots: ["tpl_archive_title", "tpl_archive_list"] },
+  product: { label: "Ürün sayfası", description: "Mağazadaki ürün sayfaları ve ürün türündeki içerikler. Satın alma kutusu (tpl_product_buy) yoksa mağaza ürün sayfası yerleşik görünümde kalır.", slots: ["tpl_post_title", "tpl_featured_image", "tpl_product_buy", "tpl_post_content", "tpl_cart_link"] },
+  shop: { label: "Mağaza / ürün listesi", description: "Mağaza ana sayfası ve ürün listesi. Arşiv listesi yuvası yoksa yerleşik görünüm kullanılır.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_cart_link"] },
 };
 
 export const TEMPLATE_KIND_IDS = Object.keys(TEMPLATE_KINDS) as TemplateKind[];
@@ -81,6 +81,7 @@ export function validateTemplate(kind: TemplateKind, blocks: BlockNode[]): Templ
   if (kind === "page" || kind === "post") {
     if (!all.some((b) => b.type === "tpl_post_title") && !all.some((b) => b.type === "hero")) issues.push({ level: "warning", message: "Şablonda sayfa başlığı (h1) yok: arama motorları için bir başlık yuvası ekleyin." });
   }
+  if (kind === "product" && !all.some((b) => b.type === "tpl_product_buy")) issues.push({ level: "warning", message: "Satın alma kutusu (tpl_product_buy) yok: mağaza ürün sayfalarında bu şablon kullanılmaz (yerleşik görünüm kalır); yalnızca ürün türündeki içerik sayfalarına uygulanır." });
   if (all.filter((b) => b.type === "tpl_post_title" || b.type === "tpl_archive_title").length > 1) issues.push({ level: "warning", message: "Birden fazla başlık yuvası var: sayfada tek h1 olmalı." });
   return issues;
 }
@@ -115,8 +116,10 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   { id: "category-grid", kind: "category", name: "Kategori — kart ızgarası", description: "Başlık ve yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
   { id: "category-list", kind: "category", name: "Kategori — liste", description: "Başlık ve satır satır liste.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
   { id: "tag-grid", kind: "tag", name: "Etiket — kart ızgarası", description: "Başlık ve yayın kartları.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
-  { id: "product-default", kind: "product", name: "Ürün — klasik", description: "Ürün başlığı, görseli ve içeriği.", blocks: [b("t", "tpl_post_title"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("c", "tpl_post_content")]])] },
-  { id: "shop-grid", kind: "shop", name: "Mağaza — ürün ızgarası", description: "Ürünler kart ızgarasında.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 4 })] },
+  { id: "product-default", kind: "product", name: "Ürün — klasik", description: "Başlık, görsel, fiyat/satın alma kutusu ve açıklama.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content")] },
+  { id: "product-related", kind: "product", name: "Ürün — benzer ürünlerle", description: "Satın alma kutusu ve altında benzer ürünler.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content"), b("rel", "dynamic_list", { source: "products", limit: 4, layout: "cards", columns: 4, showExcerpt: false, excludeCurrent: true, heading: "Benzer ürünler" })] },
+  { id: "shop-grid", kind: "shop", name: "Mağaza — ürün ızgarası", description: "Ürünler kart ızgarasında, sepet bağlantısıyla.", blocks: [b("cart", "tpl_cart_link", { align: "right" }), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 4 })] },
+  { id: "shop-list", kind: "shop", name: "Mağaza — liste", description: "Ürünler satır satır.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 }), b("cart", "tpl_cart_link")] },
 ];
 
 /** Her çağrıda benzersiz kimlikli kopya (stüdyoda aynı kimlikler çakışmasın). */

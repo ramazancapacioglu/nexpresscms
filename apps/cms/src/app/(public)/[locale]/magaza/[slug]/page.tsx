@@ -9,6 +9,13 @@ import { getCommerceOpsRepository, getCommerceRepository } from "@nexpress/datab
 import { formatMoney } from "@nexpress/commerce";
 import { addToCartAction } from "../actions";
 import { shopBasePath } from "@/lib/commerce/shop-paths";
+import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
+import { templateHasBlock } from "@nexpress/core";
+import { getPublicSite } from "@/lib/public-data";
+import { getResolvedMenu } from "@/lib/menu-data";
+import { templateFor } from "@/lib/templates";
+import { buildTemplateContext } from "@/lib/template-context";
+import { loadDynamicData } from "@/lib/dynamic-content";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +60,44 @@ export default async function ShopProductPage({
 
   const base = shopBasePath(settings, locale);
   const description = sanitizeInlineHtml(product.descriptionHtml);
+
+  // Tema oluşturucu: ürün şablonu. Satın alma kutusu (tpl_product_buy) yoksa ürün alınamaz: yerleşik görünüm kalır.
+  const tpl = await templateFor(siteId, "product");
+  if (tpl && templateHasBlock(tpl.blocks, "tpl_product_buy")) {
+    const site = await getPublicSite(siteId);
+    const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
+    const tokens = site?.designTokens ?? theme.tokens;
+    const dynamic = await loadDynamicData(siteId, locale, tpl.blocks, product.id);
+    const ctx = buildTemplateContext({
+      site: site ? { name: site.name, tagline: site.tagline } : null,
+      locale,
+      menu: await getResolvedMenu(siteId, locale),
+      tokens,
+      menuLabel: t("site.menu"),
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("shop.title"), href: base }, { name: product.name, href: `${base}/${product.slug}` }],
+      post: {
+        title: product.name,
+        content: description ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: description }} /> : null,
+        featuredImage: product.imageUrl ? { url: product.imageUrl, alt: product.name } : null,
+        date: null,
+        author: null,
+        categories: [],
+      },
+    });
+    ctx.product = {
+      id: product.id,
+      priceLabel: formatMoney(product.priceCents, product.currency),
+      compareLabel: product.compareAtCents && product.compareAtCents > product.priceCents ? formatMoney(product.compareAtCents, product.currency) : null,
+      inStock: product.stockStatus !== "outofstock",
+      shortDescription: product.shortDescription,
+      variants: variants.map((v) => ({ id: v.id, label: `${v.sku} · ${formatMoney(v.priceCents, product.currency)}` })),
+      quantityLabel: t("shop.quantity"),
+      addLabel: t("shop.addToCart"),
+      outOfStockLabel: t("shop.outOfStock"),
+      action: addToCartAction,
+    };
+    return <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} dynamic={dynamic} />;
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">

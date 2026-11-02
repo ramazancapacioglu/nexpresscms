@@ -100,6 +100,36 @@ export function renderTemplateBlock({ block, tokens, tpl, locale }: BlockRenderC
     }
     case "tpl_copyright":
       return <p className={`text-xs opacity-70 ${alignCls(p.align).split(" ")[0]}`}>{tpl?.copyright || `© ${new Date().getFullYear()} ${tpl?.site.name ?? "Site"}`}</p>;
+    case "tpl_product_buy": {
+      const pr = tpl?.product;
+      if (!pr) return <div className="rounded border border-dashed p-4 text-sm opacity-70">Fiyat ve satın alma kutusu burada görünür (yalnızca mağaza ürün sayfalarında).</div>;
+      return (
+        <div className="space-y-4">
+          <p className="flex items-baseline gap-3 text-2xl font-extrabold" style={{ color: tokens.colors.primary }}>
+            {pr.priceLabel}
+            {pr.compareLabel ? <s className="text-base font-normal opacity-50">{pr.compareLabel}</s> : null}
+          </p>
+          {pr.shortDescription ? <p className="text-sm opacity-80">{pr.shortDescription}</p> : null}
+          {!pr.inStock ? (
+            <p role="status" className="text-sm font-medium text-red-600">{pr.outOfStockLabel}</p>
+          ) : (
+            <form action={pr.action} className="flex flex-wrap items-end gap-3">
+              <input type="hidden" name="productId" value={pr.id} />
+              <input type="hidden" name="locale" value={loc} />
+              {pr.variants.length > 0 ? (
+                <label className="text-sm">Varyasyon<select name="variantId" defaultValue={pr.variants[0]!.id} className="ml-2 rounded border px-2 py-1.5">{pr.variants.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}</select></label>
+              ) : null}
+              <label className="text-sm">{pr.quantityLabel}<input name="quantity" type="number" min={1} max={99} defaultValue={1} className="ml-2 w-16 rounded border px-2 py-1.5" /></label>
+              <button type="submit" style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius }} className="px-6 py-2.5 text-sm font-semibold">{pr.addLabel}</button>
+            </form>
+          )}
+        </div>
+      );
+    }
+    case "tpl_cart_link": {
+      const c = tpl?.cart ?? { href: "#", label: "Sepet", count: 0 };
+      return <div className={`flex ${alignCls(p.align).split(" ")[1] ?? ""}`}><a href={c.href} className="rounded-full border px-4 py-2 text-sm font-medium">{c.label}{c.count > 0 ? ` (${c.count})` : ""}</a></div>;
+    }
     default:
       return null;
   }

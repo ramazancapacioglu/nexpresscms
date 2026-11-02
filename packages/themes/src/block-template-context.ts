@@ -18,6 +18,21 @@ export interface TemplateRenderContext {
     author?: string | null;
     categories: Array<{ name: string; href: string }>;
   };
+  /** Mağaza ürün sayfası: satın alma kutusu verisi (sunucu eylemi dahil) */
+  product?: {
+    id: string;
+    priceLabel: string;
+    compareLabel?: string | null;
+    inStock: boolean;
+    shortDescription: string;
+    variants: Array<{ id: string; label: string }>;
+    quantityLabel: string;
+    addLabel: string;
+    outOfStockLabel: string;
+    action: (form: FormData) => void | Promise<void>;
+  };
+  /** Sepet bağlantısı (mağaza) */
+  cart?: { href: string; label: string; count: number };
   archive?: {
     title: string;
     description?: string | null;

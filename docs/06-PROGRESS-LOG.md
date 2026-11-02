@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Ürün ve mağaza şablonları
+- ✅ `tpl_product_buy` / `tpl_cart_link`; `/magaza` ve `/magaza/{ürün}` ticaret sayfaları şablonla çizilir, satın alma kutusu eksikse yerleşik görünüme düşer; 4 hazır şablon; doğrulama kuralları (testli). Tarayıcıyla doğrulandı: şablonlu mağaza listesi (başlık, kartlar, fiyatlar, sepet bağlantısı), şablonlu ürün sayfası (breadcrumb, tek h1, sepete ekle formu, benzer ürünler) ve **şablonlu ürün sayfasından sepete ekleme → sepet** çalıştı.
+
 ### [2026-11-03] — Şablon dışa/içe aktarma (`.nxtemplates.json`)
 - ✅ `@nexpress/core/template-package` (saf, 7 test): paket üretme/ayrıştırma, medya boşaltma, güvensiz adres ve CSS temizliği, boyut/derinlik sınırları, özet doğrulaması. API + yönetim arayüzü. Tarayıcıyla doğrulandı: 9 şablonluk paket indirildi ve geri alındı (ad çakışması `(2)`, varsayılan değil), kötü niyetli paket uyarılarla temizlendi, bozuk dosya reddedildi, oturumsuz 401.
 

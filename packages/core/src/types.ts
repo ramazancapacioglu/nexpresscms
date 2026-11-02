@@ -128,6 +128,8 @@ export type BlockType =
   | "tpl_site_logo"
   | "tpl_menu"
   | "tpl_copyright"
+  | "tpl_cart_link"
+  | "tpl_product_buy"
   | "divider_spacer"
   | "review_box"
   | "section"
@@ -375,6 +377,8 @@ export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
       "tpl_site_logo",
       "tpl_menu",
       "tpl_copyright",
+      "tpl_cart_link",
+      "tpl_product_buy",
       "divider_spacer",
       "review_box",
       "section",

@@ -8,6 +8,12 @@ import { getCommerceRepository } from "@nexpress/database";
 import { formatMoney, cartItemCount } from "@nexpress/commerce";
 import { readCartFromCookies } from "@/lib/commerce/cart-server";
 import { shopBasePath } from "@/lib/commerce/shop-paths";
+import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
+import { templateHasBlock } from "@nexpress/core";
+import { getPublicSite } from "@/lib/public-data";
+import { getResolvedMenu } from "@/lib/menu-data";
+import { templateFor } from "@/lib/templates";
+import { buildTemplateContext } from "@/lib/template-context";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +46,33 @@ export default async function ShopIndexPage({
 
   const base = shopBasePath(settings, locale);
   const count = cartItemCount(cart);
+
+  // Tema oluşturucu: mağaza listesi şablonu (arşiv listesi yuvası zorunlu; yoksa yerleşik görünüm)
+  const tpl = await templateFor(siteId, "shop");
+  if (tpl && templateHasBlock(tpl.blocks, "tpl_archive_list")) {
+    const site = await getPublicSite(siteId);
+    const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
+    const tokens = site?.designTokens ?? theme.tokens;
+    const ctx = buildTemplateContext({
+      site: site ? { name: site.name, tagline: site.tagline } : null,
+      locale,
+      menu: await getResolvedMenu(siteId, locale),
+      tokens,
+      menuLabel: t("site.menu"),
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("shop.title"), href: base }],
+      archive: {
+        title: t("shop.title"),
+        description: t("shop.subtitle"),
+        kindLabel: "Mağaza",
+        items: products.map((p) => ({ id: p.id, title: p.name, url: `${base}/${p.slug}`, excerpt: p.shortDescription, image: p.imageUrl, date: p.updatedAt.toISOString(), price: formatMoney(p.priceCents, p.currency) })),
+        page: 1,
+        pages: 1,
+        pageHref: () => base,
+      },
+    });
+    ctx.cart = { href: `${base}/sepet`, label: t("shop.cart"), count };
+    return <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} />;
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
