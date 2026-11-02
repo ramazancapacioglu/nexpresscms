@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import type { MediaAssetDto } from "@nexpress/database";
 import { Upload } from "lucide-react";
 
-const MAX_BYTES = 12 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const MAX_FILES = 100;
 const CONCURRENCY = 3;
-const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
+const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,application/pdf,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav";
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 
 interface Item { name: string; state: "waiting" | "uploading" | "done" | "error"; message?: string }
@@ -22,7 +23,7 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
   const running = items.some((i) => i.state === "waiting" || i.state === "uploading");
 
   const start = async (picked: File[]) => {
-    const files = picked.filter((f) => ACCEPT.split(",").includes(f.type) || /\.(jpe?g|png|webp|avif)$/i.test(f.name));
+    const files = picked.filter((f) => ACCEPT.split(",").includes(f.type) || /\.(jpe?g|png|webp|avif|pdf|mp4|webm|mp3|ogg|wav)$/i.test(f.name));
     const skipped = picked.length - files.length;
     const batch = files.slice(0, MAX_FILES);
     setNote([skipped ? `${skipped} dosya desteklenmeyen türde olduğu için atlandı.` : "", files.length > MAX_FILES ? `En çok ${MAX_FILES} dosya birden yüklenir; ${files.length - MAX_FILES} dosya atlandı.` : ""].filter(Boolean).join(" "));
@@ -35,7 +36,8 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
       while (next < batch.length) {
         const i = next++;
         const file = batch[i]!;
-        if (file.size > MAX_BYTES) { patch(i, { state: "error", message: "12 MB sınırını aşıyor" }); continue; }
+        const limit = file.type.startsWith("image/") ? MAX_IMAGE_BYTES : MAX_FILE_BYTES;
+        if (file.size > limit) { patch(i, { state: "error", message: `${limit / 1024 / 1024} MB sınırını aşıyor` }); continue; }
         patch(i, { state: "uploading" });
         try {
           const body = new FormData();
@@ -67,10 +69,10 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
       <div className="flex flex-wrap items-center gap-2">
         <input ref={input} type="file" multiple accept={ACCEPT} hidden onChange={(e) => { void start([...(e.target.files ?? [])]); e.target.value = ""; }} />
         <button type="button" onClick={() => input.current?.click()} disabled={running} className="inline-flex h-7 items-center gap-1.5 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-60"><Upload className="h-3.5 w-3.5" /> Görselleri seç</button>
-        <span className="text-[#5C5F66] dark:text-[#9CA3AF]">veya buraya sürükleyip bırakın → <strong>{folderName}</strong></span>
+        <span className="text-[#5C5F66] dark:text-[#9CA3AF]">veya sürükleyip bırakın → <strong>{folderName}</strong></span>
         <input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Ortak alt metin (isteğe bağlı)" className={`ml-auto h-7 min-w-48 flex-1 rounded border ${border} bg-transparent px-2 sm:max-w-xs`} aria-label="Ortak alt metin" />
       </div>
-      <p className="mt-1.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">JPEG, PNG, WebP veya AVIF • dosya başına en çok 12 MB • tek seferde {MAX_FILES} dosya • EXIF/konum verisi silinir • animasyonlu ve SVG dosyalar desteklenmez.</p>
+      <p className="mt-1.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">Görsel (JPEG, PNG, WebP, AVIF; en çok 12 MB), PDF, MP4/WebM video, MP3/OGG/WAV ses (en çok 40 MB) • tek seferde {MAX_FILES} dosya • EXIF/konum verisi silinir • animasyonlu ve SVG dosyalar desteklenmez.</p>
       {note && <p role="status" className="mt-1 text-[11px] text-amber-800 dark:text-amber-300">{note}</p>}
       {items.length > 0 && (
         <div className="mt-2 space-y-1" aria-live="polite">

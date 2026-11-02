@@ -222,6 +222,25 @@ export function BlockGeneralTab() {
                             </div>
                           )}
 
+                          {selectedBlock.type === "media_file" && (
+                            <div className="space-y-2.5">
+                              <button type="button" onClick={() => setMediaPickerTarget("block_media")} className="w-full rounded-md border border-blue-500/40 bg-blue-500/10 py-1.5 text-xs font-semibold text-blue-600">
+                                Kitaplıktan PDF / Video / Ses Seç veya Yükle
+                              </button>
+                              <p className="text-[11px] text-muted-foreground">
+                                {selectedBlock.props.url ? `Seçili: ${String(selectedBlock.props.kind ?? "dosya")} — ${String(selectedBlock.props.url)}` : "Henüz dosya seçilmedi; blok sayfada görünmez."}
+                              </p>
+                              <div>
+                                <label className="block text-[11px] text-muted-foreground mb-1">Başlık (bağlantı metni ve şema adı)</label>
+                                <input aria-label="Medya başlığı" type="text" value={String(selectedBlock.props.title ?? "")} onChange={(e) => updateSelectedBlockProps({ title: e.target.value })} className="h-8 w-full rounded border border-border bg-background px-2" />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-muted-foreground mb-1">Açıklama</label>
+                                <textarea aria-label="Medya açıklaması" rows={3} value={String(selectedBlock.props.description ?? "")} onChange={(e) => updateSelectedBlockProps({ description: e.target.value })} className="w-full rounded border border-border bg-background p-2" />
+                              </div>
+                            </div>
+                          )}
+
                           {selectedBlock.type === "image_figure" && (
                             <div className="space-y-2.5">
                               <button
@@ -258,6 +277,10 @@ export function BlockGeneralTab() {
                                   }
                                   className="h-8 w-full rounded border border-border bg-background px-2"
                                 />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] text-muted-foreground mb-1">Başlık (title özniteliği)</label>
+                                <input aria-label="Görsel başlığı (title)" type="text" value={String(selectedBlock.props.titleText ?? "")} onChange={(e) => updateSelectedBlockProps({ titleText: e.target.value })} className="h-8 w-full rounded border border-border bg-background px-2" />
                               </div>
                               <div>
                                 <label className="block text-[11px] text-muted-foreground mb-1">

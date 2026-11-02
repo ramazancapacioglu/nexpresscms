@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { collectSitemapImages, type SitemapImage } from "@nexpress/seo-core";
 import { getCmsContext, resolvePublishing, type ContentType, type DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
@@ -11,6 +12,8 @@ export interface SitemapEntryDto {
   region: string;
   slug: string;
   updatedAt: Date;
+  /** Sayfadaki görseller (görsel site haritası için) */
+  images: SitemapImage[];
 }
 
 interface RawEntry extends SitemapEntryDto {
@@ -48,6 +51,8 @@ export class SitemapRepository {
         slug: t.contentTranslations.slug,
         noIndex: t.contentTranslations.noIndex,
         updatedAt: t.contentTranslations.updatedAt,
+        blocks: t.contentTranslations.blocks,
+        featuredImage: t.contents.featuredImage,
       })
       .from(t.contents)
       .innerJoin(
@@ -58,7 +63,11 @@ export class SitemapRepository {
         )
       )
       .where(and(eq(t.contents.siteId, this.siteId), eq(t.contents.status, "published"), eq(t.contentTranslations.translationStatus, "published")));
-    return rows.map((r) => ({ ...r, noIndex: Boolean(r.noIndex) }));
+    return rows.map(({ blocks, featuredImage, ...r }) => ({
+      ...r,
+      noIndex: Boolean(r.noIndex),
+      images: collectSitemapImages(blocks ?? [], featuredImage),
+    }));
   }
 }
 

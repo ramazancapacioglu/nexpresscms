@@ -572,6 +572,19 @@ export function deriveAutoSchemaNodes(
         itemReviewed: { "@type": "Thing", name: String(p.itemName ?? "") },
       });
     }
+    if (b.type === "media_file" && p.url && (p.kind === "video" || p.kind === "audio")) {
+      const isVideo = p.kind === "video";
+      nodes.push({
+        "@type": isVideo ? "VideoObject" : "AudioObject",
+        "@id": `${pageUrl}#media-${b.id}`,
+        name: String(p.title ?? (isVideo ? "Video" : "Ses")),
+        description: String(p.description || p.title || (isVideo ? "Video" : "Ses")),
+        contentUrl: String(p.url),
+        ...(p.mime ? { encodingFormat: String(p.mime) } : {}),
+        ...(p.uploadDate ? { uploadDate: String(p.uploadDate) } : {}),
+        ...(isVideo && p.poster ? { thumbnailUrl: String(p.poster) } : {}),
+      });
+    }
     if (b.type === "video_embed" && p.url) {
       nodes.push({
         "@type": "VideoObject",

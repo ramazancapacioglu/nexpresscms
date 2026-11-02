@@ -108,6 +108,14 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
       return `![${alt}](${url})${caption}`;
     }
 
+    case "media_file": {
+      const url = String(p.url ?? "");
+      if (!url) return "";
+      const title = String(p.title ?? "").trim() || "Dosya";
+      const desc = p.description ? ` — ${String(p.description)}` : "";
+      return `[${title}](${url})${desc}`;
+    }
+
     case "divider_spacer": {
       return p.style === "space" ? "" : `---`;
     }

@@ -68,3 +68,11 @@ Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/sr
 - **Hat:** komut → model (OpenAI uyumlu, `OPENAI_API_KEY`; model `designModel` → `AI_DESIGN_MODEL` → `AI_WRITER_MODEL`) → doğrulama → hata varsa hata listesi + önceki çıktıyla **tek onarım turu** → en az hatalı sonuç. Hız sınırı 10 dakikada 8 üretim. Anahtar yoksa `unconfigured`; "Komutu kopyala" ve JSON yapıştırma yolu anahtarsız çalışır (aynı doğrulama).
 - **Yazmaz:** çıktı panelde önizlenir (skor, hata/uyarı, yapı, tema renkleri + kontrast tablosu) ve kullanıcı onayıyla `design_library` tablosuna (göç `0013`) kaydedilir. Kayıtta tasarım **sunucuda yeniden doğrulanır**; hatalı olan kaydedilmez. Sayfa tasarımı yalnızca **taslak** sayfa olur; tema yalnızca **kurulur** (etkinleştirme ayrı).
 - Tema üretimi şimdilik yalnızca **tasarım jetonlarıdır**; üst/alt bilgi şablonlarına ve özel CSS'e dokunulmaz.
+
+## Ek (2026-11-02): Agentic SEO Pro — "Yakında" modüllerinden tamamlananlar
+
+- **Zengin şema (4 modül):** `faq-qa` (QAPage: başlık soru, TL;DR ≥ 20 karakter cevap; oylama yok), `campaign-offer` (fiyat, ISO para birimi, bitiş günü; bitiş günü geçince düğüm kendiliğinden kalkar), `tech-article` (`proficiencyLevel`, `dependencies`), `software-app` (kategori + işletim sistemi zorunlu; sürüm, fiyat, özellik listesi). Editör SEO sekmesindeki "Gelişmiş şema (Pro)" paneli `schemaAttributes.richSchema` yazar; sunucuda her değer doğrulanır (bozuk fiyat/para birimi/tarih/adres düğüm üretmez). `seo:buildSchemaGraph` kancası artık `content` (başlık, TL;DR, öznitelikler) taşır — ek veritabanı sorgusu yok.
+- **`merchant-feed`:** `/merchant-feed.xml` (RSS 2.0 + `g:`); yalnızca yayındaki ürünler; fiyatı, görseli veya açıklaması eksik/geçersiz olanlar beslemeye girmez; indirimli üründe `price` = eski, `sale_price` = güncel.
+- **`gap-analysis`:** panel kartı; TL;DR eksik/kısa, 180+ gün bayat, iç bağlantı almayan, 150 sözcükten ince ve benzer (Jaccard ≥ 0.6) içerikler.
+- **`mcp-log`:** `/api/mcp` istekleri (araç, ajan, sonuç, süre) → panel kartı (30 gün).
+- **Hâlâ "Yakında" (dış servis/anahtar gerektirir; manifestte nedeni yazılı):** citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, ve SEO Temel'deki search-console.

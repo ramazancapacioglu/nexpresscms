@@ -178,3 +178,30 @@ test("parola zamanı: aynı saniyede arka arkaya değişimde bile saniye cinsind
     prev = cur;
   }
 });
+
+test("MCP günlüğü: kayıt, özet (araç/ajan/gün), eski kayıtları temizleme ve kiracı yalıtımı", async () => {
+  const mcp = await import("../src/mcp-log-repository");
+  const a = mcp.getMcpLogRepository("site-mcp-a");
+  const b = mcp.getMcpLogRepository("site-mcp-b");
+  const now = new Date("2026-11-02T12:00:00Z");
+  const at = (daysAgo: number) => new Date(now.getTime() - daysAgo * 86_400_000);
+  await a.record({ tool: "nexpress_search_corpus", agent: "ChatGPT-User/1.0", ok: true, durationMs: 40, at: at(0) });
+  await a.record({ tool: "nexpress_search_corpus", agent: "ChatGPT-User/1.0", ok: false, durationMs: 80, at: at(1) });
+  await a.record({ tool: "tools/list", agent: "", ok: true, durationMs: 3, at: at(2) });
+  await a.record({ tool: "eski", agent: "x", ok: true, durationMs: 1, at: at(120) });
+  await b.record({ tool: "baska", ok: true, durationMs: 1, at: at(0) });
+
+  const s = await a.summary(30, now);
+  assert.equal(s.total, 3, "30 günden eski ve başka kiracı sayılmaz");
+  assert.equal(s.errors, 1);
+  assert.equal(s.avgMs, 41);
+  assert.deepEqual(s.byTool[0], { tool: "nexpress_search_corpus", count: 2, errors: 1 });
+  assert.deepEqual(s.byAgent.map((x) => x.agent), ["ChatGPT-User/1.0", "(bilinmiyor)"]);
+  assert.equal(s.byDay.length, 30);
+  assert.equal(s.byDay.at(-1)!.day, "2026-11-02");
+  assert.equal(s.byDay.at(-1)!.count, 1);
+
+  await a.prune(now);
+  assert.equal((await a.summary(365, now)).total, 3, "90 günden eski kayıt silindi");
+  assert.equal((await b.summary(30, now)).total, 1);
+});

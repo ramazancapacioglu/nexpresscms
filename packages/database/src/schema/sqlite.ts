@@ -279,6 +279,10 @@ export const sqliteMediaAssets = sqliteTable(
     altText: text("alt_text").default("").notNull(),
     titleText: text("title_text"),
     caption: text("caption"),
+    /** Uzun açıklama (WordPress "Açıklama"): belge/video/ses sayfası ve arama için */
+    description: text("description"),
+    /** `image` | `document` | `video` | `audio`; görsel olmayanlar `/media/{id}/{ad}.{uzantı}` ile sunulur */
+    kind: text("kind").$type<"image" | "document" | "video" | "audio">().default("image").notNull(),
     focalPoint: text("focal_point", { mode: "json" })
       .$type<{ x: number; y: number }>()
       .default({ x: 50, y: 50 }),
@@ -973,4 +977,23 @@ export const sqliteDesignLibrary = sqliteTable(
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [index("design_library_site_id_idx").on(t.siteId), index("design_library_kind_idx").on(t.siteId, t.kind, t.updatedAt)]
+);
+
+/**
+ * MCP istek günlüğü (Pro eklenti `mcp-log`): hangi araç, hangi ajan, ne kadar sürdü. Sır ve istek gövdesi saklanmaz.
+ */
+export const sqliteMcpRequestLog = sqliteTable(
+  "mcp_request_log",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    at: integer("at", { mode: "timestamp_ms" }).notNull(),
+    /** Çağrılan araç adı ya da JSON-RPC yöntemi */
+    tool: text("tool").notNull(),
+    /** User-Agent'ın kısaltılmış hâli (ajan anahtarı ASLA yazılmaz) */
+    agent: text("agent").default("").notNull(),
+    ok: integer("ok", { mode: "boolean" }).default(true).notNull(),
+    durationMs: integer("duration_ms").default(0).notNull(),
+  },
+  (t) => [index("mcp_request_log_site_at_idx").on(t.siteId, t.at)]
 );

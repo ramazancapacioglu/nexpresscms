@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
     siteId,
     requestBody: body,
     agentKeyHeader: agentKey,
+    agent: request.headers.get("user-agent"),
     response: fallbackResponse,
   });
 

@@ -1,7 +1,9 @@
 import { isPluginModuleEnabled, pickLocale, pluginRoutes, resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { PLUGIN_ID } from "./module-gate";
+import { getCommerceRepository } from "@nexpress/database";
 import { buildAiFeed } from "./geo/ai-feed";
+import { buildMerchantFeed } from "./commerce/merchant-feed";
 import { buildAiPluginManifest, buildNlwebManifest, buildOpenApiYaml } from "./geo/discovery-files";
 
 const baseUrl = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -39,6 +41,17 @@ export function registerAgenticRoutes(): void {
       }),
       siteId
     );
+  });
+
+  // Google Merchant Center ürün beslemesi (yayındaki ürünler; eksik verililer yok sayılır)
+  pluginRoutes.register("merchant-feed", PLUGIN_ID, async ({ siteId, request }) => {
+    if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "merchant-feed"))) return null;
+    const site = await getScopedRepository(siteId).getSite();
+    const defaultLocale = site?.defaultLocale ?? "tr";
+    const locale = pickLocale(new URL(request.url).searchParams.get("locale"), site?.supportedLocales ?? [defaultLocale], defaultLocale);
+    const products = await getCommerceRepository(siteId).listProducts({ status: "published" });
+    const xml = buildMerchantFeed({ siteName: site?.name ?? "NexPress", baseUrl: baseUrl(), locale, products });
+    return new Response(xml, { status: 200, headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": CACHE, "X-NexPress-Site-Id": siteId } });
   });
 
   const wellKnown = (key: string, make: (i: { siteName: string; description: string; baseUrl: string }) => unknown, type?: string) =>

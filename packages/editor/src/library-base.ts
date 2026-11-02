@@ -326,6 +326,18 @@ export const BASE_LIBRARY: DesignLibraryItem[] = [
     },
   },
   {
+    id: "lib_atomic_media_file",
+    name: "Dosya, Video veya Ses (Medya Kitaplığı)",
+    category: "editorial",
+    description: "Kitaplıktaki PDF, video ya da ses dosyasını sayfaya ekler. Video/ses için VideoObject/AudioObject şeması otomatik üretilir.",
+    previewKind: "prose-section",
+    block: {
+      type: "media_file",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { url: "", kind: "document", title: "", description: "" },
+    },
+  },
+  {
     id: "lib_atomic_image_figure",
     name: "SEO Optimize Görsel & Altyazı (Figure)",
     category: "editorial",

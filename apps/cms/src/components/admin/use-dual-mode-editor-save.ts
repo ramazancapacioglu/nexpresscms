@@ -5,7 +5,7 @@ import type { useDualModeEditorDirty } from "./use-dual-mode-editor-dirty";
 
 /** useDualModeEditor — aşama 6: Save */
 export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirty>) {
-  const { inspectorSlot, startTransition, contentId, setContentId, title, slug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, router, initialDoc, lockedType, setBlocks, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, authorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, setTaxonomies, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, editorMode, setEditorMode, viewport, setViewport, rightSidebarOpen, setRightSidebarOpen, rightTab, setRightTab, blockInspectorSubTab, setBlockInspectorSubTab, styleDevice, setStyleDevice, setSelectedBlockId, setLibraryOpen, setMediaPickerTarget, showToast, selectedBlock, selectedLocation, seoAnalysis, autoSchemaNodes, categories, tags, flatCategoryTree, updateSelectedBlockProps, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, markSaved, docSignature } = p;
+  const { inspectorSlot, startTransition, contentId, setContentId, title, slug, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, router, initialDoc, lockedType, setBlocks, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, authorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, setTaxonomies, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, editorMode, setEditorMode, viewport, setViewport, rightSidebarOpen, setRightSidebarOpen, rightTab, setRightTab, blockInspectorSubTab, setBlockInspectorSubTab, styleDevice, setStyleDevice, setSelectedBlockId, setLibraryOpen, setMediaPickerTarget, showToast, selectedBlock, selectedLocation, seoAnalysis, autoSchemaNodes, categories, tags, flatCategoryTree, updateSelectedBlockProps, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, markSaved, docSignature , richSchema, setRichSchema } = p;
   // Kaydet / Yayınla
   const handleSave = (overrideStatus?: ContentStatus) => {
     const nextStatus = overrideStatus ?? status;
@@ -26,12 +26,13 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         tldr,
         blocks,
         featuredImage: featuredImageUrl || null,
-        metaTitle: metaTitle || title,
-        metaDescription: metaDescription || tldr,
+        metaTitle: metaTitle.trim(),
+        metaDescription: metaDescription.trim(),
         canonicalUrl: canonicalUrl || undefined,
         noIndex,
         schemaAttributes: {
           ...(initialDoc?.schemaAttributes ?? {}),
+          richSchema: Object.keys(richSchema).length > 0 ? richSchema : undefined,
           _publishing: {
             visibility,
             password: accessPassword || undefined,
@@ -182,6 +183,8 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setNoIndex,
     canonicalUrl,
     setCanonicalUrl,
+    richSchema,
+    setRichSchema,
     schemaType,
     setSchemaType,
     importanceScore,

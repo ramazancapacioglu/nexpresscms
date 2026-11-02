@@ -6,6 +6,7 @@ import {
   DEFAULT_FORBIDDEN_PHRASES,
 } from "./guardrails";
 import { CopilotCard } from "./copilot-card";
+import { GapCard } from "./gap-card";
 import { SAMPLE_MINED_QUESTIONS } from "./question-mining";
 
 /** İçerik Operasyonları modülleri: guardrail, editör Co-Pilot, soru madenciliği kartı. */
@@ -35,6 +36,19 @@ export function registerContentOps(): void {
     render: ({ siteId, context }) => (
       <ModuleGate siteId={siteId} module="copilot">
         <CopilotCard siteId={siteId} contentId={(context as { contentId?: string } | undefined)?.contentId} />
+      </ModuleGate>
+    ),
+  });
+
+  // 2b. SLOT: dashboard.overview.cards -> içerik açığı analizi (gerçek içerik verisi)
+  slotRegistry.register({
+    id: "content-ops-gap-card",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 15,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="gap-analysis">
+        <GapCard siteId={siteId} />
       </ModuleGate>
     ),
   });

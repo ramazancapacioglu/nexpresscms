@@ -288,6 +288,10 @@ export const pgMediaAssets = pgTable(
     altText: text("alt_text").default("").notNull(),
     titleText: text("title_text"),
     caption: text("caption"),
+    /** Uzun açıklama (WordPress "Açıklama"): belge/video/ses sayfası ve arama için */
+    description: text("description"),
+    /** `image` | `document` | `video` | `audio`; görsel olmayanlar `/media/{id}/{ad}.{uzantı}` ile sunulur */
+    kind: text("kind").$type<"image" | "document" | "video" | "audio">().default("image").notNull(),
     focalPoint: jsonb("focal_point").$type<{ x: number; y: number }>().default({ x: 50, y: 50 }),
     seoScore: integer("seo_score").default(95).notNull(),
     /** Klasör (`media_folders.id`); boşsa kök */
@@ -974,4 +978,21 @@ export const pgDesignLibrary = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => [index("design_library_site_id_idx").on(t.siteId), index("design_library_kind_idx").on(t.siteId, t.kind, t.updatedAt)]
+);
+
+/**
+ * MCP istek günlüğü (Pro eklenti `mcp-log`): hangi araç, hangi ajan, ne kadar sürdü. Sır ve istek gövdesi saklanmaz.
+ */
+export const pgMcpRequestLog = pgTable(
+  "mcp_request_log",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    at: timestamp("at").defaultNow().notNull(),
+    tool: text("tool").notNull(),
+    agent: text("agent").default("").notNull(),
+    ok: boolean("ok").default(true).notNull(),
+    durationMs: integer("duration_ms").default(0).notNull(),
+  },
+  (t) => [index("mcp_request_log_site_at_idx").on(t.siteId, t.at)]
 );

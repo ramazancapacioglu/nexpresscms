@@ -43,7 +43,7 @@ export function useDualModeEditorUiState(p: ReturnType<typeof useDualModeEditorP
   const [codeJsonDraft, setCodeJsonDraft] = useState<string>("");
   const [codeJsonError, setCodeJsonError] = useState<string | null>(null);
   const [mediaPickerTarget, setMediaPickerTarget] = useState<
-    "featured" | "block_image" | "block_bg" | null
+    "featured" | "block_image" | "block_media" | null
   >(null);
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -84,8 +84,8 @@ export function useDualModeEditorUiState(p: ReturnType<typeof useDualModeEditorP
         title,
         slug,
         tldr,
-        metaTitle: metaTitle || title,
-        metaDescription: metaDescription || tldr,
+        metaTitle: metaTitle.trim() || title,
+        metaDescription: metaDescription.trim() || tldr,
         focusKeyword,
         featuredImageUrl,
         featuredAltText: featuredImageAlt,

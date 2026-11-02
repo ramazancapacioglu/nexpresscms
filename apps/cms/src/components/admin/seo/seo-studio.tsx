@@ -127,7 +127,7 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
   const metrics = [
     { label: "Ortalama skor", value: String(summary.average), hint: "/100" },
     { label: "Yayında", value: String(summary.published), hint: `${summary.total} kayıt` },
-    { label: "Eksik meta", value: String(summary.missingMeta + summary.missingDescription), hint: "başlık veya açıklama" },
+    { label: "Eksik meta", value: String(summary.missingMeta + summary.missingDescription), hint: "uzun başlık veya eksik açıklama" },
     { label: "noindex yayın", value: String(summary.noIndexPublished), hint: "indekslenmez" },
   ];
   return (

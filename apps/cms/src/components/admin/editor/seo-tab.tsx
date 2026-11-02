@@ -1,6 +1,7 @@
 "use client";
 
 import { AiSuggestPanel } from "./ai-suggest-panel";
+import { RichSchemaPanel } from "./rich-schema-panel";
 import { LengthMeter, SerpPreview, SocialPreview } from "./seo-previews";
 import { SchemaIssues } from "./schema-issues";
 import { useStudioInspector } from "./studio-inspector-context";
@@ -20,6 +21,8 @@ export function SeoTab() {
     metaTitle,
     setMetaTitle,
     metaDescription,
+    richSchema,
+    setRichSchema,
     setMetaDescription,
     schemaType,
     setSchemaType,
@@ -109,6 +112,8 @@ export function SeoTab() {
                           <option value="BlogPosting">BlogPosting</option>
                           <option value="TechArticle">TechArticle</option>
                           <option value="FAQPage">FAQPage</option>
+                          <option value="QAPage">QAPage</option>
+                          <option value="SoftwareApplication">SoftwareApplication</option>
                           <option value="AboutPage">AboutPage</option>
                         </select>
                       </div>
@@ -129,6 +134,8 @@ export function SeoTab() {
                       </div>
                     </div>
                   </div>
+
+                  <RichSchemaPanel value={richSchema} onChange={setRichSchema} />
 
                   <SocialPreview title={effTitle} description={effDesc} image={featuredImageUrl} host={base ? base.replace(/^https?:\/\//, "") : "site"} />
 

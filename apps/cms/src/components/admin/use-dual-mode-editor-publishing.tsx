@@ -1,3 +1,4 @@
+import type { RichSchemaFields } from "@/components/admin/editor/rich-schema-panel";
 import { useMemo, useState } from "react";
 import { resolvePublishing } from "@nexpress/core";
 import type { MediaAssetDto, TaxonomyDto } from "@nexpress/database";
@@ -51,11 +52,14 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
 
   // SEO Meta Alanları
   const [metaTitle, setMetaTitle] = useState<string>(
-    initialDoc?.metaTitle ?? initialDoc?.title ?? ""
+    // Eski kayıtlar başlığı meta başlığa kopyalıyordu: başlıkla aynıysa "otomatik" sayılır
+    initialDoc?.metaTitle && initialDoc.metaTitle !== initialDoc.title ? initialDoc.metaTitle : ""
   );
   const [metaDescription, setMetaDescription] = useState<string>(
-    initialDoc?.metaDescription ?? initialDoc?.tldr ?? ""
+    initialDoc?.metaDescription && initialDoc.metaDescription !== initialDoc.tldr ? initialDoc.metaDescription : ""
   );
+  // Pro eklentinin zengin şema türleri (QAPage, Offer, TechArticle, SoftwareApplication)
+  const [richSchema, setRichSchema] = useState<RichSchemaFields>(((initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as RichSchemaFields | undefined) ?? {});
   const [canonicalUrl, setCanonicalUrl] = useState<string>(
     initialDoc?.canonicalUrl ?? ""
   );
@@ -71,5 +75,5 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
   const [quickCatParentId, setQuickCatParentId] = useState<string>("");
   const [quickTagName, setQuickTagName] = useState("");
 
-  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
+  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
 }

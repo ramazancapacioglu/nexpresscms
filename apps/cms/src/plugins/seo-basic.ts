@@ -29,6 +29,6 @@ export const SEO_BASIC_MANIFEST: PluginManifest = {
     { id: "site-search", group: "Teknik SEO", label: "Site içi arama", description: "Sunucuda çalışan, JS'siz arama sayfası.", status: "ready", defaultEnabled: true },
     { id: "webmaster", group: "Arama motorları", label: "Google / Bing / Yandex doğrulama", description: "Site sahipliği doğrulama etiketleri.", status: "ready", defaultEnabled: true },
     { id: "indexnow", group: "Arama motorları", label: "IndexNow (Bing, Yandex)", description: "Yayın ve güncellemede anında bildirim.", status: "ready", defaultEnabled: true },
-    { id: "search-console", group: "Arama motorları", label: "Arama verisi bağlantıları", description: "Search Console, Bing Webmaster ve Yandex'ten sorgu / tık / sıralama verisi.", status: "planned", defaultEnabled: true },
+    { id: "search-console", group: "Arama motorları", label: "Arama verisi bağlantıları", description: "Search Console, Bing Webmaster ve Yandex'ten sorgu / tık / sıralama verisi. Yapılmadı — Google OAuth ve Bing/Yandex API anahtarları gerekir.", status: "planned", defaultEnabled: true },
   ],
 };

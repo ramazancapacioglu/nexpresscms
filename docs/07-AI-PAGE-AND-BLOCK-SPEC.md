@@ -195,3 +195,7 @@ Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST format�
 ## Güncelleme (2026-10-30): sözleşmenin makine karşılığı
 
 Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekten uyması gereken sözleşme `@nexpress/core/ai-design` kataloğudur (`AI_BLOCK_CATALOG`) ve komut metni oradan üretilir. Panel (`/admin/design-library`) ve editörün "JSON aktar" sekmesi sitenize özel komutu (sayfalarınız, medyanız, formlarınız, SEO ve kontrast sınırlarıyla) üretir ve yapıştırılan JSON'u aynı doğrulayıcıdan geçirir. Katalog dışı bloklar (slider, geri sayım, harita, kullanıcı kartı, galeri…) AI'a bilinçli olarak kapalıdır; elle eklenmeye devam eder. Bkz. `docs/18` ve `docs/05` "AI Tasarım Pro".
+
+## Ek (2026-11-02): `media_file` bloğu
+
+`media_file` (Dosya / Video / Ses): `props = { url, kind: "document"|"video"|"audio", title, description, mime, size, uploadDate, poster? }`. Yalnızca medya kitaplığından seçilir; `url` yalnızca `/…` veya `http(s)` olabilir (aksi hâlde blok çizilmez). Belge bir indirme kartı, video/ses yerel `<video>`/`<audio controls>` olarak çizilir (istemci JS'i yok). Markdown'a bağlantı olarak derlenir. **AI tasarım kataloğunda yoktur**: model medya dosyası uyduramaz.

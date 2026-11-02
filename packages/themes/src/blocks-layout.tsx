@@ -208,6 +208,53 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
       );
     }
 
+    case "media_file": {
+      const rawUrl = String(p.url ?? "");
+      // yalnızca site içi (/…) veya http(s) adresleri: javascript:/data: bağlantıları yazılmaz
+      const url = /^(\/(?!\/)|https?:\/\/)/i.test(rawUrl) ? rawUrl : "";
+      if (!url) return null;
+      const kind = String(p.kind ?? "document");
+      const title = String(p.title ?? "").trim() || "Dosya";
+      const description = typeof p.description === "string" ? p.description : "";
+      const size = typeof p.size === "string" ? p.size : "";
+      return (
+        <figure className="space-y-2">
+          {kind === "video" ? (
+            // eslint-disable-next-line jsx-a11y/media-has-caption
+            <video controls preload="metadata" playsInline poster={typeof p.poster === "string" ? p.poster : undefined} className="w-full" style={{ borderRadius: tokens.geometry.borderRadius }}>
+              <source src={url} type={typeof p.mime === "string" ? p.mime : undefined} />
+              <a href={url}>{title}</a>
+            </video>
+          ) : kind === "audio" ? (
+            // eslint-disable-next-line jsx-a11y/media-has-caption
+            <audio controls preload="none" className="w-full">
+              <source src={url} type={typeof p.mime === "string" ? p.mime : undefined} />
+              <a href={url}>{title}</a>
+            </audio>
+          ) : (
+            <a
+              href={url}
+              download
+              style={{ borderColor: tokens.colors.border, borderRadius: tokens.geometry.borderRadius, color: tokens.colors.foreground }}
+              className="flex items-center gap-3 border p-4 no-underline"
+            >
+              <span aria-hidden="true" className="text-2xl">📄</span>
+              <span className="min-w-0">
+                <span className="block font-semibold">{title}</span>
+                {size && <span className="block text-xs opacity-70">{size}</span>}
+              </span>
+            </a>
+          )}
+          {(description || kind !== "document") && (
+            <figcaption className="text-sm opacity-80">
+              {kind !== "document" && title !== "Dosya" ? <strong className="block">{title}</strong> : null}
+              {description}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
+
     case "image_figure": {
       const url = String(p.url ?? "");
       const altText = String(p.altText ?? "");

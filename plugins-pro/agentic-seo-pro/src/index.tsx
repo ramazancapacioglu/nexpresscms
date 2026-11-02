@@ -7,12 +7,14 @@ import { AiReferralsCard } from "./ai-referrals-card";
 import { FreshnessCard } from "./content-ops/freshness-card";
 import { contentSignalLine } from "./geo/content-signal";
 import { addSpeakable } from "./schema/speakable";
+import { buildRichNodes, patchEntity, type RichModule, type RichSchema } from "./schema/rich-types";
 import { buildLocalBusinessNode, type LocalBusinessSettings } from "./schema/local-seo";
 import { AGENTIC_SEO_MANIFEST } from "./manifest";
 import { registerContentOps } from "./content-ops";
 import { ModuleGate, PLUGIN_ID } from "./module-gate";
-import { getScopedRepository } from "@nexpress/database";
+import { getMcpLogRepository, getScopedRepository } from "@nexpress/database";
 import { BotTelemetryCard } from "./bot-telemetry-card";
+import { McpLogCard } from "./mcp-log-card";
 import {
   handleWebMcpJsonRpc,
   NEXPRESS_MCP_TOOLS,
@@ -30,6 +32,19 @@ const isHomeUrl = (url: string, locale: string) => {
 };
 
 /** Bağlantılı @id varlık düğümleri (içerik ilişkileri). */
+const RICH_MODULES: RichModule[] = ["faq-qa", "campaign-offer", "tech-article", "software-app"];
+
+/** Zengin şema türleri: içerikte `schemaAttributes.richSchema` varsa ve ilgili modül açıksa düğümleri ekler. */
+async function appendRichSchema(payload: HookPayloads["seo:buildSchemaGraph"], nodes: SchemaGraphNode[]): Promise<SchemaGraphNode[]> {
+  const rich = payload.content?.schemaAttributes?.richSchema as RichSchema | undefined;
+  if (!rich || typeof rich !== "object") return nodes;
+  const flags = await Promise.all(RICH_MODULES.map((m) => isPluginModuleEnabled(payload.siteId, PLUGIN_ID, m)));
+  if (!flags.some(Boolean)) return nodes;
+  const enabled = Object.fromEntries(RICH_MODULES.map((m, i) => [m, flags[i]!])) as Record<RichModule, boolean>;
+  const { extra, entityPatch } = buildRichNodes(rich, { url: payload.url, title: payload.content?.title ?? "", tldr: payload.content?.tldr, now: new Date(), enabled });
+  return [...patchEntity(nodes, payload.url, entityPatch), ...extra];
+}
+
 async function appendEntityGraph(payload: HookPayloads["seo:buildSchemaGraph"], nodes: SchemaGraphNode[]): Promise<SchemaGraphNode[]> {
   const repo = getScopedRepository(payload.siteId);
   const links = await repo.listEntityLinks();
@@ -72,6 +87,7 @@ export function registerAgenticSeoProPlugin(): void {
     async (payload) => {
       let nodes = [...payload.nodes];
       if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "entity-graph")) nodes = await appendEntityGraph(payload, nodes);
+      nodes = await appendRichSchema(payload, nodes);
       if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "speakable")) nodes = addSpeakable(nodes);
       if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "local-seo") && isHomeUrl(payload.url, payload.locale)) {
         const settings = (await getPluginSettings(payload.siteId, PLUGIN_ID)) as LocalBusinessSettings;
@@ -139,11 +155,20 @@ export function registerAgenticSeoProPlugin(): void {
     "@nexpress-pro/agentic-seo",
     async (payload) => {
       if (!(await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "mcp"))) return payload;
+      const started = Date.now();
       const rpcResponse = await handleWebMcpJsonRpc(
         payload.siteId,
         payload.requestBody as unknown as JsonRpcRequest,
         payload.agentKeyHeader
       );
+      // İstek günlüğü (mcp-log): araç adı, kısaltılmış ajan, sonuç, süre. Gövde ve ajan anahtarı yazılmaz; hata yanıtı bozmaz.
+      if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "mcp-log")) {
+        const body = payload.requestBody as { method?: unknown; params?: { name?: unknown } };
+        const tool = body.method === "tools/call" && typeof body.params?.name === "string" ? body.params.name : String(body.method ?? "?");
+        await getMcpLogRepository(payload.siteId)
+          .record({ tool, agent: payload.agent ?? "", ok: !("error" in (rpcResponse as object)), durationMs: Date.now() - started })
+          .catch((e) => console.warn("[mcp-log] kaydedilemedi:", e instanceof Error ? e.message : e));
+      }
       return {
         ...payload,
         response: rpcResponse as Record<string, unknown>,
@@ -151,6 +176,18 @@ export function registerAgenticSeoProPlugin(): void {
     },
     20
   );
+
+  slotRegistry.register({
+    id: "agentic-seo-mcp-log-card",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 30,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="mcp-log">
+        <McpLogCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
 
   // 3b. SLOTLAR: geo meta etiketleri ve tazelik kartı
   slotRegistry.register({

@@ -30,6 +30,7 @@ export function useDualModeEditorSafety(p: ReturnType<typeof useDualModeEditorSa
     p.setMetaTitle(f.metaTitle);
     p.setMetaDescription(f.metaDescription);
     p.setCanonicalUrl(f.canonicalUrl);
+    p.setRichSchema((f.richSchema ?? {}) as never);
     p.setNoIndex(f.noIndex);
     p.setSchemaType(f.schemaType);
     p.setImportanceScore(f.importanceScore);

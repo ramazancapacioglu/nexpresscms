@@ -67,9 +67,12 @@ function gradeOf(score: number): keyof SeoSummary["grades"] {
   return "d";
 }
 
+/** Meta başlık boşsa sayfa başlığı kullanılır (otomatik); uzunluk bu etkin değere göre ölçülür. */
+const effectiveTitle = (item: SeoContentInput) => (item.metaTitle?.trim() || item.title).trim();
+
 function issuesFor(item: SeoContentInput, minWords: number): string[] {
   const issues: string[] = [];
-  if (!item.metaTitle?.trim()) issues.push("Meta başlık yok");
+  if (effectiveTitle(item).length > 60) issues.push("Meta başlık uzun (>60)");
   if (!item.metaDescription?.trim()) issues.push("Meta açıklama yok");
   if (!item.featuredImage) issues.push("Öne çıkan görsel yok");
   if (!resolvePublishing(item.schemaAttributes).focusKeyword) issues.push("Odak kelime yok");
@@ -92,7 +95,7 @@ export function buildSeoSummary(items: SeoContentInput[], seo: SeoEngineSettings
     .map((item) => {
       grades[gradeOf(item.seoScore)] += 1;
       const issues = issuesFor(item, seo.minWordCount);
-      if (!item.metaTitle?.trim()) missingMeta += 1;
+      if (effectiveTitle(item).length > 60) missingMeta += 1;
       if (!item.metaDescription?.trim()) missingDescription += 1;
       if (item.status === "published" && item.noIndex) noIndexPublished += 1;
       if (item.status === "published" && !item.featuredImage) missingImage += 1;

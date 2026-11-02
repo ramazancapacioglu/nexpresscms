@@ -22,6 +22,7 @@
 | **12** | [12-ROADMAP.md](./12-ROADMAP.md) | Öncelikli iş listesi (SEO/GEO/hız), güvenlik ve bakım borçları, yürütme sırası | 🔄 Canlı |
 | **13** | [13-PLUGINS-AND-THEME-PACKAGES.md](./13-PLUGINS-AND-THEME-PACKAGES.md) | Eklenti sistemi, tema paketleri (yükleme/etkinleştirme) ve panel eksikleri planı | 📋 Plan |
 | **14** | [14-MULTILINGUAL-PLAN.md](./14-MULTILINGUAL-PLAN.md) | Çok dilli altyapı planı (L1–L5) | 📋 Plan |
+| **19** | [19-DEPLOYMENT.md](./19-DEPLOYMENT.md) | Yayına alma: ortam değişkenleri, kurulum, sağlık ucu, zamanlayıcı, yedek, güvenlik listesi | ✅ Güncel |
 
 ---
 

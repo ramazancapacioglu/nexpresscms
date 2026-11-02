@@ -28,6 +28,8 @@ export interface EditorDraftFields {
   allowComments: boolean;
   allowReviews: boolean;
   showShareButtons: boolean;
+  /** Pro eklentinin zengin şema alanları (yoksa boş) */
+  richSchema?: Record<string, unknown>;
 }
 
 /** Kararlı imza: alan sırası sabittir, böylece aynı içerik her zaman aynı imzayı verir. */
@@ -38,6 +40,7 @@ export function draftSignature(fields: EditorDraftFields): string {
       fields.noIndex, fields.schemaType, fields.importanceScore, fields.featuredImageUrl, fields.featuredImageAlt,
       fields.featuredImageCaption, fields.focusKeyword, fields.visibility, fields.scheduledAt, fields.categories,
       fields.tags, fields.allowComments, fields.allowReviews, fields.showShareButtons,
+      fields.richSchema && Object.keys(fields.richSchema).length > 0 ? fields.richSchema : null,
     ])
   );
 }

@@ -101,3 +101,6 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 
 Doğrulama derlemeleri `NEXT_DIST_DIR=.next-verify` ile ayrı klasöre alınır (`next.config.ts` `distDir`; `check-budget` aynı değişkeni okur). Aynı klasörde çalışan bir `next dev` ile `next start` birbirinin `.next` çıktısını ezebilir: bu oturumda üretim sunucusu `ChunkLoadError` verdi çünkü `.next` sonradan geliştirme düzeniyle yeniden yazılmıştı (kod hatası değildi). Yerel doğrulama ve CI için ayrı `distDir` kullanın.
 
+- **Medya yüklemeleri (2026-11-02):** görsel dışı türler (PDF, MP4/WebM, MP3/OGG/WAV) yalnızca dosya başlığından tanınırsa kabul edilir (HTML/SVG/yürütülebilir reddedilir), 40 MB sınırı, `X-Content-Type-Options: nosniff` ile ve kayıtlı türle sunulur. Yedek paketi yalnızca görsel özgünlerini taşır; belge/video/ses `MEDIA_DIR` yedeğiyle korunmalıdır.
+- **Sağlık ucu:** `GET /api/health` (kimliksiz; yalnızca `ok`/`degraded`, sır ve ayrıntı yok). Dağıtım: `docs/19-DEPLOYMENT.md`.
+- **Düzeltme:** sayfa JSON-LD'si editör iç alanlarını (yayın parolası dahil) sızdırıyordu — bkz. `docs/04`.

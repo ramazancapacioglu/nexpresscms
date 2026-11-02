@@ -98,6 +98,8 @@ export interface MediaAssetDto {
   altText: string;
   titleText: string | null;
   caption: string | null;
+  description: string | null;
+  kind: "image" | "document" | "video" | "audio";
   focalPoint: { x: number; y: number };
   seoScore: number;
   folderId: string | null;

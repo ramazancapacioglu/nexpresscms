@@ -114,6 +114,7 @@ export type BlockType =
   | "text_div"
   | "button_element"
   | "image_figure"
+  | "media_file"
   | "divider_spacer"
   | "review_box"
   | "section"
@@ -331,6 +332,7 @@ export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
       "paragraph",
       "button_element",
       "image_figure",
+      "media_file",
       "divider_spacer",
       "review_box",
       "section",

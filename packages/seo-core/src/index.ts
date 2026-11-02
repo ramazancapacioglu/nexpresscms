@@ -73,10 +73,11 @@ export async function buildPageSchemaGraph(
     const c = input.content;
     const entityId = `${input.pageUrl}#${c.schemaType.toLowerCase()}`;
     const isArticle = /Article|BlogPosting|NewsArticle|TechArticle/i.test(c.schemaType);
-    const { publishing: _p, seo: _s, slugHistory: _h, ...cleanAttrs } = (c.schemaAttributes ?? {}) as Record<
-      string,
-      unknown
-    >;
+    // Editör/CMS iç alanları (yayın ayarları, SEO ayarları, slug geçmişi, zengin şema girdisi, tuval bayrağı) JSON-LD'ye sızmaz
+    const INTERNAL_ATTRS = new Set(["publishing", "seo", "slugHistory", "richSchema", "canvas"]);
+    const cleanAttrs = Object.fromEntries(
+      Object.entries((c.schemaAttributes ?? {}) as Record<string, unknown>).filter(([k]) => !k.startsWith("_") && !INTERNAL_ATTRS.has(k))
+    );
     const entity: SchemaGraphNode = {
       "@type": c.schemaType || "WebPage",
       "@id": entityId,
@@ -129,6 +130,7 @@ export async function buildPageSchemaGraph(
     locale: input.locale,
     url: input.pageUrl,
     contentId: input.content?.id,
+    content: input.content ? { title: input.content.title, tldr: input.content.tldr ?? null, schemaAttributes: input.content.schemaAttributes ?? {} } : undefined,
     nodes: baseNodes,
   });
 

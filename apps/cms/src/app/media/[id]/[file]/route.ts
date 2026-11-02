@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isValidMediaId, parseVariantFile } from "@nexpress/core";
+import { getScopedRepository } from "@nexpress/database";
+import { serveStoredFile } from "@/lib/media/serve-file";
 import { contentTypeOf, renderVariant } from "@/lib/media/process";
 import { getOriginal, getVariant, putVariant } from "@/lib/media/storage";
 
@@ -22,9 +24,17 @@ function respond(data: Buffer, format: Parameters<typeof contentTypeOf>[0]) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string; file: string }> }) {
   const { id, file } = await params;
   const variant = parseVariantFile(file);
+  const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
+
+  // Belge/video/ses: `/media/{id}/{seo-adi}.{uzantı}` — tür kayıttan gelir, ad yalnızca SEO içindir
+  if (!variant && isValidMediaId(id) && /^[a-z0-9][a-z0-9-]{0,79}\.(pdf|mp4|webm|mp3|ogg|wav)$/.test(file)) {
+    const asset = await getScopedRepository(siteId).findMediaAsset(id);
+    if (!asset || asset.kind === "image" || !asset.url.endsWith(`.${file.split(".").pop()}`)) return new NextResponse("Not found", { status: 404 });
+    const data = await getOriginal(siteId, id);
+    return data ? serveStoredFile(data, { mime: asset.mimeType, filename: file, rangeHeader: request.headers.get("range") }) : new NextResponse("Not found", { status: 404 });
+  }
   if (!variant || !isValidMediaId(id)) return new NextResponse("Not found", { status: 404 });
 
-  const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
   const cached = await getVariant(siteId, id, file);
   if (cached) return respond(cached, variant.format);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import type { RichSchemaFields } from "./rich-schema-panel";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
 import { createContext, useContext } from "react";
 import type {
@@ -48,7 +49,7 @@ export interface StudioInspectorApi {
     key: K
   ) => BlockStyleValues[K] | undefined;
   handleChangeColumnLayout: (columnsBlockId: string, layoutId: string) => void;
-  setMediaPickerTarget: Dispatch<SetStateAction<"featured" | "block_image" | "block_bg" | null>>;
+  setMediaPickerTarget: Dispatch<SetStateAction<"featured" | "block_image" | "block_media" | null>>;
   seoAnalysis: SeoAnalysis;
   autoSchemaNodes: SchemaGraphNode[];
   inspectorSlot?: ReactNode;
@@ -85,6 +86,8 @@ export interface StudioInspectorApi {
   noIndex: boolean;
   setNoIndex: Dispatch<SetStateAction<boolean>>;
   canonicalUrl: string;
+  richSchema: RichSchemaFields;
+  setRichSchema: Dispatch<SetStateAction<RichSchemaFields>>;
   setCanonicalUrl: Dispatch<SetStateAction<string>>;
   schemaType: string;
   setSchemaType: Dispatch<SetStateAction<string>>;

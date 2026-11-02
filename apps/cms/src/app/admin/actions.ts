@@ -336,7 +336,12 @@ export async function saveMediaAssetAction(input: {
   altText: string;
   titleText?: string;
   caption?: string;
+  description?: string;
   focalPoint?: { x: number; y: number };
+  width?: number;
+  height?: number;
+  sizeBytes?: number;
+  mimeType?: string;
 }) {
   await requireUser({ audit: "cms.saveMediaAsset" });
   const reqHeaders = await headers();

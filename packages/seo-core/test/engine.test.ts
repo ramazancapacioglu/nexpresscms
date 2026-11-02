@@ -67,3 +67,15 @@ test("autoCanonical: açıkken sayfa adresi yazılır, kapalıyken yalnızca ell
   assert.equal(off.openGraph.url, "https://x.test/tr/yazi", "OG adresi canonical'sız da dolu");
   assert.equal(resolveSeoMeta({ ...base, canonicalUrl: " https://basla.test/a ", settings: { autoCanonical: false } }).canonical, "https://basla.test/a");
 });
+
+test("şema grafiği: editör iç alanları (_publishing, richSchema, seo…) JSON-LD'ye sızmaz, gerçek öznitelikler kalır", async () => {
+  const { buildPageSchemaGraph } = await import("../src");
+  const g = await buildPageSchemaGraph({
+    siteId: "s", siteName: "Site", siteUrl: "https://x.test", locale: "tr", pageUrl: "https://x.test/tr/a",
+    content: { id: "c", title: "A", schemaType: "WebPage", schemaAttributes: { _publishing: { password: "gizli" }, richSchema: { qa: { enabled: true } }, seo: { x: 1 }, slugHistory: ["eski"], canvas: true, inLanguage: "tr", about: "konu" } },
+  });
+  const page = g["@graph"].find((n) => n["@type"] === "WebPage")!;
+  for (const k of ["_publishing", "richSchema", "seo", "slugHistory", "canvas"]) assert.equal(k in page, false, k);
+  assert.equal(page.about, "konu");
+  assert.ok(!JSON.stringify(g).includes("gizli"), "yayın parolası şemaya yazılmaz");
+});

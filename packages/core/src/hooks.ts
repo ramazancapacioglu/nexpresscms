@@ -27,6 +27,8 @@ export interface HookPayloads {
     locale: string;
     url: string;
     contentId?: string;
+    /** İçeriğin başlığı, TL;DR'si ve şema öznitelikleri (eklentilerin ek şema üretmesi için; veritabanı sorgusu gerekmez) */
+    content?: { title: string; tldr: string | null; schemaAttributes: Record<string, unknown> };
     nodes: SchemaGraphNode[];
   };
   "theme:resolveTokens": {
@@ -50,6 +52,8 @@ export interface HookPayloads {
     siteId: string;
     requestBody: Record<string, unknown>;
     agentKeyHeader?: string | null;
+    /** İstemcinin User-Agent'ı (günlük için; kimlik anahtarı değildir) */
+    agent?: string | null;
     response: Record<string, unknown>;
   };
 }

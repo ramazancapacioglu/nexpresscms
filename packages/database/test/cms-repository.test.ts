@@ -166,10 +166,11 @@ test("taksonomi: oluştur, türe göre listele, silince çocuklar üst kategoriy
 });
 
 test("medya: oluştur, güncelle, skor hesapla, listele ve kiracıya göre ayır", async () => {
-  const m = await repo.saveMediaAsset({ id: "med_cms_test", filename: "a.jpg", url: "/media/med_cms_test?w=10&h=10", altText: "uzun bir alt metin burada", titleText: "Başlık", caption: "Alt yazı" });
+  const m = await repo.saveMediaAsset({ id: "med_cms_test", filename: "ofis-ekibi.jpg", url: "/media/med_cms_test?w=1600&h=900", width: 1600, height: 900, sizeBytes: 200_000, altText: "uzun bir alt metin burada", titleText: "Başlık", caption: "Alt yazı" });
   assert.equal(m.seoScore, 100);
-  const m2 = await repo.saveMediaAsset({ id: "med_cms_test", filename: "a.jpg", url: m.url, altText: "kısa" });
-  assert.equal(m2.seoScore, 20);
+  assert.equal(m.kind, "image");
+  const m2 = await repo.saveMediaAsset({ id: "med_cms_test", filename: "ofis-ekibi.jpg", url: m.url, width: 1600, height: 900, sizeBytes: 200_000, altText: "kısa" });
+  assert.equal(m2.seoScore, 85, "alt kısa (-10) ve başlık yok (-5)");
   const list = await repo.listMediaAssets();
   assert.equal(list.filter((x) => x.id === "med_cms_test").length, 1, "aynı kimlik güncellenir, çoğalmaz");
   assert.equal(list.find((x) => x.id === "med_cms_test")!.altText, "kısa");

@@ -12,6 +12,7 @@ export function useDualModeEditorDirty(p: ReturnType<typeof useDualModeEditorBlo
     metaTitle: p.metaTitle,
     metaDescription: p.metaDescription,
     canonicalUrl: p.canonicalUrl,
+    richSchema: p.richSchema as Record<string, unknown>,
     noIndex: p.noIndex,
     schemaType: p.schemaType,
     importanceScore: p.importanceScore,

@@ -38,4 +38,5 @@ export * from "./chunker";
 export * from "./vector";
 export * from "./account-rules";
 export * from "./audit-export";
+export * from "./media-seo";
 export * from "./editor-draft";

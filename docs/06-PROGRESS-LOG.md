@@ -21,6 +21,16 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-02] — Elle meta, WordPress benzeri medya, medya SEO'su, Pro modüller, yayına hazırlık
+- ✅ **Elle meta:** başlığın altında "Arama sonucu" şeridi (Otomatik/Elle etiketi, "Otomatiğe dön"); kayıtta başlık/TL;DR artık meta alanlarına kopyalanmıyor (eski kayıtlar otomatik sayılır); SEO denetimi "uzun meta başlık / eksik açıklama" ölçer.
+- ✅ **Medya kitaplığı:** ızgara/liste, arama (Türkçe I/İ duyarlı), tür / sorun / sıralama süzgeçleri, ayrıntı paneli (başlık, alt metin, alt yazı, açıklama, odak, canlı SEO denetimi); sahte URL ile ekleme formu kaldırıldı. **Medya seçici** (kitaplık + yükleme + bilgi düzenleme + "Kaydet ve ekle") öne çıkan görsel, görsel bloğu ve yeni `media_file` bloğu için. Göç `0015_media_seo` (`description`, `kind`).
+- ✅ **Görsel olmayan medya:** PDF / MP4 / WebM / MP3 / OGG / WAV (içerik başlığından tanınır, 40 MB), `/media/{id}/{seo-adı}.{ext}` ile `Range` destekli sunum; `VideoObject`/`AudioObject` şeması; Markdown bağlantısı.
+- ✅ **Medya SEO'su:** `scoreMediaSeo` (alt metin, dosya adı, başlık, boyut / belge-video için başlık-açıklama), görsel site haritası (`image:image`).
+- 🔒 **Düzeltme:** sayfa JSON-LD'si `schemaAttributes._publishing` (yayın parolası dahil) ve diğer iç alanları sızdırıyordu — elendi, testli.
+- ✅ **Pro modüller ("Yakında" → hazır):** faq-qa (QAPage), campaign-offer (süre dolunca kalkar), tech-article, software-app (editörde "Gelişmiş şema" paneli), merchant-feed (`/merchant-feed.xml`), gap-analysis (panel kartı), mcp-log (göç `0016_mcp_log` + kart). Kalan 8 modül dış servis/anahtar gerektirdiği için "Yakında" ve nedeni manifestte yazılı.
+- ✅ **Yayına hazırlık:** `GET /api/health`, `docs/19-DEPLOYMENT.md` (ortam, kurulum, zamanlayıcı, yedek, güvenlik listesi).
+- Doğrulama: çekirdek 131, seo-core 24, eklenti 27, veritabanı (SQLite + PostgreSQL), tarayıcı e2e (medya yükleme/Range/seçici, meta → `<title>`/açıklama, JSON-LD, kimlik akışları), axe 76/76.
+
 ### [2026-10-31] — Düzeltme: aynı saniyede parola değişiminde bağlantı tek kullanımlıktı değil
 - 🐞 CI'daki yeni `auth:e2e` gerçek bir hata yakaladı: hesap oluşturulduktan aynı saniye içinde parola belirlenirse `passwordChangedAt` (saniye çözünürlüğü) değişmiyor, davet bağlantısı yeniden kullanılabiliyordu. `UserRepository.setPassword` zaman damgasını her zaman önceki saniyeyi geçecek şekilde yazar; test (SQLite + PostgreSQL) eklendi.
 

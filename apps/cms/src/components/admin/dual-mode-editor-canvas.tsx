@@ -1,3 +1,4 @@
+import { SearchSnippetBar } from "@/components/admin/editor/search-snippet-bar";
 import { CanvasBlock } from "@/components/admin/editor/canvas-block";
 import { duplicateBlockById, moveBlockStep, normalizeImportedBlock, removeBlockById, type BlockNode } from "@nexpress/core";
 import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
@@ -41,6 +42,7 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
               placeholder="Başlık"
               className="w-full min-w-0 resize-none overflow-hidden bg-transparent px-4 pb-2 text-3xl font-extrabold leading-tight tracking-tight text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
             />
+            <SearchSnippetBar title={title} tldr={s.tldr} metaTitle={s.metaTitle} setMetaTitle={s.setMetaTitle} metaDescription={s.metaDescription} setMetaDescription={s.setMetaDescription} />
           </div>
           <div className="flex-1 overflow-y-auto p-4 md:p-6" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <div

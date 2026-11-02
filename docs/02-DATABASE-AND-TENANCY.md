@@ -86,3 +86,7 @@ Tüm tablolar `siteId` kapsamındadır:
 - **Tek kod yolu (`src/dialect.ts`):** `backendFor(dialect)` iki motor için tabloları ve istemciyi aynı tipe daraltır; depolar motor dalı içermez. `upsertScoped` ve tüm depolardaki `onConflictDoUpdate({ setWhere siteId })` kiracıya kapalı atomik upsert yapar (`setWhere siteId`; mutasyon testiyle doğrulandı: korumasız hâlde başka kiracının satırı ele geçirilebiliyordu). Önceki kodda SQLite dalı kimliğe göre kiracıdan bağımsız güncelliyor, PostgreSQL dalı `siteId`'yi bile üzerine yazıyordu.
 - **Depo yapısı:** `ScopedCmsRepository` = `base → site → navigation → media → comments → taxonomy → content-read → content-write` kalıtım zinciri (`src/cms/*`); genel API ve içe aktarma yolları değişmedi. `test/cms-repository.test.ts` (11) ve `test/commerce-repository.test.ts` (6) iki motorda davranışı sabitler.
 
+## Ek (2026-11-02): medya ve MCP günlüğü tabloları
+
+- `media_assets` (göç `0015_media_seo`): `description` (WordPress "Açıklama"), `kind` (`image` | `document` | `video` | `audio`). `seoScore` artık `scoreMediaSeo` (çekirdek, saf) ile hesaplanır; sabit/uydurma puan yoktur.
+- `mcp_request_log` (göç `0016_mcp_log`): `tool`, `agent` (User-Agent, en çok 80 karakter; ajan anahtarı ASLA yazılmaz), `ok`, `duration_ms`, `at`; `(site_id, at)` indeksi. Yalnızca Pro `mcp-log` modülü açıkken yazılır; 90 günden eski kayıtlar kendiliğinden silinir (`McpLogRepository`).

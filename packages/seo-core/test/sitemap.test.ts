@@ -76,3 +76,23 @@ test("hreflang: bölge varsa tr-TR, yoksa yalnızca dil", () => {
   assert.equal(hreflangOfRegion({ locale: "en", region: "" }), "en");
   assert.equal(hreflangOfRegion({ locale: "en", region: "us" }), "en-US");
 });
+
+test("görsel site haritası: medya başvurusu WebP türevine çevrilir, veri URI'si ve yinelenen atlanır, öne çıkan görsel dahil", async () => {
+  const { collectSitemapImages, buildUrlset } = await import("../src/sitemap");
+  const imgs = collectSitemapImages(
+    [
+      { type: "image_figure", props: { url: "/media/med_abc123?w=1600&h=900", titleText: "Ofis", altText: "Ofis ekibi" } },
+      { type: "image_figure", props: { url: "/media/med_abc123?w=1600&h=900" } },
+      { type: "image_figure", props: { url: "data:image/svg+xml;utf8,<svg/>" } },
+      { type: "section", children: [{ type: "image_figure", props: { url: "https://cdn.test/a.jpg", caption: "Alt yazı & <b>" } }] },
+    ],
+    "/media/med_zzz999?w=10&h=10"
+  );
+  assert.deepEqual(imgs.map((i) => i.loc), ["/media/med_zzz999/1280.webp", "/media/med_abc123/1280.webp", "https://cdn.test/a.jpg"]);
+  assert.equal(imgs[1]!.title, "Ofis");
+  const xml = buildUrlset("https://x.test", { type: "page", page: 1, entries: [{ contentId: "c", type: "page", locale: "tr", region: "", slug: "a", updatedAt: new Date(0), images: imgs }] }, [{ contentId: "c", type: "page", locale: "tr", region: "", slug: "a", updatedAt: new Date(0) }], "tr");
+  assert.ok(xml.includes("xmlns:image="));
+  assert.ok(xml.includes("<image:loc>https://x.test/media/med_abc123/1280.webp</image:loc>"));
+  assert.ok(xml.includes("<image:loc>https://cdn.test/a.jpg</image:loc>"));
+  assert.ok(xml.includes("&lt;b&gt;"), "başlık/alt yazı kaçışlanır");
+});

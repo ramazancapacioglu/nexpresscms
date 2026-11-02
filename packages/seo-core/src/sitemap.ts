@@ -4,6 +4,14 @@
  */
 export const SITEMAP_PAGE_SIZE = 10_000;
 
+/** Görsel site haritası öğesi (`image:image`): sayfadaki görseller Google Görseller'e bildirilir. */
+export interface SitemapImage {
+  /** Site köküne göre (/media/…) ya da mutlak adres */
+  loc: string;
+  title?: string;
+  caption?: string;
+}
+
 export interface SitemapEntry {
   contentId: string;
   type: string;
@@ -11,7 +19,52 @@ export interface SitemapEntry {
   region: string;
   slug: string;
   updatedAt: Date;
+  images?: SitemapImage[];
 }
+
+/** Bir sayfada bildirilecek en çok görsel (protokol sınırı 1000; kalabalığı önlemek için daha düşük). */
+export const SITEMAP_MAX_IMAGES = 50;
+
+/**
+ * Bloklardan ve öne çıkan görselden site haritası görselleri. Yalnızca `/…` veya http(s) adresleri; veri URI'leri atlanır;
+ * yinelenenler tek kez. Yerel medya başvurusu (`/media/{id}?w=…`) taranabilir WebP türevine çevrilir.
+ */
+export function collectSitemapImages(
+  blocks: Array<{ type: string; props?: Record<string, unknown> | null; children?: unknown }>,
+  featured: string | null | undefined
+): SitemapImage[] {
+  const out: SitemapImage[] = [];
+  const seen = new Set<string>();
+  const add = (url: unknown, title?: unknown, caption?: unknown) => {
+    if (typeof url !== "string") return;
+    const local = /^\/media\/([A-Za-z0-9_-]{6,64})\?/.exec(url);
+    const loc = local ? `/media/${local[1]}/1280.webp` : /^(https?:\/\/|\/(?!\/))/i.test(url) && !/^\/media\//.test(url) ? url : "";
+    if (!loc || seen.has(loc) || out.length >= SITEMAP_MAX_IMAGES) return;
+    seen.add(loc);
+    out.push({ loc, ...(typeof title === "string" && title.trim() ? { title: title.trim() } : {}), ...(typeof caption === "string" && caption.trim() ? { caption: caption.trim() } : {}) });
+  };
+  add(featured);
+  const walk = (list: unknown) => {
+    if (!Array.isArray(list)) return;
+    for (const b of list as Array<{ type?: string; props?: Record<string, unknown> | null; children?: unknown }>) {
+      const p = b.props ?? {};
+      if (b.type === "image_figure") add(p.url, p.titleText, p.caption || p.altText);
+      walk(b.children);
+    }
+  };
+  walk(blocks);
+  return out;
+}
+
+const imageXml = (images: SitemapImage[] | undefined, baseUrl: string) =>
+  (images ?? [])
+    .map((i) => {
+      const abs = i.loc.startsWith("/") ? baseUrl + i.loc : i.loc;
+      return `    <image:image>
+      <image:loc>${xmlEscape(abs)}</image:loc>${i.title ? `\n      <image:title>${xmlEscape(i.title)}</image:title>` : ""}${i.caption ? `\n      <image:caption>${xmlEscape(i.caption)}</image:caption>` : ""}
+    </image:image>`;
+    })
+    .join("\n");
 
 export interface SitemapFile {
   type: string;
@@ -123,12 +176,12 @@ export function buildUrlset(
       return `  <url>
     <loc>${xmlEscape(baseUrl + entryPath(entry))}</loc>
     <lastmod>${new Date(entry.updatedAt).toISOString()}</lastmod>
-${alternates.join("\n")}
+${alternates.join("\n")}${entry.images?.length ? `\n${imageXml(entry.images, baseUrl)}` : ""}
   </url>`;
     })
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls}
 </urlset>
 `;
