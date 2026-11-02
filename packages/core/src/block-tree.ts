@@ -208,3 +208,16 @@ export function normalizeImportedBlock(raw: any, fallbackIndex = 0): BlockNode {
 export function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
+
+/** Yeni (kütüphaneden sürüklenen) bloğu hedef kapsayıcıya koyar; tür o kapsayıcıya uymuyorsa `null` döner. */
+export function placeNewBlock(
+  blocks: BlockNode[],
+  block: BlockNode,
+  targetParentId: string | null,
+  targetIndex: number
+): BlockNode[] | null {
+  const parent = targetParentId ? findBlock(blocks, targetParentId) : null;
+  if (targetParentId && !parent) return null;
+  if (!canInsertInto(parent?.type ?? null, block.type)) return null;
+  return insertBlockAt(blocks, block, targetParentId, targetIndex);
+}

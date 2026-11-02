@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Editör: Önizle/Göster, zengin blok kitaplığı, sürükle-bırak, geniş sahne
+- ✅ "Önizleme bağlantısı oluştur" kaldırıldı. Üst çubukta **Önizle** (son kaydedilmiş taslağı süreli, imzalı bağlantıyla yeni sekmede açar) ve Yayınla'nın yanında **Göster** (ziyaretçinin gördüğü gerçek, yayındaki sayfayı yeni sekmede açar; yayında değilken pasif) var. Şablon düzenlerken ikisi de gizli.
+- ✅ **+ Blok & Satır** yeniden yazıldı (`@nexpress/editor` `block-catalog.ts`): 8 kategoride 46 blok (düzen, temel, medya, içerik, pazarlama, etkileşim, veri, ticaret), 10 hazır satır düzeni (boş sütunlar ve kartlı/CTA'lı), arama (Türkçe i/ı, aksan duyarsız). Her blok eklenince düzenlenebilir props taşır; denetçi alanları bu props'tan çıkar.
+- ✅ **Sürükle-bırak:** kitaplıktan tuvale/gezgine, tuvaldeki blokların başlık çubuğundan ve gezgin satırlarından; kapsayıcılara (bölüm/sütun) ve bloklar arasına. Gezginde üst/orta/alt bölge = önce/içine/sonra. Uygunsuz hedefler (örn. satıra sütun dışı blok) `canInsertInto` ile reddedilir; çekirdekte `placeNewBlock` eklendi.
+- ✅ Sahne genişliği `max-w-4xl` → `1400px` ve kenar boşlukları azaltıldı; denetçi `xl:w-80`.
+- Testler: editör paketi 9 (katalog, satır, arama, sürükle-bırak kuralları). Tarayıcıda (Playwright) Önizle/Göster, sürükleyerek ekleme ve gezginde yeniden sıralama doğrulandı.
+
 ### [2026-11-03] — Ürün şeması (Product JSON-LD) ve güvenli JSON-LD serileştirme
 - ✅ `@nexpress/seo-core` `commerce-schema.ts`: `buildProductGraph` (Product + Offer/AggregateOffer + BreadcrumbList, onaylı yorumlardan aggregateRating; fiyatsız/geçersiz para biriminde Offer yok), `schemaImageUrl` (yerel medya taranabilir türeve çevrilir) ve `jsonLdString` (`<`, `>`, `&`, U+2028/2029 kaçışlı).
 - ✅ `/{locale}/magaza/{ürün}` hem şablonlu hem yerleşik görünümde Product şeması basar.

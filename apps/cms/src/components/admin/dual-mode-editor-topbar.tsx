@@ -1,5 +1,5 @@
 import { StudioViewBar } from "@/components/admin/editor/studio-view-bar";
-import { PreviewLinkButton } from "./preview-link-button";
+import { PreviewButton, ViewLiveButton } from "./preview-buttons";
 import { PanelRightClose, PanelRightOpen, Save } from "lucide-react";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
@@ -17,7 +17,7 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             </span>
           )}
           <StudioViewBar />
-          <PreviewLinkButton contentId={contentId} locale={locale} dirty={isDirty} />
+          {lockedType !== "template" && <PreviewButton contentId={contentId} locale={locale} dirty={isDirty} />}
           <button
             type="button"
             onClick={() => {
@@ -56,6 +56,8 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             <Save className="h-3.5 w-3.5" />
             <span>{isPending ? "Kaydediliyor..." : lockedType === "template" ? "Şablonu kaydet" : "Yayınla"}</span>
           </button>
+
+          {lockedType !== "template" && <ViewLiveButton slug={s.slug} locale={locale} published={s.status === "published"} saved={Boolean(contentId)} dirty={isDirty} />}
 
           <button
             type="button"

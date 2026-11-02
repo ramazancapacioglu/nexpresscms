@@ -8,8 +8,9 @@ import {
 } from "@nexpress/core";
 import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
 import { RscBlockRenderer } from "@nexpress/themes";
-import { ArrowDown, ArrowUp, Columns, Copy, Plus, Trash2 } from "lucide-react";
-import type { MouseEvent } from "react";
+import { ArrowDown, ArrowUp, Columns, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
+import { Fragment, type DragEvent, type MouseEvent } from "react";
+import { DropZone, useEditorDnd } from "./dnd";
 import { ProseField, type ProseStructureKind } from "./prose-field";
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "./studio-model";
 
@@ -71,6 +72,16 @@ export function CanvasBlock(props: CanvasBlockProps) {
   const selected = props.selectedId === block.id;
   const domId = safeBlockDomId(block.id);
   const propsOf = block.props ?? {};
+  const { begin } = useEditorDnd();
+  /** Başlık çubuğundan tutup sürüklemek bloğu taşır (tüm blok sürükleme görüntüsü olur). */
+  const dragProps = {
+    draggable: true,
+    title: "Sürükleyerek taşı",
+    onDragStart: (event: DragEvent<HTMLElement>) => {
+      event.stopPropagation();
+      begin(event, { kind: "move", id: block.id }, event.currentTarget.parentElement);
+    },
+  };
 
   const select = (event: MouseEvent) => {
     event.stopPropagation();
@@ -90,8 +101,9 @@ export function CanvasBlock(props: CanvasBlockProps) {
             : "border-dashed border-slate-300 hover:border-blue-400 dark:border-zinc-700"
         }`}
       >
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/70 px-2.5 py-1.5 text-[11px]">
+        <div {...dragProps} className="mb-3 flex cursor-grab flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/70 px-2.5 py-1.5 text-[11px] active:cursor-grabbing">
           <div className="flex items-center gap-2">
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             <span className="inline-flex items-center gap-1 font-semibold text-blue-600">
               <Columns className="h-3.5 w-3.5" />
               Satır ({layout})
@@ -157,17 +169,21 @@ export function CanvasBlock(props: CanvasBlockProps) {
                       Sütun stili
                     </button>
                   </div>
-                  {children.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-border py-6 text-center text-[11px] text-muted-foreground">
-                      Bu sütun boş.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {children.map((child) => (
-                        <CanvasBlock key={child.id} {...props} block={child} />
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-3">
+                    {children.length === 0 ? (
+                      <DropZone parentId={column.id} index={0} large label="Bu sütun boş — blok sürükleyin" />
+                    ) : (
+                      <>
+                        <DropZone parentId={column.id} index={0} />
+                        {children.map((child, at) => (
+                          <Fragment key={child.id}>
+                            <CanvasBlock {...props} block={child} />
+                            <DropZone parentId={column.id} index={at + 1} />
+                          </Fragment>
+                        ))}
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-3 border-t border-border/50 pt-2">
                   <button
@@ -219,8 +235,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
           selected ? "border-blue-600 shadow-sm" : "border-dashed border-indigo-400/60"
         }`}
       >
-        <div className="mb-3 flex items-center justify-between rounded-md bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-600">
-          <span>Kapsayıcı bölüm</span>
+        <div {...dragProps} className="mb-3 flex cursor-grab items-center justify-between rounded-md bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 active:cursor-grabbing">
+          <span className="inline-flex items-center gap-1"><GripVertical className="h-3.5 w-3.5" aria-hidden />Kapsayıcı bölüm</span>
           <BlockActions
             onUp={() => props.onMove(block.id, "up")}
             onDown={() => props.onMove(block.id, "down")}
@@ -229,9 +245,19 @@ export function CanvasBlock(props: CanvasBlockProps) {
           />
         </div>
         <div className="space-y-4">
-          {children.map((child) => (
-            <CanvasBlock key={child.id} {...props} block={child} />
-          ))}
+          {children.length === 0 ? (
+            <DropZone parentId={block.id} index={0} large label="Bölüm boş — blok sürükleyin" />
+          ) : (
+            <>
+              <DropZone parentId={block.id} index={0} />
+              {children.map((child, at) => (
+                <Fragment key={child.id}>
+                  <CanvasBlock {...props} block={child} />
+                  <DropZone parentId={block.id} index={at + 1} />
+                </Fragment>
+              ))}
+            </>
+          )}
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
           {ATOMIC_ELEMENTS_QUICK_BAR.slice(0, 6).map((item) => (
@@ -263,13 +289,14 @@ export function CanvasBlock(props: CanvasBlockProps) {
       }`}
     >
       <div
-        className={`flex items-center justify-between border-b px-3 py-1.5 text-[11px] ${
+        {...dragProps}
+        className={`flex cursor-grab items-center justify-between border-b px-3 py-1.5 text-[11px] active:cursor-grabbing ${
           selected
             ? "border-blue-500/20 bg-blue-500/5 text-blue-700"
             : "border-slate-100 bg-slate-50/70 text-muted-foreground"
         }`}
       >
-        <span className="font-semibold">{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>
+        <span className="inline-flex items-center gap-1 font-semibold"><GripVertical className="h-3.5 w-3.5 opacity-60" aria-hidden />{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>
         <BlockActions
           onUp={() => props.onMove(block.id, "up")}
           onDown={() => props.onMove(block.id, "down")}

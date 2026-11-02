@@ -1,7 +1,7 @@
-import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "@/components/admin/editor/studio-model";
-import { moveBlockStep, removeBlockById } from "@nexpress/core";
-import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
-import { ArrowUp, Columns, Layers, PanelLeftClose, PanelLeftOpen, Plus, Redo2, Sparkles, Trash2, Type, Undo2 } from "lucide-react";
+import { BLOCK_TYPE_LABELS } from "@/components/admin/editor/studio-model";
+import { BlockInserter } from "@/components/admin/editor/block-inserter";
+import { BlockOutline } from "@/components/admin/editor/block-outline";
+import { PanelLeftClose, PanelLeftOpen, Redo2, Sparkles, Undo2 } from "lucide-react";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** 1. SOL PANEL: YAPI GEZGİNİ VE BLOK EKLEME */
@@ -97,170 +97,22 @@ export function DualModeEditorLeftPanel({ s }: { s: DualModeEditorState }) {
                     <span>Blok Hiyerarşisi</span>
                     <span>{totalWords} kelime</span>
                   </div>
-                  <div className="space-y-0.5">
-                    {flatBlockOutline.map(({ block, depth }) => {
-                      const active = selectedBlockId === block.id;
-                      return (
-                        <div
-                          key={block.id}
-                          style={{ paddingLeft: `${depth * 12 + 6}px` }}
-                          onClick={() => {
-                            setSelectedBlockId(block.id);
-                            setRightTab("block");
-                          }}
-                          className={`group flex items-center justify-between rounded-md py-1.5 pr-2 text-xs cursor-pointer transition ${
-                            active
-                              ? "bg-blue-600 text-white font-semibold"
-                              : "text-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 truncate">
-                            {block.type === "columns" ? (
-                              <Columns className="h-3 w-3 shrink-0" />
-                            ) : block.type === "section" ||
-                              block.type === "column" ? (
-                              <Layers className="h-3 w-3 shrink-0" />
-                            ) : (
-                              <Type className="h-3 w-3 shrink-0 opacity-70" />
-                            )}
-                            <span className="truncate text-[11px]">
-                              {BLOCK_TYPE_LABELS[block.type] ?? block.type}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setBlocks((prev) =>
-                                  moveBlockStep(prev, block.id, "up")
-                                );
-                              }}
-                              aria-label={`${block.type} bloğunu yukarı taşı`}
-                              className="p-0.5 hover:opacity-80"
-                            >
-                              <ArrowUp className="h-2.5 w-2.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setBlocks((prev) =>
-                                  removeBlockById(prev, block.id)
-                                );
-                              }}
-                              aria-label={`${block.type} bloğunu sil`}
-                              className="p-0.5 hover:opacity-80"
-                            >
-                              <Trash2 className="h-2.5 w-2.5" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <BlockOutline
+                    blocks={s.blocks}
+                    outline={flatBlockOutline}
+                    selectedId={selectedBlockId}
+                    onSelect={(id) => {
+                      setSelectedBlockId(id);
+                      setRightTab("block");
+                    }}
+                    setBlocks={setBlocks}
+                  />
                 </>
               ) : (
-                /* BLOK VE SATIR EKLEME */
-                <div className="space-y-4">
-                  {selectedBlock &&
-                    (selectedBlock.type === "column" ||
-                      selectedBlock.type === "section") && (
-                      <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-2 text-[11px] text-blue-700 dark:text-blue-300">
-                        Seçili hedef:{" "}
-                        <strong>
-                          {BLOCK_TYPE_LABELS[selectedBlock.type]}
-                        </strong>{" "}
-                        içine eklenecek.
-                      </div>
-                    )}
-
-                  <div>
-                    <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Satır ve sütun düzenleri
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {COLUMN_LAYOUT_PRESETS.slice(0, 6).map((preset) => (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() =>
-                            handleInsertBlock(
-                              {
-                                type: "columns",
-                                props: {
-                                  layout: preset.id,
-                                  gap: "24px",
-                                  verticalAlign: "stretch",
-                                },
-                                children: preset.cols.map((w, i) => ({
-                                  id: `col_${i}`,
-                                  type: "column",
-                                  props: { widthPct: w },
-                                  style: {
-                                    paddingTop: "20px",
-                                    paddingRight: "20px",
-                                    paddingBottom: "20px",
-                                    paddingLeft: "20px",
-                                    backgroundColor: "#f8fafc",
-                                    borderRadius: "12px",
-                                    borderWidth: "1px",
-                                    borderColor: "#e2e8f0",
-                                  },
-                                  children: [
-                                    {
-                                      id: `col_h_${i}`,
-                                      type: "heading",
-                                      props: {
-                                        level: 3,
-                                        text: `${i + 1}. Sütun`,
-                                      },
-                                    },
-                                    {
-                                      id: `col_p_${i}`,
-                                      type: "paragraph",
-                                      props: {
-                                        text: "Sütun içeriği...",
-                                      },
-                                    },
-                                  ],
-                                })),
-                              },
-                              null
-                            )
-                          }
-                          className="flex flex-col items-start rounded-lg border border-border bg-muted/20 p-2 text-left hover:border-blue-500 hover:bg-blue-500/5 transition"
-                        >
-                          <span className="font-mono text-[11px] font-bold text-blue-600">
-                            {preset.id}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground line-clamp-1">
-                            {preset.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Temel & Atomik Elementler
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {ATOMIC_ELEMENTS_QUICK_BAR.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleInsertBlock(item.block)}
-                          className="flex items-center gap-1.5 rounded-lg border border-border bg-background p-2 text-left text-[11px] font-medium hover:border-blue-500 hover:bg-blue-500/5 transition"
-                        >
-                          <Plus className="h-3 w-3 text-blue-600 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <BlockInserter
+                  onInsert={handleInsertBlock}
+                  targetLabel={selectedBlock && (selectedBlock.type === "column" || selectedBlock.type === "section") ? (BLOCK_TYPE_LABELS[selectedBlock.type] ?? null) : null}
+                />
               )}
             </div>
             </>

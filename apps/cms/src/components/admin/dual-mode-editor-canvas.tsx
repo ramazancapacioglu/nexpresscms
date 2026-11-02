@@ -5,6 +5,8 @@ import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
 import { PageSchemaContext } from "@/components/admin/editor/page-schema-context";
 import { RscBlockRenderer } from "@nexpress/themes";
 import { Columns, Globe, Sparkles } from "lucide-react";
+import { Fragment } from "react";
+import { DropZone } from "@/components/admin/editor/dnd";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
@@ -46,22 +48,23 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
             />
             <SearchSnippetBar title={title} tldr={s.tldr} metaTitle={s.metaTitle} setMetaTitle={s.setMetaTitle} metaDescription={s.metaDescription} setMetaDescription={s.setMetaDescription} />
           </div>
-          <div className="flex-1 overflow-y-auto p-4 md:p-6" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
+          <div className="flex-1 overflow-y-auto p-3 md:p-5" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <div
             className={`mx-auto transition-all duration-200 ${
               viewport === "mobile"
                 ? "max-w-[390px]"
                 : viewport === "tablet"
                   ? "max-w-[768px]"
-                  : "max-w-4xl"
+                  : "max-w-[1400px]"
             }`}
           >
             {/* MOD 1: GÖRSEL KANVAS */}
             {editorMode === "visual" && (
               <div className="space-y-4 pb-16">
-                {blocks.map((block) => (
+                <DropZone parentId={null} index={0} />
+                {blocks.map((block, at) => (
+                  <Fragment key={block.id}>
                   <CanvasBlock
-                    key={block.id}
                     block={block}
                     selectedId={selectedBlockId}
                     activeColumnInsertId={activeColumnInsertId}
@@ -88,6 +91,8 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                       setBlockInspectorSubTab("style");
                     }}
                   />
+                  <DropZone parentId={null} index={at + 1} />
+                  </Fragment>
                 ))}
 
                 <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/60 p-6">

@@ -1,6 +1,7 @@
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS, cloneBlockWithFreshIds } from "@/components/admin/editor/studio-model";
-import { insertBlockAt, updateBlockById, type BlockNode, type BlockStyle, type BlockStyleValues } from "@nexpress/core";
+import { insertBlockAt, moveBlockTo, placeNewBlock, updateBlockById, type BlockNode, type BlockStyle, type BlockStyleValues } from "@nexpress/core";
 import { Columns } from "lucide-react";
+import type { DragPayload } from "@/components/admin/editor/dnd";
 import type { useDualModeEditorUiState } from "./use-dual-mode-editor-ui-state";
 
 /** useDualModeEditor — aşama 4: BlockEditing */
@@ -176,5 +177,24 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
-  return { ...p, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
+  /** Sürükle-bırak: `parentId === null` kök; `index` hedef kapsayıcının çocuk sırası. */
+  const handleDropBlock = (payload: DragPayload, parentId: string | null, index: number) => {
+    const current = p.blocks;
+    if (payload.kind === "move") {
+      const next = moveBlockTo(current, payload.id, parentId, index);
+      if (next === current) return showToast("Bu blok oraya taşınamaz.");
+      setBlocks(() => next);
+      setSelectedBlockId(payload.id);
+      return;
+    }
+    const fresh = cloneBlockWithFreshIds(payload.block);
+    const next = placeNewBlock(current, fresh, parentId, index);
+    if (!next) return showToast("Bu blok oraya eklenemez.");
+    setBlocks(() => next);
+    setSelectedBlockId(fresh.id);
+    setRightTab("block");
+    showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
+  };
+
+  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
 }
