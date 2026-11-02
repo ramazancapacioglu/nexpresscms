@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Ürün şeması (Product JSON-LD) ve güvenli JSON-LD serileştirme
+- ✅ `@nexpress/seo-core` `commerce-schema.ts`: `buildProductGraph` (Product + Offer/AggregateOffer + BreadcrumbList, onaylı yorumlardan aggregateRating; fiyatsız/geçersiz para biriminde Offer yok), `schemaImageUrl` (yerel medya taranabilir türeve çevrilir) ve `jsonLdString` (`<`, `>`, `&`, U+2028/2029 kaçışlı).
+- ✅ `/{locale}/magaza/{ürün}` hem şablonlu hem yerleşik görünümde Product şeması basar.
+- 🔒 Ana sayfa, `[slug]` ve ürün sayfasındaki tüm JSON-LD gömmeleri `jsonLdString` kullanır (başlıkta `</script>` ile betik enjeksiyonu kapatıldı). Testler: seo-core 29.
+
 ### [2026-11-03] — Ürün ve mağaza şablonları
 - ✅ `tpl_product_buy` / `tpl_cart_link`; `/magaza` ve `/magaza/{ürün}` ticaret sayfaları şablonla çizilir, satın alma kutusu eksikse yerleşik görünüme düşer; 4 hazır şablon; doğrulama kuralları (testli). Tarayıcıyla doğrulandı: şablonlu mağaza listesi (başlık, kartlar, fiyatlar, sepet bağlantısı), şablonlu ürün sayfası (breadcrumb, tek h1, sepete ekle formu, benzer ürünler) ve **şablonlu ürün sayfasından sepete ekleme → sepet** çalıştı.
 

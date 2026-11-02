@@ -16,6 +16,8 @@ import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { loadDynamicData } from "@/lib/dynamic-content";
+import { buildProductGraph, jsonLdString } from "@nexpress/seo-core";
+import { listPublicReviews } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +63,28 @@ export default async function ShopProductPage({
   const base = shopBasePath(settings, locale);
   const description = sanitizeInlineHtml(product.descriptionHtml);
 
+  // Product şeması (JSON-LD): yalnızca gerçek veri; puan yalnızca bağlı içeriğin onaylı yorumlarından
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const productUrl = `${appUrl}${base}/${product.slug}`;
+  const approved = product.contentId ? (await listPublicReviews(siteId, product.contentId)).filter((r) => r.status === "approved") : [];
+  const schemaJson = jsonLdString(
+    buildProductGraph({
+      baseUrl: appUrl,
+      url: productUrl,
+      name: product.name,
+      description: product.shortDescription || description,
+      images: [product.imageUrl, ...product.galleryUrls],
+      sku: product.sku,
+      priceCents: product.priceCents,
+      currency: product.currency,
+      stockStatus: product.stockStatus,
+      variants: variants.map((v) => ({ sku: v.sku, priceCents: v.priceCents })),
+      rating: approved.length ? { value: approved.reduce((n, r) => n + r.rating, 0) / approved.length, count: approved.length } : null,
+      breadcrumbs: [{ name: "Ana sayfa", url: `${appUrl}/${locale}` }, { name: t("shop.title"), url: `${appUrl}${base}` }, { name: product.name, url: productUrl }],
+    })
+  );
+  const schemaScript = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />;
+
   // Tema oluşturucu: ürün şablonu. Satın alma kutusu (tpl_product_buy) yoksa ürün alınamaz: yerleşik görünüm kalır.
   const tpl = await templateFor(siteId, "product");
   if (tpl && templateHasBlock(tpl.blocks, "tpl_product_buy")) {
@@ -96,11 +120,17 @@ export default async function ShopProductPage({
       outOfStockLabel: t("shop.outOfStock"),
       action: addToCartAction,
     };
-    return <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} dynamic={dynamic} />;
+    return (
+      <>
+        {schemaScript}
+        <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} dynamic={dynamic} />
+      </>
+    );
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      {schemaScript}
       <p className="mb-4 text-sm">
         <Link href={base} className="text-neutral-500 hover:underline">
           {t("shop.back")}

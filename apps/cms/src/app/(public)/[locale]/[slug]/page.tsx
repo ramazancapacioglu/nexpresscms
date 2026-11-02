@@ -12,7 +12,7 @@ import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
-import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
+import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
@@ -212,7 +212,7 @@ export default async function PublicDynamicContentPage({
     });
     return (
       <>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }} />
         {banner}
         {switcher}
         <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} />
@@ -225,7 +225,7 @@ export default async function PublicDynamicContentPage({
       <>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
         />
         {banner}
         {switcher}
@@ -248,7 +248,7 @@ export default async function PublicDynamicContentPage({
       {switcher}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
       <header className="space-y-4 border-b pb-8">

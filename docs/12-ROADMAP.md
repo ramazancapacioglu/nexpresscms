@@ -75,7 +75,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## Tema oluşturucu — kalanlar (2026-11-03)
 
-- ~~Ürün/mağaza şablonları~~ yapıldı: `/magaza` (liste) ve `/magaza/{ürün}` ticaret sayfaları ile `type: "product"` içerik sayfaları şablon kullanır. Kalan: ürün kategorisi (veri modelinde yok), sepet/ödeme/teşekkür sayfaları için şablon, şablonlu ürün sayfasında JSON-LD Product şeması, mağaza listesinde sayfalama/süzgeç/sıralama.
+- ~~Ürün/mağaza şablonları~~ yapıldı: `/magaza` (liste) ve `/magaza/{ürün}` ticaret sayfaları ile `type: "product"` içerik sayfaları şablon kullanır. Kalan: ürün kategorisi (veri modelinde yok), sepet/ödeme/teşekkür sayfaları için şablon, mağaza listesinde sayfalama/süzgeç/sıralama.
 - Ana sayfa için ayrı şablon türü yok (ana sayfa genelde özel tasarımdır); şablon koşulları (ör. "yalnızca bu kategorideki yazılar") ve dil başına şablon yok.
 - ~~Şablon dışa/içe aktarma~~ yapıldı (`.nxtemplates.json`, `docs/03`). Kalan: medya dosyalarını ppakete gömme (şimdi yerel medya başvuruları boşaltılır), `.nxtheme` içine şablon koyma, imzalı paket / şablon pazarı, içe aktarmadan önce önizleme.
 - Header şablonunda yapışkan/şeffaf/küçülen header gibi davranış seçenekleri yok (sabit yapışkan, açık zemin). Footer'da bülten formu yuvası yok.

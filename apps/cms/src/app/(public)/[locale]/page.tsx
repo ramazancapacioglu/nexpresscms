@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
-import { buildPageSchemaGraph } from "@nexpress/seo-core";
+import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme } from "@/lib/public-theme";
@@ -76,7 +76,7 @@ export default async function PublicHomePage({
       {/* Bağlantılı Schema.org JSON-LD Grafiği */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
       {switcher}

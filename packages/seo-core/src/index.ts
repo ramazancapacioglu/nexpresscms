@@ -4,6 +4,7 @@ import { buildBreadcrumbNode, deriveAutoSchemaNodes } from "./engine";
 export * from "./engine";
 export * from "./feed";
 export * from "./schema-validate";
+export * from "./commerce-schema";
 
 export interface BuildCoreSchemaInput {
   siteId: string;
