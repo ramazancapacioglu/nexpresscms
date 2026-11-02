@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme } from "@/lib/public-theme";
 import { createFormToken } from "@/lib/form-token";
+import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
@@ -86,6 +87,7 @@ export default async function PublicHomePage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
+          dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId)}
           form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
         />
       ) : (

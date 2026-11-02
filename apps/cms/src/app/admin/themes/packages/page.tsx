@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Download } from "lucide-react";
 import { getScopedRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
+import { AppearanceNav } from "@/components/admin/section-tabs";
 import { UploadPanel } from "./upload-panel";
 import { ThemeCard, type ThemeCardData } from "./theme-card";
 
@@ -36,6 +37,7 @@ export default async function ThemePackagesPage() {
 
   return (
     <div className="space-y-5">
+      <AppearanceNav />
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Tema paketleri</h1>

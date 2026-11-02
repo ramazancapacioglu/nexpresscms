@@ -8,7 +8,7 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
-import { resolvePublishing, resolveSiteSettings, zonedLocalToUtc } from "@nexpress/core";
+import { resolvePublishing, resolveSiteSettings, sanitizeMenu, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -387,9 +387,11 @@ export async function saveChromeAction(input: {
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
+  // Menü sunucuda temizlenir: sınırlar, güvenli adresler (javascript: yok), en çok 3 düzey
   await repo.saveNavigationLayout({
     locale: "tr",
     ...input,
+    ...(input.menuItems ? { menuItems: sanitizeMenu(input.menuItems) } : {}),
   });
 
   await revalidatePath("/admin/appearance/navigation");

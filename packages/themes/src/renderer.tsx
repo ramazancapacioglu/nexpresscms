@@ -1,9 +1,11 @@
 import React from "react";
 import {
   compileBlockStylesToCss,
+  normalizeDynamicQuery,
   safeBlockDomId,
   type BlockNode,
   type DesignTokens,
+  type DynamicDataMap,
 } from "@nexpress/core";
 import type { BlockRenderContext, FormRenderContext } from "./block-context";
 import type { MediaFocalMap } from "./responsive-image";
@@ -12,6 +14,7 @@ import { renderContentBlock } from "./blocks-content";
 import { renderLayoutBlock } from "./blocks-layout";
 import { renderMarketingBlock } from "./blocks-marketing";
 import { INK_GRID_ID } from "./ink-grid";
+import { DynamicListView } from "./dynamic-list";
 
 export interface RscBlockRendererProps {
   blocks: BlockNode[];
@@ -25,6 +28,8 @@ export interface RscBlockRendererProps {
   locale?: string;
   /** `form_block` için sayfa yolu + imzalı belirteç + son sonuç (yoksa form eski GET davranışında kalır) */
   form?: FormRenderContext;
+  /** `dynamic_list` blokları için sunucuda çözülmüş öğeler (blok kimliği → öğeler) */
+  dynamic?: DynamicDataMap;
 }
 
 /**
@@ -60,6 +65,7 @@ export function RscBlockRenderer({
   mediaFocal,
   locale,
   form,
+  dynamic,
 }: RscBlockRendererProps): React.ReactElement {
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
@@ -84,6 +90,7 @@ export function RscBlockRenderer({
           mediaFocal={mediaFocal}
           locale={locale}
           form={form}
+          dynamic={dynamic}
         />
       ))}
     </div>
@@ -93,6 +100,9 @@ export function RscBlockRenderer({
 type BlockRenderInput = Omit<BlockRenderContext, "renderChild">;
 
 function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
+  if (input.block.type === "dynamic_list") {
+    return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id] ?? []} tokens={input.tokens} locale={input.locale} />;
+  }
   const ctx: BlockRenderContext = {
     ...input,
     renderChild: (child) => <RscSingleBlock {...input} block={child} />,
@@ -114,6 +124,7 @@ export function RscSingleBlock({
   mediaFocal,
   locale,
   form,
+  dynamic,
 }: {
   block: BlockNode;
   themeId: string;
@@ -124,6 +135,7 @@ export function RscSingleBlock({
   mediaFocal?: MediaFocalMap;
   locale?: string;
   form?: FormRenderContext;
+  dynamic?: DynamicDataMap;
 }): React.ReactElement | null {
   const inner = renderBlockInner({
     block,
@@ -135,6 +147,7 @@ export function RscSingleBlock({
     mediaFocal,
     locale,
     form,
+    dynamic,
   });
   if (!inner) return null;
 

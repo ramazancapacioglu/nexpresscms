@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, type SeoIssueId } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireUser } from "@/lib/auth/session";
+import { SeoTabs } from "@/components/admin/section-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +31,9 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-5">
+      <SeoTabs />
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
-          <Link href="/admin/seo" className="text-[11px] text-[#5F6570] hover:underline dark:text-[#8C9099]">← SEO motoru</Link>
           <h1 className="text-[18px] font-semibold tracking-tight">SEO denetimi</h1>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Yayındaki {s.pages} içeriğin başlık, açıklama, TL;DR, içerik derinliği, alt metin ve yinelenme kontrolü. Her satır düzenleyiciye gider.</p>
         </div>

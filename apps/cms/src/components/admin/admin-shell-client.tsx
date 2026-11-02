@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
+  ChevronDown,
   Search,
   Sun,
   Moon,
@@ -83,6 +84,21 @@ export function AdminShellClient({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const [closedSections, setClosedSections] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nx-nav-closed");
+      if (raw) setClosedSections(new Set(JSON.parse(raw) as string[]));
+    } catch {}
+  }, []);
+  const toggleSection = (label: string) =>
+    setClosedSections((cur) => {
+      const next = new Set(cur);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      try { localStorage.setItem("nx-nav-closed", JSON.stringify([...next])); } catch {}
+      return next;
+    });
   const studioOpen = pathname.startsWith("/admin/contents");
   const studioType = searchParams.get("type") ?? "";
   const studioIsPost =
@@ -101,14 +117,14 @@ export function AdminShellClient({
       : "Yönetim";
 
   return (
-    <div className="min-h-screen flex bg-[#FBFBFB] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
+    <div className="nx-admin min-h-screen flex bg-[#F5F6F8] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
       <a href="#main-content" className="sr-only z-[60] rounded-md bg-[#266DF0] px-3 py-2 text-[12px] font-semibold text-white focus:not-sr-only focus:fixed focus:left-2 focus:top-2">İçeriğe geç</a>
       {/* ATTIO CRM TARZI GİZLENEBİLİR SOL SIDEBAR */}
       {sidebarOpen && !studioOpen && (
         <div className="fixed inset-0 z-30 bg-black/40 md:hidden" aria-hidden="true" onClick={() => setSidebarOpen(false)} />
       )}
       {sidebarOpen && !studioOpen && (
-        <aside id="admin-sidebar" aria-label="Yönetim menüsü" className="fixed inset-y-0 left-0 z-40 h-dvh w-[260px] max-w-[85vw] overflow-y-auto shadow-xl md:static md:z-auto md:h-auto md:w-[224px] md:max-w-none md:overflow-visible md:shadow-none shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none">
+        <aside id="admin-sidebar" aria-label="Yönetim menüsü" className="fixed inset-y-0 left-0 z-40 h-dvh w-[260px] max-w-[85vw] overflow-y-auto shadow-xl md:static md:z-auto md:h-auto md:w-[252px] md:max-w-none md:overflow-visible md:shadow-none shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none">
           <div className="p-2 space-y-2.5">
             <div className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-[#EAECED]/70 dark:hover:bg-[#1C1E24] transition">
               <Link href="/admin" className="flex items-center gap-2 min-w-0">
@@ -164,16 +180,25 @@ export function AdminShellClient({
               {WORKSPACE_SECTIONS.map((section) => ({
                 ...section,
                 items: section.items.filter(
-                  (item) => !item.adminOnly || role === "admin"
+                  (item) => item.sidebar !== false && (!item.adminOnly || role === "admin")
                 ),
               }))
                 .filter((section) => section.items.length > 0)
-                .map((section) => (
+                .map((section) => {
+                const hasActive = section.items.some((item) => navMatch?.item.href === item.href);
+                const isOpen = hasActive || !closedSections.has(section.label);
+                return (
                 <div key={section.label} className="space-y-0.5">
-                  <div className="px-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
-                    {SECTION_LABEL_KEYS[section.label] ? t(SECTION_LABEL_KEYS[section.label]!) : section.label}
-                  </div>
-                  {section.items.map((item) => {
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    onClick={() => toggleSection(section.label)}
+                    className="flex w-full items-center justify-between rounded px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-[#454B55] hover:bg-[#EAECED]/70 dark:text-[#B4BAC5] dark:hover:bg-[#1C1E24]"
+                  >
+                    <span>{SECTION_LABEL_KEYS[section.label] ? t(SECTION_LABEL_KEYS[section.label]!) : section.label}</span>
+                    <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? "" : "-rotate-90"}`} aria-hidden="true" />
+                  </button>
+                  {isOpen && section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = navMatch?.item.href === item.href;
 
@@ -207,7 +232,8 @@ export function AdminShellClient({
                     );
                   })}
                 </div>
-              ))}
+                );
+              })}
 
               {/* Kural 4: Open-Core Genişleme Yuvası (<PluginSlot name="admin.sidebar.nav" />) */}
               <div className="space-y-1 pt-2 border-t border-[#E6E7EA] dark:border-[#23262E]">

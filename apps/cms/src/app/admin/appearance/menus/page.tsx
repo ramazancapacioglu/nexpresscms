@@ -1,18 +1,40 @@
 import React from "react";
+import { headers } from "next/headers";
+import { resolvePublishing } from "@nexpress/core";
+import { getCommerceRepository, getScopedRepository } from "@nexpress/database";
 import { MenuEditor } from "@/components/admin/appearance/menu-editor";
+import type { MenuSourceLists } from "@/components/admin/appearance/menu/menu-sources";
+import { requireUser } from "@/lib/auth/session";
 import { loadChrome } from "../load-chrome";
 
+export const dynamic = "force-dynamic";
+
 export default async function MenuAppearancePage() {
-  const chrome = await loadChrome();
+  await requireUser();
+  const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const [chrome, contents, taxonomies, products] = await Promise.all([
+    loadChrome(),
+    repo.listContents({ locale: "tr" }),
+    repo.listTaxonomies(),
+    getCommerceRepository(siteId).listProducts().catch(() => []),
+  ]);
+  const lists: MenuSourceLists = {
+    contents: contents
+      .filter((c) => c.status !== "trashed" && c.type !== "product")
+      .map((c) => ({ id: c.contentId, title: c.title, slug: c.slug, type: c.type, published: c.status === "published" && resolvePublishing(c.schemaAttributes).visibility !== "private" })),
+    taxonomies: taxonomies.filter((t) => t.taxonomyType === "category" || t.taxonomyType === "tag").map((t) => ({ id: t.id, name: t.name, slug: t.slug, type: t.taxonomyType as "category" | "tag" })),
+    products: products.map((p) => ({ id: p.id, name: p.name, slug: p.slug, published: p.status === "published" })),
+  };
   return (
     <div className="space-y-4">
-      <header className="border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
-        <h1 className="text-[18px] font-semibold">Menü</h1>
+      <header className="border-b border-[#D5D8DE] pb-3 dark:border-[#2E333D]">
+        <h1 className="text-[18px] font-semibold">Menüler</h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-          Header’dan ayrıdır. Tutamacı sürükleyerek sıralayın. Bir düzey alt bağlantı desteklenir.
+          Sayfa, yazı, kategori, etiket ve ürünleri listeden seçerek ekleyin; ağaçta sıralayın ve girintileyin (en çok 3 düzey). Kök öğelere mega menü tanımlayabilirsiniz.
         </p>
       </header>
-      <MenuEditor initial={chrome.menu} />
+      <MenuEditor initial={chrome.menu} lists={lists} />
     </div>
   );
 }

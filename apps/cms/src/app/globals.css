@@ -174,3 +174,33 @@
   height: 0;
   pointer-events: none;
 }
+
+/* ---------------------------------------------------------------------------
+   Yönetim paneli okunabilirlik katmanı (.nx-admin: yalnızca admin kabuğu)
+   Amaç: daha büyük ve belirgin yazı, daha koyu ikincil metin, net başlıklar.
+   Bileşenlerde sabit px/hex sınıfları kullanıldığından ölçek burada tek yerden ayarlanır.
+--------------------------------------------------------------------------- */
+.nx-admin {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.003em;
+}
+.nx-admin [class*="text-[10px]"] { font-size: 11px; }
+.nx-admin [class*="text-[11px]"] { font-size: 12px; }
+.nx-admin [class*="text-[12px]"] { font-size: 13px; }
+.nx-admin [class*="text-[13px]"] { font-size: 14px; }
+.nx-admin [class*="text-[16px]"] { font-size: 20px; line-height: 1.25; }
+.nx-admin [class*="text-[18px]"] { font-size: 22px; line-height: 1.25; }
+.nx-admin h1 { font-weight: 700; letter-spacing: -0.02em; }
+.nx-admin h2 { font-weight: 650; }
+/* Açık kip: ikincil metinler daha koyu (AA ve rahat okuma) */
+html:not(.dark) .nx-admin [class*="text-[#5F6570]"],
+html:not(.dark) .nx-admin [class*="text-[#5C5F66]"],
+html:not(.dark) .nx-admin [class*="text-[#8C9099]"] { color: #3F4650; }
+/* Koyu kip: ikincil metinler daha açık */
+html.dark .nx-admin [class*="dark:text-[#8C9099]"] { color: #AEB4BF; }
+html.dark .nx-admin [class*="dark:text-[#9CA3AF]"] { color: #C5CAD3; }
+/* Kenarlıklar biraz belirgin */
+html:not(.dark) .nx-admin [class*="border-[#E6E7EA]"] { border-color: #D5D8DE; }
+html.dark .nx-admin [class*="dark:border-[#23262E]"] { border-color: #2E333D; }
+/* Odak halkası her yerde görünür */
+.nx-admin :focus-visible { outline: 2px solid #266DF0; outline-offset: 2px; }

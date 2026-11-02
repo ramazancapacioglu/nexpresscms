@@ -76,3 +76,5 @@ Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/sr
 - **`gap-analysis`:** panel kartı; TL;DR eksik/kısa, 180+ gün bayat, iç bağlantı almayan, 150 sözcükten ince ve benzer (Jaccard ≥ 0.6) içerikler.
 - **`mcp-log`:** `/api/mcp` istekleri (araç, ajan, sonuç, süre) → panel kartı (30 gün).
 - **Hâlâ "Yakında" (dış servis/anahtar gerektirir; manifestte nedeni yazılı):** citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, ve SEO Temel'deki search-console.
+
+- **`ai-compose` (2026-11-02):** `ai-writer.compose` eylemi (`registerAiCompose`): `write|rewrite|expand|shorten|fix`; girdi sınırları (istek 600, metin 4000, bağlam 3000), çıktı en çok 6 paragraf × 1200 karakter (başlıkta tek, 90). `findClaims` / `findUnverifiedNumbers` uydurma riskini işaretler. Testli (`test/compose.test.ts`, sahte model).

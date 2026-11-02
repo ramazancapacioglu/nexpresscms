@@ -3,8 +3,10 @@ import { getScopedRepository } from "@nexpress/database";
 import { PLUGIN_ID } from "../module-gate";
 import { buildDnaSystemPrompt, buildDnaUserPrompt, dnaSamples, parseDna, pickStyleExamples, type BrandSample } from "./brand";
 import { parseList, suggestSeoCopy, type BrandRules } from "./suggest";
+import { COMPOSE_LIMITS, COMPOSE_MODES, composeText, type ComposeMode } from "./compose";
 
 const limiter = createRateLimiter(10, 5 * 60_000);
+const composeLimiter = createRateLimiter(20, 5 * 60_000);
 const dnaLimiter = createRateLimiter(3, 10 * 60_000);
 const MAX_MARKDOWN = 60_000;
 
@@ -42,6 +44,58 @@ export function registerAiWriter(): void {
       return { ok: true, data: { ...(await suggestSeoCopy(client, { title, markdown, focusKeyword }, rules)), model: client.model } };
     } catch (error) {
       return { ok: false, error: error instanceof Error ? error.message : "Öneri üretilemedi.", code: "failed" };
+    }
+  });
+}
+
+/** Marka kuralları (ton, yasak kalıplar, Site DNA) — öneri ve yazım eylemleri ortak kullanır. */
+async function loadBrandRules(siteId: string): Promise<{ rules: BrandRules; model?: string }> {
+  const s = await getPluginSettings(siteId, PLUGIN_ID);
+  const rules: BrandRules = {
+    tone: typeof s.aiTone === "string" ? s.aiTone : undefined,
+    forbiddenPhrases: parseList(typeof s.aiForbiddenPhrases === "string" ? s.aiForbiddenPhrases : ""),
+    customRules: typeof s.aiCustomRules === "string" ? s.aiCustomRules : undefined,
+  };
+  if (await isPluginModuleEnabled(siteId, PLUGIN_ID, "ai-brand")) {
+    const repo = getScopedRepository(siteId);
+    const [site, samples] = await Promise.all([repo.getSite(), loadSamples(siteId)]);
+    rules.siteDna = site?.siteDna ?? null;
+    rules.sector = typeof s.brandSector === "string" ? s.brandSector : undefined;
+    rules.audience = typeof s.brandAudience === "string" ? s.brandAudience : undefined;
+    rules.positioning = typeof s.brandPositioning === "string" ? s.brandPositioning : undefined;
+    rules.styleExamples = pickStyleExamples(samples);
+  }
+  return { rules, model: (typeof s.aiModel === "string" && s.aiModel) || process.env.AI_WRITER_MODEL || undefined };
+}
+
+/**
+ * `ai-writer.compose`: seçili blok için metin yaz / yeniden yaz / genişlet / kısalt / düzelt. Yalnızca ÖNERİ döner;
+ * editör onaylayıp uygular, kayıt ayrı adımdır. Çıktı düz metindir; marka yasak kalıpları ve doğrulanması gereken iddialar işaretlenir.
+ */
+export function registerAiCompose(): void {
+  pluginActions.register("ai-writer.compose", PLUGIN_ID, async ({ siteId, userId, input }) => {
+    if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "ai-compose"))) return { ok: false, error: "AI içerik yazımı bu sitede kapalı.", code: "disabled" };
+    const apiKey = process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) return { ok: false, error: "OPENAI_API_KEY tanımlı değil. Anahtarı apps/cms/.env dosyasına ekleyip sunucuyu yeniden başlatın.", code: "unconfigured" };
+    const mode = COMPOSE_MODES.includes(input.mode as ComposeMode) ? (input.mode as ComposeMode) : null;
+    const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+    const text = str(input.text, COMPOSE_LIMITS.text).trim();
+    const instruction = str(input.instruction, COMPOSE_LIMITS.instruction).trim();
+    if (!mode) return { ok: false, error: "Geçersiz görev.", code: "invalid" };
+    if (mode === "write" && instruction.length < 8) return { ok: false, error: "Ne yazılacağını en az birkaç sözcükle anlatın.", code: "invalid" };
+    if (mode !== "write" && text.length < 3) return { ok: false, error: "Düzenlenecek metin boş. Önce bloğa metin yazın ya da \"Yaz\" görevini seçin.", code: "invalid" };
+    if (!composeLimiter.take(`${siteId}:${userId}`)) return { ok: false, error: "Çok sık istek: 5 dakikada en çok 20 yazım isteği yapılabilir.", code: "rate_limited" };
+    const { rules, model } = await loadBrandRules(siteId);
+    const client = createChatClient({ apiKey, baseUrl: process.env.OPENAI_BASE_URL, model });
+    try {
+      const data = await composeText(
+        client,
+        { mode, instruction, text, title: str(input.title, 200), kind: input.kind === "heading" ? "heading" : "paragraph", context: str(input.context, COMPOSE_LIMITS.context), focusKeyword: str(input.focusKeyword, 80) || undefined, locale: str(input.locale, 8) || "tr" },
+        rules
+      );
+      return { ok: true, data };
+    } catch (error) {
+      return { ok: false, error: error instanceof Error ? error.message : "Metin üretilemedi.", code: "failed" };
     }
   });
 }

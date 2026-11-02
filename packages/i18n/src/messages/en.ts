@@ -66,6 +66,7 @@ export const en: Messages = {
   site: {
     language: "Language",
     themeSwitch: "Change theme",
+    menu: "Menu",
     adminCta: "Admin",
     footerDefault: "An open-core CMS powered by Next.js 15 RSC and a built-in SEO engine.",
     homeReady: "NexPress CMS is ready!",

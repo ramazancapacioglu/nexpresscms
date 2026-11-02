@@ -199,3 +199,7 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 ## Ek (2026-11-02): `media_file` bloğu
 
 `media_file` (Dosya / Video / Ses): `props = { url, kind: "document"|"video"|"audio", title, description, mime, size, uploadDate, poster? }`. Yalnızca medya kitaplığından seçilir; `url` yalnızca `/…` veya `http(s)` olabilir (aksi hâlde blok çizilmez). Belge bir indirme kartı, video/ses yerel `<video>`/`<audio controls>` olarak çizilir (istemci JS'i yok). Markdown'a bağlantı olarak derlenir. **AI tasarım kataloğunda yoktur**: model medya dosyası uyduramaz.
+
+## Ek (2026-11-02): `dynamic_list` bloğu
+
+`dynamic_list`: `props = { source: "posts"|"pages"|"products", category?, tag?, limit (1-24), orderBy: "newest"|"oldest"|"title", excludeCurrent, layout: "cards"|"list", columns (1-4), showImage, showExcerpt, showDate, heading?, emptyText? }`. `category`/`tag` taksonomi **slug**'ıdır. Çözüm ziyaretçi isteğinde yapılır; Markdown/llms çıktısına girmez. **AI tasarım kataloğunda yoktur** (model sorgu uyduramaz).

@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-02] — Panel düzeni, menü ağacı + mega menü, dinamik içerik, AI yazım
+- ✅ Kenar çubuğu 6 daraltılabilir gruba indi; SEO ve Görünüm tek öğe + sekme çubuğu; yazı ölçeği/renk katmanı (`.nx-admin`).
+- ✅ **Menü ağacı:** WordPress benzeri ekleme paneli (sayfa/yazı/kategori/etiket/ürün listesi + arama + özel bağlantı), 3 düzey, kimlikle bağlama, kırık hedef uyarısı, sunucuda temizleme; **mega menü** (alt öğelerden / elle kartlar, genişlik, tanıtım şeridi); ziyaretçi menüsü RSC + JS'siz mobil menü. Saf mantık `@nexpress/core/menu` (testli).
+- ✅ Ziyaretçi header/footer `site-chrome.tsx`'e taşındı; **geliştirme artıkları temizlendi** (NX rozeti, tema adı, "Tema değiştir", /admin düğmesi, tür/şema rozeti, herkese açık "Editörde düzenle").
+- ✅ **Dinamik liste bloğu** + kategori/etiket arşiv sayfaları; **AI ile yaz/düzenle** (`ai-compose`; onaylı, geri alınabilir, uyarı bayraklı).
+- Doğrulama: çekirdek 140, eklenti 31, tarayıcı e2e (kenar çubuğu, sekmeler, menü ekleme/girinti/mega/javascript: reddi, genel menü hover + mobil, arşiv, dinamik sayfa, AI paneli sahte modelle). Gerçek OpenAI ile AI yazım denenmedi.
+
 ### [2026-11-02] — Yayın öncesi: CSP, zamanlanmış yedek, kontrast düzeltmesi
 - ✅ **CSP** (üretim): bkz. `docs/11`; CI axe taraması üretim derlemesinde CSP ihlallerini yakalar. Yerelde üretim derlemesiyle 76/76 tarama, **0 CSP ihlali**.
 - ✅ **Zamanlanmış yedek:** `/api/cron/backup` (`CRON_SECRET`, 0600 dosya, son `BACKUP_KEEP` tutulur); üretilen yedek `parseBackup` ile doğrulandı; *Sistem durumu*'nda son yedek yaşı. `.env.example` ve `docs/19` güncellendi.

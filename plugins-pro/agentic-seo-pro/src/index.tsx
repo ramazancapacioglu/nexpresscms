@@ -1,7 +1,7 @@
 import React from "react";
 import { cmsHooks, getPluginSettings, isPluginModuleEnabled, pluginRegistry, slotRegistry, type HookPayloads, type SchemaGraphNode } from "@nexpress/core";
 import { registerAgenticRoutes } from "./routes";
-import { registerAiBrand, registerAiWriter } from "./ai/register";
+import { registerAiBrand, registerAiCompose, registerAiWriter } from "./ai/register";
 import { GeoMeta } from "./schema/geo-meta";
 import { AiReferralsCard } from "./ai-referrals-card";
 import { FreshnessCard } from "./content-ops/freshness-card";
@@ -113,6 +113,7 @@ export function registerAgenticSeoProPlugin(): void {
 
   registerAgenticRoutes();
   registerAiWriter();
+  registerAiCompose();
   registerAiBrand();
 
   // 2. HOOK: llms:buildTxt -> 4 Katmanlı Kurumsal /llms.txt & WebMCP Kontratı

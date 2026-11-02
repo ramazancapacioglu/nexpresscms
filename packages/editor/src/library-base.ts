@@ -326,6 +326,18 @@ export const BASE_LIBRARY: DesignLibraryItem[] = [
     },
   },
   {
+    id: "lib_atomic_dynamic_list",
+    name: "Dinamik İçerik Listesi (Son Yazılar, İlgili İçerik, Ürünler)",
+    category: "editorial",
+    description: "Kategori/etikete göre yazı, sayfa veya ürünleri yayın anında otomatik listeler; yeni içerik eklendikçe kendiliğinden güncellenir. Kartlar gerçek iç bağlantılardır.",
+    previewKind: "prose-section",
+    block: {
+      type: "dynamic_list",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { source: "posts", limit: 6, orderBy: "newest", layout: "cards", columns: 3, showImage: true, showExcerpt: true, showDate: true, heading: "Son yazılar" },
+    },
+  },
+  {
     id: "lib_atomic_media_file",
     name: "Dosya, Video veya Ses (Medya Kitaplığı)",
     category: "editorial",

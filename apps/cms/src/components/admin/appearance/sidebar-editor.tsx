@@ -71,6 +71,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
           </label>
         </div>
         <input
+          aria-label="Kenar çubuğu başlığı"
           className={fieldClass}
           value={sidebar.title}
           onChange={(e) => setSidebar((prev) => ({ ...prev, title: e.target.value }))}
@@ -78,6 +79,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
         {sidebar.links.map((link) => (
           <div key={link.id} className="grid grid-cols-[1fr_1fr_auto] gap-2">
             <input
+              aria-label="Bağlantı metni"
               className={fieldClass}
               value={link.label}
               onChange={(e) =>
@@ -88,6 +90,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
               }
             />
             <input
+              aria-label="Bağlantı adresi"
               className={fieldClass}
               value={link.href}
               onChange={(e) =>

@@ -41,6 +41,7 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
       />
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">
         <input
+          aria-label="Telif metni"
           className={fieldClass}
           value={footer.copyrightText}
           onChange={(e) => setFooter((prev) => ({ ...prev, copyrightText: e.target.value }))}
@@ -57,6 +58,7 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
           <div key={col.id} className="space-y-2 rounded border border-[#E6E7EA] p-3 dark:border-[#23262E]">
             <div className="flex gap-2">
               <input
+                aria-label="Kolon başlığı"
                 className={fieldClass}
                 value={col.title}
                 onChange={(e) =>
@@ -84,11 +86,13 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
             {col.links.map((link, index) => (
               <div key={`${col.id}-${index}`} className="grid grid-cols-[1fr_1fr_auto] gap-2">
                 <input
+                  aria-label="Bağlantı metni"
                   className={fieldClass}
                   value={link.label}
                   onChange={(e) => updateLink(col.id, index, { label: e.target.value })}
                 />
                 <input
+                  aria-label="Bağlantı adresi"
                   className={fieldClass}
                   value={link.href}
                   onChange={(e) => updateLink(col.id, index, { href: e.target.value })}

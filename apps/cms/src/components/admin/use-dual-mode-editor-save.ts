@@ -142,6 +142,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setSelectedBlockId,
     setBlocks,
     updateSelectedBlockProps,
+    bumpProseSync: () => p.setProseSyncToken((v: number) => v + 1),
     updateSelectedBlockStyle,
     getActiveStyleValue,
     handleChangeColumnLayout,

@@ -63,3 +63,12 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - Görsel türev adresleri (`/media/{id}/1280.webp`) açıklayıcı ad taşımaz; görsel olmayan dosyalar taşır.
 - Medya seçici için axe taraması yok (kitaplık sayfası taranıyor).
 - "Yakında" Pro modülleri: citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, search-console (dış servis/anahtar).
+
+## Panel düzeni ve dinamik içerik (2026-11-02) — kalanlar
+
+- Menü yalnızca `tr` için; dil başına menü ve menü konumları (birden çok menü) yok.
+- Ürün kategorisi veri modelinde olmadığı için menüde "ürün kategorisi" kaynağı yok (ürün ve mağaza var).
+- Kategori/etiket arşivleri sitemap'te ve sayfalama yok (en çok 24 yayın).
+- Dinamik liste: sayfalama, alan yetkili filtre (yazar, tarih aralığı), özel ürün alanları yok; Markdown/llms çıktısına girmez.
+- AI yazım: blok içi seçili metin parçası yerine tüm blok işlenir; çok blokluk taslak/taslak sayfa üretimi yok (AI tasarım eklentisi ayrıdır).
+- Panel yazı ölçeği CSS katmanıyla ayarlanır (bileşenlerde sabit px sınıfları kaldı); ayrı kullanıcı tercihi (yazı boyutu) yok.

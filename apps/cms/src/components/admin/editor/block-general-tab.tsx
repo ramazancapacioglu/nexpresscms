@@ -1,6 +1,8 @@
 "use client";
 
+import { AiComposePanel } from "./ai-compose-panel";
 import { CatalogFields } from "./catalog-fields";
+import { DynamicListFields } from "./dynamic-list-fields";
 import { COLUMN_LAYOUT_PRESETS } from "./studio-model";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -16,6 +18,8 @@ export function BlockGeneralTab() {
 
   return (
                         <div className="space-y-3">
+                          {(selectedBlock.type === "paragraph" || selectedBlock.type === "heading" || selectedBlock.type === "paragraph_element" || selectedBlock.type === "heading_element") && <AiComposePanel />}
+                          {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
                           {selectedBlock.type === "columns" && (
                             <div className="space-y-3">
                               <div>

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getRedirectRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
+import { SeoTabs } from "@/components/admin/section-tabs";
 import { NotFoundTable } from "./not-found-table";
 import { RedirectsManager } from "./redirects-manager";
 
@@ -18,6 +19,7 @@ export default async function AdminRedirectsPage({ searchParams }: { searchParam
 
   return (
     <div className="space-y-5">
+      <SeoTabs />
       <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Yönlendirmeler & 404</h1>

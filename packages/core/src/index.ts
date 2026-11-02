@@ -39,4 +39,6 @@ export * from "./vector";
 export * from "./account-rules";
 export * from "./audit-export";
 export * from "./media-seo";
+export * from "./menu";
+export * from "./dynamic-content";
 export * from "./editor-draft";

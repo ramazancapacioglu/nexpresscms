@@ -43,9 +43,11 @@ export interface NavItem {
   shortcut: string;
   count?: string;
   adminOnly?: boolean;
+  /** false: kenar çubuğunda görünmez (üst sekme çubuğundan erişilir) ama komut paletinde ve izlerde kalır */
+  sidebar?: boolean;
 }
 
-export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
+const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Workspace",
     items: [
@@ -106,7 +108,6 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         href: "/admin/comments",
         label: "Yorum & İncelemeler",
         icon: MessageSquare,
-        count: "★ 5.0",
         shortcut: "G R",
       },
       {
@@ -292,12 +293,39 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
 ];
 
 /** Menü bağlantısı → katalog anahtarı (görünen metin panel diline göre çözülür). */
+const ITEM_BY_HREF = new Map(ALL_SECTIONS.flatMap((s) => s.items).map((i) => [i.href, i]));
+const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {}): NavItem[] =>
+  hrefs.map((h) => ({ ...ITEM_BY_HREF.get(h)!, ...overrides[h] }));
+
+/** Panel menüsü: az grup, ilgili sayfalar tek çatıda. SEO ve Görünüm tek öğedir; alt sayfalar üstteki sekme çubuğundadır. */
+export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
+  { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
+  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "Yeni içerik (Stüdyo)", count: undefined } }) },
+  { label: "Etkileşim & Satış", items: pick(["/admin/forms", "/admin/requests", "/admin/commerce", "/admin/commerce/marketplaces"]) },
+  {
+    label: "Görünüm",
+    items: [
+      ...pick(["/admin/themes"], { "/admin/themes": { label: "Tema & Görünüm", count: undefined } }),
+      ...pick(["/admin/themes/packages", "/admin/appearance/menus", "/admin/appearance/header", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"].filter((h) => ITEM_BY_HREF.has(h)), {}).map((i) => ({ ...i, sidebar: false })),
+    ],
+  },
+  {
+    label: "SEO",
+    items: [
+      ...pick(["/admin/seo"], { "/admin/seo": { label: "SEO Merkezi", count: undefined } }),
+      ...pick(["/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
+    ],
+  },
+  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/system", "/admin/audit", "/admin/help"]) },
+];
+
 export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin": "admin.nav.overview",
   "/admin/plugins": "admin.nav.plugins",
   "/admin/pages": "admin.nav.pages",
   "/admin/posts": "admin.nav.posts",
-  "/admin/contents": "admin.nav.studio",
+  // "/admin/contents" etiketi yeniden adlandırıldı (kategori anahtarı kullanılmaz)
+  "__/admin/contents": "admin.nav.studio",
   "/admin/taxonomies": "admin.nav.taxonomies",
   "/admin/media": "admin.nav.media",
   "/admin/comments": "admin.nav.comments",
@@ -316,8 +344,10 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/forms": "admin.nav.forms",
   "/admin/commerce": "admin.nav.commerce",
   "/admin/commerce/marketplaces": "admin.nav.marketplaces",
-  "/admin/themes": "admin.nav.themes",
-  "/admin/seo": "admin.nav.seo",
+  // "/admin/themes" etiketi yeniden adlandırıldı (kategori anahtarı kullanılmaz)
+  "__/admin/themes": "admin.nav.themes",
+  // "/admin/seo" etiketi yeniden adlandırıldı (kategori anahtarı kullanılmaz)
+  "__/admin/seo": "admin.nav.seo",
   "/admin/appearance/header": "admin.nav.header",
   "/admin/appearance/menus": "admin.nav.menus",
   "/admin/appearance/footer": "admin.nav.footer",
@@ -329,6 +359,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
 };
 
 export const SECTION_LABEL_KEYS: Record<string, MessageKey> = {
+  // Yeni gruplar sabit Türkçe etiketle gösterilir; eski anahtarlar yalnızca geriye dönük uyum içindir
   Workspace: "admin.sections.workspace",
   "İçerik & Yayın": "admin.sections.content",
   "Tasarım & Motorlar": "admin.sections.design",

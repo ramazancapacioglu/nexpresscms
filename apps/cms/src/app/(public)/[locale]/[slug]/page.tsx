@@ -6,6 +6,8 @@ import { Link } from "@/components/public/link";
 import { resolvePublishing } from "@nexpress/core";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
+import { loadDynamicData } from "@/lib/dynamic-content";
+import { getSession } from "@/lib/auth/session";
 import { buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
@@ -176,6 +178,8 @@ export default async function PublicDynamicContentPage({
   const t = createTranslator(locale);
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
+  const canEdit = Boolean(await getSession());
+  const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId);
   const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
@@ -195,6 +199,7 @@ export default async function PublicDynamicContentPage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
+          dynamic={dynamicData}
           form={formCtx}
         />
       </>
@@ -216,30 +221,22 @@ export default async function PublicDynamicContentPage({
             <Link href={`/${locale}`} className="text-slate-500 hover:underline">
               ← Ana Sayfa
             </Link>
-            <span className="text-slate-300">/</span>
-            <span
-              style={{
-                backgroundColor: tokens.colors.muted,
-                color: tokens.colors.primary,
-              }}
-              className="rounded px-2.5 py-0.5 font-mono font-bold uppercase"
-            >
-              {content.type} • @{content.schemaType}
-            </span>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href={`/${locale}/${content.slug}?format=md`}
               className="rounded border px-2.5 py-1 font-mono text-xs text-slate-700 hover:bg-slate-100"
             >
-              📄 Saf Markdown (?format=md)
+              Markdown
             </Link>
+            {canEdit ? (
             <Link
               href={`/admin/contents?id=${content.id}&type=${content.type}`}
               className="rounded border px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100"
             >
               ✏️ Editörde Düzenle
             </Link>
+            ) : null}
           </div>
         </div>
 
@@ -325,6 +322,7 @@ export default async function PublicDynamicContentPage({
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
         locale={locale}
+        dynamic={dynamicData}
         form={formCtx}
       />
 

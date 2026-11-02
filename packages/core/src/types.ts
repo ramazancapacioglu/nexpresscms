@@ -115,6 +115,7 @@ export type BlockType =
   | "button_element"
   | "image_figure"
   | "media_file"
+  | "dynamic_list"
   | "divider_spacer"
   | "review_box"
   | "section"
@@ -230,32 +231,49 @@ export interface MegaMenuColumnItem {
   featuredContentId?: string;
 }
 
+/** Menü öğesinin hedefi. `custom` dışındakiler kimlikle bağlanır: slug değişse de bağlantı güncel kalır, hedef silinirse öğe yayında gizlenir. */
+export type MenuSourceKind = "custom" | "home" | "content" | "category" | "tag" | "store" | "product";
+
+export interface MenuSource {
+  kind: MenuSourceKind;
+  /** content: içerik kimliği, category/tag: taksonomi kimliği, product: ürün kimliği */
+  refId?: string;
+}
+
 export interface NavigationLink {
   id: string;
   label: string;
+  /** `source.kind !== "custom"` ise yayında kaynaktan çözülür; burada son bilinen değer saklanır */
   href: string;
   target?: "_self" | "_blank";
+  source?: MenuSource;
+  /** Kısa not (mega menüde alt başlık) */
+  description?: string;
+  badge?: string;
+  /** Alt öğeler (en çok 3 düzey: kök > alt > torun) */
+  children?: NavigationLink[];
 }
 
-export interface NavigationMenuItem {
-  id: string;
-  label: string;
-  href: string;
-  target?: "_self" | "_blank";
-  /** Bir düzey alt bağlantı. Sayfa bloğu değildir. */
-  children?: NavigationLink[];
-  megaMenu?: {
-    enabled: boolean;
-    columns: number;
-    items: MegaMenuColumnItem[];
-    promoBanner?: {
-      title: string;
-      subtitle: string;
-      ctaText: string;
-      ctaHref: string;
-      highlightColor?: string;
-    };
+export type MegaMenuWidth = "narrow" | "wide" | "full";
+
+export interface MegaMenuConfig {
+  enabled: boolean;
+  /** `children`: sütunlar alt öğelerden kurulur (her alt öğe bir sütun başlığı, torunları bağlantılar). `custom`: elle kartlar */
+  mode?: "children" | "custom";
+  columns: number;
+  width?: MegaMenuWidth;
+  items: MegaMenuColumnItem[];
+  promoBanner?: {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+    ctaHref: string;
+    highlightColor?: string;
   };
+}
+
+export interface NavigationMenuItem extends NavigationLink {
+  megaMenu?: MegaMenuConfig;
 }
 
 export interface HeaderBarSlotConfig {
@@ -333,6 +351,7 @@ export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
       "button_element",
       "image_figure",
       "media_file",
+      "dynamic_list",
       "divider_spacer",
       "review_box",
       "section",

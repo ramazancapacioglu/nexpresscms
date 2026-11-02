@@ -69,6 +69,7 @@ export const tr = {
   site: {
     language: "Dil",
     themeSwitch: "Tema değiştir",
+    menu: "Menü",
     adminCta: "Yönetim",
     footerDefault: "Next.js 15 RSC ve çekirdek SEO motoruyla çalışan açık çekirdekli CMS.",
     homeReady: "NexPress CMS hazır!",

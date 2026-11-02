@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Check, ExternalLink, Save } from "lucide-react";
+import { AppearanceNav } from "../section-tabs";
 
 export type AppearanceScreen = "header" | "menu" | "footer" | "sidebar";
 
@@ -16,24 +17,8 @@ const TABS: Array<{ id: AppearanceScreen; label: string; href: string }> = [
 export const fieldClass =
   "w-full rounded border border-[#E6E7EA] bg-[#FBFBFB] px-2.5 py-1.5 text-[12px] outline-none dark:border-[#23262E] dark:bg-[#121317]";
 
-export function AppearanceTabs({ current }: { current: AppearanceScreen }) {
-  return (
-    <nav className="flex flex-wrap gap-1">
-      {TABS.map((tab) => (
-        <Link
-          key={tab.id}
-          href={tab.href}
-          className={`rounded-md px-2.5 py-1 text-[12px] ${
-            current === tab.id
-              ? "bg-[#14151A] text-white dark:bg-[#F3F4F6] dark:text-[#14151A]"
-              : "border border-[#E6E7EA] text-[#5C5F66] dark:border-[#23262E]"
-          }`}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </nav>
-  );
+export function AppearanceTabs(_props: { current?: AppearanceScreen }) {
+  return <AppearanceNav />;
 }
 
 export function SaveBar({

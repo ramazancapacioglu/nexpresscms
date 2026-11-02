@@ -44,6 +44,8 @@ export interface StudioInspectorApi {
     recordHistory?: boolean
   ) => void;
   updateSelectedBlockProps: (patch: Record<string, unknown>) => void;
+  /** Bloğa dışarıdan metin yazıldığında metin editörünü yeniden eşler */
+  bumpProseSync: () => void;
   updateSelectedBlockStyle: (patch: Partial<BlockStyle>) => void;
   getActiveStyleValue: <K extends keyof BlockStyleValues>(
     key: K

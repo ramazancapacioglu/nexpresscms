@@ -5,6 +5,7 @@ import { getChunkRepository, getScopedRepository } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { SearchIndexCard } from "@/components/admin/seo/search-index-card";
+import { SeoTabs } from "@/components/admin/section-tabs";
 import { SeoStudio } from "@/components/admin/seo/seo-studio";
 import { buildSeoSummary } from "@/components/admin/seo/seo-summary";
 
@@ -25,6 +26,7 @@ export default async function AdminSeoPage() {
 
   return (
     <div className="space-y-4">
+      <SeoTabs />
       <SearchIndexCard
         stats={stats}
         activeModel={provider.model}

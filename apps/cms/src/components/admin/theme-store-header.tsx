@@ -17,7 +17,7 @@ export function ThemeStoreHeader({ s }: { s: ThemeStoreState }) {
             <h1 className="text-lg font-semibold tracking-tight text-foreground">
               Tema özelleştirici
             </h1>
-            <span className="rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-600">
+            <span className="rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-800 dark:text-blue-300">
               Aktif: {selectedThemeId}
             </span>
           </div>

@@ -1,3 +1,4 @@
+import type { DynamicDataMap } from "@nexpress/core";
 import type React from "react";
 import type { BlockNode, DesignTokens } from "@nexpress/core";
 import type { MediaFocalMap } from "./responsive-image";
@@ -25,6 +26,8 @@ export interface BlockRenderContext {
   locale?: string;
   /** Form bağlamı: sayfa yolu, imzalı zaman belirteci ve son gönderim sonucu (form_block için) */
   form?: FormRenderContext;
+  /** Dinamik liste blokları için sunucuda çözülmüş öğeler (blok kimliği → öğeler) */
+  dynamic?: DynamicDataMap;
   /** İç içe blokları (bölüm, sütun) aynı bağlamla işler. */
   renderChild: (child: BlockNode) => React.ReactElement | null;
 }
