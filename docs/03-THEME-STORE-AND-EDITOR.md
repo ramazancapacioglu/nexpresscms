@@ -148,3 +148,6 @@ Ziyaretçi renkleri `var(--nx-bg|fg|primary|…)` okunur: `toCssVarTokens` (rend
 
 ## Stil ön ayarları ve kayan araç çubuğu (2026-11-03)
 `StylePreset {id, name, style}` site başına `settings.customizer.stylePresets` içinde durur (en çok 50). Uygulama `applyStylePreset`: görsel stil ön ayar olur, bloğa özel alanlar (`anchorId`, `cssClass`, `customCss`, `hideOn`, `fullWidth`) korunur. Arayüz: Stil sekmesi üstündeki ön ayar çubuğu + seçili bloğun üstündeki `FloatingToolbar` (`editor/floating-toolbar.tsx`).
+
+## Tuval v2: satır içi düzenleme (2026-11-03)
+`InlineEditable` (`editor/inline-editable.tsx`) zengin bloğun render çıktısını sarar; `props` içindeki görünen metinleri DOM yaprak öğelerine eşler ve `contenteditable` yapar. Yeni blok yazarken **özel bir şey gerekmez**: metin `props` içinde düz dize olarak durup bloğun çıktısında tek başına bir öğede (yaprak) görünüyorsa tuvalde otomatik düzenlenebilir. Eşleşmeyen alanlar (birleştirilmiş/biçimlendirilmiş metin) sağ panelden düzenlenir. Yapısal alanlar (`href`, `align`, `layout`…) `SKIP_KEYS` ile hariçtir. Yön kararı: `docs/21-EDITOR-DIRECTION.md`.

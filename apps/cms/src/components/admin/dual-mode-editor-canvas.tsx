@@ -50,7 +50,8 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
           </div>
           <div className="flex-1 overflow-y-auto p-3 md:p-5" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
           <div
-            className={`mx-auto transition-all duration-200 ${
+            style={{ backgroundColor: siteTokens.colors.background, color: siteTokens.colors.foreground, fontFamily: siteTokens.typography.bodyFont }}
+            className={`mx-auto rounded-xl px-6 py-8 shadow-sm ring-1 ring-black/5 transition-all duration-200 ${
               viewport === "mobile"
                 ? "max-w-[390px]"
                 : viewport === "tablet"

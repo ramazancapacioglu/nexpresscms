@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type DragEvent, type ReactNode } from "react";
 import type { BlockNode } from "@nexpress/core";
+import { InsertPoint } from "./quick-insert";
 
 /** Sürüklenen şey: tuvaldeki/gezgindeki bir blok (taşıma) ya da kitaplıktan yeni bir blok. */
 export type DragPayload = { kind: "move"; id: string } | { kind: "new"; block: BlockNode };
@@ -58,7 +59,7 @@ export function EditorDnd({ onDrop, children }: { onDrop: (payload: DragPayload,
 export function DropZone({ parentId, index, large = false, label }: { parentId: string | null; index: number; large?: boolean; label?: string }) {
   const { active, drop } = useEditorDnd();
   const [over, setOver] = useState(false);
-  if (!active) return large ? <div className="py-4 text-center text-[11px] text-muted-foreground">{label}</div> : null;
+  if (!active) return large ? <div className="py-4 text-center text-[11px] text-muted-foreground">{label}</div> : <InsertPoint onInsert={(block) => drop({ kind: "new", block }, parentId, index)} />;
   return (
     <div
       data-nx-dropzone=""

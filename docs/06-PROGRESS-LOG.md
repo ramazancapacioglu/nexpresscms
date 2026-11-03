@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Editör yönü kararı (docs/21) ve Tuval v2 adım 1–3
+- 📄 `docs/21-EDITOR-DIRECTION.md`: WordPress blok editörünü (`@wordpress/block-editor`) ve Puck'u araştırdım. Gutenberg paketlerinin hepsi **GPL-2.0-or-later** (açık çekirdek + kapalı Pro modeliyle çakışır), 50 MB+ bağımlılık, HTML-yorum içerik modeli, PHP'ye bağlı bloklar → **benimsenmedi**; Puck (MIT) 1.0 öncesi ve ~70 blok oluşturucusunun yeniden yazımını gerektirir → şimdilik benimsenmedi. Karar: kendi yığınımızda "Tuval v2".
+- ✅ **Satır içi metin düzenleme (her blokta):** blok `props` metinleri render edilmiş DOM'daki yaprak metin öğeleriyle eşleştirilir (`collectEditableStrings` / `assignStringsToTexts` / `patchAtPath`, çekirdekte saf, 3 test); eşleşen öğe `contenteditable="plaintext-only"` olur, Enter/blur'da yola (`items.0.title`) geri yazılır, Esc iptal eder. Render koduna dokunulmadı: vitrin, istatistik şeridi, özellik ızgarası, ürün kartı, SSS… **30 metin düğümü** tuvalde doğrudan düzenlenebiliyor (tarayıcıda doğrulandı). Önizlemedeki bağlantı/düğme/form editörden ayırmaz.
+- ✅ **Sade tuval:** sayfa, sitenin arka plan/yazı rengiyle "sayfa yüzeyi" olarak çizilir; blok kartı/başlık çubuğu yalnızca üzerine gelince ya da seçiliyken görünür (yüzen etiket + araç çubuğu); bloklar arasında üzerine gelince beliren **"+"** ile arama kutulu hızlı ekleme.
+- Kalan (Tuval v2): site CSS'li gerçek önizleme çerçevesi (iframe) ve gerçek medya sorgulu cihaz genişlikleri, `/` komutu, sayfa başlığının tuval içine alınması.
+- Testler: çekirdek 186. axe (editör, zengin sayfa) ihlalsiz.
+
 ### [2026-11-03] — Kategori/etiket indeks sayfaları (404 düzeltmesi)
 - 🐛 `/{dil}/kategori` ve `/{dil}/etiket` (tüm kategori/etiket listesi) yoktu ve 404 veriyordu; yalnızca tekil arşivler (`/{dil}/kategori/{slug}`) vardı. İndeks sayfaları eklendi: kategoriler üst/alt ağacıyla, etiketler bulut olarak; yalnızca en az bir herkese açık yayını olan terimler listelenir, sayımlarla; hiç terim yoksa 200 + `noindex`. Arşiv sayfalarının kırıntı yoluna "Kategoriler/Etiketler" basamağı eklendi (indeks sayfasına bağlanır). Metinler `taxonomy.*` i18n anahtarlarıdır (tr/en).
 - Doğrulama: kullanıcının çalışan geliştirme örneğinde (PostgreSQL verisi) tekil arşivler zaten 200 dönüyordu; indeks adresleri 404'tü. Yeni sürümde ikisi de 200.

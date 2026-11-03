@@ -14,6 +14,7 @@ import { ArrowDown, ArrowUp, Columns, Copy, GripVertical, Plus, Trash2 } from "l
 import { Fragment, type DragEvent, type MouseEvent } from "react";
 import { DropZone, useEditorDnd } from "./dnd";
 import { FloatingToolbar } from "./floating-toolbar";
+import { InlineEditable } from "./inline-editable";
 import { ProseField, type ProseStructureKind } from "./prose-field";
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "./studio-model";
 
@@ -287,18 +288,14 @@ export function CanvasBlock(props: CanvasBlockProps) {
   return (
     <article
       onClick={select}
-      className={`relative rounded-xl border bg-white transition-all dark:bg-zinc-900 ${
-        selected
-          ? "border-blue-600 shadow-sm ring-2 ring-blue-500/20"
-          : "border-slate-200 hover:border-blue-400 dark:border-zinc-800"
+      className={`group relative rounded-lg border transition-colors ${
+        selected ? "border-blue-600 ring-2 ring-blue-500/20" : "border-transparent hover:border-blue-400/70"
       }`}
     >
       <div
         {...dragProps}
-        className={`flex cursor-grab items-center justify-between border-b px-3 py-1.5 text-[11px] active:cursor-grabbing ${
-          selected
-            ? "border-blue-500/20 bg-blue-500/5 text-blue-700"
-            : "border-slate-100 bg-slate-50/70 text-muted-foreground"
+        className={`absolute -top-3.5 left-2 right-2 z-10 flex cursor-grab items-center justify-between gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] shadow-sm transition-opacity active:cursor-grabbing ${
+          selected ? "border-blue-500/40 text-blue-700 opacity-100" : "border-border text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
         }`}
       >
         <span className="inline-flex items-center gap-1 font-semibold"><GripVertical className="h-3.5 w-3.5 opacity-60" aria-hidden />{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>
@@ -310,7 +307,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
           onRemove={() => props.onRemove(block.id)}
         />
       </div>
-      <div className="p-4" data-nx-b={domId}>
+      <div className="px-1 py-2" data-nx-b={domId}>
         {block.type === "heading" || block.type === "heading_element" ? (
           <div
             className={
@@ -407,9 +404,9 @@ export function CanvasBlock(props: CanvasBlockProps) {
             </div>
           </div>
         ) : (
-          <div className="pointer-events-none">
+          <InlineEditable block={block} onChange={(key, value) => props.onUpdateProps(block.id, { [key]: value })} onCommit={props.onCommit}>
             <RscBlockRenderer blocks={[block]} themeId="corporate-aurora" tokens={props.tokens} pageSchema={pageSchema} preview />
-          </div>
+          </InlineEditable>
         )}
       </div>
     </article>
