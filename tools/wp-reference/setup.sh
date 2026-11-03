@@ -4,9 +4,16 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 URL="${WP_URL:-http://localhost:8080}"
-wp() { docker compose run --rm -T wpcli wp "$@"; }
+DOCKER=("${DOCKER:-docker}")
+wp() { "${DOCKER[@]}" compose run --rm -T wpcli wp "$@"; }
 
-docker compose up -d --wait db wordpress
+"${DOCKER[@]}" compose up -d --wait db wordpress
+# Paketler ve PHP ayarı istemci tarafından kopyalanır (WSL yolu bağlamaya gerek kalmaz; Docker Desktop WSL entegrasyonu şart değil).
+WP_CID=$("${DOCKER[@]}" compose ps -q wordpress | tr -d '\r')
+"${DOCKER[@]}" exec -u 0 "$WP_CID" mkdir -p /packages
+"${DOCKER[@]}" cp ../../docs/kadence-referans-eklentiler/. "$WP_CID":/packages/
+"${DOCKER[@]}" cp uploads.ini "$WP_CID":/usr/local/etc/php/conf.d/uploads.ini
+"${DOCKER[@]}" exec -u 0 "$WP_CID" apachectl graceful
 until curl -s -o /dev/null "$URL"; do sleep 2; done
 
 if ! wp core is-installed 2>/dev/null; then
@@ -20,8 +27,8 @@ wp theme install kadence --activate
 wp plugin install kadence-blocks --activate
 
 # Lisanslı eklentiler (etkinleştirme başarısız olursa devam edilir; sebebi çıktıda görünür)
-for z in /packages/*.zip; do
-  n=$(basename "$z")
+for z in ../../docs/kadence-referans-eklentiler/*.zip; do
+  n=$(basename "$z"); z="/packages/$n"
   case "$n" in
     ascend-premium*|pinnacle-premium*|virtue-premium*|virtue-bold*)
       echo "== tema (yalnızca yüklenir): $n"; wp theme install "$z" || true ;;
