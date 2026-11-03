@@ -302,9 +302,6 @@ importers:
       postcss:
         specifier: ^8.5.32
         version: 8.5.32
-      react:
-        specifier: ^19.0.0
-        version: 19.3.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -315,6 +312,15 @@ importers:
       '@types/react':
         specifier: ^19.0.8
         version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.0.3
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
