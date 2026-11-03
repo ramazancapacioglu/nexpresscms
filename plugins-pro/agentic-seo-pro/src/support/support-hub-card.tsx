@@ -70,3 +70,4 @@ export async function SupportHubCard({ siteId: _siteId }: { siteId: string }) {
     </div>
   );
 }
+

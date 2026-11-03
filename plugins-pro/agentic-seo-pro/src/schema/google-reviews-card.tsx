@@ -44,3 +44,4 @@ export async function GoogleReviewsCard({ siteId }: { siteId: string }) {
     </div>
   );
 }
+

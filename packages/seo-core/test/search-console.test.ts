@@ -40,3 +40,4 @@ test("parseSearchConsoleJson: JSON verilerini ayrıştırır", () => {
   assert.equal(parsed[0]?.clicks, 210);
   assert.equal(parsed[0]?.ctr, 6.56);
 });
+

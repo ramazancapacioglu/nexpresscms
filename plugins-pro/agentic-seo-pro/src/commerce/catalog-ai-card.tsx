@@ -105,3 +105,4 @@ export async function CatalogAiCard({ siteId }: { siteId: string }) {
     </div>
   );
 }
+
