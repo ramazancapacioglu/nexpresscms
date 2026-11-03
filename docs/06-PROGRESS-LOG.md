@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Yerel WordPress referans ortamı (araç)
+- ✅ `tools/wp-reference/`: Docker Compose (MariaDB + WordPress + wp-cli) ve `setup.sh`; lisanslı referans paketleri `docs/kadence-referans-eklentiler/` altından salt okunur bağlanır, depoya girmez (`.gitignore`). Amaç: eklenti davranışını canlı inceleyip kendi editörümüzü buna göre geliştirmek.
+
 ### [2026-11-03] — WordPress içe aktarma: büyük dosyada "Dosya bulunamadı" düzeltmesi
 - 🐛 Next, middleware'den geçen isteklerin gövdesini 10 MB'ta kesiyordu; 10 MB üstü WXR dosyası çözülemeyip "Dosya bulunamadı" dönüyordu. `next.config.ts` `experimental.middlewareClientMaxBodySize: "70mb"` ile 64 MB sınırına uyduruldu (23 MB'lık dosya tarayıcıda doğrulandı). Rota artık "yükleme okunamadı/sınır aşıldı" ile "dosya seçilmedi" hatalarını ayırıyor.
 
