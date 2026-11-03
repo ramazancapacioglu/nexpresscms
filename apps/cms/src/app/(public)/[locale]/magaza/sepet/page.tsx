@@ -105,7 +105,7 @@ export default async function ShopCartPage({
           </dl>
           <Link
             href={`${base}/odeme`}
-            className="mt-6 inline-block rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+            className="mt-6 inline-block rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white dark:bg-nx-card dark:text-neutral-900"
           >
             {t("shop.toCheckout")}
           </Link>

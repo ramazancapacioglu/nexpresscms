@@ -1,9 +1,11 @@
+import { contrastRatio, deriveDarkColors } from "@nexpress/core";
 import { GLOBAL_COLOR_PALETTES } from "@nexpress/themes";
 import type { ThemeStoreState } from "./use-theme-store";
 
 /** SEKME 2: GLOBAL RENK PALETLERİ & TOKENLAR */
 export function ThemeStoreTabPalettes({ s }: { s: ThemeStoreState }) {
-  const { tokens, setTokens, customizer, activeTab, handleApplyPalette } = s;
+  const { tokens, setTokens, customizer, setCustomizer, activeTab, handleApplyPalette } = s;
+  const dark = deriveDarkColors(tokens.colors, customizer.darkColors);
   return (
     <>
       {/* SEKME 2: GLOBAL RENK PALETLERİ & TOKENLAR */}
@@ -112,6 +114,34 @@ export function ThemeStoreTabPalettes({ s }: { s: ThemeStoreState }) {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Karanlık mod</div>
+            <label className="block text-[11px]">
+              <span className="mb-1 block">Ziyaretçi cihazı karanlık modu seçtiyse</span>
+              <select aria-label="Karanlık mod" value={customizer.darkMode} onChange={(e) => setCustomizer((prev) => ({ ...prev, darkMode: e.target.value === "auto" ? "auto" : "off" }))} className="h-8 w-full rounded border border-border bg-background px-2 text-xs">
+                <option value="off">Kapalı (her zaman açık tema)</option>
+                <option value="auto">Otomatik karanlık palet kullan</option>
+              </select>
+            </label>
+            {customizer.darkMode === "auto" && (
+              <>
+                <p className="text-[10px] text-[#5F6570] dark:text-[#8C9099]">Palet açık renklerinizden türetilir (okunaklılık için otomatik açılır). CSS ile çalışır; sayfaya JavaScript eklenmez. Aşağıdan renkleri ezebilirsiniz.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["background", "foreground", "primary", "muted", "border", "secondary"] as const).map((k) => (
+                    <label key={k} className="text-[10px]">
+                      <span className="mb-0.5 block capitalize">{k}</span>
+                      <span className="flex items-center gap-1.5">
+                        <input aria-label={`Karanlık ${k} rengi`} type="color" value={dark[k]} onChange={(e) => setCustomizer((prev) => ({ ...prev, darkColors: { ...prev.darkColors, [k]: e.target.value } }))} className="h-7 w-8 cursor-pointer rounded border border-border" />
+                        <span className="font-mono">{dark[k]}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                {contrastRatio(dark.foreground, dark.background) < 4.5 && <p role="alert" className="text-[11px] text-red-600">Metin ile arka plan kontrastı düşük (4.5 altı).</p>}
+                <button type="button" onClick={() => setCustomizer((prev) => ({ ...prev, darkColors: {} }))} className="text-[11px] text-blue-700 underline dark:text-blue-300">Otomatiğe sıfırla</button>
+              </>
+            )}
           </div>
         </div>
       )}

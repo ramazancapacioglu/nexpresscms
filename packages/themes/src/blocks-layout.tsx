@@ -42,7 +42,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
           html={p.html}
           text={p.text}
           style={{ fontFamily: tokens.typography.headingFont }}
-          className={`${size} ${ink ? "text-white" : "text-slate-900"} ${alignClass}`}
+          className={`${size} ${ink ? "text-white" : "text-nx-fg"} ${alignClass}`}
         />
       );
     }
@@ -53,7 +53,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
       return (
         <RichBlock
           as="div"
-          className={`nx-rich text-base leading-relaxed ${themeId === INK_GRID_ID ? "text-zinc-400" : "text-slate-700"}`}
+          className={`nx-rich text-base leading-relaxed ${themeId === INK_GRID_ID ? "text-zinc-400" : "text-nx-soft"}`}
           html={p.html}
           text={p.text}
         />
@@ -84,7 +84,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
             {typeof p.title === "string" && p.title.trim() ? (
               <h2
                 style={{ fontFamily: tokens.typography.headingFont }}
-                className="text-2xl font-bold text-slate-900"
+                className="text-2xl font-bold text-nx-fg"
               >
                 {p.title}
               </h2>
@@ -276,7 +276,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
               borderRadius: tokens.geometry.borderRadius,
               borderColor: tokens.colors.border,
             }}
-            className="overflow-hidden border bg-slate-100"
+            className="overflow-hidden border bg-nx-subtle"
           >
             {url ? (
               <ResponsiveImage
@@ -292,7 +292,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
             ) : null}
           </div>
           {caption && (
-            <figcaption className="text-xs text-slate-500 text-center italic">
+            <figcaption className="text-xs text-nx-muted text-center italic">
               {caption}
             </figcaption>
           )}

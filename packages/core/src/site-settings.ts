@@ -41,6 +41,10 @@ export type ButtonCase = "none" | "uppercase";
  */
 export interface SiteCustomizerSettings {
   activePaletteId?: string;
+  /** `auto`: ziyaretçinin işletim sistemi karanlık modu seçtiyse otomatik türetilmiş karanlık palet kullanılır (JS yok) */
+  darkMode: "off" | "auto";
+  /** Karanlık palette elle ezilen renkler (yalnızca geçerli hex) */
+  darkColors: Record<string, string>;
   typography: {
     headingWeight: number | string;
     bodyLineHeight: number | string;
@@ -165,6 +169,8 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
 
 export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
   activePaletteId: "aurora-cobalt",
+  darkMode: "off",
+  darkColors: {},
   typography: {
     headingWeight: 700,
     bodyLineHeight: 1.7,
@@ -244,6 +250,9 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
     general: mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {
+      ...(typeof c.activePaletteId === "string" ? { activePaletteId: c.activePaletteId } : { activePaletteId: d.activePaletteId }),
+      darkMode: c.darkMode === "auto" ? "auto" : "off",
+      darkColors: Object.fromEntries(Object.entries((c.darkColors && typeof c.darkColors === "object" ? c.darkColors : {}) as Record<string, unknown>).filter(([, v]) => typeof v === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))) as Record<string, string>,
       typography: mergeSection(d.typography, c.typography),
       layout: mergeSection(d.layout, c.layout),
       buttons: mergeSection(d.buttons, c.buttons),

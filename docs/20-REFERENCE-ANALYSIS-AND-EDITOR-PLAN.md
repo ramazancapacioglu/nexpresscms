@@ -55,7 +55,7 @@ Desen merkezi (ortak tasarım kitaplığı + sayfa desenleri), Dönüşümler (a
 
 **Faz 3 — Dinamik içerik (sorgu döngüsü tamam: arama, kategori süzgeci, sıralama, sayfalama; kalan: kart şablonu seçimi, ürün atlıkarıncası, aralık/derecelendirme süzgeçleri, sayfalı görünümde canonical)**: sorgu döngüsü bloğu (süzgeç/sıralama/sayfalama, URL parametreli, RSC), kart şablonu seçimi, ürün atlıkarıncası.
 
-**Faz 4 — Tema özelleştirici (4a tamam: görüntüleme koşulları, header yapışkan/cam; 4b: üst bilgi oluşturucu, tür başına yerleşim, karanlık mod, palet değişkenleri)**: üst bilgi oluşturucu (satır/öğe, yapışkan/şeffaf, mobil ayrı), tür başına yerleşim seçenekleri, düğme/kırıntı/yukarı çık ayarları, **görüntüleme koşulları** (şablon koşulları: sayfa türü, kullanıcı oturumu, dil), karanlık mod (CSS `prefers-color-scheme` + kalıcı seçim), genel palet değişkenleri.
+**Faz 4 — Tema özelleştirici (4a tamam: görüntüleme koşulları, header yapışkan/cam; 4b tamam: karanlık mod, palet değişkenleri, şeffaf header, içerik genişliği; kalan: üst bilgi oluşturucu)**: üst bilgi oluşturucu (satır/öğe, yapışkan/şeffaf, mobil ayrı), tür başına yerleşim seçenekleri, düğme/kırıntı/yukarı çık ayarları, **görüntüleme koşulları** (şablon koşulları: sayfa türü, kullanıcı oturumu, dil), karanlık mod (CSS `prefers-color-scheme` + kalıcı seçim), genel palet değişkenleri.
 
 **Faz 5 — Hazır ayar/kitaplık**: stil ön ayarı kaydet/uygula, desen kitaplığı paylaşımı (içe/dışa aktarma zaten var), kayan blok araç çubuğu, A/B ve açılır pencere (Dönüşümler) Pro eklentisi olarak değerlendirilir.
 

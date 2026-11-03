@@ -94,7 +94,7 @@ export default async function PublicHomePage({
       ) : (
         <div className="rounded-xl border p-8 text-center">
           <h1 className="text-2xl font-bold">{t("site.homeReady")}</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-nx-soft">
             {t("site.homeSeed", { cmd: "pnpm db:seed" })}
           </p>
         </div>
@@ -106,11 +106,11 @@ export default async function PublicHomePage({
           <div>
             <h2
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl font-bold text-slate-900"
+              className="text-2xl font-bold text-nx-fg"
             >
               {t("site.homeListTitle")}
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-nx-muted">
               {t("site.homeListBody", { md: "?format=md" })}
             </p>
           </div>
@@ -133,7 +133,7 @@ export default async function PublicHomePage({
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,
                 }}
-                className="flex flex-col justify-between border bg-white p-6 shadow-xs transition hover:shadow-md"
+                className="flex flex-col justify-between border bg-nx-card p-6 shadow-xs transition hover:shadow-md"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs">
@@ -153,12 +153,12 @@ export default async function PublicHomePage({
                   <Link
                     href={`/${locale}/${item.slug}`}
                     style={{ fontFamily: tokens.typography.headingFont }}
-                    className="block text-lg font-bold text-slate-900 hover:underline"
+                    className="block text-lg font-bold text-nx-fg hover:underline"
                   >
                     {item.title}
                   </Link>
                   {item.tldr && (
-                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-nx-soft line-clamp-3 leading-relaxed">
                       {item.tldr}
                     </p>
                   )}
@@ -174,7 +174,7 @@ export default async function PublicHomePage({
                   </Link>
                   <Link
                     href={`/${locale}/${item.slug}?format=md`}
-                    className="font-mono text-slate-500 hover:text-slate-900"
+                    className="font-mono text-nx-muted hover:text-nx-fg"
                   >
                     ?format=md (0ms)
                   </Link>

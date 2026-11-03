@@ -2,12 +2,12 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { STARTER_TEMPLATES, TEMPLATE_KINDS, type TemplateConditions, type TemplateKind } from "@nexpress/core";
+import { STARTER_TEMPLATES, TEMPLATE_KINDS, type TemplateBehavior, type TemplateConditions, type TemplateKind } from "@nexpress/core";
 import { AlertTriangle, Check, Download, Pencil, Plus, SlidersHorizontal, Trash2, Upload } from "lucide-react";
 import { TemplateSettings } from "./template-settings";
 import { createTemplateAction, deleteTemplateAction, setDefaultTemplateAction } from "./actions";
 
-export interface TemplateRow { id: string; name: string; kind: TemplateKind; isDefault: boolean; conditions: TemplateConditions; behavior: { sticky?: boolean; glass?: boolean }; blocks: number; errors: string[] }
+export interface TemplateRow { id: string; name: string; kind: TemplateKind; isDefault: boolean; conditions: TemplateConditions; behavior: TemplateBehavior; blocks: number; errors: string[] }
 
 const panel = "rounded-lg border border-[#D5D8DE] bg-white dark:border-[#2E333D] dark:bg-[#15171C]";
 

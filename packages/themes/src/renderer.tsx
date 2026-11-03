@@ -2,6 +2,7 @@ import React from "react";
 import {
   compileBlockStylesToCss,
   normalizeDynamicQuery,
+  toCssVarTokens,
   safeBlockDomId,
   type BlockNode,
   type DesignTokens,
@@ -71,7 +72,7 @@ export function findLcpImageId(blocks: BlockNode[]): string | undefined {
 export function RscBlockRenderer({
   blocks,
   themeId,
-  tokens,
+  tokens: rawTokens,
   lcp = true,
   mediaFocal,
   locale,
@@ -81,6 +82,8 @@ export function RscBlockRenderer({
   pageSchema,
   preview,
 }: RscBlockRendererProps): React.ReactElement {
+  // Renkler CSS değişkeninden okunur: palet/karanlık mod değişince blok kodu aynı kalır
+  const tokens = toCssVarTokens(rawTokens);
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
   const isInk = themeId === INK_GRID_ID;

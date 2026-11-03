@@ -142,3 +142,6 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 
 ## Şablon görüntüleme koşulları (2026-11-03)
 `TemplateMeta.conditions` (`include`/`exclude`) ve `behavior` (`sticky`, `glass`, yalnızca header). `resolveTemplate(kind, templates, assignedId, ctx)` sırası: atama → en özgül eşleşen koşul → varsayılan → yerleşik. Bağlam (`TemplateContext`) çağıran katmanda bilinen alanlardan oluşur; bilinmeyen alana bağlı kural eşleşmez. Yönetim: Görünüm › Şablonlar › şablonun **Ayarlar** paneli.
+
+## Palet değişkenleri ve karanlık mod (2026-11-03)
+Ziyaretçi renkleri `var(--nx-bg|fg|primary|…)` okunur: `toCssVarTokens` (renderer girişinde ve layout'ta uygulanır), anlamsal Tailwind sınıfları `text-nx-fg|soft|muted|link`, `bg-nx-card|subtle`, `border-nx-line` aynı değişkenleri kullanır. **Yeni blok/bileşende sabit `slate/zinc/white` renk sınıfı yazılmaz; anlamsal sınıf kullanılır** (karanlık mod bunu varsayar). `customizer.darkMode = "auto"` iken `darkModeCss` yalnızca `prefers-color-scheme: dark` altında değişkenleri değiştirir. Şablon davranışı: `TemplateBehavior` (`sticky`, `glass`, `transparent`, `tone`, `contentWidth`).

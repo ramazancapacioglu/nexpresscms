@@ -92,7 +92,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           </div>
           <RichBlock
             as="div"
-            className="nx-rich text-base font-medium leading-relaxed text-slate-800"
+            className="nx-rich text-base font-medium leading-relaxed text-nx-fg"
             html={p.html}
             text={p.summary ?? p.text}
           />
@@ -109,7 +109,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
             borderRadius: tokens.geometry.borderRadius,
             borderColor: tokens.colors.border,
           }}
-          className="grid grid-cols-2 gap-4 md:grid-cols-4 border bg-white p-6 shadow-xs"
+          className="grid grid-cols-2 gap-4 md:grid-cols-4 border bg-nx-card p-6 shadow-xs"
         >
           {stats.map((st: any, idx: number) => (
             <div key={idx} className="space-y-1 text-center md:text-left px-2">
@@ -119,7 +119,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
               >
                 {String(st?.value ?? "")}
               </div>
-              <div className="text-xs md:text-sm font-medium text-slate-500">
+              <div className="text-xs md:text-sm font-medium text-nx-muted">
                 {String(st?.label ?? "")}
               </div>
             </div>
@@ -136,7 +136,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           {typeof p.title === "string" && (
             <h2
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900"
+              className="text-2xl md:text-3xl font-bold tracking-tight text-nx-fg"
             >
               {p.title}
             </h2>
@@ -149,7 +149,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,
                 }}
-                className="border bg-white p-6 shadow-xs transition hover:shadow-md"
+                className="border bg-nx-card p-6 shadow-xs transition hover:shadow-md"
               >
                 <div
                   style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }}
@@ -159,11 +159,11 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                 </div>
                 <h3
                   style={{ fontFamily: tokens.typography.headingFont }}
-                  className="text-lg font-semibold text-slate-900 mb-2"
+                  className="text-lg font-semibold text-nx-fg mb-2"
                 >
                   {String(item?.title ?? "")}
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-nx-soft leading-relaxed">
                   {String(item?.description ?? "")}
                 </p>
               </div>
@@ -180,7 +180,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           {typeof p.title === "string" && (
             <h2
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900"
+              className="text-2xl md:text-3xl font-bold tracking-tight text-nx-fg"
             >
               {p.title}
             </h2>
@@ -197,13 +197,13 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                       ? tokens.colors.primary
                       : tokens.colors.border,
                   }}
-                  className={`flex flex-col justify-between border bg-white p-6 ${
+                  className={`flex flex-col justify-between border bg-nx-card p-6 ${
                     featured ? "border-2 shadow-md" : "shadow-xs"
                   }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold text-slate-900">
+                      <h3 className="text-base font-bold text-nx-fg">
                         {String(plan?.name ?? "")}
                       </h3>
                       {featured && (
@@ -221,7 +221,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                     >
                       {String(plan?.price ?? "")}
                     </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-nx-soft leading-relaxed">
                       {String(plan?.description ?? "")}
                     </p>
                   </div>
@@ -295,7 +295,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           {typeof p.title === "string" && p.title && (
             <h2
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl font-bold text-slate-900"
+              className="text-2xl font-bold text-nx-fg"
             >
               {p.title}
             </h2>
@@ -308,15 +308,15 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,
                 }}
-                className="border bg-white p-6 space-y-3 shadow-xs"
+                className="border bg-nx-card p-6 space-y-3 shadow-xs"
               >
-                <p className="text-sm italic text-slate-700 leading-relaxed">
+                <p className="text-sm italic text-nx-soft leading-relaxed">
                   “{String(it?.quote ?? "")}”
                 </p>
-                <div className="text-xs font-semibold text-slate-900">
+                <div className="text-xs font-semibold text-nx-fg">
                   {String(it?.author ?? "")}
                   {it?.role ? (
-                    <span className="text-slate-500 font-normal">
+                    <span className="text-nx-muted font-normal">
                       {" "}
                       — {String(it.role)}
                     </span>

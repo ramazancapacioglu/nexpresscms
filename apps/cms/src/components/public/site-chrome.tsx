@@ -42,11 +42,11 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
       ) : null}
 
       <header
-        style={{ borderColor: tokens.colors.border, backgroundColor: ink ? tokens.colors.background : undefined }}
+        style={{ borderColor: tokens.colors.border, backgroundColor: ink || glass === false ? tokens.colors.background : `color-mix(in srgb, ${tokens.colors.background} 92%, transparent)` }}
         className={
           ink
             ? "nx-public-header sticky top-0 z-40 border-b"
-            : `nx-public-header z-40 border-b ${sticky === false ? "relative" : "sticky top-0"} ${glass === false ? "bg-white" : "bg-white/90 backdrop-blur-md"}`
+            : `nx-public-header z-40 border-b ${sticky === false ? "relative" : "sticky top-0"} ${glass === false ? "" : "backdrop-blur-md"}`
         }
       >
         <div style={{ maxWidth: ink ? "100%" : tokens.geometry.containerMaxWidth, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center justify-between gap-6 px-4 sm:px-6">
@@ -58,7 +58,7 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
               ) : (
                 <span style={{ fontFamily: tokens.typography.headingFont, color: ink ? tokens.colors.foreground : undefined }} className="truncate text-lg font-bold tracking-tight">{logoText}</span>
               )}
-              {custom.showTagline && tagline ? <span className="hidden truncate text-[11px] font-medium text-slate-500 lg:block">{tagline}</span> : null}
+              {custom.showTagline && tagline ? <span className="hidden truncate text-[11px] font-medium text-nx-muted lg:block">{tagline}</span> : null}
             </a>
             <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />
           </div>

@@ -83,7 +83,7 @@ export default async function ShopCheckoutPage({
         </label>
         <button
           type="submit"
-          className="rounded-full bg-neutral-900 px-6 py-2.5 font-medium text-white dark:bg-white dark:text-neutral-900"
+          className="rounded-full bg-neutral-900 px-6 py-2.5 font-medium text-white dark:bg-nx-card dark:text-neutral-900"
         >
           {t("shop.placeOrder")}
         </button>

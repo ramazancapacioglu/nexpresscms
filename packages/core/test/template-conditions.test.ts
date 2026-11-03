@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { conditionScore, readTemplateMeta, resolveTemplate, sanitizeConditions, type TemplateRecord } from "../src";
+import { contentWidthStyle, sanitizeBehavior, conditionScore, readTemplateMeta, resolveTemplate, sanitizeConditions, type TemplateRecord } from "../src";
 
 const rec = (id: string, include: Array<{ type: string; value: string }> = [], exclude: Array<{ type: string; value: string }> = [], isDefault = false): TemplateRecord => ({
   id, name: id, blocks: [],
@@ -39,4 +39,12 @@ test("meta okuma: koşul ve davranış doğrulanır, boşsa alan yazılmaz", () 
   assert.deepEqual(m.conditions!.include, [{ type: "locale", value: "en" }]);
   assert.deepEqual(m.behavior, { sticky: false });
   assert.equal(readTemplateMeta({ template: { kind: "header", conditions: { include: [] } } })!.conditions, undefined);
+});
+
+test("şablon davranışı: yalnızca bilinen alan ve değerler; genişlik stilleri", () => {
+  assert.deepEqual(sanitizeBehavior({ sticky: false, transparent: true, tone: "light", contentWidth: "wide", evil: 1 }), { sticky: false, transparent: true, tone: "light", contentWidth: "wide" });
+  assert.equal(sanitizeBehavior({ tone: "red", contentWidth: "huge", sticky: "yes" }), undefined);
+  assert.equal(contentWidthStyle("default"), undefined);
+  assert.equal(contentWidthStyle("narrow")!.maxWidth, "720px");
+  assert.ok(contentWidthStyle("full")!.width === "100vw");
 });

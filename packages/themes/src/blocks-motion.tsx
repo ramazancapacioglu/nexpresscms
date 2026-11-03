@@ -54,10 +54,10 @@ export function renderMotionBlock(block: BlockNode): React.ReactElement | null |
       const shown = to.toLocaleString("tr-TR");
       return (
         <div className={cls} style={{ textAlign: p.align === "left" ? "left" : p.align === "right" ? "right" : "center" }}>
-          <div className="text-4xl font-black tabular-nums text-slate-900">
+          <div className="text-4xl font-black tabular-nums text-nx-fg">
             {str(p.prefix)}<span className="nx-count" style={{ ["--nx-to" as string]: to }}>{shown}</span>{str(p.suffix)}
           </div>
-          {str(p.label) ? <div className="mt-1 text-sm text-slate-600">{str(p.label)}</div> : null}
+          {str(p.label) ? <div className="mt-1 text-sm text-nx-soft">{str(p.label)}</div> : null}
           <style>{`
             @property --nx-n{syntax:'<integer>';inherits:false;initial-value:0}
             @keyframes nx-count{to{--nx-n:var(--nx-to)}}

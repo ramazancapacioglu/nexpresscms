@@ -17,7 +17,7 @@ import {
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
-import { PluginSlot, resolveSiteSettings, type NavigationLink } from "@nexpress/core";
+import { PluginSlot, resolveSiteSettings, toCssVarTokens, type NavigationLink } from "@nexpress/core";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -61,7 +61,9 @@ export default async function PublicLocaleLayout({
     isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens);
   const preview = await getPreviewTheme(siteId);
   const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
-  const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, site?.settings?.customizer);
+  const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, resolveSiteSettings(site?.settings).customizer);
+  // Düzen bileşenleri renkleri CSS değişkeninden okur (palet/karanlık mod değişince bileşen kodu aynı kalır)
+  const vt = toCssVarTokens(preview?.tokens ?? tokens);
   const menu = await getResolvedMenu(siteId, locale);
   // Tema oluşturucu şablonları: varsayılan header/footer/kenar çubuğu şablonu varsa yerleşik olanın yerine geçer
   // Koşullar yalnızca dil ve sayfa adresiyle eşleşebilir (içerik türü/kategori bilgisi bu katmanda yoktur)
@@ -69,6 +71,7 @@ export default async function PublicLocaleLayout({
   const chromeCtx = { locale, slug: segs.length >= 2 ? decodeURIComponent(segs[1]!) : "ana-sayfa" };
   const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
   const cust = resolveSiteSettings(site?.settings).customizer.header;
+  const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
   const sidebar = nav?.sidebarConfig?.enabled ? nav.sidebarConfig : null;
 
@@ -76,11 +79,11 @@ export default async function PublicLocaleLayout({
     <div
       data-nx-skin={skin?.themeId ?? (isInk ? "ink" : undefined)}
       style={{
-        backgroundColor: (preview?.tokens ?? tokens).colors.background,
-        color: (preview?.tokens ?? tokens).colors.foreground,
+        backgroundColor: vt.colors.background,
+        color: vt.colors.foreground,
         fontFamily: (preview?.tokens ?? tokens).typography.bodyFont,
       }}
-      className="min-h-screen flex flex-col"
+      className="relative min-h-screen flex flex-col"
     >
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
       {skin?.css ? <style dangerouslySetInnerHTML={{ __html: skin.css }} /> : null}
@@ -93,9 +96,16 @@ export default async function PublicLocaleLayout({
       <PluginSlot name="public.head.meta" siteId={siteId} />
 
       {headerTpl && tplCtx ? (
-        <header style={{ borderColor: tokens.colors.border }} className={`nx-public-header z-40 border-b ${headerTpl.meta.behavior?.sticky === false ? "relative" : "sticky top-0"} ${headerTpl.meta.behavior?.glass === false ? "bg-white" : "bg-white/95 backdrop-blur-md"}`}>
+        <header
+          style={
+            headerBehavior.transparent
+              ? { borderColor: "transparent", backgroundColor: "transparent", color: headerBehavior.tone === "dark" ? "#0b0d12" : "#ffffff" }
+              : { borderColor: vt.colors.border, backgroundColor: headerBehavior.glass === false ? vt.colors.background : `color-mix(in srgb, ${vt.colors.background} 94%, transparent)` }
+          }
+          className={`nx-public-header z-40 border-b ${headerBehavior.transparent ? "absolute inset-x-0 top-0" : headerBehavior.sticky === false ? "relative" : "sticky top-0"} ${headerBehavior.glass === false || headerBehavior.transparent ? "" : "backdrop-blur-md"}`}
+        >
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto px-4 py-3 sm:px-6">
-            <RscBlockRenderer blocks={headerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
+            <RscBlockRenderer blocks={headerTpl.blocks} themeId={activeTheme.id} tokens={vt} locale={locale} tpl={tplCtx} />
           </div>
         </header>
       ) : (
@@ -104,7 +114,7 @@ export default async function PublicLocaleLayout({
         tagline={site?.tagline}
         locale={locale}
         menu={menu}
-        tokens={tokens}
+        tokens={vt}
         ink={isInk}
         header={nav?.headerConfig}
         custom={resolveSiteSettings(site?.settings).customizer.header}
@@ -120,7 +130,7 @@ export default async function PublicLocaleLayout({
           <PublicSideColumn title={sidebar.title} links={sidebar.links} />
         ) : null}
         <main
-          style={{ maxWidth: isInk || sidebar ? "100%" : tokens.geometry.containerMaxWidth }}
+          style={{ maxWidth: isInk || sidebar ? "100%" : tokens.geometry.containerMaxWidth, ...(headerBehavior.transparent ? { paddingTop: 0 } : {}) }}
           className={isInk ? "mx-auto w-full flex-1" : "mx-auto w-full flex-1 px-4 py-10 sm:px-6"}
         >
           {children}
@@ -131,13 +141,13 @@ export default async function PublicLocaleLayout({
       </div>
 
       {footerTpl && tplCtx ? (
-        <footer style={{ borderColor: tokens.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
+        <footer style={{ borderColor: vt.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto">
             <RscBlockRenderer blocks={footerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
           </div>
         </footer>
       ) : (
-        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={tokens} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} />
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} />
       )}
     </div>
   );

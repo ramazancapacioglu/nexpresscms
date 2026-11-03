@@ -1,4 +1,4 @@
-import type { DesignTokens, SiteCustomizerSettings, SiteProfile } from "@nexpress/core";
+import { darkModeCss, type DesignTokens, type SiteCustomizerSettings, type SiteProfile } from "@nexpress/core";
 import { INK_GRID_ID, INK_GRID_TOKENS } from "./ink-grid";
 
 export interface ThemeManifest {
@@ -351,6 +351,9 @@ export function compileDesignTokensToCssVars(
       --nx-muted: ${tokens.colors.muted};
       --nx-muted-fg: ${tokens.colors.mutedForeground};
       --nx-border: ${tokens.colors.border};
+      --nx-fg-soft: color-mix(in srgb, var(--nx-fg) 80%, var(--nx-bg));
+      --nx-card: #ffffff;
+      --nx-link: color-mix(in srgb, var(--nx-primary) 85%, #000);
       --nx-radius: ${tokens.geometry.borderRadius};
       --nx-btn-radius: ${btnRadius};
       --nx-btn-transform: ${btnTransform};
@@ -363,6 +366,7 @@ export function compileDesignTokensToCssVars(
       --nx-heading-weight: ${headingWeight};
       --nx-body-lh: ${bodyLineHeight};
     }
+    ${customizer?.darkMode === "auto" ? darkModeCss(tokens.colors, customizer.darkColors ?? {}) : ""}
     ${customizer?.customCss ? customizer.customCss : ""}
   `.trim();
 }

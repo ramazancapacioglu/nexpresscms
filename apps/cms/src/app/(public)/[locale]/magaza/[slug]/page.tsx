@@ -10,7 +10,7 @@ import { formatMoney } from "@nexpress/commerce";
 import { addToCartAction } from "../actions";
 import { shopBasePath } from "@/lib/commerce/shop-paths";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
-import { templateHasBlock } from "@nexpress/core";
+import { contentWidthStyle, templateHasBlock } from "@nexpress/core";
 import { getPublicSite } from "@/lib/public-data";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor } from "@/lib/templates";
@@ -123,7 +123,7 @@ export default async function ShopProductPage({
     return (
       <>
         {schemaScript}
-        <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} dynamic={dynamic} />
+        <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}><RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} dynamic={dynamic} /></div>
       </>
     );
   }
@@ -192,7 +192,7 @@ export default async function ShopProductPage({
               </label>
               <button
                 type="submit"
-                className="rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+                className="rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white dark:bg-nx-card dark:text-neutral-900"
               >
                 {t("shop.addToCart")}
               </button>

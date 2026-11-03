@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { CONDITION_LABELS, type ConditionType, type TemplateCondition, type TemplateConditions, type TemplateKind } from "@nexpress/core";
+import { CONDITION_LABELS, type ConditionType, type TemplateBehavior, type TemplateCondition, type TemplateConditions, type TemplateKind } from "@nexpress/core";
 import { Plus, Trash2 } from "lucide-react";
 import { updateTemplateSettingsAction } from "./actions";
 
@@ -29,7 +29,7 @@ function RuleList({ title, rules, onChange }: { title: string; rules: TemplateCo
 }
 
 /** Şablon ayarları: görüntüleme koşulları (atama olmadan kendiliğinden devreye girme) ve header davranışı. */
-export function TemplateSettings({ id, kind, conditions: initial, behavior: initialBehavior, onSaved }: { id: string; kind: TemplateKind; conditions: TemplateConditions; behavior: { sticky?: boolean; glass?: boolean }; onSaved: (c: TemplateConditions, b: { sticky?: boolean; glass?: boolean }) => void }) {
+export function TemplateSettings({ id, kind, conditions: initial, behavior: initialBehavior, onSaved }: { id: string; kind: TemplateKind; conditions: TemplateConditions; behavior: TemplateBehavior; onSaved: (c: TemplateConditions, b: TemplateBehavior) => void }) {
   const [conditions, setConditions] = useState(initial);
   const [behavior, setBehavior] = useState(initialBehavior);
   const [pending, start] = useTransition();
@@ -50,6 +50,27 @@ export function TemplateSettings({ id, kind, conditions: initial, behavior: init
           <legend className="text-[12px] font-semibold">Header davranışı</legend>
           <label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={behavior.sticky !== false} onChange={(e) => setBehavior({ ...behavior, sticky: e.target.checked })} /> Yapışkan (sayfa kayarken üstte kalır)</label>
           <label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={behavior.glass !== false} onChange={(e) => setBehavior({ ...behavior, glass: e.target.checked })} /> Buzlu cam arka plan</label>
+          <label className="flex items-center gap-2 text-[12px]"><input type="checkbox" checked={behavior.transparent === true} onChange={(e) => setBehavior({ ...behavior, transparent: e.target.checked })} /> Şeffaf (içeriğin üstüne biner; hero ile başlayan sayfalar için)</label>
+          {behavior.transparent && (
+            <label className="flex items-center gap-2 text-[12px]">Yazı tonu
+              <select aria-label="Şeffaf header yazı tonu" value={behavior.tone ?? "light"} onChange={(e) => setBehavior({ ...behavior, tone: e.target.value as "light" | "dark" })} className={field}>
+                <option value="light">Açık (koyu hero üstünde)</option>
+                <option value="dark">Koyu (açık hero üstünde)</option>
+              </select>
+            </label>
+          )}
+          {behavior.transparent && <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">İpucu: şeffaf header'ı yalnızca ilgili sayfalara bağlamak için yukarıdaki "Şu durumlarda kullan" kuralına sayfa adresi ekleyin.</p>}
+        </fieldset>
+      )}
+      {(kind === "page" || kind === "post" || kind === "product") && (
+        <fieldset className="space-y-1.5">
+          <legend className="text-[12px] font-semibold">İçerik genişliği</legend>
+          <select aria-label="İçerik genişliği" value={behavior.contentWidth ?? "default"} onChange={(e) => setBehavior({ ...behavior, contentWidth: e.target.value as TemplateBehavior["contentWidth"] })} className={field}>
+            <option value="narrow">Dar (720px, okuma odaklı)</option>
+            <option value="default">Varsayılan (site kapsayıcısı)</option>
+            <option value="wide">Geniş (1400px)</option>
+            <option value="full">Tam ekran genişliği</option>
+          </select>
         </fieldset>
       )}
       <div className="flex items-center gap-3">

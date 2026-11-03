@@ -76,7 +76,7 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
 }
 
 export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuItem[]; tokens: DesignTokens; ink: boolean; align: "left" | "center" | "right" }) {
-  const linkCls = ink ? "text-zinc-300 hover:text-white" : "text-slate-700 hover:text-slate-950";
+  const linkCls = ink ? "text-zinc-300 hover:text-white" : "text-nx-soft hover:text-nx-fg";
   return (
     <nav aria-label="Ana menü" className={`hidden items-stretch gap-6 self-stretch md:flex ${align === "center" ? "justify-self-center" : align === "right" ? "ml-auto" : ""}`}>
       {menu.map((item) => {
@@ -107,7 +107,7 @@ export function MobileNav({ menu, label }: { menu: NavigationMenuItem[]; label: 
   return (
     <details className="group relative md:hidden">
       <summary className="flex h-10 cursor-pointer list-none items-center rounded-md border border-current/20 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">{label}</summary>
-      <nav aria-label="Mobil menü" className="absolute right-0 top-full z-50 mt-2 max-h-[80vh] w-[min(320px,90vw)] overflow-y-auto rounded-lg border border-current/15 bg-white p-3 text-slate-900 shadow-xl">
+      <nav aria-label="Mobil menü" className="absolute right-0 top-full z-50 mt-2 max-h-[80vh] w-[min(320px,90vw)] overflow-y-auto rounded-lg border border-current/15 bg-nx-card p-3 text-nx-fg shadow-xl">
         <SubList links={menu} />
       </nav>
     </details>

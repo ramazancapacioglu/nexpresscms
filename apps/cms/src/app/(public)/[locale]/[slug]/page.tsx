@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { resolvePublishing, termSlug } from "@nexpress/core";
+import { contentWidthStyle, resolvePublishing, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -215,7 +215,9 @@ export default async function PublicDynamicContentPage({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }} />
         {banner}
         {switcher}
-        <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} />
+        <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}>
+          <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} />
+        </div>
       </>
     );
   }
@@ -254,21 +256,21 @@ export default async function PublicDynamicContentPage({
       <header className="space-y-4 border-b pb-8">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Link href={`/${locale}`} className="text-slate-500 hover:underline">
+            <Link href={`/${locale}`} className="text-nx-muted hover:underline">
               ← Ana Sayfa
             </Link>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href={`/${locale}/${content.slug}?format=md`}
-              className="rounded border px-2.5 py-1 font-mono text-xs text-slate-700 hover:bg-slate-100"
+              className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
             >
               Markdown
             </Link>
             {canEdit ? (
             <Link
               href={`/admin/contents?id=${content.id}&type=${content.type}`}
-              className="rounded border px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100"
+              className="rounded border px-2.5 py-1 text-xs font-medium text-nx-link bg-blue-50 hover:bg-blue-100"
             >
               ✏️ Editörde Düzenle
             </Link>
@@ -278,7 +280,7 @@ export default async function PublicDynamicContentPage({
 
         <h1
           style={{ fontFamily: tokens.typography.headingFont }}
-          className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900"
+          className="text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"
         >
           {content.title}
         </h1>
@@ -301,7 +303,7 @@ export default async function PublicDynamicContentPage({
             {tags.map((tg) => (
               <span
                 key={tg}
-                className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[11px] text-slate-600"
+                className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 font-mono text-[11px] text-nx-soft"
               >
                 #{tg}
               </span>
@@ -323,7 +325,7 @@ export default async function PublicDynamicContentPage({
           <figure className="pt-3 space-y-2">
             <div
               style={{ borderRadius: tokens.geometry.borderRadius }}
-              className="overflow-hidden border border-slate-200 bg-slate-950"
+              className="overflow-hidden border border-nx-line bg-slate-950"
             >
               <ResponsiveImage
                 src={featuredImageUrl}
@@ -336,7 +338,7 @@ export default async function PublicDynamicContentPage({
               />
             </div>
             {featuredCaption && (
-              <figcaption className="text-xs text-slate-500 text-center italic">
+              <figcaption className="text-xs text-nx-muted text-center italic">
                 {featuredCaption}
               </figcaption>
             )}
@@ -366,13 +368,13 @@ export default async function PublicDynamicContentPage({
       {showShareBar && (
         <section
           style={{ borderRadius: tokens.geometry.borderRadius }}
-          className="border border-slate-200 bg-slate-50 p-5 flex flex-wrap items-center justify-between gap-4"
+          className="border border-nx-line bg-nx-subtle p-5 flex flex-wrap items-center justify-between gap-4"
         >
           <div className="space-y-0.5">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            <div className="text-xs font-bold uppercase tracking-wider text-nx-muted">
               {t("content.shareHeading")}
             </div>
-            <div className="text-sm font-semibold text-slate-900">
+            <div className="text-sm font-semibold text-nx-fg">
               {content.title}
             </div>
           </div>
@@ -381,7 +383,7 @@ export default async function PublicDynamicContentPage({
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(content.title)}&url=${encodeURIComponent(pageUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-slate-800 hover:bg-slate-100"
+              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
             >
               𝕏 (Twitter)
             </a>
@@ -389,7 +391,7 @@ export default async function PublicDynamicContentPage({
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-slate-800 hover:bg-slate-100"
+              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
             >
               LinkedIn
             </a>
@@ -397,7 +399,7 @@ export default async function PublicDynamicContentPage({
               href={`https://wa.me/?text=${encodeURIComponent(content.title + " " + pageUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-slate-800 hover:bg-slate-100"
+              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
             >
               WhatsApp
             </a>
@@ -418,11 +420,11 @@ export default async function PublicDynamicContentPage({
             <div>
               <h2
                 style={{ fontFamily: tokens.typography.headingFont }}
-                className="text-2xl font-bold text-slate-900"
+                className="text-2xl font-bold text-nx-fg"
               >
                 {t("content.reviewsHeading", { n: approvedReviews.length })}
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-nx-soft">
                 {t("content.reviewsSubheading")}
               </p>
             </div>
@@ -444,11 +446,11 @@ export default async function PublicDynamicContentPage({
                 <div
                   key={rev.id}
                   style={{ borderRadius: tokens.geometry.borderRadius }}
-                  className="border border-slate-200 bg-white p-5 space-y-3 shadow-2xs"
+                  className="border border-nx-line bg-nx-card p-5 space-y-3 shadow-2xs"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-sm">
+                      <span className="font-bold text-nx-fg text-sm">
                         {rev.authorName}
                       </span>
                       {rev.isVerified && (
@@ -462,11 +464,11 @@ export default async function PublicDynamicContentPage({
                     </div>
                   </div>
                   {rev.title && (
-                    <h3 className="font-bold text-slate-900 text-sm">
+                    <h3 className="font-bold text-nx-fg text-sm">
                       {rev.title}
                     </h3>
                   )}
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-nx-soft leading-relaxed">
                     {rev.body}
                   </p>
                   {(rev.pros.length > 0 || rev.cons.length > 0) && (
@@ -489,7 +491,7 @@ export default async function PublicDynamicContentPage({
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-nx-line p-6 text-center text-sm text-nx-muted">
               {t("content.noReviews")}
             </div>
           )}

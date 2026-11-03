@@ -41,20 +41,61 @@ export interface TemplateMeta {
   isDefault: boolean;
   /** Görüntüleme koşulları: atama yokken koşula uyan sayfalarda şablon kendiliğinden kullanılır */
   conditions?: TemplateConditions;
-  /** Yalnızca header: yapışkan (sayfa kayarken üstte kalır) ve buzlu cam arka plan. Varsayılan: ikisi de açık. */
-  behavior?: { sticky?: boolean; glass?: boolean };
+  behavior?: TemplateBehavior;
+}
+
+/**
+ * Şablon davranışı. Header: yapışkan/cam (varsayılan açık), şeffaf (içeriğin üstüne biner; hero ile başlayan sayfalar için, koşulla
+ * belirli sayfalara bağlanır) ve şeffafken yazı tonu. Sayfa/yazı/ürün: içerik genişliği.
+ */
+export type TemplateContentWidth = "narrow" | "default" | "wide" | "full";
+export interface TemplateBehavior {
+  sticky?: boolean;
+  glass?: boolean;
+  transparent?: boolean;
+  tone?: "light" | "dark";
+  contentWidth?: TemplateContentWidth;
+}
+
+const WIDTHS: readonly string[] = ["narrow", "default", "wide", "full"];
+
+/** Dış kaynaktan gelen davranışı doğrular: yalnızca bilinen alanlar ve değerler kalır. */
+export function sanitizeBehavior(raw: unknown): TemplateBehavior | undefined {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const out: TemplateBehavior = {
+    ...(typeof r.sticky === "boolean" ? { sticky: r.sticky } : {}),
+    ...(typeof r.glass === "boolean" ? { glass: r.glass } : {}),
+    ...(typeof r.transparent === "boolean" ? { transparent: r.transparent } : {}),
+    ...(r.tone === "light" || r.tone === "dark" ? { tone: r.tone } : {}),
+    ...(typeof r.contentWidth === "string" && WIDTHS.includes(r.contentWidth) ? { contentWidth: r.contentWidth as TemplateContentWidth } : {}),
+  };
+  return Object.keys(out).length ? out : undefined;
+}
+
+/** Genişlik seçiminin satır içi stili: dar = ortalı 720px; geniş/tam = kapsayıcıdan taşar (ekran genişliğine göre). */
+export function contentWidthStyle(w: TemplateContentWidth | undefined): Record<string, string> | undefined {
+  switch (w) {
+    case "narrow":
+      return { maxWidth: "720px", marginInline: "auto" };
+    case "wide":
+      return { width: "min(1400px, calc(100vw - 2rem))", marginLeft: "50%", transform: "translateX(-50%)" };
+    case "full":
+      return { width: "100vw", marginLeft: "calc(50% - 50vw)" };
+    default:
+      return undefined;
+  }
 }
 
 export function readTemplateMeta(attrs: Record<string, unknown> | null | undefined): TemplateMeta | null {
-  const t = attrs?.template as { kind?: unknown; isDefault?: unknown; conditions?: unknown; behavior?: { sticky?: unknown; glass?: unknown } } | undefined;
+  const t = attrs?.template as { kind?: unknown; isDefault?: unknown; conditions?: unknown; behavior?: unknown } | undefined;
   if (!t || !isTemplateKind(t.kind)) return null;
   const conditions = t.conditions ? sanitizeConditions(t.conditions) : undefined;
-  const behavior = t.behavior ? { ...(typeof t.behavior.sticky === "boolean" ? { sticky: t.behavior.sticky } : {}), ...(typeof t.behavior.glass === "boolean" ? { glass: t.behavior.glass } : {}) } : undefined;
+  const behavior = sanitizeBehavior(t.behavior);
   return {
     kind: t.kind,
     isDefault: t.isDefault === true,
     ...(conditions && (conditions.include.length || conditions.exclude.length) ? { conditions } : {}),
-    ...(behavior && Object.keys(behavior).length ? { behavior } : {}),
+    ...(behavior ? { behavior } : {}),
   };
 }
 

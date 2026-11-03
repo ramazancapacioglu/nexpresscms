@@ -66,7 +66,7 @@ export function renderInkNames(p: Props): React.ReactElement {
         return (
           <div
             key={idx}
-            className="border-b border-r border-white/15 px-4 py-6 text-center text-xs font-medium tracking-wide text-zinc-500 last:border-r-0"
+            className="border-b border-r border-white/15 px-4 py-6 text-center text-xs font-medium tracking-wide text-nx-muted last:border-r-0"
           >
             {str(row?.value)}
           </div>
@@ -121,7 +121,7 @@ export function renderInkQuotes(p: Props, tokens: DesignTokens): React.ReactElem
           return (
             <blockquote key={idx} className="border-b border-r border-white/15 px-6 py-8 sm:px-8">
               <p className="text-lg font-medium leading-snug text-white">“{str(row?.quote)}”</p>
-              <footer className="mt-6 text-xs text-zinc-500">
+              <footer className="mt-6 text-xs text-nx-muted">
                 {str(row?.author)}
                 {str(row?.role) ? ` — ${str(row.role)}` : ""}
               </footer>

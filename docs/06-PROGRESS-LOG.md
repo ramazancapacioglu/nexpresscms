@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Faz 4b: karanlık mod, palet değişkenleri, şeffaf header, şablon içerik genişliği
+- ✅ **Palet değişkenleri:** ziyaretçi yüzeyi renkleri artık `var(--nx-*)` okur (`toCssVarTokens`; blok/şablon kodu `tokens.colors.x` yazmaya devam eder, yedek değer açık palettir). Sabit yazılmış Tailwind renkleri (`text-slate-*`, `bg-white`, `border-slate-*`, `text-blue-*`; 14 dosyada ~220 kullanım) anlamsal sınıflara taşındı: `text-nx-fg|soft|muted|link`, `bg-nx-card|subtle`, `border-nx-line` (`globals.css` `@theme`). Açık modda görünüm aynı kaldı (tarayıcıda karşılaştırıldı).
+- ✅ **Karanlık mod (CSS-only):** `customizer.darkMode: "off" | "auto"` (varsayılan kapalı) + elle ezilebilen `darkColors`. `deriveDarkColors` açık paletten WCAG AA (4.5) okunaklı karanlık palet türetir (bağlantı/düğme renkleri gerekirse açılır, ön plan renkleri en iyi kontrastla seçilir); `@media (prefers-color-scheme: dark)` altında yalnızca değişkenler değişir, **JS yok**. Yönetim: Tema › Renkler › "Karanlık mod" (önizleme renkleri, kontrast uyarısı, otomatiğe sıfırla). Mevcut `contrastRatio` (theme-lint) yeniden kullanıldı.
+- ✅ **Şeffaf header:** `behavior.transparent` + `tone` (açık/koyu yazı); header içeriğin üstüne biner, ana içeriğin üst boşluğu kalkar. Sayfa adresi koşuluyla yalnızca hero ile başlayan sayfalara bağlanması önerilir.
+- ✅ **İçerik genişliği (sayfa/yazı/ürün şablonu):** dar (720px) / varsayılan / geniş (1400px) / tam ekran (`contentWidthStyle`); tür başına yerleşim ihtiyacı şablon türü + koşullarla karşılanır.
+- Testler: çekirdek 176 (karanlık palet 4, davranış 1 yeni). Tarayıcıda: karanlık/açık tercihle arka plan/yazı/header renkleri ve ekran görüntüleri, dar genişlik, şeffaf header (yalnızca koşullu sayfada) doğrulandı.
+- Bilinen: ana sayfada konsolda "aynı key" React uyarısı var (bu değişiklikten bağımsız, önceden mevcut; izlenecek). Kalan Faz 4: üst bilgi oluşturucu (satır/öğe düzeni; şimdilik şablon + sütun/blok ile kuruluyor), site genelinde manuel tema anahtarı (JS gerektirir, bilerek yok).
+
 ### [2026-11-03] — Faz 4a: şablon görüntüleme koşulları ve header davranışı
 - ✅ **Görüntüleme koşulları** (çekirdek, saf: `template-conditions.ts`): şablon, atama olmasa da koşula uyan sayfalarda kendiliğinden devreye girer. Kural türleri: sayfa adresi, kategori, etiket, içerik türü, dil; "kullan" ve "kullanma" listeleri (en çok 20 kural). Çözümleme: **atama → en özgül eşleşen koşul (slug 100 > kategori 80 > etiket 70 > tür 50 > dil 30) → türün varsayılanı → yerleşik görünüm**; eşitlikte kimlik sırası (kararlı). Oturum/rol koşulu bilerek yok: ziyaretçi sayfaları önbelleklenir. Bu, "dil başına header/footer" ve "kategoriye özel yazı şablonu" ihtiyaçlarını karşılar.
 - ✅ Çağrı noktaları bağlam verir: sayfa/yazı (tür, slug, kategori/etiketler), arşivler, ürün/mağaza, header/footer/kenar çubuğu (dil + sayfa adresi).

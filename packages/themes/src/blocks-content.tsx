@@ -28,22 +28,22 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                 Bağlantılı @id Entity Kartı
               </span>
               {typeof p.sku === "string" && (
-                <span className="text-xs font-mono text-slate-500">SKU: {p.sku}</span>
+                <span className="text-xs font-mono text-nx-muted">SKU: {p.sku}</span>
               )}
             </div>
             <h3
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-xl font-bold text-slate-900"
+              className="text-xl font-bold text-nx-fg"
             >
               {String(p.productName ?? "")}
             </h3>
             {typeof p.summary === "string" && (
-              <p className="text-sm text-slate-600">{p.summary}</p>
+              <p className="text-sm text-nx-soft">{p.summary}</p>
             )}
           </div>
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
             {typeof p.price === "string" && (
-              <span className="text-2xl font-extrabold text-slate-900">{p.price}</span>
+              <span className="text-2xl font-extrabold text-nx-fg">{p.price}</span>
             )}
             <a
               href="/tr/nexpress-enterprise-cloud"
@@ -68,7 +68,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
           {typeof p.title === "string" && (
             <h2
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl font-bold text-slate-900"
+              className="text-2xl font-bold text-nx-fg"
             >
               {p.title}
             </h2>
@@ -81,7 +81,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,
                 }}
-                className="flex gap-4 border bg-white p-5"
+                className="flex gap-4 border bg-nx-card p-5"
               >
                 <div
                   style={{ backgroundColor: tokens.colors.primary }}
@@ -90,10 +90,10 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                   {idx + 1}
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-slate-900">
+                  <h3 className="text-base font-semibold text-nx-fg">
                     {String(step?.title ?? "")}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-nx-soft">
                     {String(step?.description ?? "")}
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
         <section className="space-y-6">
           <h2
             style={{ fontFamily: tokens.typography.headingFont }}
-            className="text-2xl font-bold text-slate-900"
+            className="text-2xl font-bold text-nx-fg"
           >
             {String(p.title ?? "Sıkça Sorulan Sorular")}
           </h2>
@@ -124,15 +124,15 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,
                 }}
-                className="group border bg-white p-5"
+                className="group border bg-nx-card p-5"
               >
-                <summary className="cursor-pointer list-none font-semibold text-slate-900 flex items-center justify-between">
+                <summary className="cursor-pointer list-none font-semibold text-nx-fg flex items-center justify-between">
                   <span>{String(item?.question ?? "")}</span>
                   <span className="text-xs text-slate-400 group-open:rotate-180 transition-transform">
                     ▼
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-slate-600 leading-relaxed border-t pt-3">
+                <p className="mt-3 text-sm text-nx-soft leading-relaxed border-t pt-3">
                   {String(item?.answer ?? "")}
                 </p>
               </details>
@@ -154,7 +154,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
           <div className="text-xs font-bold uppercase tracking-wider" style={{ color: tokens.colors.accent }}>
             {String(p.tone ?? "NOTE")} — {String(p.title ?? "")}
           </div>
-          <p className="text-sm text-slate-700 leading-relaxed">{String(p.text ?? "")}</p>
+          <p className="text-sm text-nx-soft leading-relaxed">{String(p.text ?? "")}</p>
         </div>
       );
     }
@@ -187,10 +187,10 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             html={p.html}
             text={p.quote ?? p.text}
             style={{ fontFamily: tokens.typography.headingFont }}
-            className="text-lg font-medium italic leading-relaxed text-slate-900 md:text-xl"
+            className="text-lg font-medium italic leading-relaxed text-nx-fg md:text-xl"
           />
           {(typeof p.author === "string" || typeof p.role === "string") && (
-            <footer className="text-xs font-semibold text-slate-600">
+            <footer className="text-xs font-semibold text-nx-soft">
               — {String(p.author ?? "")}
               {typeof p.role === "string" && p.role ? (
                 <span className="text-slate-400 font-normal"> • {p.role}</span>
@@ -206,7 +206,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
       const listType = String(p.listType ?? "check");
       if (listType === "numbered") {
         return (
-          <ol className="list-decimal pl-6 space-y-2 text-base text-slate-700">
+          <ol className="list-decimal pl-6 space-y-2 text-base text-nx-soft">
             {items.map((it: any, idx: number) => (
               <li key={idx} className="leading-relaxed">
                 {String(it)}
@@ -216,7 +216,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
         );
       }
       return (
-        <ul className="space-y-2.5 text-base text-slate-700">
+        <ul className="space-y-2.5 text-base text-nx-soft">
           {items.map((it: any, idx: number) => (
             <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
               <span
@@ -263,7 +263,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             )}
           </div>
           {caption ? (
-            <figcaption className="text-xs text-slate-500 text-center italic">
+            <figcaption className="text-xs text-nx-muted text-center italic">
               {caption}
             </figcaption>
           ) : null}
@@ -279,7 +279,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
           {typeof p.title === "string" && p.title && (
             <h3
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-xl font-bold text-slate-900"
+              className="text-xl font-bold text-nx-fg"
             >
               {p.title}
             </h3>
@@ -289,7 +289,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
               borderRadius: tokens.geometry.borderRadius,
               borderColor: tokens.colors.border,
             }}
-            className="overflow-x-auto border bg-white"
+            className="overflow-x-auto border bg-nx-card"
           >
             <table className="w-full text-left border-collapse text-sm">
               <thead>
@@ -300,7 +300,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                   {headers.map((h: any, idx: number) => (
                     <th
                       key={idx}
-                      className="px-4 py-3 font-semibold text-slate-900"
+                      className="px-4 py-3 font-semibold text-nx-fg"
                     >
                       {String(h)}
                     </th>
@@ -316,8 +316,8 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                           key={cIdx}
                           className={`px-4 py-3 ${
                             cIdx === 0
-                              ? "font-medium text-slate-900"
-                              : "text-slate-600"
+                              ? "font-medium text-nx-fg"
+                              : "text-nx-soft"
                           }`}
                         >
                           {String(cell)}
@@ -343,7 +343,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             borderRadius: tokens.geometry.borderRadius,
             borderColor: tokens.colors.border,
           }}
-          className="border bg-white p-6 md:p-8 space-y-6 shadow-xs"
+          className="border bg-nx-card p-6 md:p-8 space-y-6 shadow-xs"
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
             <div>
@@ -352,7 +352,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
               </div>
               <h3
                 style={{ fontFamily: tokens.typography.headingFont }}
-                className="text-xl font-bold text-slate-900 mt-1"
+                className="text-xl font-bold text-nx-fg mt-1"
               >
                 {String(p.itemName ?? "Ürün İncelemesi")}
               </h3>
@@ -366,7 +366,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             </div>
           </div>
           {typeof p.verdict === "string" && p.verdict && (
-            <p className="text-sm font-medium text-slate-700 leading-relaxed">
+            <p className="text-sm font-medium text-nx-soft leading-relaxed">
               {p.verdict}
             </p>
           )}

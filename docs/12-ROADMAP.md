@@ -85,4 +85,4 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - **Editör zenginleştirme (docs/20):** Faz 1 (stil motoru) tamam. Sırada Faz 2 (simge/sayaç/referans/marquee blokları, düğme hover-simge, sütun sırası, şekil ayırıcılar), Faz 3 (sorgu döngüsü + süzgeçler), Faz 4 (üst bilgi oluşturucu, tür başına yerleşim, görüntüleme koşulları, karanlık mod), Faz 5 (stil ön ayarları, kayan blok araç çubuğu).
 
-- **Faz 4b (sırada):** üst bilgi oluşturucu (satır/öğe, şeffaf header, mobil ayrı), tür başına yerleşim, karanlık mod (`prefers-color-scheme`; düzen bileşenlerindeki satır içi renkler önce CSS değişkenine taşınmalı), genel palet değişkenleri.
+- **Faz 4b tamam** (karanlık mod, palet değişkenleri, şeffaf header, içerik genişliği). Açık: üst bilgi oluşturucu (satır/öğe düzeni, mobil header ayrı), ziyaretçi için elle tema anahtarı (JS gerektirir; bilerek yok), kullanıcı CSS'inde ve eklenti bloklarında sabit renkler için uyum denetimi.
