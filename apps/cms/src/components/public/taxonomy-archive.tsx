@@ -64,7 +64,7 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
       menu,
       tokens,
       menuLabel: "Menü",
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: data.term.name, href: `/${locale}/${prefix}/${slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: kind === "category" ? "Kategoriler" : "Etiketler", href: `/${locale}/${prefix}` }, { name: data.term.name, href: `/${locale}/${prefix}/${slug}` }],
       archive: {
         title: data.term.name,
         description: data.term.description,

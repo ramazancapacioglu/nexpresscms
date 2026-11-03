@@ -80,6 +80,15 @@ export const tr = {
     themePreview: "Tema önizlemesi: {id} — yalnızca siz görüyorsunuz, site değişmedi.",
     openPage: "RSC sayfasını aç →",
   },
+  taxonomy: {
+    categoriesTitle: "Kategoriler",
+    tagsTitle: "Etiketler",
+    indexEmpty: "Henüz yayınlanmış bir {kind} yok.",
+    itemCount: "{n, plural, one {# yayın} other {# yayın}}",
+    kindCategory: "kategori",
+    kindTag: "etiket",
+    home: "Ana sayfa",
+  },
   query: {
     searchLabel: "Ara",
     searchPlaceholder: "Ara…",

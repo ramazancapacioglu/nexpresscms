@@ -77,6 +77,15 @@ export const en: Messages = {
     themePreview: "Theme preview: {id} — only you can see this, the site is unchanged.",
     openPage: "Open RSC page →",
   },
+  taxonomy: {
+    categoriesTitle: "Categories",
+    tagsTitle: "Tags",
+    indexEmpty: "There are no published {kind} yet.",
+    itemCount: "{n, plural, one {# post} other {# posts}}",
+    kindCategory: "category",
+    kindTag: "tag",
+    home: "Home",
+  },
   query: {
     searchLabel: "Search",
     searchPlaceholder: "Search…",

@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Kategori/etiket indeks sayfaları (404 düzeltmesi)
+- 🐛 `/{dil}/kategori` ve `/{dil}/etiket` (tüm kategori/etiket listesi) yoktu ve 404 veriyordu; yalnızca tekil arşivler (`/{dil}/kategori/{slug}`) vardı. İndeks sayfaları eklendi: kategoriler üst/alt ağacıyla, etiketler bulut olarak; yalnızca en az bir herkese açık yayını olan terimler listelenir, sayımlarla; hiç terim yoksa 200 + `noindex`. Arşiv sayfalarının kırıntı yoluna "Kategoriler/Etiketler" basamağı eklendi (indeks sayfasına bağlanır). Metinler `taxonomy.*` i18n anahtarlarıdır (tr/en).
+- Doğrulama: kullanıcının çalışan geliştirme örneğinde (PostgreSQL verisi) tekil arşivler zaten 200 dönüyordu; indeks adresleri 404'tü. Yeni sürümde ikisi de 200.
+
 ### [2026-11-03] — Kalan bölümlerin toplanması (Faz 2/3/4 artıkları) ve CI düzeltmeleri
 - 🐛 **CI (axe) düzeltildi:** blok başlık çubuğu düğmeleri 24 px altındaydı ve kayan araç çubuğu onlarla çakışıyordu (`target-size`). Düğmeler 24×24 yapıldı, araç çubuğu başlık satırının içine alındı (çakışma yok). Yerelde axe ile editör sayfasında ihlal kalmadığı doğrulandı.
 - 🐛 **Blok türleri tek kaynağa bağlandı:** `BLOCK_TYPES` (çekirdek) artık hem `BlockType` birleşimini hem içe aktarma şeması `BlockNodeSchema`'yı besler. Şemadaki liste 33 türü eksik tutuyordu (tabs, data_table, info_box, single_icon, marquee…); bu türleri içeren şablon paketleri içe aktarılırken reddediliyordu. Test: katalogdaki her tür şemadan geçer.
