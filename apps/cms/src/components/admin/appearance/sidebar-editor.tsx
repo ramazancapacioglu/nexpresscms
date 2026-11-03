@@ -3,12 +3,25 @@
 import React, { useState, useTransition } from "react";
 import {
   createDefaultWidget,
+  resolveAllSidebarAreas,
   resolveSidebarWidgets,
+  type SidebarAreaConfig,
   type SidebarConfig,
   type SiteWidget,
   type SiteWidgetType,
 } from "@nexpress/core";
-import { PanelLeft, PanelRight, Plus, Sparkles } from "lucide-react";
+import {
+  BookOpen,
+  FolderTree,
+  HelpCircle,
+  Layout,
+  PanelLeft,
+  PanelRight,
+  Plus,
+  ShoppingBag,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { saveChromeAction } from "@/app/admin/actions";
 import { AppearanceTabs, SaveBar, fieldClass } from "./appearance-ui";
 import { WidgetItemCard, WidgetPickerModal, WidgetPreviewBox } from "./widget-studio";
@@ -81,27 +94,32 @@ const SIDEBAR_WIDGET_PRESETS: Array<{
 ];
 
 export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
-  const [sidebar, setSidebar] = useState<SidebarConfig>(() => ({
-    ...initial,
-    width: initial.width ?? "300px",
-    sticky: initial.sticky ?? true,
-    styleVariant: initial.styleVariant ?? "cards",
-    widgets: resolveSidebarWidgets(initial),
-  }));
+  const [areas, setAreas] = useState<SidebarAreaConfig[]>(() => resolveAllSidebarAreas(initial));
+  const [activeAreaId, setActiveAreaId] = useState<string>("blog");
+  const [newAreaModalOpen, setNewAreaModalOpen] = useState(false);
+  const [newAreaName, setNewAreaName] = useState("");
+  const [newAreaId, setNewAreaId] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
 
-  const widgets = sidebar.widgets ?? [];
+  const activeArea = areas.find((a) => a.id === activeAreaId) || areas[0]!;
+  const widgets = activeArea.widgets ?? [];
+
+  const updateActiveArea = (patch: Partial<SidebarAreaConfig>) => {
+    setAreas((prev) =>
+      prev.map((a) => (a.id === activeArea.id ? { ...a, ...patch } : a))
+    );
+  };
 
   const updateWidgets = (next: SiteWidget[]) => {
-    setSidebar((prev) => ({ ...prev, widgets: next }));
+    updateActiveArea({ widgets: next });
   };
 
   const handleAddWidget = (type: SiteWidgetType) => {
     const w = createDefaultWidget(type, 0);
     updateWidgets([...widgets, w]);
-    setNotice(`"${w.title}" bileşeni kenar çubuğuna eklendi.`);
+    setNotice(`"${w.title}" bileşeni "${activeArea.name}" alanına eklendi.`);
   };
 
   const moveWidget = (index: number, delta: -1 | 1) => {
@@ -113,39 +131,164 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
     updateWidgets(copy);
   };
 
+  const handleCreateArea = () => {
+    const trimmedName = newAreaName.trim();
+    if (!trimmedName) return;
+    const cleanId = (newAreaId.trim() || trimmedName)
+      .toLowerCase()
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c")
+      .replace(/[^a-z0-9_-]/g, "-");
+
+    if (areas.some((a) => a.id === cleanId)) {
+      setNotice(`"${cleanId}" kimliğine sahip bir kenar çubuğu alanı zaten var.`);
+      return;
+    }
+
+    const newArea: SidebarAreaConfig = {
+      id: cleanId,
+      name: trimmedName,
+      description: "Özel kenar çubuğu alanı.",
+      enabled: true,
+      position: "right",
+      width: "300px",
+      sticky: true,
+      styleVariant: "cards",
+      widgets: [createDefaultWidget("search", 0), createDefaultWidget("categories", 0)],
+    };
+
+    setAreas((prev) => [...prev, newArea]);
+    setActiveAreaId(cleanId);
+    setNewAreaName("");
+    setNewAreaId("");
+    setNewAreaModalOpen(false);
+    setNotice(`"${trimmedName}" kenar çubuğu alanı oluşturuldu.`);
+  };
+
+  const handleDeleteArea = (id: string) => {
+    if (["primary", "blog", "shop", "archive", "faq", "page"].includes(id)) {
+      setNotice("Standart kenar çubuğu alanları silinemez, ancak 'Devre Dışı' bırakılabilir.");
+      return;
+    }
+    setAreas((prev) => prev.filter((a) => a.id !== id));
+    setActiveAreaId("primary");
+    setNotice("Özel kenar çubuğu alanı silindi.");
+  };
+
   const save = () => {
     start(async () => {
-      await saveChromeAction({ sidebarConfig: sidebar });
-      setNotice("Kenar çubuğu yerleşimi ve bileşenleri kaydedildi.");
+      const primary = areas.find((a) => a.id === "primary") || areas[0]!;
+      const fullConfig: SidebarConfig = {
+        ...initial,
+        enabled: primary.enabled,
+        position: primary.position || "right",
+        width: primary.width || "300px",
+        sticky: primary.sticky ?? true,
+        styleVariant: primary.styleVariant || "cards",
+        title: primary.name,
+        widgets: primary.widgets || [],
+        areas,
+      };
+      await saveChromeAction({ sidebarConfig: fullConfig });
+      setNotice("Tüm kenar çubuğu alanları ve bileşenleri başarıyla kaydedildi.");
     });
+  };
+
+  const getAreaIcon = (id: string) => {
+    switch (id) {
+      case "blog":
+        return <BookOpen className="h-3.5 w-3.5 text-blue-600" />;
+      case "shop":
+        return <ShoppingBag className="h-3.5 w-3.5 text-emerald-600" />;
+      case "archive":
+        return <FolderTree className="h-3.5 w-3.5 text-amber-600" />;
+      case "faq":
+        return <HelpCircle className="h-3.5 w-3.5 text-purple-600" />;
+      case "page":
+        return <Layout className="h-3.5 w-3.5 text-indigo-600" />;
+      default:
+        return <Layout className="h-3.5 w-3.5 text-slate-600" />;
+    }
   };
 
   return (
     <div className="space-y-4">
       <AppearanceTabs current="sidebar" />
       <SaveBar
-        title="Kenar Çubuğu (Sidebar) Yerleşimi ve Bileşen (Widget) Stüdyosu"
+        title="Çoklu Kenar Çubuğu (Multi-Sidebar) & Bileşen (Widget) Stüdyosu"
         pending={pending}
         notice={notice}
         onSave={save}
       />
 
-      {/* Hazır Bileşen Paketleri */}
+      {/* Çoklu Kenar Çubuğu Alanları (WordPress / Kadence Tarzı) */}
+      <div className="rounded-xl border border-[#E6E7EA] bg-white p-3.5 shadow-2xs dark:border-[#23262E] dark:bg-[#15171C]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E7EA] pb-2.5 dark:border-[#23262E]">
+          <div>
+            <div className="text-[12px] font-bold">Kenar Çubuğu Alanı Seçin (Birden Fazla Sidebar)</div>
+            <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+              Blog, Mağaza, Kategori veya Kurumsal Sayfalar için farklı bileşenler ve yerleşimler kurgulayın.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNewAreaModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 px-2.5 py-1 text-[11px] font-bold text-blue-600 transition hover:bg-blue-500/20"
+          >
+            <Plus className="h-3.5 w-3.5" /> Yeni Kenar Çubuğu Ekle
+          </button>
+        </div>
+
+        {/* Alan Sekmeleri */}
+        <div className="flex flex-wrap gap-1.5 pt-2.5">
+          {areas.map((a) => {
+            const isActive = a.id === activeArea.id;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => setActiveAreaId(a.id)}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition ${
+                  isActive
+                    ? "border-blue-600 bg-blue-500/10 text-blue-600 shadow-2xs font-bold"
+                    : "border-[#E6E7EA] bg-[#F8FAFC] text-[#5F6570] hover:border-blue-400 hover:text-foreground dark:border-[#2E333D] dark:bg-[#111318] dark:text-[#8C9099]"
+                }`}
+              >
+                {getAreaIcon(a.id)}
+                <span>{a.name}</span>
+                <span className="rounded bg-black/5 px-1.5 py-0.2 font-mono text-[9px] opacity-75 dark:bg-white/10">
+                  {a.widgets?.length ?? 0}
+                </span>
+                {!a.enabled ? (
+                  <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] text-amber-600">
+                    Kapalı
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Hazır Bileşen Paketleri (Aktif Kenar Çubuğuna Uygula) */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {SIDEBAR_WIDGET_PRESETS.map((preset) => (
           <button
             key={preset.id}
             type="button"
             onClick={() => {
-              setSidebar((prev) => ({
-                ...prev,
+              updateActiveArea({
                 enabled: true,
                 position: preset.position,
                 width: preset.width,
                 styleVariant: preset.styleVariant,
                 widgets: preset.widgets(),
-              }));
-              setNotice(`"${preset.name}" bileşen dizilimi yüklendi. Kaydet ile yayınlanır.`);
+              });
+              setNotice(`"${preset.name}" bileşen dizilimi "${activeArea.name}" alanına yüklendi.`);
             }}
             className="group rounded-xl border border-[#E6E7EA] bg-white p-3.5 text-left text-[12px] transition hover:border-blue-500 dark:border-[#23262E] dark:bg-[#15171C]"
           >
@@ -169,27 +312,39 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
           <div className="space-y-3.5 rounded-xl border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
               <div>
-                <div className="text-[13px] font-bold">1. Kenar Çubuğu Yerleşim Düzeni</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-bold">1. {activeArea.name} Yerleşim Düzeni</span>
+                  {!["primary", "blog", "shop", "archive", "faq", "page"].includes(activeArea.id) ? (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteArea(activeArea.id)}
+                      className="rounded p-1 text-red-500 hover:bg-red-500/10"
+                      title="Bu özel alanı sil"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
                 <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-                  Kenar çubuğunun sayfa içindeki konumunu, genişliğini ve kart stilini belirleyin.
+                  {activeArea.description || "Bu alan için sayfa içindeki konumu, genişliği ve kart stilini belirleyin."}
                 </p>
               </div>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#D5D8DE] bg-[#F8FAFC] px-3 py-1.5 text-[11px] font-bold dark:border-[#2E333D] dark:bg-[#111318]">
                 <input
                   type="checkbox"
-                  checked={sidebar.enabled}
-                  onChange={(e) => setSidebar((prev) => ({ ...prev, enabled: e.target.checked }))}
+                  checked={activeArea.enabled}
+                  onChange={(e) => updateActiveArea({ enabled: e.target.checked })}
                 />
-                <span>Kenar Çubuğu Yayında</span>
+                <span>Bu Kenar Çubuğu Etkin</span>
               </label>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
-                onClick={() => setSidebar((prev) => ({ ...prev, position: "left" }))}
+                onClick={() => updateActiveArea({ position: "left" })}
                 className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-xs font-semibold transition ${
-                  sidebar.position === "left"
+                  activeArea.position === "left"
                     ? "border-blue-600 bg-blue-500/10 text-blue-600"
                     : "border-[#E6E7EA] hover:bg-black/[0.02] dark:border-[#23262E]"
                 }`}
@@ -198,9 +353,9 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
               </button>
               <button
                 type="button"
-                onClick={() => setSidebar((prev) => ({ ...prev, position: "right" }))}
+                onClick={() => updateActiveArea({ position: "right" })}
                 className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-xs font-semibold transition ${
-                  sidebar.position === "right"
+                  activeArea.position === "right"
                     ? "border-blue-600 bg-blue-500/10 text-blue-600"
                     : "border-[#E6E7EA] hover:bg-black/[0.02] dark:border-[#23262E]"
                 }`}
@@ -215,12 +370,11 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
                 <select
                   aria-label="Sütun Genişliği"
                   className={fieldClass}
-                  value={sidebar.width ?? "300px"}
+                  value={activeArea.width ?? "300px"}
                   onChange={(e) =>
-                    setSidebar((prev) => ({
-                      ...prev,
+                    updateActiveArea({
                       width: e.target.value as SidebarConfig["width"],
-                    }))
+                    })
                   }
                 >
                   <option value="260px">260px (Dar)</option>
@@ -234,12 +388,11 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
                 <select
                   aria-label="Bileşen Kart Stili"
                   className={fieldClass}
-                  value={sidebar.styleVariant ?? "cards"}
+                  value={activeArea.styleVariant ?? "cards"}
                   onChange={(e) =>
-                    setSidebar((prev) => ({
-                      ...prev,
+                    updateActiveArea({
                       styleVariant: e.target.value as SidebarConfig["styleVariant"],
-                    }))
+                    })
                   }
                 >
                   <option value="cards">Ayrık Kartlar (Önerilen)</option>
@@ -252,9 +405,9 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
                 <label className="flex cursor-pointer items-center gap-2 text-[11px] font-medium">
                   <input
                     type="checkbox"
-                    checked={sidebar.sticky ?? true}
+                    checked={activeArea.sticky ?? true}
                     onChange={(e) =>
-                      setSidebar((prev) => ({ ...prev, sticky: e.target.checked }))
+                      updateActiveArea({ sticky: e.target.checked })
                     }
                   />
                   <span>Kaydırırken yapışkan (Sticky)</span>
@@ -268,10 +421,10 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <div className="text-[13px] font-bold">
-                  2. Kenar Çubuğu Bileşenleri ({widgets.length} Bileşen)
+                  2. {activeArea.name} Bileşenleri ({widgets.length} Bileşen)
                 </div>
                 <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-                  Kategoriler, son yazılar, son yorumlar, kampanyalar veya bülten bileşenlerini sıralayın ve özelleştirin.
+                  Bu kenar çubuğuna özel bileşenleri sıralayın, ekleyin ve yapılandırın.
                 </p>
               </div>
               <button
@@ -313,16 +466,16 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
         {/* Sağ: Canlı Yerleşim & Bileşen Önizlemesi */}
         <aside className="space-y-3 rounded-xl border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C] lg:col-span-5">
           <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">
-            <span>Canlı Kenar Çubuğu & Bileşen Önizlemesi</span>
+            <span>Canlı Önizleme ({activeArea.name})</span>
             <span className="rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600">
-              {sidebar.enabled
-                ? `${sidebar.position === "left" ? "Sol" : "Sağ"} • ${sidebar.width ?? "300px"}`
+              {activeArea.enabled
+                ? `${activeArea.position === "left" ? "Sol" : "Sağ"} • ${activeArea.width ?? "300px"}`
                 : "Kapalı"}
             </span>
           </div>
 
           <div className="flex gap-3 rounded-xl border border-dashed border-[#D5D8DE] bg-[#F8FAFC] p-3.5 dark:border-[#2E333D] dark:bg-[#111318]">
-            {sidebar.enabled && sidebar.position === "left" && (
+            {activeArea.enabled && activeArea.position === "left" && (
               <div className="w-52 shrink-0 space-y-2.5">
                 {widgets.map((w) => (
                   <WidgetPreviewBox key={w.id} widget={w} />
@@ -332,19 +485,27 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
 
             <div className="flex-1 space-y-3 rounded-xl border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
               <div className="inline-block rounded bg-blue-500/10 px-2 py-0.5 text-[9px] font-bold text-blue-600">
-                ANA İÇERİK ALANI
+                ANA İÇERİK ALANI ({activeArea.name})
               </div>
               <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
               <div className="h-2.5 w-full rounded bg-slate-100 dark:bg-slate-800" />
               <div className="h-2.5 w-5/6 rounded bg-slate-100 dark:bg-slate-800" />
               <div className="flex h-32 w-full items-center justify-center rounded-lg bg-slate-100 text-[11px] font-medium text-muted-foreground dark:bg-slate-800/60">
-                Sayfa / Blog / Kategori / Ürün Gövdesi
+                {activeArea.id === "blog"
+                  ? "Blog Yazı İçeriği"
+                  : activeArea.id === "shop"
+                    ? "Mağaza & Ürün Listesi"
+                    : activeArea.id === "archive"
+                      ? "Kategori Arşivi"
+                      : activeArea.id === "faq"
+                        ? "SSS & Rehber Metni"
+                        : "Sayfa Gövdesi"}
               </div>
               <div className="h-2.5 w-full rounded bg-slate-100 dark:bg-slate-800" />
               <div className="h-2.5 w-2/3 rounded bg-slate-100 dark:bg-slate-800" />
             </div>
 
-            {sidebar.enabled && sidebar.position === "right" && (
+            {activeArea.enabled && activeArea.position === "right" && (
               <div className="w-52 shrink-0 space-y-2.5">
                 {widgets.map((w) => (
                   <WidgetPreviewBox key={w.id} widget={w} />
@@ -355,11 +516,64 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
         </aside>
       </div>
 
+      {/* Yeni Kenar Çubuğu Alanı Ekleme Modalı */}
+      {newAreaModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl space-y-4">
+            <div>
+              <h3 className="text-sm font-bold">Yeni Kenar Çubuğu (Sidebar) Alanı</h3>
+              <p className="text-xs text-muted-foreground">
+                Örn: &ldquo;Özel Kampanya Kenar Çubuğu&rdquo; veya &ldquo;Üye Paneli Sidebar&rdquo;.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold">Kenar Çubuğu Adı</label>
+                <input
+                  type="text"
+                  value={newAreaName}
+                  onChange={(e) => setNewAreaName(e.target.value)}
+                  placeholder="Özel Kenar Çubuğu"
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold">Kimlik (Opsiyonel slug)</label>
+                <input
+                  type="text"
+                  value={newAreaId}
+                  onChange={(e) => setNewAreaId(e.target.value)}
+                  placeholder="ozel-sidebar"
+                  className={`${fieldClass} font-mono text-xs`}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setNewAreaModalOpen(false)}
+                className="rounded-lg border px-3 py-1.5 text-xs font-semibold"
+              >
+                İptal
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateArea}
+                disabled={!newAreaName.trim()}
+                className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-40"
+              >
+                Oluştur
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <WidgetPickerModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onSelect={handleAddWidget}
-        targetLabel="Kenar Çubuğu (Sidebar)"
+        targetLabel={activeArea.name}
       />
     </div>
   );

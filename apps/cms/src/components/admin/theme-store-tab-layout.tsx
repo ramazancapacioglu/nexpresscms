@@ -232,38 +232,94 @@ export function ThemeStoreTabLayout({ s }: { s: ThemeStoreState }) {
                 </div>
 
                 <div className="text-[11px] font-semibold text-muted-foreground pt-1">
-                  Hangi Şablonlarda Kenar Çubuğu Gösterilsin?
+                  Hangi Şablonlarda Hangi Kenar Çubuğu Gösterilsin? (Kadence / WordPress Tarzı)
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {(
                     [
-                      { key: "sidebarOnBlog", label: "Blog Yazıları (Tekil Yazı)" },
-                      { key: "sidebarOnArchive", label: "Kategori & Etiket Arşivleri" },
-                      { key: "sidebarOnPage", label: "Kurumsal Sayfalar" },
-                      { key: "sidebarOnShop", label: "Mağaza, Ürün & Ürün Kategorisi" },
-                      { key: "sidebarOnSearch", label: "Arama Sonuçları Sayfası" },
+                      {
+                        key: "sidebarOnBlog",
+                        idKey: "blogSidebarId",
+                        defaultArea: "blog",
+                        label: "Blog Yazıları (Tekil Yazı)",
+                      },
+                      {
+                        key: "sidebarOnArchive",
+                        idKey: "archiveSidebarId",
+                        defaultArea: "archive",
+                        label: "Kategori & Etiket Arşivleri",
+                      },
+                      {
+                        key: "sidebarOnPage",
+                        idKey: "pageSidebarId",
+                        defaultArea: "page",
+                        label: "Kurumsal Sayfalar (Varsayılan: Kapalı)",
+                      },
+                      {
+                        key: "sidebarOnShop",
+                        idKey: "shopSidebarId",
+                        defaultArea: "shop",
+                        label: "Mağaza, Ürün & Ürün Kategorisi",
+                      },
+                      {
+                        key: "sidebarOnSearch",
+                        idKey: "searchSidebarId",
+                        defaultArea: "primary",
+                        label: "Arama Sonuçları Sayfası",
+                      },
                     ] as const
-                  ).map((item) => (
-                    <label
-                      key={item.key}
-                      className="flex items-center justify-between cursor-pointer py-0.5"
-                    >
-                      <span>{item.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={customizer.layout[item.key] ?? false}
-                        onChange={(e) =>
-                          setCustomizer((prev) => ({
-                            ...prev,
-                            layout: {
-                              ...prev.layout,
-                              [item.key]: e.target.checked,
-                            },
-                          }))
-                        }
-                      />
-                    </label>
-                  ))}
+                  ).map((item) => {
+                    const isChecked = customizer.layout[item.key] ?? false;
+                    const selectedArea = customizer.layout[item.idKey] || item.defaultArea;
+                    return (
+                      <div
+                        key={item.key}
+                        className="rounded-lg border border-border/70 bg-muted/20 p-2 space-y-1.5 text-[11px]"
+                      >
+                        <label className="flex items-center justify-between cursor-pointer font-semibold">
+                          <span>{item.label}</span>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) =>
+                              setCustomizer((prev) => ({
+                                ...prev,
+                                layout: {
+                                  ...prev.layout,
+                                  [item.key]: e.target.checked,
+                                },
+                              }))
+                            }
+                          />
+                        </label>
+                        {isChecked && (
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40 text-[10px]">
+                            <span className="text-muted-foreground">Kenar Çubuğu Alanı:</span>
+                            <select
+                              value={selectedArea}
+                              onChange={(e) =>
+                                setCustomizer((prev) => ({
+                                  ...prev,
+                                  layout: {
+                                    ...prev.layout,
+                                    [item.idKey]: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="h-6 rounded border border-border bg-background px-1.5 text-[10px] font-semibold"
+                            >
+                              <option value="blog">Blog & Yazı Kenar Çubuğu</option>
+                              <option value="shop">Ürün & Mağaza Kenar Çubuğu</option>
+                              <option value="archive">Kategori & Arşiv Kenar Çubuğu</option>
+                              <option value="faq">Soru & Cevap (SSS) Kenar Çubuğu</option>
+                              <option value="page">Kurumsal Sayfa Kenar Çubuğu</option>
+                              <option value="primary">Genel / Varsayılan Kenar Çubuğu</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

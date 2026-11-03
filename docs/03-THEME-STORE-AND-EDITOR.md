@@ -218,3 +218,35 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
   - **0-KB RSC Ziyaretçi Çizimi (`getPublicWidgetFeed`, `RenderPublicWidget`):** Hem kenar çubuğu hem footer bileşenleri ziyaretçi sayfalarında gerçek veritabanı verileriyle (kategoriler, son yazılar, onaylı yorumlar, ürünler) 0 KB istemci JS ile çizilir.
 - **Şablon Oluşturucu Modal ve Özelleştirici İçi Şablon Yönetimi (`appearance/templates/templates-manager.tsx`, `appearance/templates/actions.ts`, `theme-store-tab-layout.tsx`):**
   - Hem `/admin/appearance/templates` sayfasına hem de `/admin/themes` içindeki `Şablonlar` sekmesine doğrudan **Yeni Şablon Oluşturucu** (11 şablon türü, özel şablon adı, hazır şablondan veya `Tam Genişlik` / `Sağ Sidebar (8+4)` / `Sol Sidebar (4+8)` iskeletiyle sıfırdan oluşturma, şablon çoğaltma, varsayılan yapma ve tek tıkla Görsel Stüdyoda düzenleme) eklendi.
+
+## Çoklu Kenar Çubuğu (Multi-Sidebar) Mimarisi ve İçerik Türü Bazlı Kenar Çubuğu Eşleme (2026-11-03)
+- **Çoklu Kenar Çubuğu Alanları (`@nexpress/core/widgets`, `STANDARD_SIDEBAR_AREAS`):**
+  - Tek ve sabit bir kenar çubuğu yerine, farklı içerik türleri ve şablonlar için bağımsız kenar çubuğu alanları (`SidebarAreaConfig`: `id`, `name`, `description`, `enabled`, `position`, `width`, `sticky`, `styleVariant`, `widgets`) tanımlandı.
+  - 6 Standart Kenar Çubuğu Alanı:
+    1. `primary` — Genel / Varsayılan Kenar Çubuğu
+    2. `blog` — Blog & Makale Kenar Çubuğu (Son yazılar, kategoriler, bülten, yazar kartı)
+    3. `shop` — Ürün & Mağaza Kenar Çubuğu (Öne çıkan ürünler, filtreler, güven rozetleri)
+    4. `archive` — Kategori & Arşiv Kenar Çubuğu (Kategori ağacı, etiket bulutu, arama)
+    5. `faq` — Soru & Cevap / SSS Kenar Çubuğu (Uzman desteği, iletişim kartı, içindekiler)
+    6. `page` — Kurumsal Sayfa Kenar Çubuğu (Hızlı gezinme menüsü, marka kartı, iletişim)
+  - Kullanıcılar ayrıca `/admin/appearance/sidebar` stüdyosundan diledikleri kadar özel kenar çubuğu alanı oluşturabilir veya silebilir (`resolveAllSidebarAreas`, `resolveActiveSidebarArea`).
+- **Çoklu Sidebar Stüdyosu (`apps/cms/src/components/admin/appearance/sidebar-editor.tsx`):**
+  - Üstte alan seçim sekmeleri (tüm standart ve özel kenar çubukları simgeleri ve bileşen sayılarıyla listelenir), yeni alan ekleme modalı ve alana özel kontroller (sağ/sol yön, 260/300/340px genişlik, kart/kenarlık/minimal stil, yapışkanlık ve aktiflik).
+  - Her alan bağımsız bileşen listesine (`widgets`) ve hazır şablon ön ayarlarına (`SIDEBAR_WIDGET_PRESETS`) sahiptir.
+- **Canlı Tema Özelleştiricide İçerik Türü Kenar Çubuğu Eşleme (`theme-store-tab-layout.tsx`):**
+  - `customizer.layout` ayarları altına içerik türü bazlı sidebar alan seçicileri eklendi:
+    - Blog Yazıları → `blogSidebarId` (Varsayılan: Blog Kenar Çubuğu)
+    - Kategori & Arşivler → `archiveSidebarId` (Varsayılan: Kategori & Arşiv)
+    - Kurumsal Sayfalar → `pageSidebarId` (Varsayılan: Kurumsal Sayfa)
+    - E-Ticaret & Ürünler → `shopSidebarId` (Varsayılan: Ürün & Mağaza)
+    - Arama Sonuçları → `searchSidebarId` (Varsayılan: Genel)
+- **Ziyaretçi Düzeninde Sidebar Sızıntısı Giderildi ve Akıllı Alan Yönlendirme (`apps/cms/src/app/(public)/[locale]/layout.tsx`):**
+  - Blog için seçilen sol kenar çubuğunun standart sayfalara (`post` vs `page`) sızması engellendi.
+  - Sayfa bazlı görünürlük bayrakları (`sidebarOnPage: false` varsayılan) ve rota eşleme ile:
+    - Ana sayfa (`/`): Kenar çubuğu kesinlikle devre dışıdır (`none`).
+    - Blog yazıları (`type: "post"`): Yalnızca `sidebarOnBlog` etkinse seçilen blog kenar çubuğu gösterilir.
+    - Kurumsal sayfalar (`type: "page"`): Yalnızca `sidebarOnPage` etkinse seçilen sayfa kenar çubuğu gösterilir.
+    - Mağaza ve ürünler: `sidebarOnShop` ve `shopSidebarId` alanını kullanır.
+    - Arşiv ve kategoriler: `sidebarOnArchive` ve `archiveSidebarId` alanını kullanır.
+    - Sayfa içi özel kenar çubuğu geçersiz kılma (`content.schemaAttributes._sidebar`) ve şablon kuralları önceliklidir.
+  - Tüm bileşenler ve kenar çubukları 0-KB RSC mimarisiyle sıfır istemci JavaScript'iyle çalışır.

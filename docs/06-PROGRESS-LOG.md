@@ -21,6 +21,21 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Çoklu Kenar Çubuğu (Multi-Sidebar) Stüdyosu, Sayfa Başına Sidebar İzolasyonu (Leakage Fix) ve İçerik Türü Sidebar Eşlemesi
+- ✅ **Çoklu Kenar Çubuğu (Multi-Sidebar) Mimarisi (`@nexpress/core/widgets`, `STANDARD_SIDEBAR_AREAS`):**
+  - Tek global sidebar yerine içerik türlerine göre ayrışmış çoklu sidebar alanları (`SidebarAreaConfig`: `id`, `name`, `description`, `enabled`, `position`, `width`, `sticky`, `styleVariant`, `widgets`) tanımlandı.
+  - 6 Standart Kenar Çubuğu Alanı: `primary` (Genel / Varsayılan), `blog` (Blog & Makale), `shop` (Ürün & Mağaza), `archive` (Kategori & Arşiv), `faq` (Soru-Cevap / SSS), `page` (Kurumsal Sayfa) ve sınırsız özel kullanıcı alanı desteği (`resolveAllSidebarAreas`, `resolveActiveSidebarArea`).
+  - Geriye dönük uyumluluk korunarak 4 yeni birim testi yazıldı ve 197/197 test başarıyla geçti.
+- ✅ **Çoklu Sidebar Stüdyosu ve Yönetimi (`apps/cms/src/components/admin/appearance/sidebar-editor.tsx`):**
+  - `/admin/appearance/sidebar` sayfasına üst alan seçim sekmeleri, yeni özel kenar çubuğu oluşturma/silme modalı, alana özel yön (sağ/sol), genişlik (260/300/340px), stil ve hazır şablon butonları eklendi.
+  - Her alan bağımsız bileşen havuzu (`widgets`) ve canlı önizleme ile düzenlenebilir hale getirildi.
+- ✅ **Canlı Özelleştirici İçi Sidebar Eşleme (`theme-store-tab-layout.tsx`):**
+  - `customizer.layout` altına Blog (`blogSidebarId`), Kategori (`archiveSidebarId`), Kurumsal Sayfa (`pageSidebarId`), Ürün (`shopSidebarId`) ve Arama (`searchSidebarId`) için bağımsız sidebar alanı seçim kontrolleri yerleştirildi.
+- ✅ **Sayfa Kenar Çubuğu Sızıntısı Giderildi ve Akıllı Ziyaretçi Düzeni (`(public)/[locale]/layout.tsx`):**
+  - Blog için seçilen sol kenar çubuğunun standart sayfalara sızması önlendi.
+  - Sayfa bazlı bayraklar (`sidebarOnPage: false`, `sidebarOnBlog: true`, `sidebarOnArchive: true`, `sidebarOnShop: true`, `sidebarOnSearch: false`) ile ana sayfa daima tam genişlik kalır; blog, mağaza ve kategoriler yalnızca kendi seçili kenar çubuklarını gösterir.
+  - %100 0-KB RSC mimarisiyle sıfır istemci JavaScript'i korunarak tüm test ve tip kontrolleri (13/13 paket) doğrulandı.
+
 ### [2026-11-03] — Yapışkan HTML Çapa Gezgini (Bölüm Sekmeleri), "Crimson ERP & Muhasebe" Teması, Kurumsal ERP Tasarım Kütüphanesi ve Canlı Ön Muhasebe Örnek Sayfası
 - ✅ **Yapışkan HTML Çapa Gezgini (`anchor_nav` Blok Türü — 0-KB Saf CSS):**
   - Kategori ve kurumsal ürün sayfalarında hero altına yerleşen ve sayfa boyunca yapışkan kalan (`sticky top-16 z-30`) yatay bölüm gezgini eklendi.

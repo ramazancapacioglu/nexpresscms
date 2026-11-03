@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   createDefaultWidget,
   FOOTER_LAYOUT_PRESETS,
+  resolveActiveSidebarArea,
+  resolveAllSidebarAreas,
   resolveFooterWidgets,
   resolveSidebarWidgets,
   SITE_WIDGET_TYPES,
@@ -56,6 +58,34 @@ describe("widgets (sidebar ve footer bileşen sistemi)", () => {
     assert.ok(ftWidgets.some((w) => w.type === "about_brand"));
     assert.ok(ftWidgets.some((w) => w.type === "newsletter"));
     assert.ok(ftWidgets.some((w) => w.type === "nav_menu"));
+  });
+
+  it("resolveAllSidebarAreas ve resolveActiveSidebarArea çoklu kenar çubuğu alanlarını (blog, shop, archive, faq, page) yönetir", () => {
+    const areas = resolveAllSidebarAreas({
+      enabled: true,
+      position: "left",
+      title: "Ana Sidebar",
+      links: [],
+    });
+    assert.ok(areas.length >= 6);
+    assert.ok(areas.some((a) => a.id === "primary"));
+    assert.ok(areas.some((a) => a.id === "blog"));
+    assert.ok(areas.some((a) => a.id === "shop"));
+    assert.ok(areas.some((a) => a.id === "archive"));
+    assert.ok(areas.some((a) => a.id === "faq"));
+    assert.ok(areas.some((a) => a.id === "page"));
+
+    const blogArea = resolveActiveSidebarArea({ enabled: true, position: "left", title: "Site", links: [] }, "blog");
+    assert.equal(blogArea.id, "blog");
+    assert.equal(blogArea.position, "left");
+    assert.ok((blogArea.widgets ?? []).length > 0);
+
+    const shopArea = resolveActiveSidebarArea(null, "shop");
+    assert.equal(shopArea.id, "shop");
+    assert.ok((shopArea.widgets ?? []).some((w) => w.type === "featured_products"));
+
+    const fallbackArea = resolveActiveSidebarArea(null, "bilinmeyen-alan");
+    assert.equal(fallbackArea.id, "primary");
   });
 });
 

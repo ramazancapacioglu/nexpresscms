@@ -363,6 +363,19 @@ export interface HeaderConfig {
   };
 }
 
+/** Belirli bir içerik türü veya şablon için bağımsız kenar çubuğu alanı (Blog, Mağaza, Kategori, SSS, Sayfa vb.) */
+export interface SidebarAreaConfig {
+  id: string; // "primary", "blog", "shop", "archive", "faq", "page" veya özel id
+  name: string;
+  description?: string;
+  enabled: boolean;
+  position?: "left" | "right";
+  width?: "260px" | "300px" | "340px";
+  sticky?: boolean;
+  styleVariant?: "cards" | "minimal" | "bordered";
+  widgets?: SiteWidget[];
+}
+
 /** Sayfa gövdesinin yanında duran site kenar çubuğu. İçerik bloklarından ayrıdır; dinamik bileşenler (widget) barındırır. */
 export interface SidebarConfig {
   enabled: boolean;
@@ -373,6 +386,8 @@ export interface SidebarConfig {
   title: string;
   widgets?: SiteWidget[];
   links: NavigationLink[];
+  /** Birden fazla kenar çubuğu desteği (Blog, Ürün & Mağaza, Kategori, SSS, Sayfa vb.) */
+  areas?: SidebarAreaConfig[];
 }
 
 export function emptySidebarConfig(): SidebarConfig {

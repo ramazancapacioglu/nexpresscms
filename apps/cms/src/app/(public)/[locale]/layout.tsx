@@ -11,14 +11,14 @@ import { PublicSidebarWidgetArea } from "@/components/public/public-widgets";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getResolvedMenu } from "@/lib/menu-data";
-import { getPublicNavigation, getPublicSite, getPublicWidgetFeed } from "@/lib/public-data";
+import { getPublicNavigation, getPublicSite, getPublicWidgetFeed, resolvePublicContent } from "@/lib/public-data";
 import {
   compileDesignTokensToCssVars,
   getThemeManifest,
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
-import { PluginSlot, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
+import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,17 +79,114 @@ export default async function PublicLocaleLayout({
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
-  const sidebar = nav?.sidebarConfig?.enabled ? nav.sidebarConfig : null;
+
+  // Sayfa türünü belirle (Kadence / WordPress tarzı akıllı kenar çubuğu eşleşmesi)
+  const isHome = segs.length <= 1 || (segs.length === 1 && segs[0] === locale);
+  const isCategory = segs.length >= 2 && (segs[1] === "kategori" || segs[1] === "etiket");
+  const isShop = segs.length >= 2 && segs[1] === "magaza";
+  const isSearch = segs.length >= 2 && segs[1] === "ara";
+  const isSingleContent = !isHome && !isCategory && !isShop && !isSearch && segs.length >= 2;
+
+  let targetAreaId = "primary";
+  let contentSidebarPos: "none" | "left" | "right" | undefined = undefined;
+
+  if (isHome) {
+    contentSidebarPos = "none";
+  } else if (isCategory) {
+    if (resolvedCustomizer.layout.sidebarOnArchive !== false) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = resolvedCustomizer.layout.archiveSidebarId || "archive";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isShop) {
+    if (resolvedCustomizer.layout.sidebarOnShop !== false) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "left";
+      targetAreaId = resolvedCustomizer.layout.shopSidebarId || "shop";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isSearch) {
+    if (resolvedCustomizer.layout.sidebarOnSearch === true) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = resolvedCustomizer.layout.searchSidebarId || "primary";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isSingleContent) {
+    const slug = decodeURIComponent(segs[1]!);
+    const resolvedCont = await resolvePublicContent(siteId, slug, locale);
+    const content = resolvedCont?.content;
+    const customSidebar = (content?.schemaAttributes as Record<string, unknown> | undefined)?._sidebar as
+      | { position?: "none" | "left" | "right"; sidebarId?: string }
+      | undefined;
+
+    if (customSidebar?.position) {
+      contentSidebarPos = customSidebar.position;
+      if (customSidebar.sidebarId) targetAreaId = customSidebar.sidebarId;
+    } else if (content?.type === "post") {
+      if (resolvedCustomizer.layout.sidebarOnBlog !== false) {
+        contentSidebarPos =
+          resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+            ? resolvedCustomizer.layout.sidebarPosition
+            : "left";
+        targetAreaId = resolvedCustomizer.layout.blogSidebarId || "blog";
+      } else {
+        contentSidebarPos = "none";
+      }
+    } else if (content?.type === "product") {
+      if (resolvedCustomizer.layout.sidebarOnShop !== false) {
+        contentSidebarPos =
+          resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+            ? resolvedCustomizer.layout.sidebarPosition
+            : "left";
+        targetAreaId = resolvedCustomizer.layout.shopSidebarId || "shop";
+      } else {
+        contentSidebarPos = "none";
+      }
+    } else if (content?.type === "page") {
+      // Kurumsal Sayfa: sidebarOnPage açık değilse kesinlikle gösterilmez (blog sidebar sızması önlenir)
+      if (resolvedCustomizer.layout.sidebarOnPage === true) {
+        contentSidebarPos =
+          resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+            ? resolvedCustomizer.layout.sidebarPosition
+            : "right";
+        targetAreaId = resolvedCustomizer.layout.pageSidebarId || "page";
+      } else {
+        contentSidebarPos = "none";
+      }
+    } else if (content?.type === "ai_prompt" || content?.type === "kb_tech") {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = "faq";
+    } else {
+      contentSidebarPos = "none";
+    }
+  }
+
+  const activeSidebarArea = resolveActiveSidebarArea(nav?.sidebarConfig, targetAreaId);
   const effectiveSidebarPos: "none" | "left" | "right" =
-    resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
-      ? resolvedCustomizer.layout.sidebarPosition
-      : sidebar
-        ? sidebar.position
-        : sidebarTpl
-          ? "right"
-          : "none";
-  const hasSidebar = effectiveSidebarPos !== "none" && Boolean(sidebarTpl || sidebar);
-  const sidebarWidth = resolvedCustomizer.layout.sidebarWidth || "288px";
+    contentSidebarPos !== undefined
+      ? contentSidebarPos
+      : sidebarTpl
+        ? "right"
+        : "none";
+
+  const hasSidebar =
+    effectiveSidebarPos !== "none" &&
+    Boolean(sidebarTpl || (activeSidebarArea && activeSidebarArea.enabled !== false));
+  const sidebarWidth = activeSidebarArea?.width || resolvedCustomizer.layout.sidebarWidth || "288px";
 
   return (
     <div
@@ -147,8 +244,8 @@ export default async function PublicLocaleLayout({
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
-          ) : sidebar ? (
-            <PublicSidebarWidgetArea sidebar={sidebar} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+          ) : activeSidebarArea ? (
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
           ) : null
         ) : null}
         <main
@@ -168,8 +265,8 @@ export default async function PublicLocaleLayout({
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
-          ) : sidebar ? (
-            <PublicSidebarWidgetArea sidebar={sidebar} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+          ) : activeSidebarArea ? (
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
           ) : null
         ) : null}
       </div>

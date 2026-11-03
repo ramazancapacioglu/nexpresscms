@@ -1,4 +1,4 @@
-import type { FooterConfig, NavigationLink, SidebarConfig } from "./types";
+import type { FooterConfig, NavigationLink, SidebarAreaConfig, SidebarConfig } from "./types";
 
 /**
  * Kenar Çubuğu (Sidebar) ve Alt Bölüm (Footer) için Birleşik Bileşen (Widget) Türleri.
@@ -473,4 +473,173 @@ export function resolveFooterWidgets(
 
   return widgets;
 }
+
+export interface StandardSidebarAreaMeta {
+  id: string;
+  name: string;
+  description: string;
+  position: "left" | "right";
+  width: "260px" | "300px" | "340px";
+  styleVariant: "cards" | "minimal" | "bordered";
+  defaultWidgets: () => SiteWidget[];
+}
+
+export const STANDARD_SIDEBAR_AREAS: StandardSidebarAreaMeta[] = [
+  {
+    id: "primary",
+    name: "Genel / Varsayılan Kenar Çubuğu",
+    description: "Tüm sitede genel yedek olarak kullanılan ana kenar çubuğu.",
+    position: "right",
+    width: "300px",
+    styleVariant: "cards",
+    defaultWidgets: () => [
+      createDefaultWidget("search", 0),
+      createDefaultWidget("categories", 0),
+      createDefaultWidget("recent_posts", 0),
+      createDefaultWidget("popular_tags", 0),
+    ],
+  },
+  {
+    id: "blog",
+    name: "Blog & Yazı Kenar Çubuğu",
+    description: "Blog yazılarında ve makalelerde gösterilen özel kenar çubuğu.",
+    position: "left",
+    width: "300px",
+    styleVariant: "cards",
+    defaultWidgets: () => [
+      createDefaultWidget("search", 0),
+      createDefaultWidget("categories", 0),
+      createDefaultWidget("recent_posts", 0),
+      createDefaultWidget("recent_comments", 0),
+      createDefaultWidget("campaigns", 0),
+      createDefaultWidget("popular_tags", 0),
+    ],
+  },
+  {
+    id: "shop",
+    name: "Ürün & Mağaza Kenar Çubuğu",
+    description: "Mağaza vitrini, ürün detay ve koleksiyon sayfalarında gösterilen filtre ve ürün çubuğu.",
+    position: "left",
+    width: "260px",
+    styleVariant: "cards",
+    defaultWidgets: () => [
+      createDefaultWidget("search", 0, { title: "Ürün Ara" }),
+      createDefaultWidget("categories", 0, { title: "Ürün Kategorileri" }),
+      createDefaultWidget("featured_products", 0),
+      createDefaultWidget("campaigns", 0, {
+        title: "Sepette İndirim",
+        settings: {
+          badge: "FIRSAT",
+          discountText: "%20 İndirim",
+          couponCode: "FIRSAT20",
+          ctaLabel: "Ürünleri Gör",
+          ctaHref: "/tr/magaza",
+          tone: "primary",
+        },
+      }),
+      createDefaultWidget("trust_badges", 0),
+    ],
+  },
+  {
+    id: "archive",
+    name: "Kategori & Arşiv Kenar Çubuğu",
+    description: "Blog kategori ve etiket arşiv sayfalarında gösterilen kenar çubuğu.",
+    position: "right",
+    width: "300px",
+    styleVariant: "bordered",
+    defaultWidgets: () => [
+      createDefaultWidget("search", 0),
+      createDefaultWidget("categories", 0),
+      createDefaultWidget("popular_tags", 0),
+      createDefaultWidget("recent_posts", 0),
+      createDefaultWidget("newsletter", 0),
+    ],
+  },
+  {
+    id: "faq",
+    name: "Soru & Cevap (SSS) Kenar Çubuğu",
+    description: "Teknik rehberler, soru-cevap ve yardım sayfalarında gösterilen rehber çubuğu.",
+    position: "right",
+    width: "300px",
+    styleVariant: "bordered",
+    defaultWidgets: () => [
+      createDefaultWidget("search", 0, { title: "Bilgi Bankasında Ara" }),
+      createDefaultWidget("toc", 0),
+      createDefaultWidget("contact_card", 0),
+      createDefaultWidget("recent_posts", 0, { title: "İlgili Rehberler" }),
+    ],
+  },
+  {
+    id: "page",
+    name: "Kurumsal Sayfa Kenar Çubuğu",
+    description: "Hakkımızda, hizmetler ve kurumsal sayfalarda kenar çubuğu seçildiğinde gösterilen çubuk.",
+    position: "right",
+    width: "300px",
+    styleVariant: "cards",
+    defaultWidgets: () => [
+      createDefaultWidget("contact_card", 0),
+      createDefaultWidget("recent_posts", 0, { title: "Haberler & Duyurular" }),
+      createDefaultWidget("newsletter", 0),
+    ],
+  },
+];
+
+/**
+ * Bir sitenin tüm kenar çubuğu alanlarını çözümler (Varsayılan 6 alan + kullanıcının eklediği özel alanlar).
+ */
+export function resolveAllSidebarAreas(config: SidebarConfig | null | undefined): SidebarAreaConfig[] {
+  const existingAreas = Array.isArray(config?.areas) ? [...config.areas] : [];
+  const primaryWidgets = resolveSidebarWidgets(config);
+
+  const merged = STANDARD_SIDEBAR_AREAS.map((std) => {
+    const found = existingAreas.find((a) => a.id === std.id);
+    if (found) {
+      return {
+        ...found,
+        widgets: Array.isArray(found.widgets) && found.widgets.length > 0 ? found.widgets : std.defaultWidgets(),
+      };
+    }
+    if (std.id === "primary") {
+      return {
+        id: "primary",
+        name: config?.title && config.title !== "Kenar Çubuğu" ? config.title : std.name,
+        description: std.description,
+        enabled: config?.enabled ?? true,
+        position: config?.position ?? std.position,
+        width: config?.width ?? std.width,
+        sticky: config?.sticky ?? true,
+        styleVariant: config?.styleVariant ?? std.styleVariant,
+        widgets: primaryWidgets.length > 0 ? primaryWidgets : std.defaultWidgets(),
+      };
+    }
+    return {
+      id: std.id,
+      name: std.name,
+      description: std.description,
+      enabled: true,
+      position: std.position,
+      width: std.width,
+      sticky: true,
+      styleVariant: std.styleVariant,
+      widgets: std.defaultWidgets(),
+    };
+  });
+
+  const customAreas = existingAreas.filter((a) => !STANDARD_SIDEBAR_AREAS.some((std) => std.id === a.id));
+  return [...merged, ...customAreas];
+}
+
+/**
+ * Belirli bir alan kimliğine (areaId) göre aktif kenar çubuğunu çözümler.
+ */
+export function resolveActiveSidebarArea(
+  config: SidebarConfig | null | undefined,
+  areaId: string = "primary"
+): SidebarAreaConfig {
+  const areas = resolveAllSidebarAreas(config);
+  const matched = areas.find((a) => a.id === areaId);
+  if (matched) return matched;
+  return areas.find((a) => a.id === "primary") || areas[0]!;
+}
+
 

@@ -68,6 +68,12 @@ export interface SiteCustomizerSettings {
     sidebarOnPage?: boolean;
     sidebarOnShop?: boolean;
     sidebarOnSearch?: boolean;
+    /** Hangi içerik türü için hangi kenar çubuğu alanı gösterilsin (varsayılan: blog, page, shop, archive, primary) */
+    blogSidebarId?: string;
+    pageSidebarId?: string;
+    shopSidebarId?: string;
+    archiveSidebarId?: string;
+    searchSidebarId?: string;
   };
   buttons: {
     style?: "solid" | "pill" | "sharp";
@@ -202,6 +208,11 @@ export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
     sidebarOnPage: false,
     sidebarOnShop: true,
     sidebarOnSearch: false,
+    blogSidebarId: "blog",
+    pageSidebarId: "page",
+    shopSidebarId: "shop",
+    archiveSidebarId: "archive",
+    searchSidebarId: "primary",
   },
   buttons: {
     style: "solid",

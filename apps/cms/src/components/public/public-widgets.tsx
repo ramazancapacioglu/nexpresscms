@@ -4,6 +4,7 @@ import {
   isSafeMenuHref,
   resolveSidebarWidgets,
   type DesignTokens,
+  type SidebarAreaConfig,
   type SidebarConfig,
   type SiteWidget,
 } from "@nexpress/core";
@@ -474,13 +475,17 @@ export function PublicSidebarWidgetArea({
   feed,
   width = "300px",
 }: {
-  sidebar: SidebarConfig;
+  sidebar: SidebarConfig | SidebarAreaConfig;
   locale: string;
   tokens: DesignTokens;
   feed?: PublicWidgetFeed;
   width?: string;
 }) {
-  const widgets = resolveSidebarWidgets(sidebar).filter((w) => w.enabled);
+  const widgets = (
+    "widgets" in sidebar && Array.isArray(sidebar.widgets) && sidebar.widgets.length > 0
+      ? sidebar.widgets
+      : resolveSidebarWidgets(sidebar as SidebarConfig)
+  ).filter((w) => w.enabled);
   const effectiveWidth = sidebar.width || width;
 
   return (
