@@ -1,5 +1,5 @@
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS, cloneBlockWithFreshIds } from "@/components/admin/editor/studio-model";
-import { insertBlockAt, moveBlockTo, placeNewBlock, updateBlockById, type BlockNode, type BlockStyle, type BlockStyleValues } from "@nexpress/core";
+import { canInsertInto, findBlock, insertBlockAt, locateBlock, moveBlockTo, placeNewBlock, removeBlockById, updateBlockById, type BlockNode, type BlockStyle, type BlockStyleValues } from "@nexpress/core";
 import { Columns } from "lucide-react";
 import type { DragPayload } from "@/components/admin/editor/dnd";
 import type { useDualModeEditorUiState } from "./use-dual-mode-editor-ui-state";
@@ -191,6 +191,20 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
+  /** Eğik çizgi komutu: bloğu (genelde boş paragraf) seçilen şablonla aynı yerde değiştirir. */
+  const replaceBlockById = (id: string, template: BlockNode) => {
+    const current = p.blocks;
+    const loc = locateBlock(current, id);
+    if (!loc) return;
+    const parentType = loc.parentId ? findBlock(current, loc.parentId)?.type ?? null : null;
+    const fresh = cloneBlockWithFreshIds(template);
+    if (!canInsertInto(parentType, fresh.type)) return showToast("Bu blok buraya konulamaz.");
+    setBlocks(() => insertBlockAt(removeBlockById(current, id), fresh, loc.parentId, loc.index));
+    setSelectedBlockId(fresh.id);
+    setRightTab("block");
+    showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
+  };
+
   /** Sürükle-bırak: `parentId === null` kök; `index` hedef kapsayıcının çocuk sırası. */
   const handleDropBlock = (payload: DragPayload, parentId: string | null, index: number) => {
     const current = p.blocks;
@@ -210,5 +224,5 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
-  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, updateBlockStyleById, setBlockStyleById, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
+  return { ...p, replaceBlockById, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, updateBlockStyleById, setBlockStyleById, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
 }

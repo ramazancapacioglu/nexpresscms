@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BLOCK_CATALOG, ROW_TEMPLATES, buildRow, searchCatalog } from "@nexpress/editor";
+import { blockChoices, type BlockChoice } from "@nexpress/editor";
 import type { BlockNode } from "@nexpress/core";
 import { Plus } from "lucide-react";
 
-type Choice = { id: string; label: string; hint: string; block: BlockNode };
-const ROWS: Choice[] = ROW_TEMPLATES.slice(0, 4).map((t) => ({ id: t.id, label: t.label, hint: "satır", block: buildRow(t.layout, t.widths, t.opts) }));
+export { blockChoices };
 
 /** İki blok arasındaki "+" noktası: üzerine gelince belirir, tıklayınca arama kutulu hızlı ekleme açılır. */
 export function InsertPoint({ onInsert }: { onInsert: (block: BlockNode) => void }) {
@@ -20,8 +19,8 @@ export function InsertPoint({ onInsert }: { onInsert: (block: BlockNode) => void
     doc.addEventListener("mousedown", away);
     return () => doc.removeEventListener("mousedown", away);
   }, [open]);
-  const results: Choice[] = query.trim() ? searchCatalog(query).slice(0, 8).map((i) => ({ id: i.id, label: i.label, hint: i.hint, block: i.block })) : [...ROWS, ...BLOCK_CATALOG.slice(3, 7).map((i) => ({ id: i.id, label: i.label, hint: i.hint, block: i.block }))];
-  const pick = (c: Choice) => { setOpen(false); setQuery(""); onInsert(c.block); };
+  const results = blockChoices(query);
+  const pick = (c: BlockChoice) => { setOpen(false); setQuery(""); onInsert(c.block); };
   return (
     <div ref={box} className="group/ins relative flex h-3 items-center justify-center" onClick={(e) => e.stopPropagation()}>
       <span aria-hidden className="pointer-events-none absolute inset-x-8 top-1/2 h-px bg-blue-500/0 transition-colors group-hover/ins:bg-blue-500/40" />

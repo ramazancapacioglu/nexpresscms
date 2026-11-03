@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Tuval v2 adım 6: eğik çizgi (/) komutu — Tuval v2 tamam
+- ✅ Boş paragrafa `/` yazınca blok menüsü açılır; `/sss`, `/fiyat`, `/sütun` gibi yazdıkça süzülür (katalog + satır düzenleri, en çok 9). Ok tuşları + Enter seçer ve **paragrafı seçilen blokla yer değiştirir** (`replaceBlockById`, kapsayıcı kuralları `canInsertInto` ile denetlenir); Esc kapatır ve `/` karakterini silmez. Klavye çerçeve belgesinde yakalanır, menü ARIA `listbox/option` kullanır. Seçenek mantığı (`blockChoices`) editör paketine taşındı ve test edildi (7 test); "+" hızlı ekleme aynı listeyi kullanır.
+- Tuval v2'nin altı adımı tamam: satır içi düzenleme, sade tuval, "+" ve "/" ile ekleme, gerçek önizleme çerçevesi, başlık tuvalde. Tarayıcıda "/" menüsü, süzme, Enter ile değiştirme, ok tuşları ve Esc doğrulandı; axe (mobil+masaüstü) temiz.
+
 ### [2026-11-03] — Tuval v2 adım 5: sayfa başlığı tuvalde
 - ✅ Görsel kipte sayfa başlığı artık tuvalin ilk satırıdır (`editor/title-field.tsx`): sitenin başlık yazı tipi ve kalınlığıyla büyük h1, uzun başlıkta otomatik büyür, Enter satır eklemez. Üstteki ayrı başlık alanı yalnızca JSON/Markdown/önizleme kiplerinde ve şablon düzenlerken (başlık = şablon adı) kalır. Adres (slug), SEO başlık/açıklama çubuğu üstte durur.
 - ✅ Seçili blokun etiket/araç çubuğu artık bloğun **üstünde** (içeriğin üstüne binmez).

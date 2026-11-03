@@ -13,7 +13,7 @@ import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
-  const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock, updateBlockStyleById, setBlockStyleById } = s;
+  const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock, updateBlockStyleById, setBlockStyleById, replaceBlockById } = s;
   const pageSchema = { title, tldr: s.tldr, rich: s.richSchema as never };
   // Görsel/önizleme kipinde başlık tuvalin ilk satırıdır (şablon düzenlerken şablon adı olduğu için üstte kalır)
   const framed = editorMode === "visual" || editorMode === "preview";
@@ -88,7 +88,8 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                           onCommit={flushHistory}
                           onInsert={handleInsertBlock}
                           onToggleInsert={setActiveColumnInsertId}
-                          onUpdateStyle={(id, patch) => updateBlockStyleById(id, patch)}
+                          onReplace={(id, block) => replaceBlockById(id, block)}
+                    onUpdateStyle={(id, patch) => updateBlockStyleById(id, patch)}
                           onSetStyle={(id, style) => setBlockStyleById(id, style)}
                           onInspectStyle={(id) => {
                             setSelectedBlockId(id);

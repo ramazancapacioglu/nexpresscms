@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canInsertInto, moveBlockTo, placeNewBlock, type BlockNode } from "@nexpress/core";
-import { BLOCK_CATALOG, BLOCK_CATEGORIES, ROW_TEMPLATES, buildRow, searchCatalog } from "../src/block-catalog";
+import { BLOCK_CATALOG, BLOCK_CATEGORIES, ROW_TEMPLATES, blockChoices, buildRow, searchCatalog } from "../src/block-catalog";
 
 test("katalog: benzersiz kimlik, bilinen kategori, kökte eklenebilir tür", () => {
   const ids = new Set(BLOCK_CATALOG.map((i) => i.id));
@@ -57,4 +57,13 @@ test("tek kaynak: katalogdaki her tür BLOCK_TYPES'ta ve içe aktarma şemasınd
     assert.ok(BlockNodeSchema.safeParse({ ...i.block, id: "x" }).success, `${i.id} şemadan geçmedi`);
   }
   for (const t of ROW_TEMPLATES) assert.ok(BlockNodeSchema.safeParse(buildRow(t.layout, t.widths, t.opts)).success, t.id);
+});
+
+test("eğik çizgi komutu seçenekleri: boş sorgu öne çıkanlar, SSS araması, satır düzenleri, üst sınır", () => {
+  const empty = blockChoices("");
+  assert.ok(empty.length >= 6 && empty.length <= 10 && empty.some((c) => c.hint === "satır"));
+  assert.equal(blockChoices("sss")[0]!.id, "faq");
+  assert.ok(blockChoices("sütun").some((c) => c.hint === "satır"));
+  assert.ok(blockChoices("a").length <= 9);
+  assert.deepEqual(blockChoices("zzzyok"), []);
 });

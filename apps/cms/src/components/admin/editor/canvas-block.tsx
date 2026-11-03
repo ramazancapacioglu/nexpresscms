@@ -15,6 +15,7 @@ import { Fragment, type DragEvent, type MouseEvent } from "react";
 import { DropZone, useEditorDnd } from "./dnd";
 import { FloatingToolbar } from "./floating-toolbar";
 import { InlineEditable } from "./inline-editable";
+import { SlashMenu } from "./slash-menu";
 import { ProseField, type ProseStructureKind } from "./prose-field";
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "./studio-model";
 
@@ -37,6 +38,7 @@ interface CanvasBlockProps {
   onInspectStyle: (id: string) => void;
   onUpdateStyle: (id: string, patch: Partial<BlockStyleValues>) => void;
   onSetStyle: (id: string, style: BlockStyle) => void;
+  onReplace: (id: string, block: BlockNode) => void;
 }
 
 function BlockActions({
@@ -307,7 +309,10 @@ export function CanvasBlock(props: CanvasBlockProps) {
           onRemove={() => props.onRemove(block.id)}
         />
       </div>
-      <div className="px-1 py-2" data-nx-b={domId}>
+      <div className="relative px-1 py-2" data-nx-b={domId}>
+        {(block.type === "paragraph" || block.type === "paragraph_element") && selected && /^\/[^\n]{0,40}$/.test(String(propsOf.text ?? "")) ? (
+          <SlashMenu query={String(propsOf.text).slice(1)} onPick={(next) => props.onReplace(block.id, next)} />
+        ) : null}
         {block.type === "heading" || block.type === "heading_element" ? (
           <div
             className={

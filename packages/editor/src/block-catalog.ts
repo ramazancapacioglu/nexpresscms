@@ -154,3 +154,16 @@ export function searchCatalog(query: string, list: BlockCatalogItem[] = BLOCK_CA
   if (!q) return list;
   return list.filter((i) => norm(`${i.label} ${i.hint} ${i.block.type}`).includes(q));
 }
+
+export interface BlockChoice { id: string; label: string; hint: string; block: BlockNode }
+
+const rowChoice = (t: (typeof ROW_TEMPLATES)[number]): BlockChoice => ({ id: t.id, label: t.label, hint: "satır", block: buildRow(t.layout, t.widths, t.opts) });
+const itemChoice = (i: BlockCatalogItem): BlockChoice => ({ id: i.id, label: i.label, hint: i.hint, block: i.block });
+
+/** Hızlı ekleme ve eğik çizgi komutu seçenekleri: sorgu boşsa öne çıkanlar (satırlar + temel bloklar), doluysa katalog + eşleşen satır düzenleri (en çok 9). */
+export function blockChoices(query: string): BlockChoice[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [...ROW_TEMPLATES.slice(0, 4).map(rowChoice), ...BLOCK_CATALOG.slice(3, 9).map(itemChoice)];
+  const rows = ROW_TEMPLATES.filter((t) => "satır sütun düzen row".includes(q) || t.label.toLowerCase().includes(q)).slice(0, 2).map(rowChoice);
+  return [...searchCatalog(q).slice(0, 8).map(itemChoice), ...rows].slice(0, 9);
+}
