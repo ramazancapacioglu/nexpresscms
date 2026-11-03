@@ -3,7 +3,7 @@
 import { AiComposePanel } from "./ai-compose-panel";
 import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
-import { ICON_NAMES } from "@nexpress/core";
+import { IconPickerField } from "./icon-picker-modal";
 import { SchemaFields } from "./schema-fields";
 import { SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
@@ -216,15 +216,25 @@ export function BlockGeneralTab() {
                                   className="h-8 w-full rounded border border-border bg-background px-2 font-mono"
                                 />
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <select aria-label="Düğme simgesi" value={String(selectedBlock.props.icon ?? "")} onChange={(e) => updateSelectedBlockProps({ icon: e.target.value || undefined })} className="h-8 rounded border border-border bg-background px-2 text-xs">
-                                  <option value="">Simge yok</option>
-                                  {ICON_NAMES.map((n) => <option key={n} value={n}>{n}</option>)}
-                                </select>
-                                <select aria-label="Simge yönü" value={String(selectedBlock.props.iconSide ?? "right")} onChange={(e) => updateSelectedBlockProps({ iconSide: e.target.value })} className="h-8 rounded border border-border bg-background px-2 text-xs">
-                                  <option value="right">Sağda</option>
-                                  <option value="left">Solda</option>
-                                </select>
+                              <div className="space-y-1.5">
+                                <label className="block text-[11px] text-muted-foreground">
+                                  Buton Simgesi & Yönü
+                                </label>
+                                <div className="grid grid-cols-[1fr_92px] gap-2">
+                                  <IconPickerField
+                                    value={String(selectedBlock.props.icon ?? "")}
+                                    onChange={(next) =>
+                                      updateSelectedBlockProps({ icon: next || undefined })
+                                    }
+                                    allowEmpty
+                                    label="Düğme simgesi"
+                                    placeholder="Simge seç…"
+                                  />
+                                  <select aria-label="Simge yönü" value={String(selectedBlock.props.iconSide ?? "right")} onChange={(e) => updateSelectedBlockProps({ iconSide: e.target.value })} className="h-8 rounded border border-border bg-background px-2 text-xs">
+                                    <option value="right">Sağda</option>
+                                    <option value="left">Solda</option>
+                                  </select>
+                                </div>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <select
@@ -376,6 +386,48 @@ export function BlockGeneralTab() {
                               />
                             </div>
                           )}
+                          {selectedBlock.type === "tabs" && (
+                            <div className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-2.5">
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">
+                                  Sekme Çubuğu Görünümü
+                                </label>
+                                <select
+                                  aria-label="Sekme Çubuğu Görünümü"
+                                  value={String(selectedBlock.props.tabStyle ?? "pills")}
+                                  onChange={(e) =>
+                                    updateSelectedBlockProps({ tabStyle: e.target.value })
+                                  }
+                                  className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+                                >
+                                  <option value="pills">Kapsül Butonlar (Pills)</option>
+                                  <option value="underline">Alt Çizgili (Underline)</option>
+                                  <option value="boxed">Kutu Sekmeler (Boxed)</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">
+                                  Sekme Hizalaması
+                                </label>
+                                <select
+                                  aria-label="Sekme Hizalaması"
+                                  value={String(selectedBlock.props.align ?? "left")}
+                                  onChange={(e) =>
+                                    updateSelectedBlockProps({ align: e.target.value })
+                                  }
+                                  className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+                                >
+                                  <option value="left">Sola Hizalı</option>
+                                  <option value="center">Ortalı</option>
+                                  <option value="stretch">Tam Genişlik (Eşit Dağıt)</option>
+                                </select>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                                💡 Kanvas üzerinde sekmelere tıklayarak aktif sekmeyi değiştirebilir, her sekmenin içine doğrudan <strong>Satır / Sütun</strong>, <strong>Görsel</strong> veya istediğiniz bloğu ekleyebilirsiniz.
+                              </p>
+                            </div>
+                          )}
+
                           {selectedBlock.type === "form_block" ? (
                             <CatalogFields block={selectedBlock} onChange={updateSelectedBlockProps} />
                           ) : DEDICATED_UI.has(selectedBlock.type) ? null : (

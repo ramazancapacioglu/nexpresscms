@@ -39,8 +39,19 @@ const CARD_STYLE = {
 export interface RowOptions {
   /** Sütunlar kart görünümlü (arka plan, kenarlık) olsun */
   cards?: boolean;
-  /** İçerik: boş yer tutucu, başlık+paragraf ya da başlık+paragraf+buton */
-  content?: "placeholder" | "text" | "cta";
+  /** İçerik: boş sütun, boş yer tutucu, başlık+paragraf ya da başlık+paragraf+buton */
+  content?: "empty" | "placeholder" | "text" | "cta";
+}
+
+/** Kanvasta görsel sütun seçiciyi (1, 2, 3, 4 sütun veya Tasarım Kütüphanesi) açan yeni satır bloğu üretir. */
+export function buildEmptyRow(): BlockNode {
+  return {
+    id: "tpl_row_empty",
+    type: "columns",
+    gridSpan: { ...SPAN },
+    props: { layout: "6+6", gap: "24px", verticalAlign: "stretch" },
+    children: [],
+  } as BlockNode;
 }
 
 /** Yerleşim oranlarından (`6+6`, `4+8` …) düzenlenebilir satır üretir. */
@@ -56,11 +67,14 @@ export function buildRow(layout: string, widths: number[], opts: RowOptions = {}
       type: "column",
       props: { widthPct: w },
       ...(opts.cards ? { style: { ...CARD_STYLE } } : {}),
-      children: [
-        { id: `tpl_h_${i}`, type: "heading", props: { level: 3, text: content === "placeholder" ? `${i + 1}. Sütun` : `Başlık ${i + 1}` } },
-        { id: `tpl_p_${i}`, type: "paragraph", props: { text: content === "placeholder" ? "Sütun içeriği…" : "Kısa açıklama metni; tıklayıp doğrudan düzenleyin." } },
-        ...(content === "cta" ? [{ id: `tpl_b_${i}`, type: "button_element", props: { label: "Devamını oku", href: "#", styleVariant: "primary", align: "left" } } as BlockNode] : []),
-      ],
+      children:
+        content === "empty"
+          ? []
+          : [
+              { id: `tpl_h_${i}`, type: "heading", props: { level: 3, text: content === "placeholder" ? `${i + 1}. Sütun` : `Başlık ${i + 1}` } },
+              { id: `tpl_p_${i}`, type: "paragraph", props: { text: content === "placeholder" ? "Sütun içeriği…" : "Kısa açıklama metni; tıklayıp doğrudan düzenleyin." } },
+              ...(content === "cta" ? [{ id: `tpl_b_${i}`, type: "button_element", props: { label: "Devamını oku", href: "#", styleVariant: "primary", align: "left" } } as BlockNode] : []),
+            ],
     })),
   } as BlockNode;
 }
@@ -82,6 +96,7 @@ export const ROW_TEMPLATES: Array<{ id: string; label: string; hint: string; lay
 const items3 = (kind: string) => [1, 2, 3].map((n) => ({ title: `${kind} ${n}`, text: "Kısa açıklama." }));
 
 export const BLOCK_CATALOG: BlockCatalogItem[] = [
+  item("row_layout", "Satır / Sütun düzeni", "layout", "1–4 sütun oranını kanvasta seçin", buildEmptyRow()),
   item("section", "Kapsayıcı bölüm", "layout", "Arka planlı, iç boşluklu alan", node("section", { title: "", containerMode: "boxed" }, {
     style: { paddingTop: "32px", paddingRight: "32px", paddingBottom: "32px", paddingLeft: "32px", backgroundColor: "#f8fafc", borderRadius: "16px", borderWidth: "1px", borderColor: "#e2e8f0" },
     children: [{ id: "tpl_sh", type: "heading", props: { level: 2, text: "Bölüm başlığı" } }, { id: "tpl_sp", type: "paragraph", props: { text: "Bölüm içi açıklama." } }],
@@ -95,7 +110,7 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("quote", "Alıntı", "basic", "Yazar ve ünvanlı", node("quote", { quote: "Alıntı metni.", author: "Ad Soyad", role: "Ünvan" })),
   item("button", "Buton", "basic", "Tek bağlantı butonu", node("button_element", { label: "Devamını oku", href: "#", styleVariant: "primary", align: "left" })),
   item("button_row", "Buton grubu", "basic", "Yan yana butonlar", node("button_row", { align: "left", buttons: [{ label: "Birincil", href: "#", variant: "primary" }, { label: "İkincil", href: "#", variant: "ghost" }] })),
-  item("icon_list", "İkonlu liste", "basic", "Başlık + açıklamalı maddeler", node("icon_list", { items: [{ mark: "✓", title: "Birinci özellik", text: "Açıklama" }, { mark: "✓", title: "İkinci özellik", text: "Açıklama" }] })),
+  item("icon_list", "İkonlu liste", "basic", "Simge + başlık + açıklamalı maddeler", node("icon_list", { items: [{ icon: "check", mark: "✓", title: "Birinci özellik", text: "Açıklama" }, { icon: "sparkles", mark: "✓", title: "İkinci özellik", text: "Açıklama" }] })),
 
   item("image", "Görsel", "media", "Alt metin, başlık, açıklama", node("image_figure", { url: "", altText: "", titleText: "", caption: "", aspectRatio: "16:9" })),
   item("gallery", "Galeri", "media", "Yatay kaydırmalı kartlar", node("gallery", { slides: items3("Görsel").map((s) => ({ title: s.title, text: s.text })) })),
@@ -107,7 +122,7 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("tldr", "Kısa yanıt", "content", "Önce-cevap özeti (AI için)", node("tldr_box", { summary: "Bu sayfanın doğrudan, kısa yanıtı." })),
   item("faq", "SSS", "content", "FAQPage şeması üretir", node("faq_accordion", { title: "Sıkça sorulan sorular", items: [{ question: "Soru?", answer: "Yanıt." }, { question: "İkinci soru?", answer: "Yanıt." }] })),
   item("howto", "Adım adım", "content", "HowTo şeması üretir", node("howto_steps", { title: "Nasıl yapılır", steps: [{ title: "1. Adım", description: "Açıklama." }, { title: "2. Adım", description: "Açıklama." }] })),
-  item("info_box", "Bilgi kutusu", "content", "Başlık, metin, bağlantı", node("info_box", { kicker: "Bilgi", title: "Başlık", text: "Açıklama.", href: "", linkLabel: "" })),
+  item("info_box", "Bilgi kutusu", "content", "Simge, başlık, metin, bağlantı", node("info_box", { icon: "sparkles", kicker: "Bilgi", title: "Başlık", text: "Açıklama.", href: "", linkLabel: "" })),
   item("callout", "Not kutusu", "content", "Vurgulu uyarı/not", node("callout", { tone: "NOT", title: "Başlık", text: "Önemli bilgi." })),
   item("toc", "İçindekiler", "content", "Sayfa içi bağlantılar", node("toc", { items: [{ label: "Bölüm 1", href: "#bolum-1" }, { label: "Bölüm 2", href: "#bolum-2" }] })),
   item("code", "Kod", "content", "Kod bloğu", node("code_block", { language: "ts", code: "console.log('merhaba');" })),
@@ -126,7 +141,46 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("marquee", "Kayan şerit", "marketing", "Sonsuz kayan metin (CSS)", node("marquee", { items: ["Hızlı", "Güvenli", "Esnek", "Ölçeklenebilir"], speed: 30, direction: "left" })),
   item("shape_divider", "Şekil ayırıcı", "layout", "Dalga, eğim, üçgen", node("shape_divider", { shape: "wave", color: "#0f172a", height: 80, flip: false })),
 
-  item("tabs", "Sekmeler", "interactive", "CSS ile çalışır, JS yok", node("tabs", { items: [{ label: "Sekme 1", body: "İçerik 1" }, { label: "Sekme 2", body: "İçerik 2" }] })),
+  item("tabs", "Sekmeler (Kapsayıcı)", "interactive", "İçine satır, sütun ve blok eklenebilir (0-KB CSS)", node("tabs", {
+    title: "",
+    tabStyle: "pills",
+    align: "left",
+    items: [
+      { label: "1. Genel Bakış", icon: "sparkles", body: "Sekme açıklaması." },
+      { label: "2. Teknik Mimari", icon: "layers", body: "Teknik mimari detayları." },
+      { label: "3. Kurulum & Destek", icon: "rocket", body: "Kurulum ve destek süreci." },
+    ],
+  }, {
+    children: [
+      {
+        id: "tpl_tab_pane_1",
+        type: "column",
+        props: { label: "1. Genel Bakış", icon: "sparkles" },
+        children: [
+          { id: "tpl_tab1_h", type: "heading", props: { level: 3, text: "Genel Bakış ve Değer Önerisi" } },
+          { id: "tpl_tab1_p", type: "paragraph", props: { text: "Bu sekmenin içine istediğiniz kadar satır/sütun düzeni, görsel, liste, tablo veya buton bloğu ekleyebilirsiniz." } },
+        ],
+      },
+      {
+        id: "tpl_tab_pane_2",
+        type: "column",
+        props: { label: "2. Teknik Mimari", icon: "layers" },
+        children: [
+          { id: "tpl_tab2_h", type: "heading", props: { level: 3, text: "Teknik Mimari ve Performans" } },
+          { id: "tpl_tab2_p", type: "paragraph", props: { text: "Tüm sekmeler ön yüzde %100 saf CSS ile çalışır; tarayıcıya 0 KB istemci JavaScript yükü bindirir." } },
+        ],
+      },
+      {
+        id: "tpl_tab_pane_3",
+        type: "column",
+        props: { label: "3. Kurulum & Destek", icon: "rocket" },
+        children: [
+          { id: "tpl_tab3_h", type: "heading", props: { level: 3, text: "Hızlı Kurulum ve 7/24 Destek" } },
+          { id: "tpl_tab3_p", type: "paragraph", props: { text: "Dakikalar içinde canlıya alın, mevcut verilerinizi kayıpsız taşıyın." } },
+        ],
+      },
+    ],
+  })),
   item("accordion", "Akordeon", "interactive", "Aç/kapa liste", node("accordion", { items: [{ title: "Başlık", body: "İçerik" }] })),
   item("show_more", "Devamını göster", "interactive", "Açılır ek metin", node("show_more", { summary: "Devamını göster", body: "Ek içerik." })),
   item("modal", "Açılır not", "interactive", "Tetikleyici + metin", node("modal_panel", { trigger: "Ayrıntılar", title: "Başlık", body: "Metin." })),

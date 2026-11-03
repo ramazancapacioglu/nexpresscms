@@ -7,17 +7,18 @@ import { runScheduler } from "@/lib/scheduler";
 import { after } from "next/server";
 import { headers } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/public/site-chrome";
+import { PublicSidebarWidgetArea } from "@/components/public/public-widgets";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getResolvedMenu } from "@/lib/menu-data";
-import { getPublicNavigation, getPublicSite } from "@/lib/public-data";
+import { getPublicNavigation, getPublicSite, getPublicWidgetFeed } from "@/lib/public-data";
 import {
   compileDesignTokensToCssVars,
   getThemeManifest,
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
-import { PluginSlot, resolveSiteSettings, toCssVarTokens, type NavigationLink } from "@nexpress/core";
+import { PluginSlot, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +48,11 @@ export default async function PublicLocaleLayout({
   // Zamanlanmış yayın tetikleyicisi: yanıttan sonra, dakikada en çok bir kez (bkz. lib/scheduler.ts)
   after(() => runScheduler(siteId).then(() => undefined));
 
-  const [site, nav] = await Promise.all([getPublicSite(siteId), getPublicNavigation(siteId, locale)]);
+  const [site, nav, widgetFeed] = await Promise.all([
+    getPublicSite(siteId),
+    getPublicNavigation(siteId, locale),
+    getPublicWidgetFeed(siteId, locale),
+  ]);
 
   // Tanımsız dil kökü ana sayfayı kopyalamasın: yalnızca site dilleri 200 döner.
   // Tek segmentli bilinmeyen yollar (`/eski-adres`) buraya düşer: yönlendirme kuralı varsa uygula, yoksa 404 izleyiciye yaz
@@ -70,10 +75,21 @@ export default async function PublicLocaleLayout({
   const segs = (reqHeaders.get("x-nexpress-pathname") ?? "").split("/").filter(Boolean);
   const chromeCtx = { locale, slug: segs.length >= 2 ? decodeURIComponent(segs[1]!) : "ana-sayfa" };
   const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
-  const cust = resolveSiteSettings(site?.settings).customizer.header;
+  const resolvedCustomizer = resolveSiteSettings(site?.settings).customizer;
+  const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
   const sidebar = nav?.sidebarConfig?.enabled ? nav.sidebarConfig : null;
+  const effectiveSidebarPos: "none" | "left" | "right" =
+    resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+      ? resolvedCustomizer.layout.sidebarPosition
+      : sidebar
+        ? sidebar.position
+        : sidebarTpl
+          ? "right"
+          : "none";
+  const hasSidebar = effectiveSidebarPos !== "none" && Boolean(sidebarTpl || sidebar);
+  const sidebarWidth = resolvedCustomizer.layout.sidebarWidth || "288px";
 
   return (
     <div
@@ -122,21 +138,39 @@ export default async function PublicLocaleLayout({
       />
       )}
 
-      <div className={sidebar ? "mx-auto flex w-full flex-1" : "contents"}>
-        {sidebarTpl && tplCtx ? (
-          <aside aria-label="Kenar çubuğu" className="hidden w-72 shrink-0 px-4 py-10 md:block"><RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} /></aside>
-        ) : null}
-        {!sidebarTpl && sidebar?.position === "left" ? (
-          <PublicSideColumn title={sidebar.title} links={sidebar.links} />
+      <div
+        style={hasSidebar ? { maxWidth: tokens.geometry.containerMaxWidth } : undefined}
+        className={hasSidebar ? "mx-auto flex w-full flex-1 gap-6" : "contents"}
+      >
+        {hasSidebar && effectiveSidebarPos === "left" ? (
+          sidebarTpl && tplCtx ? (
+            <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
+              <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
+            </aside>
+          ) : sidebar ? (
+            <PublicSidebarWidgetArea sidebar={sidebar} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+          ) : null
         ) : null}
         <main
-          style={{ maxWidth: isInk || sidebar ? "100%" : tokens.geometry.containerMaxWidth, ...(headerBehavior.transparent ? { paddingTop: 0 } : {}) }}
-          className={isInk ? "mx-auto w-full flex-1" : "mx-auto w-full flex-1 px-4 py-10 sm:px-6"}
+          style={{
+            maxWidth:
+              isInk || hasSidebar || resolvedCustomizer.layout.contentLayout === "fullwidth"
+                ? "100%"
+                : tokens.geometry.containerMaxWidth,
+            ...(headerBehavior.transparent ? { paddingTop: 0 } : {}),
+          }}
+          className={isInk ? "mx-auto w-full flex-1" : "mx-auto min-w-0 w-full flex-1 px-4 py-10 sm:px-6"}
         >
           {children}
         </main>
-        {!sidebarTpl && sidebar?.position === "right" ? (
-          <PublicSideColumn title={sidebar.title} links={sidebar.links} />
+        {hasSidebar && effectiveSidebarPos === "right" ? (
+          sidebarTpl && tplCtx ? (
+            <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
+              <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
+            </aside>
+          ) : sidebar ? (
+            <PublicSidebarWidgetArea sidebar={sidebar} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+          ) : null
         ) : null}
       </div>
 
@@ -147,24 +181,9 @@ export default async function PublicLocaleLayout({
           </div>
         </footer>
       ) : (
-        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} />
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} />
       )}
     </div>
-  );
-}
-
-function PublicSideColumn({ title, links }: { title: string; links: NavigationLink[] }) {
-  return (
-    <aside className="hidden w-56 shrink-0 px-4 py-10 md:block">
-      <div className="text-xs font-semibold">{title}</div>
-      <ul className="mt-3 space-y-2 text-sm">
-        {links.map((link) => (
-          <li key={link.id}>
-            <a href={link.href}>{link.label}</a>
-          </li>
-        ))}
-      </ul>
-    </aside>
   );
 }
 

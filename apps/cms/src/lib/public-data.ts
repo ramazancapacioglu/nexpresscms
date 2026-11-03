@@ -73,3 +73,88 @@ export async function loadPageForms(siteId: string, blocks: BlockNode[]) {
   const ids = [...collectFormIds(blocks)].sort();
   return ids.length ? getPublicForms(siteId, ids.join(",")) : {};
 }
+
+export interface PublicWidgetFeed {
+  categories: Array<{ id: string; name: string; slug: string; count: number; parentId: string | null }>;
+  tags: Array<{ id: string; name: string; slug: string; count: number }>;
+  recentPosts: Array<{ id: string; title: string; slug: string; featuredImage: string | null; dateLabel: string }>;
+  recentComments: Array<{ id: string; authorName: string; body: string; rating: number }>;
+  featuredProducts: Array<{ id: string; title: string; slug: string; priceLabel: string }>;
+}
+
+/** Kenar çubuğu (sidebar) ve footer bileşenlerinin (widget) ihtiyaç duyduğu özet dinamik veriler. */
+export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: string, locale: string): Promise<PublicWidgetFeed> => {
+  const repo = getScopedRepository(siteId);
+  const [taxonomies, contents, comments] = await Promise.all([
+    repo.listTaxonomies(),
+    repo.listContents({ locale, status: "published" }),
+    repo.listCommentsReviews(),
+  ]);
+
+  const publicContents = contents.filter(
+    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility !== "private"
+  );
+
+  const categories = taxonomies
+    .filter((t) => t.taxonomyType === "category")
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t.itemCount || 1,
+      parentId: t.parentId ?? null,
+    }));
+
+  const tags = taxonomies
+    .filter((t) => t.taxonomyType === "tag")
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t.itemCount || 1,
+    }));
+
+  const recentPosts = publicContents
+    .filter((c) => c.type === "post" || c.type === "kb_tech")
+    .slice(0, 8)
+    .map((p) => ({
+      id: p.contentId,
+      title: p.title,
+      slug: p.slug,
+      featuredImage: p.featuredImage ?? null,
+      dateLabel: p.publishedAt
+        ? new Date(p.publishedAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" })
+        : "",
+    }));
+
+  const featuredProducts = publicContents
+    .filter((c) => c.type === "product" || c.type === "campaign")
+    .slice(0, 6)
+    .map((p) => {
+      const priceRaw = (p.schemaAttributes as Record<string, unknown>)?.price;
+      return {
+        id: p.contentId,
+        title: p.title,
+        slug: p.slug,
+        priceLabel: priceRaw ? `₺${String(priceRaw)}` : "İncele",
+      };
+    });
+
+  const recentComments = comments
+    .filter((c) => c.status === "approved")
+    .slice(0, 6)
+    .map((c) => ({
+      id: c.id,
+      authorName: c.authorName,
+      body: c.body,
+      rating: c.rating ?? 5,
+    }));
+
+  return {
+    categories,
+    tags,
+    recentPosts,
+    recentComments,
+    featuredProducts,
+  };
+});

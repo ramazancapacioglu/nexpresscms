@@ -1,10 +1,14 @@
 import React from "react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { bm25Rank, makeSnippet, resolvePublishing } from "@nexpress/core";
+import { bm25Rank, makeSnippet, resolvePublishing, templateHasBlock } from "@nexpress/core";
 import { createTranslator } from "@nexpress/i18n";
+import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 import { Link } from "@/components/public/link";
-import { listPublishedContents } from "@/lib/public-data";
+import { getResolvedMenu } from "@/lib/menu-data";
+import { getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { buildTemplateContext } from "@/lib/template-context";
+import { templateFor } from "@/lib/templates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -26,7 +30,7 @@ export default async function SearchPage({
   const q = ((await searchParams).q ?? "").trim().slice(0, MAX_QUERY);
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
 
-  let results: Array<{ slug: string; title: string; snippet: string }> = [];
+  let results: Array<{ id: string; slug: string; title: string; snippet: string }> = [];
   if (q) {
     const contents = (await listPublishedContents(siteId, locale)).filter(
       (c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public"
@@ -35,8 +39,38 @@ export default async function SearchPage({
     const hits = bm25Rank(contents.map((c) => ({ id: c.contentId, title: c.title, body: c.markdownCache })), q, 20);
     results = hits.flatMap((h) => {
       const c = byId.get(h.id);
-      return c ? [{ slug: c.slug, title: c.title, snippet: c.tldr || makeSnippet(c.markdownCache, q) }] : [];
+      return c ? [{ id: c.contentId, slug: c.slug, title: c.title, snippet: c.tldr || makeSnippet(c.markdownCache, q) }] : [];
     });
+  }
+
+  const tpl = await templateFor(siteId, "search", null, { locale, slug: "ara" });
+  if (tpl && templateHasBlock(tpl.blocks, "tpl_archive_list")) {
+    const site = await getPublicSite(siteId);
+    const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
+    const tokens = site?.designTokens ?? theme.tokens;
+    const ctx = buildTemplateContext({
+      site: site ? { name: site.name, tagline: site.tagline } : null,
+      locale,
+      menu: await getResolvedMenu(siteId, locale),
+      tokens,
+      menuLabel: t("site.menu"),
+      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("search.title"), href: `/${locale}/ara` }],
+      archive: {
+        title: q ? `"${q}" — ${t("search.title")}` : t("search.title"),
+        description: q ? `${results.length} sonuç bulundu.` : t("search.placeholder"),
+        kindLabel: t("search.title"),
+        items: results.map((r) => ({
+          id: r.id,
+          title: r.title,
+          url: `/${locale}/${r.slug === "ana-sayfa" ? "" : r.slug}`.replace(/\/$/, ""),
+          excerpt: r.snippet,
+        })),
+        page: 1,
+        pages: 1,
+        pageHref: () => `/${locale}/ara${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+      },
+    });
+    return <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} />;
   }
 
   return (

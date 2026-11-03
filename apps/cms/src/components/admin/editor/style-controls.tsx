@@ -2,20 +2,35 @@
 
 import { RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
+import { useStudioInspector } from "./studio-inspector-context";
 
 const input = "h-7 w-full rounded border border-border bg-background px-1.5 font-mono text-[11px]";
 const muted = "text-[#5F6570] dark:text-[#8C9099]";
 
 /** Katlanır denetçi paneli (başlık + durum noktası). */
-export function StylePanel({ title, edited = false, defaultOpen = false, children }: { title: string; edited?: boolean; defaultOpen?: boolean; children: ReactNode }) {
+export function StylePanel({
+  title,
+  edited = false,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  edited?: boolean;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
   return (
     <details open={defaultOpen} className="group rounded-lg border border-border">
       <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-[11px] font-semibold uppercase tracking-wider">
         <span className="inline-flex items-center gap-1.5">
           {title}
-          {edited && <span className="h-1.5 w-1.5 rounded-full bg-blue-600" aria-label="düzenlendi" />}
+          {edited && (
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-600" aria-label="düzenlendi" />
+          )}
         </span>
-        <span className={`${muted} transition group-open:rotate-90`} aria-hidden>›</span>
+        <span className={`${muted} transition group-open:rotate-90`} aria-hidden>
+          ›
+        </span>
       </summary>
       <div className="space-y-2.5 border-t border-border p-3">{children}</div>
     </details>
@@ -23,7 +38,17 @@ export function StylePanel({ title, edited = false, defaultOpen = false, childre
 }
 
 /** Etiketli alan: değer doluysa "düzenlendi" noktası ve tek tıkla sıfırlama gösterir. */
-export function Field({ label, value, onReset, children }: { label: string; value: unknown; onReset?: () => void; children: ReactNode }) {
+export function Field({
+  label,
+  value,
+  onReset,
+  children,
+}: {
+  label: string;
+  value: unknown;
+  onReset?: () => void;
+  children: ReactNode;
+}) {
   const set = value !== undefined && value !== "";
   return (
     <div>
@@ -33,7 +58,13 @@ export function Field({ label, value, onReset, children }: { label: string; valu
           {set && <span className="h-1.5 w-1.5 rounded-full bg-blue-600" aria-hidden />}
         </span>
         {set && onReset && (
-          <button type="button" onClick={onReset} title="Sıfırla" aria-label={`${label} değerini sıfırla`} className="text-blue-700 dark:text-blue-300">
+          <button
+            type="button"
+            onClick={onReset}
+            title="Sıfırla"
+            aria-label={`${label} değerini sıfırla`}
+            className="inline-flex h-5 w-5 items-center justify-center rounded text-blue-700 hover:bg-muted dark:text-blue-300"
+          >
             <RotateCcw className="h-3 w-3" />
           </button>
         )}
@@ -43,39 +74,164 @@ export function Field({ label, value, onReset, children }: { label: string; valu
   );
 }
 
-export function TextInput({ label, value, onChange, placeholder }: { label: string; value: string | undefined; onChange: (v: string | undefined) => void; placeholder?: string }) {
+export function TextInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string | undefined;
+  onChange: (v: string | undefined) => void;
+  placeholder?: string;
+}) {
   return (
     <Field label={label} value={value} onReset={() => onChange(undefined)}>
-      <input aria-label={label} type="text" value={value ?? ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value || undefined)} className={input} />
+      <input
+        aria-label={label}
+        type="text"
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        className={input}
+      />
     </Field>
   );
 }
 
-export function ColorInput({ label, value, onChange, fallback = "#ffffff" }: { label: string; value: string | undefined; onChange: (v: string | undefined) => void; fallback?: string }) {
+export function ColorInput({
+  label,
+  value,
+  onChange,
+  fallback = "#ffffff",
+}: {
+  label: string;
+  value: string | undefined;
+  onChange: (v: string | undefined) => void;
+  fallback?: string;
+}) {
+  const ed = useStudioInspector();
+  const c = ed?.siteTokens?.colors;
+  const swatches: Array<{ key: string; name: string; hex: string }> = c
+    ? [
+        { key: "primary", name: "Birincil", hex: c.primary },
+        { key: "secondary", name: "İkincil", hex: c.secondary },
+        { key: "accent", name: "Vurgu", hex: c.accent },
+        { key: "foreground", name: "Ön Plan", hex: c.foreground },
+        { key: "muted", name: "Yumuşak", hex: c.muted },
+        { key: "background", name: "Arka Plan", hex: c.background },
+        { key: "border", name: "Kenarlık", hex: c.border },
+      ]
+    : [];
+
   return (
     <Field label={label} value={value} onReset={() => onChange(undefined)}>
+      {swatches.length > 0 && (
+        <div className="mb-1.5 flex flex-wrap items-center gap-1">
+          {swatches.map((s) => {
+            const active =
+              typeof value === "string" &&
+              value.toLowerCase() === s.hex.toLowerCase();
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => onChange(s.hex)}
+                aria-label={`${label}: ${s.name} (${s.hex})`}
+                title={`Tema Paleti · ${s.name} (${s.hex})`}
+                style={{ backgroundColor: s.hex }}
+                className={`h-5 w-5 rounded-full border transition-transform hover:scale-110 ${
+                  active
+                    ? "ring-2 ring-blue-600 ring-offset-1"
+                    : "border-slate-300 dark:border-slate-600"
+                }`}
+              />
+            );
+          })}
+        </div>
+      )}
       <div className="flex items-center gap-1.5">
-        <input aria-label={`${label} (renk seçici)`} type="color" value={/^#[0-9a-f]{6}$/i.test(value ?? "") ? value : fallback} onChange={(e) => onChange(e.target.value)} className="h-7 w-8 cursor-pointer rounded border border-border" />
-        <input aria-label={label} type="text" value={value ?? ""} placeholder={fallback} onChange={(e) => onChange(e.target.value || undefined)} className={input} />
+        <input
+          aria-label={`${label} (renk seçici)`}
+          type="color"
+          value={/^#[0-9a-f]{6}$/i.test(value ?? "") ? value : fallback}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-7 w-8 cursor-pointer rounded border border-border"
+        />
+        <input
+          aria-label={label}
+          type="text"
+          value={value ?? ""}
+          placeholder={fallback}
+          onChange={(e) => onChange(e.target.value || undefined)}
+          className={input}
+        />
       </div>
     </Field>
   );
 }
 
-export function SelectInput<T extends string>({ label, value, options, onChange }: { label: string; value: T | undefined; options: Array<[T | "", string]>; onChange: (v: T | undefined) => void }) {
+export function SelectInput<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T | undefined;
+  options: Array<[T | "", string]>;
+  onChange: (v: T | undefined) => void;
+}) {
   return (
     <Field label={label} value={value} onReset={() => onChange(undefined)}>
-      <select aria-label={label} value={value ?? ""} onChange={(e) => onChange((e.target.value || undefined) as T | undefined)} className="h-7 w-full rounded border border-border bg-background px-1 text-[11px]">
-        {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+      <select
+        aria-label={label}
+        value={value ?? ""}
+        onChange={(e) => onChange((e.target.value || undefined) as T | undefined)}
+        className="h-7 w-full rounded border border-border bg-background px-1 text-[11px]"
+      >
+        {options.map(([v, l]) => (
+          <option key={v} value={v}>
+            {l}
+          </option>
+        ))}
       </select>
     </Field>
   );
 }
 
-export function NumberInput({ label, value, onChange, min, max, step, placeholder }: { label: string; value: number | undefined; onChange: (v: number | undefined) => void; min?: number; max?: number; step?: number; placeholder?: string }) {
+export function NumberInput({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  placeholder,
+}: {
+  label: string;
+  value: number | undefined;
+  onChange: (v: number | undefined) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+}) {
   return (
     <Field label={label} value={value} onReset={() => onChange(undefined)}>
-      <input aria-label={label} type="number" min={min} max={max} step={step} value={value ?? ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value === "" ? undefined : Number(e.target.value))} className={input} />
+      <input
+        aria-label={label}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? undefined : Number(e.target.value))
+        }
+        className={input}
+      />
     </Field>
   );
 }

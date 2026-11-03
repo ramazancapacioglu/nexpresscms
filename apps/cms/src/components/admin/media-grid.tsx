@@ -17,10 +17,12 @@ interface Props {
   onOpen: (a: MediaAssetDto) => void;
   /** Verilmezse onay kutuları gösterilmez (medya seçici) */
   onToggle?: (id: string, range: boolean) => void;
+  /** Medya seçicide kart üzerinden doğrudan tek tıkla veya çift tıkla seçim */
+  onQuickPick?: (a: MediaAssetDto) => void;
 }
 
 /** Kitaplık: ızgara veya liste. Tıkla = ayrıntı paneli; onay kutusu = toplu seçim (Shift ile aralık). */
-export function MediaGrid({ items, selectedId, checked, folders, view = "grid", onOpen, onToggle }: Props) {
+export function MediaGrid({ items, selectedId, checked, folders, view = "grid", onOpen, onToggle, onQuickPick }: Props) {
   const folderName = (id: string | null) => folders.find((f) => f.id === id)?.name;
   if (items.length === 0) return <div className={`rounded-lg border ${border} bg-white px-6 py-14 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099] dark:bg-[#15171C]`}>Bu görünümde medya yok. Yükleyin, süzgeci temizleyin ya da başka bir klasör seçin.</div>;
 
@@ -64,11 +66,21 @@ export function MediaGrid({ items, selectedId, checked, folders, view = "grid", 
         const isChecked = checked.has(item.id);
         const isSelected = item.id === selectedId;
         return (
-          <li key={item.id} className={`relative overflow-hidden rounded-lg border bg-white transition dark:bg-[#15171C] ${isChecked ? "border-[#266DF0] ring-2 ring-[#266DF0]/25" : isSelected ? "border-[#266DF0] ring-2 ring-[#266DF0]/15" : `${border} hover:border-[#B8BCC6]`}`}>
-            <button type="button" onClick={() => onOpen(item)} className="block w-full text-left">
+          <li key={item.id} className={`group relative overflow-hidden rounded-lg border bg-white transition dark:bg-[#15171C] ${isChecked ? "border-[#266DF0] ring-2 ring-[#266DF0]/25" : isSelected ? "border-[#266DF0] ring-2 ring-[#266DF0]/30" : `${border} hover:border-[#B8BCC6]`}`}>
+            <button
+              type="button"
+              onClick={() => onOpen(item)}
+              onDoubleClick={() => onQuickPick?.(item)}
+              className="block w-full text-left"
+            >
               <div className="relative h-32 overflow-hidden bg-slate-900">
                 <MediaThumb asset={item} />
                 <span className={`absolute right-2 top-2 rounded bg-black/75 px-1.5 py-0.5 font-mono text-[10px] font-bold ${scoreClass(item.seoScore)}`}>SEO {item.seoScore}</span>
+                {isSelected && (
+                  <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded bg-[#266DF0] px-1.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                    <Check className="h-3 w-3" /> Seçili
+                  </span>
+                )}
               </div>
               <div className="space-y-0.5 p-2.5 text-[11px]">
                 <div className="truncate font-semibold">{item.titleText || item.filename}</div>
@@ -77,6 +89,22 @@ export function MediaGrid({ items, selectedId, checked, folders, view = "grid", 
                 {folderName(item.folderId) && <p className="truncate text-[10px] text-[#5F6570] dark:text-[#8C9099]">📁 {folderName(item.folderId)}</p>}
               </div>
             </button>
+            {onQuickPick && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onQuickPick(item);
+                }}
+                className={`absolute bottom-2 right-2 inline-flex h-6 items-center gap-1 rounded px-2 text-[10px] font-semibold shadow-xs transition ${
+                  isSelected
+                    ? "bg-[#266DF0] text-white"
+                    : "bg-slate-900/85 text-white opacity-0 group-hover:opacity-100 hover:bg-[#266DF0]"
+                }`}
+              >
+                <Check className="h-3 w-3" /> Seç
+              </button>
+            )}
             {checkbox(item, "absolute left-2 top-2")}
           </li>
         );

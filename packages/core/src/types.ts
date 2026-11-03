@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { FooterLayoutPreset, SiteWidget } from "./widgets";
 
 /**
  * 1. Çalışma ve Kiracı (Tenancy) Modları
@@ -306,6 +307,8 @@ export interface NavigationLink {
   href: string;
   target?: "_self" | "_blank";
   source?: MenuSource;
+  /** Menü öğesi veya mega menü sütun başlığı yanında gösterilecek yerleşik SVG simge adı */
+  icon?: string;
   /** Kısa not (mega menüde alt başlık) */
   description?: string;
   badge?: string;
@@ -359,11 +362,15 @@ export interface HeaderConfig {
   };
 }
 
-/** Sayfa gövdesinin yanında duran site kenar çubuğu. İçerik bloklarından ayrıdır. */
+/** Sayfa gövdesinin yanında duran site kenar çubuğu. İçerik bloklarından ayrıdır; dinamik bileşenler (widget) barındırır. */
 export interface SidebarConfig {
   enabled: boolean;
   position: "left" | "right";
+  width?: "260px" | "300px" | "340px";
+  sticky?: boolean;
+  styleVariant?: "cards" | "minimal" | "bordered";
   title: string;
+  widgets?: SiteWidget[];
   links: NavigationLink[];
 }
 
@@ -371,7 +378,11 @@ export function emptySidebarConfig(): SidebarConfig {
   return {
     enabled: false,
     position: "right",
-    title: "Bu bölümde",
+    width: "300px",
+    sticky: true,
+    styleVariant: "cards",
+    title: "Kenar Çubuğu",
+    widgets: [],
     links: [],
   };
 }
@@ -383,7 +394,19 @@ export interface FooterColumnConfig {
   links: Array<{ label: string; href: string; badge?: string }>;
 }
 
+export interface FooterTopBannerConfig {
+  enabled: boolean;
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
 export interface FooterConfig {
+  layoutPreset?: FooterLayoutPreset;
+  topBanner?: FooterTopBannerConfig;
+  widgets?: SiteWidget[];
   columns: FooterColumnConfig[];
   showNewsletter: boolean;
   showLocalBusinessCard: boolean;

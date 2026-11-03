@@ -1,7 +1,7 @@
 import { ResponsiveImage, type MediaFocalMap } from "./responsive-image";
 import React from "react";
 import { createTranslator } from "@nexpress/i18n";
-import { resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
+import { ICON_PATHS, resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
 import type { FormRenderContext } from "./block-context";
 import { RscForm } from "./rsc-form";
 import { renderMotionBlock } from "./blocks-motion";
@@ -40,7 +40,8 @@ export function renderStudioCatalogBlock(
   tokens: DesignTokens,
   focal?: MediaFocalMap,
   locale = "tr",
-  form?: FormRenderContext
+  form?: FormRenderContext,
+  renderChild?: (child: BlockNode) => React.ReactElement | null
 ): React.ReactElement | null {
   const t = createTranslator(locale);
   const p = block.props ?? {};
@@ -48,9 +49,20 @@ export function renderStudioCatalogBlock(
   const items = rows(p.items);
 
   switch (block.type) {
-    case "info_box":
+    case "info_box": {
+      const iconPath = typeof p.icon === "string" ? ICON_PATHS[p.icon] : undefined;
       return (
         <article style={box} className="border bg-nx-card p-5">
+          {iconPath ? (
+            <div
+              style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }}
+              className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d={iconPath} />
+              </svg>
+            </div>
+          ) : null}
           <div className="text-[11px] font-bold uppercase tracking-wider text-nx-link">
             {text(p.kicker, "Bilgi")}
           </div>
@@ -63,64 +75,152 @@ export function renderStudioCatalogBlock(
           ) : null}
         </article>
       );
+    }
 
     case "icon_list":
       return (
-        <ul className="space-y-2">
-          {items.map((item, index) => (
-            <li key={index} className="flex gap-3 text-sm text-nx-soft">
-              <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                {text(item.mark, "✓")}
-              </span>
-              <span>
-                <strong className="text-nx-fg">{text(item.title, text(item.text))}</strong>
-                {text(item.text) && text(item.title) ? (
-                  <span className="block text-nx-soft">{text(item.text)}</span>
-                ) : null}
-              </span>
-            </li>
-          ))}
+        <ul className="space-y-2.5">
+          {items.map((item, index) => {
+            const iconPath = typeof item.icon === "string" ? ICON_PATHS[item.icon] : undefined;
+            return (
+              <li key={index} className="flex gap-3 text-sm text-nx-soft">
+                <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
+                  {iconPath ? (
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d={iconPath} />
+                    </svg>
+                  ) : (
+                    text(item.mark, "✓")
+                  )}
+                </span>
+                <span>
+                  <strong className="text-nx-fg">{text(item.title, text(item.text))}</strong>
+                  {text(item.text, text(item.description)) && text(item.title) ? (
+                    <span className="block text-nx-soft">{text(item.text, text(item.description))}</span>
+                  ) : null}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       );
 
     case "tabs": {
       const name = `nx-tabs-${safeBlockDomId(block.id)}`;
+      const panes = Array.isArray(block.children) ? block.children : [];
+      const tabCount = Math.max(items.length, panes.length);
+      const tabStyle = String(p.tabStyle ?? "pills");
+      const align = String(p.align ?? "left");
+      const tabList = Array.from({ length: tabCount }, (_, index) => {
+        const pane = panes[index];
+        const item = items[index] ?? {};
+        const label = text(pane?.props?.label, text(item.label, `Sekme ${index + 1}`));
+        const iconName = text(pane?.props?.icon, text(item.icon));
+        const subtitle = text(pane?.props?.subtitle, text(item.subtitle));
+        const itemTitle = text(pane?.props?.title, text(item.title));
+        const body = text(pane?.props?.body, text(item.body));
+        const children = Array.isArray(pane?.children) ? pane.children : [];
+        return { index, pane, label, iconName, subtitle, itemTitle, body, children };
+      });
+
+      const justifyClass =
+        align === "center"
+          ? "justify-center"
+          : align === "stretch"
+            ? "grid grid-cols-2 sm:grid-cols-3 md:flex"
+            : "justify-start";
+
       return (
-        <div className={name}>
-          <div className="flex flex-wrap gap-2">
-            {items.map((item, index) => (
-              <label
-                key={index}
-                htmlFor={`${name}-${index}`}
-                className="cursor-pointer rounded-md border px-3 py-1.5 text-sm font-semibold"
-                style={box}
-              >
-                {text(item.label, `Sekme ${index + 1}`)}
-              </label>
-            ))}
-          </div>
-          {items.map((item, index) => (
-            <React.Fragment key={index}>
-              <input
-                id={`${name}-${index}`}
-                name={name}
-                type="radio"
-                defaultChecked={index === 0}
-                className="absolute h-px w-px opacity-0"
-              />
-            </React.Fragment>
+        <div className={`${name} space-y-4`}>
+          {text(p.title) ? (
+            <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-xl font-bold text-nx-fg">
+              {text(p.title)}
+            </h3>
+          ) : null}
+          {tabList.map(({ index }) => (
+            <input
+              key={`input-${index}`}
+              id={`${name}-${index}`}
+              name={name}
+              type="radio"
+              defaultChecked={index === 0}
+              className="sr-only"
+            />
           ))}
-          {items.map((item, index) => (
-            <div key={`panel-${index}`} className={`${name}-panel-${index} mt-3 text-sm leading-relaxed text-nx-soft`}>
-              {text(item.body)}
+          <div
+            className={`nx-tabbar flex flex-wrap gap-2 ${justifyClass} ${
+              tabStyle === "underline"
+                ? "border-b pb-0"
+                : tabStyle === "boxed"
+                  ? "rounded-xl bg-nx-subtle p-1.5"
+                  : ""
+            }`}
+            style={{ borderColor: tokens.colors.border }}
+          >
+            {tabList.map(({ index, label, iconName, subtitle }) => {
+              const iconPath = iconName ? ICON_PATHS[iconName] : undefined;
+              return (
+                <label
+                  key={`tab-${index}`}
+                  htmlFor={`${name}-${index}`}
+                  className={`${name}-tab-${index} inline-flex cursor-pointer items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition select-none ${
+                    align === "stretch" ? "flex-1 text-center" : ""
+                  } ${
+                    tabStyle === "underline"
+                      ? "-mb-px border-b-2 border-transparent"
+                      : "rounded-lg border"
+                  }`}
+                  style={tabStyle === "underline" ? undefined : box}
+                >
+                  {iconPath ? (
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d={iconPath} />
+                    </svg>
+                  ) : null}
+                  <span>{label}</span>
+                  {subtitle ? (
+                    <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-medium opacity-80">
+                      {subtitle}
+                    </span>
+                  ) : null}
+                </label>
+              );
+            })}
+          </div>
+          {tabList.map(({ index, itemTitle, body, children }) => (
+            <div
+              key={`panel-${index}`}
+              style={box}
+              className={`${name}-panel-${index} rounded-xl border bg-nx-card p-6 text-sm leading-relaxed text-nx-soft`}
+            >
+              {children.length > 0 && renderChild ? (
+                <div className="space-y-4">
+                  {children.map((child) => (
+                    <React.Fragment key={child.id}>{renderChild(child)}</React.Fragment>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {itemTitle ? <h4 className="text-base font-bold text-nx-fg">{itemTitle}</h4> : null}
+                  {body ? <p className="whitespace-pre-line">{body}</p> : null}
+                </div>
+              )}
             </div>
           ))}
           <style>{`
-            .${name} .${name}-panel-0, .${name} [class*="${name}-panel-"] { display: none; }
-            ${items
+            .${name} [class*="${name}-panel-"] { display: none; }
+            ${tabList
               .map(
-                (_, index) =>
-                  `.${name} input:nth-of-type(${index + 1}):checked ~ .${name}-panel-${index} { display: block; }`
+                ({ index }) => `
+              .${name} input:nth-of-type(${index + 1}):checked ~ .${name}-panel-${index} { display: block; }
+              .${name} input:nth-of-type(${index + 1}):checked ~ .nx-tabbar .${name}-tab-${index} {
+                ${
+                  tabStyle === "underline"
+                    ? `border-bottom-color: ${tokens.colors.primary}; color: ${tokens.colors.primary};`
+                    : `background-color: ${tokens.colors.primary}; color: ${tokens.colors.primaryForeground}; border-color: ${tokens.colors.primary};`
+                }
+              }
+            `
               )
               .join("")}
           `}</style>

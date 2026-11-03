@@ -137,27 +137,12 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
               type: "column",
               props: { widthPct },
               style: {
-                paddingTop: "20px",
-                paddingRight: "20px",
-                paddingBottom: "20px",
-                paddingLeft: "20px",
-                backgroundColor: "#f8fafc",
-                borderRadius: "12px",
-                borderWidth: "1px",
-                borderColor: "#e2e8f0",
+                paddingTop: "16px",
+                paddingRight: "16px",
+                paddingBottom: "16px",
+                paddingLeft: "16px",
               },
-              children: [
-                {
-                  id: `blk_col_h_${Date.now()}_${i}`,
-                  type: "heading",
-                  props: { level: 3, text: `${i + 1}. Sütun Başlığı` },
-                },
-                {
-                  id: `blk_col_p_${Date.now()}_${i}`,
-                  type: "paragraph",
-                  props: { text: "Sütun içi içerik metni." },
-                },
-              ],
+              children: [],
             });
           }
         }
@@ -171,20 +156,30 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     );
   };
 
-  // Blok Ekleme (Kök listeye veya Seçili Sütun / Section içine!)
+  // Blok Ekleme (Kök listeye, Seçili Sütun / Section / Sekme içine veya seçili bloğun hemen altına!)
   const handleInsertBlock = (
     template: Omit<BlockNode, "id"> | BlockNode,
     targetParentId?: string | null
   ) => {
     const fresh = cloneBlockWithFreshIds(template);
-    const parentIdToUse =
-      targetParentId !== undefined
-        ? targetParentId
-        : selectedBlock?.type === "column" || selectedBlock?.type === "section"
-          ? selectedBlock.id
-          : null;
+    let parentIdToUse: string | null = null;
+    let insertIdx = 999999;
 
-    setBlocks((prev) => insertBlockAt(prev, fresh, parentIdToUse));
+    if (targetParentId !== undefined) {
+      parentIdToUse = targetParentId;
+    } else if (selectedBlock?.type === "column" || selectedBlock?.type === "section") {
+      parentIdToUse = selectedBlock.id;
+    } else if (selectedBlock?.type === "tabs" && selectedBlock.children?.[0]) {
+      parentIdToUse = selectedBlock.children[0].id;
+    } else if (selectedBlock) {
+      const loc = locateBlock(p.blocks, selectedBlock.id);
+      if (loc) {
+        parentIdToUse = loc.parentId;
+        insertIdx = loc.index + 1;
+      }
+    }
+
+    setBlocks((prev) => insertBlockAt(prev, fresh, parentIdToUse, insertIdx));
     setSelectedBlockId(fresh.id);
     setRightTab("block");
     setActiveColumnInsertId(null);

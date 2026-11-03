@@ -1,41 +1,131 @@
 import { NEXPRESS_DESIGN_LIBRARY } from "./library";
 import type { StarterPagePack } from "./library-types";
 
+const pick = (id: string) =>
+  NEXPRESS_DESIGN_LIBRARY.find((item) => item.id === id)?.block ??
+  NEXPRESS_DESIGN_LIBRARY[0]!.block;
+
 /**
- * Tek Tıkla Uygulanabilir Tam Sayfa Şablon Paketleri (Starter Page Packs)
+ * Tek Tıkla Tam Sayfa Başlangıç Paketleri (Starter Page Packs)
+ * Kullanıcı bir sayfa oluştururken tek tıkla 5-8 bölümlük tam kurgulanmış sayfa iskeleti yükleyebilir.
  */
 export const NEXPRESS_STARTER_PAGE_PACKS: StarterPagePack[] = [
   {
     id: "pack_b2b_saas_landing",
-    name: "B2B SaaS & Kurumsal Ürün Lansman Sayfası",
+    name: "Kurumsal B2B & SaaS Ana Sayfa Paketi",
     description:
-      "Hero + 4'lü Kanıt İstatistiği + Bento Özellik Izgarası + 3 Kademeli Fiyatlandırma + SSS Akordeonu.",
+      "Hero + Answer-First TL;DR + 4'lü Metrik Şeridi + Kapsayıcı Sekmeli Çözüm Vitrini + 4'lü Bento + 3 Kademeli Fiyatlandırma + SSS + Dönüşüm Şeridi.",
     recommendedType: "page",
     schemaType: "WebPage",
-    tldr: "Kurumsal B2B yazılım ve teknoloji markaları için 100/100 Lighthouse hızında, dönüşüm ve SGE optimize tam açılış sayfası.",
+    tldr: "NexPress Enterprise Cloud; 0-KB RSC hızı, çift veritabanı motoru ve yerleşik Agentic RAG altyapısıyla kurumsal web varlıklarını tek merkezden yönetir.",
     blocks: [
-      NEXPRESS_DESIGN_LIBRARY[0]!.block,
-      NEXPRESS_DESIGN_LIBRARY[3]!.block,
-      NEXPRESS_DESIGN_LIBRARY[2]!.block,
-      NEXPRESS_DESIGN_LIBRARY[4]!.block,
-      NEXPRESS_DESIGN_LIBRARY[8]!.block,
+      pick("lib_hero_aurora_split"),
+      pick("lib_aio_tldr_box"),
+      pick("lib_stats_4col"),
+      pick("lib_layout_tabs_showcase"),
+      pick("lib_bento_4grid"),
+      pick("lib_pricing_3tier"),
+      pick("lib_layout_faq_contact_split"),
+      pick("lib_editorial_cta_banner"),
+    ],
+  },
+  {
+    id: "pack_corporate_services",
+    name: "Kurumsal Hizmet & Danışmanlık Sayfası",
+    description:
+      "2 Sütunlu Kurumsal Vitrin + Asimetrik Özellik & Hikâye Bölümü + 3 Sütunlu Hizmet Kartları + Uygulama Adımları + İki Sütunlu SSS & Uzman Desteği.",
+    recommendedType: "page",
+    schemaType: "WebPage",
+    tldr: "Kurumsal danışmanlık ve dijital dönüşüm hizmetlerimiz; analiz, mimari kurulum ve 7/24 operasyonel destek süreçlerini kapsar.",
+    blocks: [
+      pick("lib_hero_saas_split_row"),
+      pick("lib_layout_asymmetric_feature"),
+      pick("lib_studio_row_3col"),
+      pick("lib_aio_howto_steps"),
+      pick("lib_layout_faq_contact_split"),
+      pick("lib_editorial_cta_banner"),
     ],
   },
   {
     id: "pack_tech_kb_guide",
-    name: "Teknik Bilgi Bankası (TechArticle & HowTo) Rehberi",
+    name: "Teknik Dokümantasyon & Bilgi Bankası Rehberi (kb_tech)",
     description:
-      "Answer-First TL;DR + Adım Adım Kurulum (HowTo) + Mimari İpucu Kutusu + Kod Terminali + Gömülü Ürün Kartı + SSS.",
+      "Answer-First TL;DR + İçindekiler + Adım Adım HowTo Rehberi + Teknik Kod Bloğu + Performans Callout + Karşılaştırma Tablosu + SSS Akordeonu.",
     recommendedType: "kb_tech",
     schemaType: "TechArticle",
-    tldr: "Adım adım teknik prosedür, kod örnekleri ve bağlantılı @id ürün referansı içeren otoriter bilgi bankası şablonu.",
+    tldr: "Bu teknik rehber; 0-KB RSC blok mimarisinin kurulumunu, MarkdownCache derleme hattını ve canlı ortam doğrulama adımlarını açıklar.",
     blocks: [
-      NEXPRESS_DESIGN_LIBRARY[6]!.block,
-      NEXPRESS_DESIGN_LIBRARY[7]!.block,
-      NEXPRESS_DESIGN_LIBRARY[9]!.block,
-      NEXPRESS_DESIGN_LIBRARY[11]!.block,
-      NEXPRESS_DESIGN_LIBRARY[5]!.block,
-      NEXPRESS_DESIGN_LIBRARY[8]!.block,
+      pick("lib_aio_tldr_box"),
+      pick("lib_toc"),
+      pick("lib_aio_howto_steps"),
+      pick("lib_editorial_code"),
+      pick("lib_editorial_callout"),
+      pick("lib_editorial_comparison_table"),
+      pick("lib_aio_faq_accordion"),
+    ],
+  },
+  {
+    id: "pack_product_launch_campaign",
+    name: "Ürün Lansman & Kampanya Dönüşüm Sayfası",
+    description:
+      "Kampanya Hero + Geri Sayım + Canlı @id Ürün Gömmesi + 4'lü Metrik Kanıtı + Editoryal İnceleme Kutusu + 3 Kademeli Paket Tablosu + SSS.",
+    recommendedType: "campaign",
+    schemaType: "Offer",
+    tldr: "Sınırlı süreli kurumsal lansman paketiyle mevcut sitenizi 0-KB RSC hızına taşıyın ve yıllık lisanslamada %30 avantaj elde edin.",
+    blocks: [
+      pick("lib_hero_commerce_offer"),
+      pick("lib_countdown"),
+      pick("lib_commerce_product_embed"),
+      pick("lib_stats_4col"),
+      pick("lib_atomic_review_box"),
+      pick("lib_pricing_3tier"),
+      pick("lib_aio_faq_accordion"),
+    ],
+  },
+  {
+    id: "pack_agency_portfolio",
+    name: "Dijital Ajans, Portfolyo & Vaka Analizi Paketi",
+    description:
+      "Aurora Vitrin + Rakamlarla Başarı Şeridi + Seçili İşler Portfolyo Izgarası + Kapsayıcı Sekmeli Hizmetler + Dönüşüm Çağrısı.",
+    recommendedType: "page",
+    schemaType: "WebPage",
+    tldr: "Yüksek performanslı kurumsal web platformları, çok dilli içerik mimarileri ve dönüşüm odaklı dijital ürünler tasarlıyoruz.",
+    blocks: [
+      pick("lib_hero_aurora_split"),
+      pick("lib_stats_4col"),
+      pick("lib_portfolio"),
+      pick("lib_layout_tabs_showcase"),
+      pick("lib_editorial_cta_banner"),
+    ],
+  },
+  {
+    id: "pack_about_company",
+    name: "Hakkımızda, Kurumsal Kültür & Ekip Sayfası",
+    description:
+      "Bölünmüş Kurumsal Hikâye + 4 Sütunlu Metrik Şeridi + Asimetrik Değerlerimiz Bölümü + 2 Sütunlu Vizyon/Misyon Satırı + Çağrı Şeridi.",
+    recommendedType: "page",
+    schemaType: "AboutPage",
+    tldr: "Mühendislik disiplini ve sade tasarım ilkeleriyle kurumların dijital yayın altyapısını hızlandırıyoruz.",
+    blocks: [
+      pick("lib_split_story"),
+      pick("lib_stats_4col"),
+      pick("lib_layout_asymmetric_feature"),
+      pick("lib_studio_row_2col"),
+      pick("lib_editorial_cta_banner"),
+    ],
+  },
+  {
+    id: "pack_contact_hub",
+    name: "İletişim, Merkez Ofis & Teklif Talep Sayfası",
+    description:
+      "İletişim Formu + Merkez Ofis Konum Kartı + İki Sütunlu SSS & Uzman Destek Kartı.",
+    recommendedType: "page",
+    schemaType: "ContactPage",
+    tldr: "Projeniz için teknik değerlendirme, canlı demo veya kurumsal lisans teklifi almak üzere ekibimizle doğrudan iletişime geçin.",
+    blocks: [
+      pick("lib_form"),
+      pick("lib_map"),
+      pick("lib_layout_faq_contact_split"),
     ],
   },
 ];

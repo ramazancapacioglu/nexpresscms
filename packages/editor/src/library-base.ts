@@ -45,10 +45,337 @@ export const BASE_LIBRARY: DesignLibraryItem[] = [
         badge: "SINIRLI SÜRELİ LANSMAN TEKLİFİ",
         title: "Kurumsal Göç Paketinde Yıllık %30 İndirim Fırsatı",
         subtitle:
-          "Eski WordPress ve Elementor altyapınızı 60 saniyede 0-KB RSC mimarisine taşıyın, Core Web Vitals skorunuzu 100/100'e çıkarın.",
+          "Eski nesil hantal site altyapınızı 60 saniyede 0-KB RSC mimarisine taşıyın, Core Web Vitals skorunuzu 100/100 seviyesine çıkarın.",
         primaryCtaLabel: "Teklifi Etkinleştir",
         primaryCtaHref: "/tr/nexpress-enterprise-cloud",
       },
+    },
+  },
+  {
+    id: "lib_hero_saas_split_row",
+    name: "2 Sütunlu Modern SaaS Vitrin Bölümü (Metin + Görsel Kart)",
+    category: "hero",
+    description:
+      "Sol sütunda rozet, başlık, ikonlu madde listesi ve aksiyon butonları; sağ sütunda öne çıkan ürün görseli ve bilgi kartı.",
+    badge: "Yeni • Çok Sütunlu",
+    previewKind: "hero-split",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { title: "", containerMode: "boxed" },
+      style: {
+        paddingTop: "48px",
+        paddingRight: "36px",
+        paddingBottom: "48px",
+        paddingLeft: "36px",
+        backgroundColor: "#f8fafc",
+        borderRadius: "20px",
+        borderWidth: "1px",
+        borderColor: "#e2e8f0",
+      },
+      children: [
+        {
+          id: "saas_hero_row",
+          type: "columns",
+          props: { layout: "6+6", gap: "32px", verticalAlign: "center" },
+          children: [
+            {
+              id: "saas_hero_col_left",
+              type: "column",
+              props: { widthPct: 50 },
+              children: [
+                {
+                  id: "saas_hero_h",
+                  type: "heading",
+                  props: {
+                    level: 2,
+                    text: "Tüm Dijital Operasyonunuzu Tek Merkezden Yönetin",
+                  },
+                },
+                {
+                  id: "saas_hero_p",
+                  type: "paragraph",
+                  props: {
+                    text: "Yüksek trafikli kurumsal siteler, çok dilli yayın akışları ve e-ticaret katalogları için sıfır istemci yüküyle çalışan yeni nesil içerik platformu.",
+                  },
+                },
+                {
+                  id: "saas_hero_list",
+                  type: "icon_list",
+                  props: {
+                    items: [
+                      {
+                        icon: "zap",
+                        mark: "✓",
+                        title: "Anında Sunucu Render (0-KB JS)",
+                        text: "Ziyaretçi tarayıcısına gereksiz betik yüklenmez.",
+                      },
+                      {
+                        icon: "shield",
+                        mark: "✓",
+                        title: "Çoklu Kiracı & Kurumsal Güvenlik",
+                        text: "Her alt alan adı ve şube kendi izole verisiyle çalışır.",
+                      },
+                    ],
+                  },
+                },
+                {
+                  id: "saas_hero_btns",
+                  type: "button_row",
+                  props: {
+                    align: "left",
+                    buttons: [
+                      { label: "Ücretsiz Başlayın", href: "/tr/iletisim", variant: "primary" },
+                      { label: "Canlı Mimariyi İncele", href: "/tr", variant: "outline" },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              id: "saas_hero_col_right",
+              type: "column",
+              props: { widthPct: 50 },
+              style: {
+                paddingTop: "24px",
+                paddingRight: "24px",
+                paddingBottom: "24px",
+                paddingLeft: "24px",
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                borderWidth: "1px",
+                borderColor: "#cbd5e1",
+                boxShadow: "lg",
+              },
+              children: [
+                {
+                  id: "saas_hero_info",
+                  type: "info_box",
+                  props: {
+                    icon: "sparkles",
+                    kicker: "CANLI PERFORMANS RAPORU",
+                    title: "100 / 100 Core Web Vitals Garantisi",
+                    text: "Görsel stüdyoda hazırladığınız tüm karmaşık satır ve sütun düzenleri, yayın anında saf HTML ve CSS değişkenlerine derlenir.",
+                    linkLabel: "Hız Testi Sonuçlarını Gör →",
+                    href: "/tr",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_layout_tabs_showcase",
+    name: "Zengin Kapsayıcı Sekmeli Çözüm Vitrini (İç İçe Satır & Sütunlu)",
+    category: "layout",
+    description:
+      "Her sekmenin içinde iki sütunlu yerleşim, ikonlu özellik listesi ve aksiyon butonu barındıran gelişmiş kapsayıcı sekmeler bloğu.",
+    badge: "Yeni • Kapsayıcı Sekme",
+    previewKind: "bento-3",
+    block: {
+      type: "tabs",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: {
+        title: "Ekipler İçin Özelleştirilmiş Çözüm Katmanları",
+        tabStyle: "pills",
+        align: "left",
+        items: [
+          { label: "Pazarlama & İçerik", icon: "sparkles", body: "Pazarlama ekipleri için görsel hız." },
+          { label: "Yazılım & Mimari", icon: "code", body: "Mühendislik ekipleri için temiz AST." },
+          { label: "E-Ticaret & Satış", icon: "cart", body: "Dönüşüm odaklı vitrin yönetimi." },
+        ],
+      },
+      children: [
+        {
+          id: "lib_tab_pane_1",
+          type: "column",
+          props: { label: "Pazarlama & İçerik", icon: "sparkles" },
+          children: [
+            {
+              id: "lib_tab1_row",
+              type: "columns",
+              props: { layout: "6+6", gap: "24px", verticalAlign: "center" },
+              children: [
+                {
+                  id: "lib_tab1_c1",
+                  type: "column",
+                  props: { widthPct: 50 },
+                  children: [
+                    { id: "lib_tab1_h", type: "heading", props: { level: 3, text: "Geliştirici Beklemeden Dakikalar İçinde Kampanya Sayfası Açın" } },
+                    { id: "lib_tab1_p", type: "paragraph", props: { text: "Hazır bölüm şablonlarını sürükleyip bırakın, metinleri doğrudan tuval üzerinde düzenleyin ve SEO puanınızı canlı denetleyin." } },
+                    { id: "lib_tab1_btn", type: "button_element", props: { label: "Editör Özelliklerini Keşfet", href: "/tr", icon: "arrow-right", styleVariant: "primary", align: "left" } },
+                  ],
+                },
+                {
+                  id: "lib_tab1_c2",
+                  type: "column",
+                  props: { widthPct: 50 },
+                  children: [
+                    {
+                      id: "lib_tab1_list",
+                      type: "icon_list",
+                      props: {
+                        items: [
+                          { icon: "check", mark: "✓", title: "Canlı SEO & Okunabilirlik Puanı", text: "Başlık hiyerarşisi ve alt metin kontrolü." },
+                          { icon: "globe", mark: "✓", title: "Çok Dilli Çeviri Matrisi", text: "Tek tıkla tüm dillerde eşzamanlı yayın." },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: "lib_tab_pane_2",
+          type: "column",
+          props: { label: "Yazılım & Mimari", icon: "code" },
+          children: [
+            {
+              id: "lib_tab2_h",
+              type: "heading",
+              props: { level: 3, text: "Tip Güvenli JSON AST ve Çift Veritabanı Esnekliği" },
+            },
+            {
+              id: "lib_tab2_p",
+              type: "paragraph",
+              props: { text: "Yerel geliştirmede sıfır kurulumlu SQLite/LibSQL, üretim ortamında PostgreSQL 16 + pgvector ile yüksek ölçeklenebilirlik." },
+            },
+          ],
+        },
+        {
+          id: "lib_tab_pane_3",
+          type: "column",
+          props: { label: "E-Ticaret & Satış", icon: "cart" },
+          children: [
+            {
+              id: "lib_tab3_h",
+              type: "heading",
+              props: { level: 3, text: "Hızlı Ürün Vitrinleri ve Pazar Yeri Entegrasyonu" },
+            },
+            {
+              id: "lib_tab3_p",
+              type: "paragraph",
+              props: { text: "Ürün kartlarını makale ve kampanya sayfalarının içine doğrudan gömün; stok ve fiyat şeması otomatik güncellensin." },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_layout_asymmetric_feature",
+    name: "Asimetrik Özellik & Hikâye Bölümü (4+8 Sütun)",
+    category: "layout",
+    description:
+      "Sol dar sütunda bölüm başlığı, özet ve çağrı butonu; sağ geniş sütunda simgeli bilgi kartları.",
+    badge: "Modern Kurumsal",
+    previewKind: "columns",
+    block: {
+      type: "columns",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { layout: "4+8", gap: "32px", verticalAlign: "top" },
+      style: { paddingTop: "24px", paddingBottom: "24px" },
+      children: [
+        {
+          id: "asym_col_left",
+          type: "column",
+          props: { widthPct: 33.33 },
+          children: [
+            { id: "asym_h", type: "heading", props: { level: 2, text: "Kurumsal Ölçekte Neden Fark Yaratıyoruz?" } },
+            { id: "asym_p", type: "paragraph", props: { text: "Sadece güzel görünen sayfalar değil; arama motorları ve yapay zeka ajanları tarafından anında anlaş지는 semantik veri mimarisi kuruyoruz." } },
+            { id: "asym_b", type: "button_element", props: { label: "Detaylı Bilgi Alın", href: "/tr/iletisim", icon: "arrow-right", styleVariant: "primary", align: "left" } },
+          ],
+        },
+        {
+          id: "asym_col_right",
+          type: "column",
+          props: { widthPct: 66.67 },
+          children: [
+            {
+              id: "asym_bento",
+              type: "bento_features",
+              props: {
+                title: "",
+                items: [
+                  { icon: "rocket", title: "Anında Sayfa Açılışı", description: "Ön belleğe alınmış sunucu bileşenleriyle milisaniyeler içinde ilk boyama." },
+                  { icon: "layers", title: "Modüler Eklenti Yuvaları", description: "Çekirdek kodu kirletmeden genişleyen temiz kanca ve yuva mimarisi." },
+                  { icon: "database", title: "Veri Taşınabilirliği", description: "Tema değişse bile içerik ağacınız ve SEO verileriniz %100 korunur." },
+                  { icon: "shield", title: "Rol Bazlı Denetim İzi", description: "Tüm yönetici işlemleri ve içerik revizyonları kayıt altındadır." },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_layout_faq_contact_split",
+    name: "İki Sütunlu SSS + Canlı Destek Kartı (8+4 Sütun)",
+    category: "aio_sge",
+    description:
+      "Sol geniş sütunda FAQPage şemalı sık sorulan sorular; sağ dar sütunda doğrudan iletişim ve destek bilgi kartı.",
+    badge: "Yüksek Dönüşüm",
+    previewKind: "columns",
+    block: {
+      type: "columns",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { layout: "8+4", gap: "28px", verticalAlign: "top" },
+      children: [
+        {
+          id: "faq_split_left",
+          type: "column",
+          props: { widthPct: 66.67 },
+          children: [
+            {
+              id: "faq_split_acc",
+              type: "faq_accordion",
+              props: {
+                title: "Sıkça Sorulan Sorular",
+                items: [
+                  { question: "Mevcut sitemdeki içerikleri ve URL yapısını koruyabilir miyim?", answer: "Evet. İçe aktarma aracımız tüm yazılarınızı, görsellerinizi ve eski URL yönlendirmelerinizi (301) otomatik olarak taşır." },
+                  { question: "Teknik ekip olmadan sayfa tasarımlarını güncelleyebilir miyiz?", answer: "Evet. Görsel stüdyo ile satır, sütun, sekme ve hazır bölümleri kod yazmadan yönetebilirsiniz." },
+                  { question: "Çok dilli yayın ve bölgesel SEO destekleniyor mu?", answer: "Evet. Her dil için ayrı URL, hreflang kümeleri ve bağımsız çeviri durumu yerleşik olarak sunulur." },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          id: "faq_split_right",
+          type: "column",
+          props: { widthPct: 33.33 },
+          style: {
+            paddingTop: "24px",
+            paddingRight: "24px",
+            paddingBottom: "24px",
+            paddingLeft: "24px",
+            backgroundColor: "#eff6ff",
+            borderRadius: "16px",
+            borderWidth: "1px",
+            borderColor: "#bfdbfe",
+          },
+          children: [
+            {
+              id: "faq_split_box",
+              type: "info_box",
+              props: {
+                icon: "headphones",
+                kicker: "UZMAN DESTEĞİ",
+                title: "Farklı Bir Sorunuz mu Var?",
+                text: "Çözüm mimarlarımız projenize özel canlı demo ve teknik geçiş planı için hazır.",
+                linkLabel: "Bize Ulaşın →",
+                href: "/tr/iletisim",
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   {

@@ -5,7 +5,7 @@ export const BREAKPOINTS = {
   mobileMax: 640,
 } as const;
 
-export const CONTAINER_BLOCK_TYPES = ["section", "columns", "column"] as const;
+export const CONTAINER_BLOCK_TYPES = ["section", "columns", "column", "tabs"] as const;
 
 export function isContainerBlock(type: string): boolean {
   return (CONTAINER_BLOCK_TYPES as readonly string[]).includes(type);

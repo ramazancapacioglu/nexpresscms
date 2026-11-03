@@ -42,7 +42,7 @@ test("doğrulama: zorunlu yuva eksik/çift, header'da içerik yuvası, başlık 
   assert.ok(validateTemplate("header", [{ id: "x", type: "tpl_post_content", props: {} }] as never).some((i) => i.level === "error"));
   assert.ok(validateTemplate("page", [{ id: "c", type: "tpl_post_content", props: {} }] as never).some((i) => i.level === "warning" && i.message.includes("h1")));
   assert.equal(templateHasBlock(post.blocks, "tpl_post_meta"), true);
-  assert.ok(Object.keys(TEMPLATE_KINDS).length === 9);
+  assert.ok(Object.keys(TEMPLATE_KINDS).length === 11);
 });
 
 test("ürün/mağaza şablonları: satın alma kutusu yoksa uyarı, mağaza listesinde arşiv yuvası zorunlu", () => {

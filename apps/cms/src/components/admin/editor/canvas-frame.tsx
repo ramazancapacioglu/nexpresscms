@@ -60,15 +60,15 @@ export function CanvasFrame({ device, tokens, blockCss, children }: { device: De
     };
     const forward = (type: string) => () => window.dispatchEvent(new Event(type));
     const dragend = forward("dragend");
-    const pointerdown = forward("pointerdown");
+    const drop = forward("drop");
     win.addEventListener("keydown", onKey);
     win.addEventListener("dragend", dragend);
-    win.addEventListener("pointerdown", pointerdown);
+    win.addEventListener("drop", drop);
     return () => {
       mo.disconnect();
       win.removeEventListener("keydown", onKey);
       win.removeEventListener("dragend", dragend);
-      win.removeEventListener("pointerdown", pointerdown);
+      win.removeEventListener("drop", drop);
     };
   }, [doc]);
 
@@ -84,7 +84,7 @@ export function CanvasFrame({ device, tokens, blockCss, children }: { device: De
       {doc
         ? createPortal(
             <div style={{ backgroundColor: tokens.colors.background, color: tokens.colors.foreground, fontFamily: tokens.typography.bodyFont, minHeight: "100vh" }}>
-              <style>{`html,body{margin:0;background:${tokens.colors.background}}${compileDesignTokensToCssVars(tokens)}`}</style>
+              <style>{`html,body{margin:0;background:${tokens.colors.background}}${compileDesignTokensToCssVars(tokens)}[data-nx-inline]{cursor:text;border-radius:4px;transition:outline-color .15s ease,background-color .15s ease}[data-nx-inline]:hover{outline:1px dashed rgba(37,99,235,.45);outline-offset:2px}[data-nx-inline]:focus{outline:2px solid rgba(37,99,235,.85);outline-offset:2px;background-color:rgba(37,99,235,.03)}`}</style>
               {blockCss ? <style>{blockCss}</style> : null}
               {children}
             </div>,

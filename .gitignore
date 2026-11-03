@@ -44,3 +44,4 @@ a11y-report.json
 # Lisanslı referans eklenti/tema paketleri (yalnızca yerel; asla depoya girmez)
 docs/kadence-referans-eklentiler/
 tools/wp-reference/wp-data/
+apps/cms/data/media/

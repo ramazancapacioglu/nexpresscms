@@ -1,5 +1,16 @@
 import React from "react";
-import { isSafeMenuHref, type DesignTokens, type FooterConfig, type HeaderConfig, type NavigationMenuItem, type SiteSettings } from "@nexpress/core";
+import {
+  FOOTER_LAYOUT_PRESETS,
+  isSafeMenuHref,
+  resolveFooterWidgets,
+  type DesignTokens,
+  type FooterConfig,
+  type HeaderConfig,
+  type NavigationMenuItem,
+  type SiteSettings,
+} from "@nexpress/core";
+import type { PublicWidgetFeed } from "@/lib/public-data";
+import { RenderPublicWidget } from "./public-widgets";
 import { DesktopNav, MobileNav } from "./site-nav";
 
 interface HeaderProps {
@@ -89,38 +100,103 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
   );
 }
 
-export function SiteFooter({ siteName, siteDna, locale, tokens, footer, fallbackText }: { siteName: string; siteDna?: string | null; locale: string; tokens: DesignTokens; footer: FooterConfig | undefined; fallbackText: string }) {
-  const columns = footer?.columns ?? [];
+export function SiteFooter({
+  siteName,
+  siteDna,
+  locale,
+  tokens,
+  footer,
+  fallbackText,
+  widgetFeed,
+}: {
+  siteName: string;
+  siteDna?: string | null;
+  locale: string;
+  tokens: DesignTokens;
+  footer: FooterConfig | undefined;
+  fallbackText: string;
+  widgetFeed?: PublicWidgetFeed;
+}) {
+  const layout =
+    FOOTER_LAYOUT_PRESETS.find((p) => p.id === (footer?.layoutPreset ?? "brand-wide-4")) ??
+    FOOTER_LAYOUT_PRESETS[0]!;
+  const allWidgets = resolveFooterWidgets(footer, siteName, siteDna || fallbackText);
+
   return (
     <footer style={{ borderColor: tokens.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
-      <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto grid grid-cols-1 gap-8 md:grid-cols-4">
-        <div className="space-y-3 md:col-span-2">
-          <span className="text-base font-bold">{siteName}</span>
-          <p className="max-w-md text-xs leading-relaxed opacity-80">{siteDna || fallbackText}</p>
-          {footer?.showNewsletter ? (
-            <form action={`/${locale}/kurumsal`} className="flex max-w-sm border border-current/15">
-              <label className="sr-only" htmlFor="nx-footer-email">E-posta</label>
-              <input id="nx-footer-email" name="email" type="email" required placeholder="E-posta" className="min-w-0 flex-1 bg-transparent px-3 py-2 text-xs outline-none" />
-              <button type="submit" className="px-3 text-xs">Kaydol</button>
-            </form>
+      {footer?.topBanner?.enabled ? (
+        <div
+          style={{
+            maxWidth: tokens.geometry.containerMaxWidth,
+            backgroundColor: tokens.colors.primary,
+            color: tokens.colors.primaryForeground,
+            borderRadius: tokens.geometry.borderRadius,
+          }}
+          className="mx-auto mb-10 flex flex-wrap items-center justify-between gap-4 px-6 py-5"
+        >
+          <div className="space-y-1">
+            {footer.topBanner.badge ? (
+              <span className="inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                {footer.topBanner.badge}
+              </span>
+            ) : null}
+            <div className="text-base font-bold">{footer.topBanner.title}</div>
+            {footer.topBanner.subtitle ? (
+              <p className="text-xs opacity-90">{footer.topBanner.subtitle}</p>
+            ) : null}
+          </div>
+          {footer.topBanner.ctaLabel && isSafeMenuHref(footer.topBanner.ctaHref) ? (
+            <a
+              href={footer.topBanner.ctaHref}
+              className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-900"
+            >
+              {footer.topBanner.ctaLabel} →
+            </a>
           ) : null}
         </div>
-        {columns.map((col) => (
-          <div key={col.id} className="space-y-2.5">
-            <div className="text-xs font-bold uppercase tracking-wider">{col.title}</div>
-            <ul className="space-y-2 text-xs opacity-80">
-              {col.links.map((lnk, i) => (
-                <li key={`${col.id}-${i}`}><a href={lnk.href} className="hover:opacity-100">{lnk.label}</a></li>
+      ) : null}
+
+      <div
+        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
+        className="mx-auto grid grid-cols-1 gap-8 md:grid-cols-12"
+      >
+        {layout.colSpans.map((span, colIdx) => {
+          const colWidgets = allWidgets.filter(
+            (w) =>
+              w.enabled &&
+              Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
+          );
+          return (
+            <div
+              key={colIdx}
+              style={{ gridColumn: `span ${span} / span ${span}` }}
+              className="space-y-5"
+            >
+              {colWidgets.map((w) => (
+                <RenderPublicWidget
+                  key={w.id}
+                  widget={w}
+                  locale={locale}
+                  tokens={tokens}
+                  feed={widgetFeed}
+                  cardStyle="footer"
+                />
               ))}
-            </ul>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
-      <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-current/10 pt-6 text-xs opacity-70">
+
+      <div
+        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
+        className="mx-auto mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-current/10 pt-6 text-xs opacity-70"
+      >
         <span>{footer?.copyrightText}</span>
         <div className="flex gap-3">
           {(footer?.bottomLinks ?? []).map((link) => (
-            <a key={link.href} href={link.href}>{link.label}</a>
+            <a key={link.href} href={link.href}>
+              {link.label}
+            </a>
           ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ import { MediaBulkUpload } from "../media-bulk-upload";
 import { MediaGrid } from "../media-grid";
 import { MediaDetailForm } from "./media-detail-form";
 import { DEFAULT_QUERY, queryMedia, type MediaQuery } from "./media-filter";
+import { MediaThumb } from "./media-thumb";
 import { MediaToolbar } from "./media-toolbar";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
@@ -88,14 +89,14 @@ export function MediaPickerDialog({ open, onClose, onPick, kinds = ["image"], ti
           <h2 className="text-sm font-semibold">{title}</h2>
           <button type="button" aria-label="Kapat" onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
-        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="min-w-0 space-y-3">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden p-4 md:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-h-0 min-w-0 space-y-3 overflow-y-auto pr-1">
             <MediaBulkUpload
               folderId={folderId || null}
               folderName={folders.find((f) => f.id === folderId)?.name ?? "Klasörsüz"}
               onUploaded={(media) => { update([media, ...assets]); setSelectedId(media.id); }}
             />
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 bg-background/95 py-1 backdrop-blur-xs">
               <select aria-label="Klasör" value={folderId} onChange={(e) => setFolderId(e.target.value)} className={`h-8 rounded border ${border} bg-transparent px-2 text-[12px]`}>
                 <option value="">Tüm klasörler</option>
                 {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
@@ -104,16 +105,68 @@ export function MediaPickerDialog({ open, onClose, onPick, kinds = ["image"], ti
             </div>
             {error && <p role="alert" className="text-[12px] text-red-600">{error} <button type="button" className="underline" onClick={() => void load()}>Yeniden dene</button></p>}
             {loading && assets.length === 0 ? <p className="py-10 text-center text-[12px] text-muted-foreground">Yükleniyor…</p> : (
-              <MediaGrid items={visible} selectedId={selected?.id} checked={new Set()} folders={folders} view="grid" onOpen={(a) => setSelectedId(a.id)} />
+              <MediaGrid
+                items={visible}
+                selectedId={selected?.id}
+                checked={new Set()}
+                folders={folders}
+                view="grid"
+                onOpen={(a) => setSelectedId(a.id)}
+                onQuickPick={(a) => {
+                  onPick(a);
+                  onClose();
+                }}
+              />
             )}
           </div>
-          <aside aria-label="Seçilen medya" className={`space-y-3 rounded-lg border ${border} p-3 lg:sticky lg:top-0 lg:self-start`}>
+          <aside aria-label="Seçilen medya" className={`min-h-0 space-y-3 overflow-y-auto rounded-lg border ${border} p-3`}>
             {selected ? (
               <MediaDetailForm asset={selected} onSaved={(a) => update(assets.map((x) => (x.id === a.id ? { ...x, ...a } : x)))} primary={{ label: "Kaydet ve ekle", onDone: (a) => { onPick({ ...selected, ...a }); onClose(); } }} />
             ) : (
-              <p className="py-8 text-center text-[12px] text-muted-foreground">Bir dosya seçin ya da yukarıdan yükleyin. Başlık, alt metin, alt yazı ve açıklamayı burada girebilirsiniz.</p>
+              <p className="py-8 text-center text-[12px] text-muted-foreground">
+                Bir dosya seçin ya da yukarıdan yükleyin.<br />
+                <span className="text-[11px] opacity-80">Kart üzerindeki &ldquo;Seç&rdquo; düğmesiyle veya çift tıklayarak doğrudan ekleyebilirsiniz.</span>
+              </p>
             )}
           </aside>
+        </div>
+
+        {/* Sabit Alt Seçim Çubuğu: Listeyi aşağı kaydırmaya gerek kalmadan her zaman görünür */}
+        <div className={`flex items-center justify-between gap-3 border-t ${border} bg-muted/30 px-4 py-2.5`}>
+          {selected ? (
+            <div className="flex min-w-0 items-center gap-2.5">
+              {selected.kind === "image" && (
+                <div className="h-9 w-12 shrink-0 overflow-hidden rounded border">
+                  <MediaThumb asset={selected} />
+                </div>
+              )}
+              <div className="min-w-0">
+                <div className="truncate text-xs font-semibold">{selected.titleText || selected.filename}</div>
+                <div className="truncate font-mono text-[10px] text-muted-foreground">
+                  {selected.filename} {selected.kind === "image" ? `• ${selected.width}×${selected.height}px` : ""}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Listeden bir görsel veya dosya seçin.</span>
+          )}
+          <div className="flex shrink-0 items-center gap-2">
+            <button type="button" onClick={onClose} className={`h-8 rounded-md border ${border} bg-background px-3 text-xs font-medium hover:bg-muted`}>
+              Vazgeç
+            </button>
+            <button
+              type="button"
+              disabled={!selected}
+              onClick={() => {
+                if (!selected) return;
+                onPick(selected);
+                onClose();
+              }}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-[#266DF0] px-4 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-40"
+            >
+              ✓ Seçilen Görseli Ekle
+            </button>
+          </div>
         </div>
       </div>
     </div>

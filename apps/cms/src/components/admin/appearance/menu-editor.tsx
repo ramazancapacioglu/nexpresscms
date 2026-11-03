@@ -4,6 +4,7 @@ import React, { useMemo, useState, useTransition } from "react";
 import { addMenuNode, countMenuNodes, findMenuNode, indentMenuNode, MENU_MAX_ITEMS, moveMenuNode, outdentMenuNode, removeMenuNode, updateMenuNode, type NavigationMenuItem } from "@nexpress/core";
 import { MENU_TEMPLATES } from "@nexpress/themes";
 import { saveChromeAction } from "@/app/admin/actions";
+import { SvgIconPreview } from "@/components/admin/editor/icon-picker-modal";
 import { AppearanceTabs, SaveBar, TemplateRow } from "./appearance-ui";
 import { MenuAddPanel, type AddRequest } from "./menu/menu-add-panel";
 import { MenuItemSettings } from "./menu/menu-item-settings";
@@ -14,11 +15,12 @@ const panel = "rounded-lg border border-[#D5D8DE] bg-white dark:border-[#2E333D]
 
 /**
  * Menü ağacı (WordPress benzeri): soldan sayfa/yazı/kategori/etiket/ürün ekle, ağaçta sırala ve girintile (en çok 3 düzey),
- * seçili öğenin ayarları ve kök öğede mega menü yapılandırması. Bağlantılar kimlikle bağlıdır: slug değişince kendiliğinden güncellenir.
+ * seçili öğenin ayarları ve kök öğede mega menü yapılandırması + üstte canlı menü/mega menü önizlemesi.
  */
 export function MenuEditor({ initial, lists, locale, locales, defaultLocale, hasOwn }: { initial: NavigationMenuItem[]; lists: MenuSourceLists; locale: string; locales: string[]; defaultLocale: string; hasOwn: boolean }) {
   const [items, setItems] = useState<NavigationMenuItem[]>(initial);
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null);
+  const [previewOpenId, setPreviewOpenId] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -65,6 +67,100 @@ export function MenuEditor({ initial, lists, locale, locales, defaultLocale, has
         </nav>
       )}
       <SaveBar title={dirty ? "Menü ağacı • kaydedilmemiş değişiklik var" : "Menü ağacı"} pending={pending} notice={notice} onSave={save} />
+
+      {/* Canlı Menü & Mega Menü Önizleme Şeridi */}
+      <section aria-label="Canlı menü önizlemesi" className={`${panel} p-3`}>
+        <div className="mb-2 flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+          <span className="font-semibold uppercase tracking-wider">Canlı Menü & Mega Menü Önizlemesi</span>
+          <span>Öğeye tıklayarak açılır/mega menüyü test edin</span>
+        </div>
+        <div className="relative flex flex-wrap items-center gap-5 rounded-lg border border-[#E6E7EA] bg-[#FBFBFD] px-4 py-3 dark:border-[#23262E] dark:bg-[#111318]">
+          {items.map((root) => {
+            const hasSub = Boolean(root.megaMenu?.enabled || root.children?.length);
+            const isOpen = previewOpenId === root.id;
+            return (
+              <div key={root.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(root.id);
+                    setPreviewOpenId(isOpen ? null : root.id);
+                  }}
+                  className={`inline-flex items-center gap-1.5 text-[13px] font-medium transition ${
+                    selectedId === root.id ? "text-blue-600 font-bold" : "hover:text-blue-600"
+                  }`}
+                >
+                  {root.icon && <SvgIconPreview name={root.icon} size={15} />}
+                  <span>{root.label}</span>
+                  {root.badge && (
+                    <span className="rounded bg-blue-500/15 px-1.5 py-px text-[9px] font-bold uppercase text-blue-600">
+                      {root.badge}
+                    </span>
+                  )}
+                  {hasSub && <span className="text-[9px] opacity-60">▼</span>}
+                </button>
+
+                {isOpen && root.megaMenu?.enabled && (
+                  <div className="mt-2 w-[min(640px,85vw)] rounded-xl border border-[#D5D8DE] bg-white p-4 shadow-xl dark:border-[#2E333D] dark:bg-[#15171C]">
+                    {(root.megaMenu.mode ?? (root.megaMenu.items.length > 0 ? "custom" : "children")) === "custom" ? (
+                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                        {root.megaMenu.items.map((card) => (
+                          <div key={card.id} className="flex items-start gap-2.5 rounded-lg border border-[#E6E7EA] p-2.5 dark:border-[#23262E]">
+                            {card.icon && (
+                              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-500/10 text-blue-600">
+                                <SvgIconPreview name={card.icon} size={16} />
+                              </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="truncate text-xs font-bold">{card.label}</span>
+                                {card.badge && (
+                                  <span className="rounded bg-blue-600 px-1.5 py-px text-[9px] font-bold text-white">
+                                    {card.badge}
+                                  </span>
+                                )}
+                              </div>
+                              {card.description && <p className="mt-0.5 text-[11px] opacity-75">{card.description}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                        {(root.children ?? []).map((col) => (
+                          <div key={col.id} className="space-y-1">
+                            <div className="flex items-center gap-1 text-xs font-bold uppercase">
+                              {col.icon && <SvgIconPreview name={col.icon} size={13} />}
+                              <span>{col.label}</span>
+                            </div>
+                            <ul className="space-y-1 text-xs opacity-80">
+                              {(col.children ?? []).map((sub) => (
+                                <li key={sub.id}>• {sub.label}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {root.megaMenu.promoBanner?.title && (
+                      <div className="mt-3 flex items-center justify-between rounded-lg bg-blue-500/10 px-3 py-2 text-xs">
+                        <div>
+                          <div className="font-bold">{root.megaMenu.promoBanner.title}</div>
+                          <div className="text-[11px] opacity-80">{root.megaMenu.promoBanner.subtitle}</div>
+                        </div>
+                        <span className="rounded bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white">
+                          {root.megaMenu.promoBanner.ctaText || "İncele"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <details className={`${panel} px-3 py-2 text-[13px]`}>
         <summary className="cursor-pointer font-medium">Hazır menü şablonları</summary>
         <div className="mt-2">

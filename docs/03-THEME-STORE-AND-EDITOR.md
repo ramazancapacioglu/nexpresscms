@@ -154,3 +154,64 @@ Ziyaretçi renkleri `var(--nx-bg|fg|primary|…)` okunur: `toCssVarTokens` (rend
 
 ## Tuval çerçevesi (2026-11-03)
 Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde çalışacak kod `document`/`window` yerine öğenin `ownerDocument`/`defaultView`'ini kullanmalıdır (örn. `prose-field`, `quick-insert`); `document.body`'e portal yapılmaz. Çerçeve dışına taşması gereken olaylar (Ctrl+S, dragend, pointerdown) `CanvasFrame` içinde üst pencereye iletilir.
+
+## Stüdyo v3: Birleşik Üst Çubuk, Görsel Sütun Seçici, Bağlamsal Araç Çubuğu ve Alt Hiyerarşi Yolu (2026-11-03)
+- **Birleşik Üst Kontrol Çubuğu (`dual-mode-editor-topbar.tsx`):**
+  - Sol: Mavi `+ Blok Ekle` çekmece tetikleyicisi, `Yapı` (blok ağacı) tetikleyicisi, `Geri Al / İleri Al` düğmeleri ve kalıcı bağlantıyı (`/{locale}/{slug}`) + arama sonucu önizlemesini (`SearchSnippetBar`) açılır pencerede sunan kompakt adres rozeti.
+  - Orta: Her an erişilebilen vurgulu **`✨ Tasarım Kütüphanesi`** düğmesi ve görünüm/cihaz seçici (`StudioViewBar`).
+  - Sağ: Kaydedilmemiş değişiklik rozeti, `Taslak`, `Yayınla`, canlı sayfa bağlantısı, tıklanabilir `SEO {puan}` rozeti ve `Denetçi` çekmece anahtarı.
+- **Kanvas Üstü Görsel Sütun Düzeni Seçici (`editor/row-layout-picker.tsx`):**
+  - Boş bir satır (`buildEmptyRow`) eklendiğinde veya seçili satırda `Düzen` düğmesine tıklandığında kanvas üzerinde SVG sütun oran kartları (`12`, `6+6`, `4+8`, `8+4`, `4+4+4`, `3+6+3`, `3+3+3+3`) ve `Tasarım Kütüphanesinden Hazır Bölüm Seç` aksiyonu belirir.
+  - Dolu satır, sütun ve kapsayıcı bölümler kalıcı gri çerçeveler yerine gerçek sayfa görünümüyle çizilir; kesikli sınır ve hızlı seçim etiketleri yalnızca üzerine gelindiğinde veya seçildiğinde görünür.
+- **Zengin Bağlamsal Yüzen Araç Çubuğu (`editor/floating-toolbar.tsx`):**
+  - Üst kapsayıcıya tek tıkla çıkış (`↑ Üst`), sürükle tutamacı, yukarı/aşağı taşıma.
+  - Blok türüne özel hızlı kontroller: satırlarda sütun oranı geçişi (`12`..`3+3+3+3`), bölümlerde genişlik (`Dar`, `Kutu`, `Tam`), başlıklarda `H1`–`H4`, metin/butonlarda hizalama ve tür dönüştürme, görsel bloklarında `Görsel Seç`, çok öğeli bloklarda (`canAppendRepeaterItem` / `appendRepeaterItem`) tek tıkla `+ Öğe Ekle`.
+- **İki Modlu Sağ Denetçi, Tema Paleti Renk Seçicisi ve Bağlı Boşluk Ön-Ayarları (`editor/block-inspector.tsx`, `editor/style-controls.tsx`, `editor/block-style-tab.tsx`):**
+  - Sağ panel üst başlığı **`Blok`** (`Genel & Düzen | Stil | Gelişmiş` + üst kapsayıcı yolu) ve **`Sayfa Ayarları`** (`Yayın | SEO | Medya & Etk.`) olarak iki ana çalışma moduna ayrılır.
+  - `ColorInput`, aktif temanın `siteTokens.colors` paletini (`Birincil`, `İkincil`, `Vurgu`, `Ön Plan`, `Yumuşak`, `Arka Plan`, `Kenarlık`) tıklanabilir renk yuvarlakları olarak sunar.
+  - `BlockStyleTab` iç boşluk (padding) ve dış boşluk (margin) için hızlı ön-ayar düğmeleri (`0`, `XS`, `S`, `M`, `L`, `XL`, `2XL`) ve `Tüm kenarlar bağlı / Ayrı kenarlar` kilidi içerir.
+- **Alt Hiyerarşi (Breadcrumb) ve Durum Çubuğu (`editor/editor-status-bar.tsx`):**
+  - Seçili bloğun kök sayfadan itibaren ata zincirini (`getBlockAncestors`, `summarizeBlockPreview`: `Sayfa › Kapsayıcı bölüm › Satır (6+6) › Sütun (50%) › Başlık`) tıklanabilir adımlar halinde ve sağda toplam blok/kelime sayacıyla gösterir.
+- **Görsel Simge Seçici Modal (`editor/icon-picker-modal.tsx`, `@nexpress/core/icons`):**
+  - 112 yerleşik saf SVG simge (`ICON_PATHS`, Türkçe `ICON_LABELS` ve 7 kategori `ICON_CATEGORIES` ile: `ui`, `corporate`, `tech`, `commerce`, `contact`, `media`, `sector`) aranabilir ve kategori sekmeli görsel ızgara modalında (`IconPickerModal`) sunulur; `button_element`, `single_icon`, `bento_features`, `icon_list`, `info_box`, `tabs` blokları ve menü/mega-menü editörlerinde simgeler hem düğme üzerinde hem modalda gerçek SVG grafiğiyle görünür.
+- **Zengin Kapsayıcı Sekmeler (`tabs` & `editor/canvas-tabs-block.tsx`):**
+  - `tabs` bloğu tam bir kapsayıcıdır (`CONTAINER_BLOCK_TYPES` içinde, alt düğümleri `column` sekme panelleridir): her sekmenin içine çok sütunlu satırlar (`columns`), görseller, butonlar, listeler veya tablolar eklenebilir. Ön yüzde 0 KB istemci JS (saf CSS radio-tab + `tabStyle`: `pills` | `underline` | `boxed`) olarak çizilir; editör tuvalinde ise sekmeler arası canlı geçiş, satır içi sekme adı/simgesi düzenleme ve sekmeye doğrudan satır/sütun ekleme çubuğu sunar.
+- **Doğrudan Sürükle-Bırak ve Sabit Seçimli Medya Penceresi (`editor/dnd.tsx`, `editor/canvas-block.tsx`, `media/media-picker-dialog.tsx`):**
+  - Tuvaldeki her blok üzerine gelindiğinde sol üstteki tutamaçtan doğrudan sürüklenebilir; herhangi bir bloğun üst/alt yarısına, sütunlara, bölümlere, sekme panellerine veya sol yapı gezginindeki düğümlere bırakılarak kapsayıcılar arası taşınabilir.
+  - `MediaPickerDialog` sol medya ızgarası ile sağ detay panelini bağımsız kaydırır, kart üzerinde tek tıkla/çift tıkla `Seç` aksiyonu ve pencere altında her zaman görünür sabit `✓ Seçilen Görseli Ekle` çubuğu barındırır.
+
+## Canlı Tema Özelleştirici v2, 11 Şablon Türü, Sol/Sağ Sidebar ve Zengin Mega Menü (2026-11-03)
+- **Canlı Tema Özelleştirici (`/admin/themes` — `theme-store-control-panel.tsx`, `theme-store-preview-canvas.tsx`, `theme-store-tab-layout.tsx`):**
+  - Sol kontrol çekmecesi 6 sekmeye ayrıldı: `Temalar`, `Renkler`, `Yazı Tipi`, `Sidebar & En`, `Header/Footer`, `Şablonlar`.
+  - Sağ canlı önizleme kanvası 8 farklı sayfa/şablon görünümünü anlık olarak simüle eder: **Ana Sayfa**, **Blog Yazısı**, **Kategori**, **Etiket**, **Sayfa**, **Ürün Detay**, **Ürün Kategori** ve **Arama Sonuçları**.
+  - **Sol / Sağ Sidebar ve Sayfa Genişliği:** `customizer.layout` altında `sidebarPosition` (`none` | `left` | `right`), `sidebarWidth` (`260px` | `300px` | `340px`), sayfa türü bazlı görünürlük anahtarları (`sidebarOnBlog`, `sidebarOnArchive`, `sidebarOnPage`, `sidebarOnShop`, `sidebarOnSearch`) ve arşiv/ürün ızgara sütun sayısı (`2 | 3 | 4`) hem canlı önizleme kanvasında hem de gerçek ziyaretçi düzeninde (`(public)/[locale]/layout.tsx`) anında uygulanır.
+- **11 Şablon Türü ve 32 Hazır Şablon (`packages/core/src/templates.ts`, `/admin/appearance/templates`):**
+  - `TemplateKind` kapsamı 11 türe çıkarıldı: `header`, `footer`, `sidebar`, `page`, `post`, `category`, `tag`, `product`, `shop`, `product_category`, `search` (arama sayfası `(public)/[locale]/ara/page.tsx` artık `search` şablonunu da destekler).
+  - `STARTER_TEMPLATES` 32 zengin başlangıç şablonuna yükseltildi: Sağ ve Sol Sidebarlı Sayfa şablonları, Sağ/Sol Sidebarlı ve Dergi (Magazine) Blog Yazısı şablonları, Sağ/Sol Sidebarlı Kategori ve Etiket arşiv şablonları, Sağ Sidebarlı (Güven/Teslimat Kutulu) Ürün Detay şablonu, Sol Filtre Sidebarlı Mağaza ve Ürün Kategorisi şablonları, 2 Arama Sonuçları şablonu, 6 Header, 3 Footer ve 3 Kenar Çubuğu şablonu.
+- **Zengin Header, Footer, Kenar Çubuğu ve Mega Menü Editörleri (`/admin/appearance/*`):**
+  - **Menü & Mega Menü (`/admin/appearance/menus`):** `NavigationLink` artık `icon` alanı destekler; ziyaretçi navigasyonunda (`site-nav.tsx`) masaüstü menü, açılır menü ve Mega Menü kartlarında 0-KB RSC SVG simgeler ve rozetler çizilir. Menü editörüne etkileşimli **Canlı Menü & Mega Menü Önizleme** çubuğu, simge seçici ve 3 adet tek tıkla **Hazır Mega Menü Şablonu** (`Kurumsal Çözüm & Ürün Vitrini (3 Sütun)`, `E-Ticaret & Katalog Mega Menü (4 Sütun)`, `Bilgi Bankası & Kaynak Merkezi (2 Sütun)`) eklendi.
+  - **Header, Footer ve Sidebar Editörleri:** Her üç editöre de canlı görsel önizleme şeridi ve tek tıkla hazır kurumsal/e-ticaret/dokümantasyon şablonları eklendi.
+
+## Kenar Çubuğu & Footer Bileşen (Widget) Sistemi, Gizlenebilir Tema Seçici ve Doğrudan Şablon Oluşturucu (2026-11-03)
+- **Tema Seçimini Gizle / Göster ve Tam Ekran Canlı Önizleme (`/admin/themes` — `theme-store-header.tsx`, `theme-store-customizer.tsx`, `use-theme-store.tsx`):**
+  - `/admin/themes` açıldığında varsayılan olarak tema kartları gizlidir (`showThemeSelector = false`) ve doğrudan özelleştirme sekmeleri (`Renkler`, `Yazı Tipi`, `Sidebar & En`, `Header/Footer`, `Şablonlar`) görünür; üst çubuktaki **`Tema Seçimini Göster / Gizle`** düğmesiyle tema kartları istenildiğinde açılıp kapatılabilir.
+  - Ayrıca **`Paneli Gizle (Tam Önizleme)`** (`hideControlPanel`) düğmesiyle sol kontrol paneli tamamen gizlenerek sağdaki canlı önizleme kanvası 12 sütun tam genişliğe büyütülebilir.
+- **Kenar Çubuğu (Sidebar) ve Footer Bileşen (Widget) Mimarisi (`@nexpress/core/widgets`, `appearance/widget-studio.tsx`, `sidebar-editor.tsx`, `footer-editor.tsx`, `public/public-widgets.tsx`):**
+  - Kenar çubuğu ve Footer'daki düz bağlantı listeleri kaldırılarak yerine 13 bileşen türünden oluşan **Birleşik Bileşen (Widget) Sistemi (`SITE_WIDGET_TYPES`)** getirildi:
+    1. `categories` (Kategoriler — yazı sayısı rozeti, hiyerarşi, liste/rozet/kart görünümü)
+    2. `recent_posts` (Son Yazılar — küçük görsel, yayın tarihi, kompakt/numaralı/kart görünümü)
+    3. `recent_comments` (Son Yorumlar & İncelemeler — 5 yıldız puanı ve yorum özeti)
+    4. `campaigns` (Kampanya & Fırsat Kutusu — rozet, indirim oranı, kupon kodu, çağrı butonu ve renk tonu)
+    5. `featured_products` (Öne Çıkan Ürünler — mağaza vitrini ve fiyat etiketi)
+    6. `popular_tags` (Popüler Etiketler Bulutu)
+    7. `search` (Site İçi Arama + önerilen anahtar kelimeler)
+    8. `newsletter` (E-Bülten Abonelik Kutusu)
+    9. `about_brand` (Marka Özeti, İletişim & Sosyal Medya Simgeleri)
+    10. `contact_card` (Uzman Desteği & Hızlı İletişim Kartı)
+    11. `trust_badges` (Güven, SSL, Teslimat & Garanti Rozetleri)
+    12. `toc` (İçindekiler Rehberi)
+    13. `nav_menu` (İkonlu ve rozetli hızlı bağlantı grubu)
+  - **Footer Sütun Yerleşim Düzenleri (`FOOTER_LAYOUT_PRESETS`):** `Marka Geniş + 3 Sütun (4+2+3+3)`, `4 Eşit Sütun (3+3+3+3)`, `3 Eşit Sütun (4+4+4)`, `2 Sütun Asimetrik (5+7)` ve `Tek Sütun Merkezi Vitrin (12)` düzenleri ile her sütuna ayrı ayrı bileşen (widget) ekleme, sütunlar arası taşıma ve üst kampanya şeridi (`topBanner`) desteği eklendi.
+  - **0-KB RSC Ziyaretçi Çizimi (`getPublicWidgetFeed`, `RenderPublicWidget`):** Hem kenar çubuğu hem footer bileşenleri ziyaretçi sayfalarında gerçek veritabanı verileriyle (kategoriler, son yazılar, onaylı yorumlar, ürünler) 0 KB istemci JS ile çizilir.
+- **Şablon Oluşturucu Modal ve Özelleştirici İçi Şablon Yönetimi (`appearance/templates/templates-manager.tsx`, `appearance/templates/actions.ts`, `theme-store-tab-layout.tsx`):**
+  - Hem `/admin/appearance/templates` sayfasına hem de `/admin/themes` içindeki `Şablonlar` sekmesine doğrudan **Yeni Şablon Oluşturucu** (11 şablon türü, özel şablon adı, hazır şablondan veya `Tam Genişlik` / `Sağ Sidebar (8+4)` / `Sol Sidebar (4+8)` iskeletiyle sıfırdan oluşturma, şablon çoğaltma, varsayılan yapma ve tek tıkla Görsel Stüdyoda düzenleme) eklendi.

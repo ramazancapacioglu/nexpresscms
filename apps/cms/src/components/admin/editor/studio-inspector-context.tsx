@@ -9,6 +9,7 @@ import type {
   BlockStyle,
   BlockStyleValues,
   ContentStatus,
+  DesignTokens,
   DeviceKey,
   SchemaGraphNode,
 } from "@nexpress/core";
@@ -23,6 +24,7 @@ type Visibility = "public" | "private" | "password" | "members_only";
 type FlatCategory = { id: string; slug: string; name: string; depth: number; color?: string | null };
 
 export interface StudioInspectorApi {
+  siteTokens: DesignTokens;
   editorMode: EditorMode;
   setEditorMode: Dispatch<SetStateAction<EditorMode>>;
   viewport: DeviceKey;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ImageIcon, Plus, Trash2 } from "lucide-react";
 import { buildEditorFields, emptyItem, getPath, moveItem, setPath, type EditorField, type Path } from "@nexpress/core";
 import { MediaPickerDialog } from "../media/media-picker-dialog";
+import { IconPickerField } from "./icon-picker-modal";
 import { LinkField } from "./link-picker";
 
 const input = "h-8 w-full rounded border border-border bg-background px-2 text-[12px]";
@@ -25,6 +26,19 @@ function Control({ f, path, ctx }: { f: EditorField; path: Path; ctx: Ctx }) {
       {f.max && (f.kind === "text" || f.kind === "textarea") ? <span className="ml-auto font-mono text-[10px] font-normal text-muted-foreground">{String(value ?? "").length}/{f.max}</span> : null}
     </label>
   );
+  if (f.key === "icon" && (f.kind === "enum" || f.kind === "text")) {
+    return (
+      <div>
+        {head}
+        <IconPickerField
+          value={String(value ?? "")}
+          onChange={(next) => set(next)}
+          allowEmpty={!f.required}
+          label={f.label}
+        />
+      </div>
+    );
+  }
   switch (f.kind) {
     case "text":
       return <div>{head}<input id={id} className={input} value={String(value ?? "")} maxLength={f.max} onChange={(e) => set(e.target.value)} /></div>;

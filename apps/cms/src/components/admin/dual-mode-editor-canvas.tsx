@@ -1,226 +1,321 @@
-import { SearchSnippetBar } from "@/components/admin/editor/search-snippet-bar";
-import { CanvasBlock } from "@/components/admin/editor/canvas-block";
-import { duplicateBlockById, moveBlockStep, normalizeImportedBlock, removeBlockById, type BlockNode } from "@nexpress/core";
-import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
-import { PageSchemaContext } from "@/components/admin/editor/page-schema-context";
+"use client";
+
+import React from "react";
+import { Plus, Sparkles, Columns3, Type } from "lucide-react";
 import { RscBlockRenderer } from "@nexpress/themes";
-import { Columns, Globe, Sparkles } from "lucide-react";
-import { Fragment } from "react";
-import { DropZone } from "@/components/admin/editor/dnd";
-import { CanvasFrame } from "@/components/admin/editor/canvas-frame";
-import { TitleField } from "@/components/admin/editor/title-field";
+import {
+  appendRepeaterItem,
+  duplicateBlockById,
+  moveBlockStep,
+  removeBlockById,
+  updateBlockById,
+  type BlockNode,
+} from "@nexpress/core";
+import { buildEmptyRow } from "@nexpress/editor";
+import { CanvasFrame } from "./editor/canvas-frame";
+import { CanvasBlock } from "./editor/canvas-block";
+import { DropZone } from "./editor/dnd";
+import { TitleField } from "./editor/title-field";
+import { PageSchemaContext } from "./editor/page-schema-context";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
-/** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
-  const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock, updateBlockStyleById, setBlockStyleById, replaceBlockById } = s;
-  const pageSchema = { title, tldr: s.tldr, rich: s.richSchema as never };
-  // Görsel/önizleme kipinde başlık tuvalin ilk satırıdır (şablon düzenlerken şablon adı olduğu için üstte kalır)
-  const framed = editorMode === "visual" || editorMode === "preview";
-  const inCanvasTitle = editorMode === "visual" && s.lockedType !== "template";
-  return (
-    <PageSchemaContext.Provider value={pageSchema}>
-        {/* 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */}
-        <main
-          onClick={() => setActiveColumnInsertId(null)}
-          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
-        >
-          <div className="shrink-0 border-b border-[#E6E7EA] bg-white dark:border-[#23262E] dark:bg-[#111317]">
-            <div className="flex items-center justify-between gap-3 px-4 py-1.5 text-[11px] text-muted-foreground">
-              <div className="flex min-w-0 items-center gap-1.5 font-mono">
-                <Globe className="h-3.5 w-3.5 shrink-0 text-blue-600" />
-                <span>/tr/</span>
-                <input
-                  type="text"
-                  value={slug}
-                  aria-label="Sayfa adresi (slug)"
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="min-w-0 flex-1 bg-transparent font-mono text-xs text-foreground focus:outline-none"
-                />
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span>{blocks.length} kök blok</span>
-                <span>•</span>
-                <span>{totalWords} kelime</span>
-              </div>
-            </div>
-            {!inCanvasTitle && (
-              <textarea
-                rows={Math.min(3, Math.max(1, Math.ceil(title.length / 36)))}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Başlık"
-                aria-label="Başlık"
-                className="w-full min-w-0 resize-none overflow-hidden bg-transparent px-4 pb-2 text-3xl font-extrabold leading-tight tracking-tight text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-              />
-            )}
-            <SearchSnippetBar title={title} tldr={s.tldr} metaTitle={s.metaTitle} setMetaTitle={s.setMetaTitle} metaDescription={s.metaDescription} setMetaDescription={s.setMetaDescription} />
-          </div>
-          {editorMode === "visual" || editorMode === "preview" ? (
-            <div className="min-h-0 flex-1 bg-muted/40 p-3">
-              <CanvasFrame device={viewport} tokens={siteTokens} blockCss={s.compiledBlockCss}>
-                <div className="px-6 py-8">
-                  {inCanvasTitle && <TitleField value={title} onChange={setTitle} fontFamily={siteTokens.typography.headingFont} />}
-            {/* MOD 1: GÖRSEL KANVAS */}
-                  {editorMode === "visual" && (
-                    <div className="space-y-4 pb-16">
-                      <DropZone parentId={null} index={0} />
-                      {blocks.map((block, at) => (
-                        <Fragment key={block.id}>
-                        <CanvasBlock
-                          block={block}
-                          selectedId={selectedBlockId}
-                          activeColumnInsertId={activeColumnInsertId}
-                          tokens={siteTokens}
-                          syncToken={proseSyncToken}
-                          onSelect={(id) => {
-                            setSelectedBlockId(id);
-                            setRightTab("block");
-                          }}
-                          onMove={(id, direction) =>
-                            setBlocks((prev) => moveBlockStep(prev, id, direction))
-                          }
-                          onDuplicate={(id) => setBlocks((prev) => duplicateBlockById(prev, id))}
-                          onRemove={(id) => setBlocks((prev) => removeBlockById(prev, id))}
-                          onChangeLayout={handleChangeColumnLayout}
-                          onUpdateProps={(id, patch) => updateBlockPropsById(id, patch, false)}
-                          onConvertText={convertTextBlock}
-                          onCommit={flushHistory}
-                          onInsert={handleInsertBlock}
-                          onToggleInsert={setActiveColumnInsertId}
-                          onReplace={(id, block) => replaceBlockById(id, block)}
-                    onUpdateStyle={(id, patch) => updateBlockStyleById(id, patch)}
-                          onSetStyle={(id, style) => setBlockStyleById(id, style)}
-                          onInspectStyle={(id) => {
-                            setSelectedBlockId(id);
-                            setRightTab("block");
-                            setBlockInspectorSubTab("style");
-                          }}
-                        />
-                        <DropZone parentId={null} index={at + 1} />
-                        </Fragment>
-                      ))}
+  const isTemplateMode = s.lockedType === "template";
 
-                      <div className="flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/60 p-6">
+  const addEmptyRowAtRoot = () => {
+    s.handleInsertBlock(buildEmptyRow(), null);
+  };
+
+  const handleOpenMediaPickerForBlock = (blockId: string) => {
+    s.setSelectedBlockId(blockId);
+    s.setMediaPickerTarget("block_image");
+  };
+
+  const handleAppendRepeaterItem = (blockId: string) => {
+    s.setBlocks((prev) => updateBlockById(prev, blockId, (b) => appendRepeaterItem(b)));
+  };
+
+  const handleMoveBlock = (id: string, dir: "up" | "down") => {
+    s.setBlocks((prev) => moveBlockStep(prev, id, dir));
+  };
+
+  const handleDuplicateBlock = (id: string) => {
+    s.setBlocks((prev) => duplicateBlockById(prev, id));
+  };
+
+  const handleRemoveBlock = (id: string) => {
+    s.setBlocks((prev) => removeBlockById(prev, id));
+    if (s.selectedBlockId === id) s.setSelectedBlockId(null);
+  };
+
+  const handleCodeChange = (raw: string) => {
+    s.setCodeJsonDraft(raw);
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        s.setBlocks(parsed as BlockNode[]);
+        s.setCodeJsonError(null);
+      } else {
+        s.setCodeJsonError("Kök yapı bir blok dizisi (Array) olmalıdır.");
+      }
+    } catch (err) {
+      s.setCodeJsonError(err instanceof Error ? err.message : "Geçersiz JSON");
+    }
+  };
+
+  return (
+    <PageSchemaContext.Provider
+      value={{
+        title: s.title,
+        tldr: s.tldr,
+        rich: s.richSchema as Record<string, unknown>,
+      }}
+    >
+      <main
+        onClick={() => s.setSelectedBlockId(null)}
+        className="flex flex-1 flex-col items-center overflow-y-auto bg-slate-200/70 p-3 dark:bg-slate-950"
+      >
+        {/* Görsel veya Önizleme Modu — Yalıtılmış Tema Iframe */}
+        {(s.editorMode === "visual" || s.editorMode === "preview") && (
+          <CanvasFrame
+            device={s.viewport}
+            tokens={s.siteTokens}
+            blockCss={s.compiledBlockCss}
+          >
+            <div className="mx-auto max-w-[var(--nx-container,1200px)] px-6 py-8">
+              {/* Sayfa Başlığı (H1) — Kanvas Üstünde Doğrudan Düzenlenebilir */}
+              {!isTemplateMode && s.editorMode === "visual" && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <TitleField
+                    value={s.title}
+                    onChange={s.setTitle}
+                    fontFamily={s.siteTokens.typography.headingFont}
+                  />
+                </div>
+              )}
+
+              {s.editorMode === "visual" && (
+                <>
+                  {s.blocks.length === 0 ? (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="my-6 rounded-2xl border-2 border-dashed border-slate-300 bg-white/95 p-10 text-center shadow-xs"
+                    >
+                      <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                        <Columns3 className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Sayfanızı Oluşturmaya Başlayın
+                      </h3>
+                      <p className="mx-auto mt-1 max-w-md text-xs text-slate-500">
+                        Sütunlu bir satır düzeni seçin, tasarım kütüphanesinden hazır bir bölüm ekleyin veya doğrudan metin yazmaya başlayın.
+                      </p>
+                      <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
                         <button
                           type="button"
-                          onClick={() => setLibraryOpen(true)}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700"
+                          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700"
+                          onClick={addEmptyRowAtRoot}
+                        >
+                          <Columns3 className="h-3.5 w-3.5" />
+                          Satır / Sütun Düzeni Ekle
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50/60 px-3 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                          onClick={() => s.setLibraryOpen(true)}
                         >
                           <Sparkles className="h-3.5 w-3.5" />
-                          Tasarım Kütüphanesinden Bölüm Ekle
+                          Tasarım Kütüphanesinden Seç
                         </button>
                         <button
                           type="button"
+                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
                           onClick={() =>
-                            handleInsertBlock(ATOMIC_ELEMENTS_QUICK_BAR[0]!.block, null)
+                            s.handleInsertBlock(
+                              {
+                                id: "tpl_p",
+                                type: "paragraph",
+                                props: { text: "" },
+                              },
+                              null
+                            )
                           }
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
                         >
-                          <Columns className="h-3.5 w-3.5 text-blue-600" />
-                          + 2 sütunlu satır ekle
+                          <Type className="h-3.5 w-3.5" />
+                          Metin Bloğu ile Başla
                         </button>
                       </div>
                     </div>
-                  )}
-
-                  {/* MOD 2: CANLI 0-KB RSC ÖNİZLEME */}
-                  {editorMode === "preview" && (
-                    <div className="rounded-2xl border border-border bg-white p-6 md:p-10 shadow-sm space-y-8">
-                      <div className="border-b pb-6 space-y-3">
-                        <span className="inline-flex items-center rounded-full bg-blue-600/10 px-3 py-1 text-xs font-semibold text-blue-600">
-                          Canlı 0-KB RSC Ön Yüz Önizlemesi ({schemaType})
-                        </span>
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900">
-                          {title}
-                        </h1>
+                  ) : (
+                    <div className="grid grid-cols-12 items-start gap-x-6 gap-y-2">
+                      <div className="col-span-12">
+                        <DropZone parentId={null} index={0} />
                       </div>
-                      <RscBlockRenderer
-                        blocks={blocks}
-                        themeId="corporate-aurora"
-                        tokens={siteTokens}
-                        pageSchema={pageSchema}
-                      />
+                      {s.blocks.map((block, index) => (
+                        <React.Fragment key={block.id}>
+                          <CanvasBlock
+                            block={block}
+                            index={index}
+                            total={s.blocks.length}
+                            parentId={null}
+                            selectedId={s.selectedBlockId}
+                            deviceViewport={s.viewport}
+                            tokens={s.siteTokens}
+                            proseSyncToken={s.proseSyncToken}
+                            onSelect={(id) => {
+                              s.setSelectedBlockId(id);
+                              s.setRightTab("block");
+                            }}
+                            onMove={handleMoveBlock}
+                            onDuplicate={handleDuplicateBlock}
+                            onRemove={handleRemoveBlock}
+                            onUpdateProp={(id, key, val, recordHistory = true) =>
+                              s.updateBlockPropsById(id, { [key]: val }, recordHistory)
+                            }
+                            onUpdateProps={(id, patch, recordHistory = true) =>
+                              s.updateBlockPropsById(id, patch, recordHistory)
+                            }
+                            onUpdateStyle={s.updateBlockStyleById}
+                            onConvertText={s.convertTextBlock}
+                            onCommitHistory={s.flushHistory}
+                            onOpenStyleInspector={(id) => {
+                              s.setSelectedBlockId(id);
+                              s.setRightSidebarOpen(true);
+                              s.setRightTab("block");
+                              s.setBlockInspectorSubTab("style");
+                            }}
+                            onReplaceWithBlock={s.replaceBlockById}
+                            onApplyColumnPreset={s.handleChangeColumnLayout}
+                            onInsertIntoContainer={(b, pid) =>
+                              s.handleInsertBlock(b, pid)
+                            }
+                            onOpenMediaPicker={handleOpenMediaPickerForBlock}
+                            onOpenLibrary={() => s.setLibraryOpen(true)}
+                            onAppendRepeaterItem={handleAppendRepeaterItem}
+                            onUpdateBlock={(id, updater) =>
+                              s.setBlocks((prev) => updateBlockById(prev, id, updater))
+                            }
+                          />
+                          <div className="col-span-12">
+                            <DropZone parentId={null} index={index + 1} />
+                          </div>
+                        </React.Fragment>
+                      ))}
                     </div>
                   )}
 
-                </div>
-              </CanvasFrame>
-            </div>
-          ) : (
-          <div className="flex-1 overflow-y-auto p-3 md:p-5" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
-          <div
-            style={{ backgroundColor: siteTokens.colors.background, color: siteTokens.colors.foreground, fontFamily: siteTokens.typography.bodyFont }}
-            className="mx-auto max-w-[1400px] rounded-xl px-6 py-8 shadow-sm ring-1 ring-black/5"
-          >
-            {/* MOD 3: KOD & JSON AST EDİTÖRÜ */}
-            {editorMode === "code" && (
-              <div className="rounded-xl border border-border bg-zinc-950 p-4 text-zinc-100 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-zinc-400">
-                    Saf JSON AST (satır, sütun ve cihaz stili)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      try {
-                        const parsed = JSON.parse(codeJsonDraft);
-                        if (!Array.isArray(parsed)) {
-                          throw new Error("Kök yapı bir BlockNode[] dizisi olmalıdır.");
-                        }
-                        setBlocks(parsed.map((b, i) => normalizeImportedBlock(b, i)));
-                        setCodeJsonError(null);
-                        showToast("JSON AST kanvasa başarıyla uygulandı!");
-                      } catch (err: any) {
-                        setCodeJsonError(err?.message ?? "Geçersiz JSON");
-                      }
-                    }}
-                    className="rounded bg-blue-600 px-3 py-1 text-xs font-semibold text-white"
-                  >
-                    JSON Değişikliklerini Kanvasa Uygula
-                  </button>
-                </div>
-                {codeJsonError && (
-                  <div className="rounded bg-rose-500/20 p-2 text-xs text-rose-300">
-                    {codeJsonError}
-                  </div>
-                )}
-                <textarea
-                  rows={24}
-                  value={codeJsonDraft}
-                  onChange={(e) => setCodeJsonDraft(e.target.value)}
-                  className="w-full rounded bg-zinc-900 p-3 font-mono text-xs text-emerald-300 focus:outline-none"
-                />
-              </div>
-            )}
+                  {/* Kanvas Alt Hızlı Ekleme Çubuğu (Satır Ekle / Tasarım Kütüphanesi) */}
+                  {s.blocks.length > 0 && (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-8 flex flex-wrap items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300/90 bg-slate-50/70 px-4 py-3 transition hover:border-blue-300 hover:bg-white"
+                    >
+                      <button
+                        type="button"
+                        onClick={addEmptyRowAtRoot}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-blue-700"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Yeni Satır / Sütun Ekle
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => s.setLibraryOpen(true)}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-3 text-xs font-semibold text-indigo-700 shadow-2xs transition hover:bg-indigo-50"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Tasarım Kütüphanesinden Bölüm Ekle
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
 
-            {/* MOD 4: SIFIR KAYIPLI MARKDOWN CACHE */}
-            {editorMode === "markdown" && (
-              <div className="rounded-xl border border-border bg-zinc-950 p-5 text-zinc-100 space-y-3">
-                <div className="flex items-center justify-between text-xs text-zinc-400">
-                  <span>
-                    Ön-Derlenmiş <code>markdownCache</code> (?format=md & /llms.txt çıktısı)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(compiledMarkdown);
-                      showToast("Markdown panoya kopyalandı.");
+              {s.editorMode === "preview" && (
+                <div>
+                  {!isTemplateMode && s.title && (
+                    <h1
+                      style={{
+                        fontFamily: s.siteTokens.typography.headingFont,
+                        fontWeight: 800,
+                      }}
+                      className="mb-6 text-4xl leading-tight tracking-tight"
+                    >
+                      {s.title}
+                    </h1>
+                  )}
+                  <RscBlockRenderer
+                    blocks={s.blocks}
+                    themeId="corporate-clean"
+                    tokens={s.siteTokens}
+                    pageSchema={{
+                      title: s.title,
+                      tldr: s.tldr,
+                      rich: s.richSchema as Record<string, unknown>,
                     }}
-                    className="rounded border border-zinc-700 px-2.5 py-1 text-[11px] text-zinc-200"
-                  >
-                    Kopyala
-                  </button>
+                    preview
+                  />
                 </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs text-sky-300 leading-relaxed">
-                  {compiledMarkdown}
-                </pre>
+              )}
+            </div>
+          </CanvasFrame>
+        )}
+
+        {/* Ham JSON AST Modu */}
+        {s.editorMode === "code" && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-5xl space-y-3 p-6"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold">Saf Blok JSON AST</h3>
+                <p className="text-xs text-muted-foreground">
+                  Ön yüzde 0 KB istemci JS ile doğrudan React Server Components olarak işlenen şema.
+                </p>
+              </div>
+              <span className="rounded-md border border-border px-2 py-0.5 text-xs font-semibold">
+                JSON Schema v1
+              </span>
+            </div>
+            {s.codeJsonError && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                JSON Hatası: {s.codeJsonError}
               </div>
             )}
+            <textarea
+              value={s.codeJsonDraft}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              rows={26}
+              aria-label="Ham Blok JSON AST"
+              className="w-full rounded-xl border bg-slate-950 p-4 font-mono text-xs text-emerald-400 focus:outline-none"
+            />
           </div>
+        )}
+
+        {/* Derlenen Markdown Önizleme Modu */}
+        {s.editorMode === "markdown" && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-5xl space-y-3 p-6"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold">Derlenen Saf Markdown (`markdownCache`)</h3>
+                <p className="text-xs text-muted-foreground">
+                  `?format=md`, `/llms.txt` ve RAG indeksleme motoruna sunulan çıktı.
+                </p>
+              </div>
+              <span className="rounded-md bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">
+                Kayıpsız Derleme
+              </span>
+            </div>
+            <pre className="overflow-x-auto rounded-xl border bg-slate-950 p-6 font-mono text-xs leading-relaxed text-slate-200">
+              {s.compiledMarkdown}
+            </pre>
           </div>
-          )}
-        </main>
+        )}
+      </main>
     </PageSchemaContext.Provider>
   );
 }

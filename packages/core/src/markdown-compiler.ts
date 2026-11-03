@@ -246,6 +246,30 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
       return `[▶ ${title}](${String(p.url ?? "")})`;
     }
 
+    case "tabs": {
+      const heading = typeof p.title === "string" && p.title.trim() ? `## ${p.title.trim()}\n\n` : "";
+      const items = Array.isArray(p.items) ? p.items : [];
+      const panes = Array.isArray(block.children) ? block.children : [];
+      const count = Math.max(items.length, panes.length);
+      const out: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const pane = panes[i];
+        const item = (items[i] ?? {}) as Record<string, unknown>;
+        const label =
+          (typeof pane?.props?.label === "string" && pane.props.label.trim()) ||
+          (typeof item.label === "string" && item.label.trim()) ||
+          `Sekme ${i + 1}`;
+        const childMd =
+          pane?.children && pane.children.length > 0
+            ? pane.children.map((c) => renderBlockNodeToMarkdown(c)).filter(Boolean).join("\n\n")
+            : typeof item.body === "string"
+              ? item.body.trim()
+              : "";
+        out.push(`### ${label}\n${childMd}`.trim());
+      }
+      return `${heading}${out.join("\n\n")}`.trim();
+    }
+
     case "section":
     case "columns":
     case "column":

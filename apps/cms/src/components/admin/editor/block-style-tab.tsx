@@ -1,10 +1,22 @@
 "use client";
 
+import React, { useState } from "react";
 import { BLOCK_ANIMATIONS, type BlockAnimationName, type BlockHoverValues, type BlockStyleValues } from "@nexpress/core";
+import { Link2, Unlink2 } from "lucide-react";
 import { GradientBuilder } from "./gradient-builder";
 import { StylePresetBar } from "./style-preset-bar";
 import { useStudioInspector } from "./studio-inspector-context";
 import { ColorInput, NumberInput, SelectInput, StylePanel, TextInput } from "./style-controls";
+
+const SPACING_PRESETS: Array<{ label: string; value: string }> = [
+  { label: "0", value: "0px" },
+  { label: "XS", value: "8px" },
+  { label: "S", value: "16px" },
+  { label: "M", value: "24px" },
+  { label: "L", value: "48px" },
+  { label: "XL", value: "64px" },
+  { label: "2XL", value: "96px" },
+];
 
 const SHADOW_OPTIONS: Array<["none" | "sm" | "md" | "lg" | "xl" | "", string]> = [["", "—"], ["none", "Yok"], ["sm", "Hafif"], ["md", "Orta"], ["lg", "Derin"], ["xl", "Sinematik"]];
 const ANIMATION_LABELS: Record<BlockAnimationName, string> = {
@@ -15,6 +27,8 @@ const ANIMATION_LABELS: Record<BlockAnimationName, string> = {
 /** Stil sekmesi: katlanır paneller, her denetimde cihaz kuralı, "düzenlendi" noktası ve tek tıkla sıfırlama. */
 export function BlockStyleTab() {
   const { styleDevice, setStyleDevice, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, getActiveStyleValue, selectedBlock } = useStudioInspector();
+  const [linkPadding, setLinkPadding] = useState(true);
+  const [linkMargin, setLinkMargin] = useState(false);
   const g = getActiveStyleValue;
   const set = <K extends keyof BlockStyleValues>(key: K) => (v: BlockStyleValues[K] | undefined) => updateSelectedBlockStyle({ [key]: v } as Partial<BlockStyleValues>);
   const any = (...keys: Array<keyof BlockStyleValues>) => keys.some((k) => g(k) !== undefined && g(k) !== "");
@@ -23,6 +37,22 @@ export function BlockStyleTab() {
   const setHover = <K extends keyof BlockHoverValues>(key: K) => (v: BlockHoverValues[K] | undefined) => {
     const next = { ...hover, [key]: v };
     updateSelectedBlockStyleRoot({ hover: Object.values(next).some((x) => x !== undefined && x !== "") ? next : undefined });
+  };
+
+  const applyPaddingVal = (side: "paddingTop" | "paddingRight" | "paddingBottom" | "paddingLeft", v: string | undefined) => {
+    if (linkPadding) {
+      updateSelectedBlockStyle({ paddingTop: v, paddingRight: v, paddingBottom: v, paddingLeft: v });
+    } else {
+      updateSelectedBlockStyle({ [side]: v });
+    }
+  };
+
+  const applyMarginVal = (side: "marginTop" | "marginRight" | "marginBottom" | "marginLeft", v: string | undefined) => {
+    if (linkMargin) {
+      updateSelectedBlockStyle({ marginTop: v, marginRight: v, marginBottom: v, marginLeft: v });
+    } else {
+      updateSelectedBlockStyle({ [side]: v });
+    }
   };
 
   return (
@@ -49,18 +79,86 @@ export function BlockStyleTab() {
         <TextInput label="Saydamlık (0–1)" value={g("opacity") === undefined ? undefined : String(g("opacity"))} onChange={(v) => updateSelectedBlockStyle({ opacity: v === undefined || Number.isNaN(Number(v)) ? undefined : Math.min(1, Math.max(0, Number(v))) })} placeholder="1" />
       </StylePanel>
 
-      <StylePanel title={`Boşluk (${styleDevice === "desktop" ? "masaüstü" : styleDevice})`} edited={any("paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "marginTop", "marginBottom", "marginLeft", "marginRight", "gap")}>
-        <div className="grid grid-cols-4 gap-1.5">
-          {([["paddingTop", "Üst"], ["paddingRight", "Sağ"], ["paddingBottom", "Alt"], ["paddingLeft", "Sol"]] as const).map(([k, l]) => (
-            <TextInput key={k} label={`İç ${l}`} value={g(k)} onChange={set(k)} placeholder="20px" />
-          ))}
+      <StylePanel title={`Boşluk (${styleDevice === "desktop" ? "masaüstü" : styleDevice})`} defaultOpen edited={any("paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "marginTop", "marginBottom", "marginLeft", "marginRight", "gap")}>
+        {/* İç Boşluk (Padding) Hızlı Ön-Ayarlar + Kenar Bağlama */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground">İç Boşluk (Padding)</span>
+            <button
+              type="button"
+              onClick={() => setLinkPadding((v) => !v)}
+              aria-label={linkPadding ? "Kenar bağlantısını çöz" : "Tüm kenarları birbirine bağla"}
+              className={`inline-flex h-5 items-center gap-1 rounded px-1.5 text-[10px] font-medium ${
+                linkPadding
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {linkPadding ? <Link2 className="h-3 w-3" /> : <Unlink2 className="h-3 w-3" />}
+              {linkPadding ? "Tüm kenarlar bağlı" : "Ayrı kenarlar"}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {SPACING_PRESETS.map((p) => {
+              const active = g("paddingTop") === p.value && g("paddingBottom") === p.value;
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() =>
+                    updateSelectedBlockStyle({
+                      paddingTop: p.value,
+                      paddingRight: p.value,
+                      paddingBottom: p.value,
+                      paddingLeft: p.value,
+                    })
+                  }
+                  aria-label={`İç boşluk ${p.label} (${p.value})`}
+                  title={p.value}
+                  className={`h-6 min-w-6 rounded border px-1.5 text-[10px] font-semibold transition ${
+                    active
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-border bg-background text-muted-foreground hover:border-blue-400 hover:text-foreground"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {([["paddingTop", "Üst"], ["paddingRight", "Sağ"], ["paddingBottom", "Alt"], ["paddingLeft", "Sol"]] as const).map(([k, l]) => (
+              <TextInput key={k} label={`İç ${l}`} value={g(k)} onChange={(v) => applyPaddingVal(k, v)} placeholder="20px" />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {([["marginTop", "Üst"], ["marginRight", "Sağ"], ["marginBottom", "Alt"], ["marginLeft", "Sol"]] as const).map(([k, l]) => (
-            <TextInput key={k} label={`Dış ${l}`} value={g(k)} onChange={set(k)} placeholder="0" />
-          ))}
+
+        {/* Dış Boşluk (Margin) */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground">Dış Boşluk (Margin)</span>
+            <button
+              type="button"
+              onClick={() => setLinkMargin((v) => !v)}
+              aria-label={linkMargin ? "Dış boşluk kenar bağlantısını çöz" : "Tüm dış boşluk kenarlarını bağla"}
+              className={`inline-flex h-5 items-center gap-1 rounded px-1.5 text-[10px] font-medium ${
+                linkMargin
+                  ? "bg-blue-600/10 text-blue-700 dark:text-blue-300"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {linkMargin ? <Link2 className="h-3 w-3" /> : <Unlink2 className="h-3 w-3" />}
+              {linkMargin ? "Tüm kenarlar bağlı" : "Ayrı kenarlar"}
+            </button>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {([["marginTop", "Üst"], ["marginRight", "Sağ"], ["marginBottom", "Alt"], ["marginLeft", "Sol"]] as const).map(([k, l]) => (
+              <TextInput key={k} label={`Dış ${l}`} value={g(k)} onChange={(v) => applyMarginVal(k, v)} placeholder="0" />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-1.5">
+
+        <div className="grid grid-cols-3 gap-1.5 pt-1">
           <TextInput label="Boşluk (gap)" value={g("gap")} onChange={set("gap")} placeholder="24px" />
           <TextInput label="En çok genişlik" value={g("maxWidth")} onChange={set("maxWidth")} placeholder="1200px" />
           <TextInput label="En az yükseklik" value={g("minHeight")} onChange={set("minHeight")} placeholder="320px" />

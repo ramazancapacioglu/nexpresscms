@@ -1,5 +1,6 @@
 import React from "react";
 import { createTranslator } from "@nexpress/i18n";
+import { ICON_PATHS } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
@@ -153,9 +154,15 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
               >
                 <div
                   style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }}
-                  className="mb-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-xs font-bold"
+                  className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold"
                 >
-                  0{idx + 1}
+                  {typeof item?.icon === "string" && ICON_PATHS[item.icon] ? (
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d={ICON_PATHS[item.icon]} />
+                    </svg>
+                  ) : (
+                    `0${idx + 1}`
+                  )}
                 </div>
                 <h3
                   style={{ fontFamily: tokens.typography.headingFont }}

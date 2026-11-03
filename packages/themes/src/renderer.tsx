@@ -1,6 +1,7 @@
 import React from "react";
 import {
   compileBlockStylesToCss,
+  ensureUniqueBlockIds,
   normalizeDynamicQuery,
   toCssVarTokens,
   safeBlockDomId,
@@ -87,15 +88,16 @@ export function RscBlockRenderer({
   const isEditorial = themeId === "editorial-pulse";
   const isCommerce = themeId === "commerce-velocity";
   const isInk = themeId === INK_GRID_ID;
-  const compiledCss = compileBlockStylesToCss(blocks);
-  const lcpBlockId = lcp ? findLcpImageId(blocks) : undefined;
+  const safeBlocks = ensureUniqueBlockIds(blocks);
+  const compiledCss = compileBlockStylesToCss(safeBlocks);
+  const lcpBlockId = lcp ? findLcpImageId(safeBlocks) : undefined;
 
   return (
     <div className={isInk ? "nx-ink" : "space-y-8"}>
       {compiledCss ? (
         <style dangerouslySetInnerHTML={{ __html: compiledCss }} />
       ) : null}
-      {blocks.map((block) => (
+      {safeBlocks.map((block) => (
         <RscSingleBlock
           key={block.id}
           block={block}
@@ -132,7 +134,7 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   const rendered =
     renderMarketingBlock(ctx) ?? renderContentBlock(ctx) ?? renderLayoutBlock(ctx);
   return rendered === undefined
-    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale, input.form)
+    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale, input.form, ctx.renderChild)
     : rendered;
 }
 

@@ -58,6 +58,16 @@ export interface SiteCustomizerSettings {
     contentLayout: "boxed" | "fullwidth";
     articleWidth: string;
     pagePaddingY: string;
+    /** Varsayılan kenar çubuğu konumu: kapalı, sağ veya sol */
+    sidebarPosition?: "none" | "right" | "left";
+    /** Kenar çubuğu genişliği (ör: 260px, 300px, 340px) */
+    sidebarWidth?: string;
+    /** Hangi şablon türlerinde kenar çubuğu gösterilsin */
+    sidebarOnBlog?: boolean;
+    sidebarOnArchive?: boolean;
+    sidebarOnPage?: boolean;
+    sidebarOnShop?: boolean;
+    sidebarOnSearch?: boolean;
   };
   buttons: {
     style?: "solid" | "pill" | "sharp";
@@ -100,7 +110,7 @@ export interface SiteCustomizerSettings {
   };
   archive: {
     layout: "grid" | "list";
-    columns: 2 | 3;
+    columns: 2 | 3 | 4;
     showExcerpt: boolean;
     showImage: boolean;
   };
@@ -185,6 +195,13 @@ export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
     contentLayout: "boxed",
     articleWidth: "860px",
     pagePaddingY: "2.5rem",
+    sidebarPosition: "none",
+    sidebarWidth: "300px",
+    sidebarOnBlog: true,
+    sidebarOnArchive: true,
+    sidebarOnPage: false,
+    sidebarOnShop: true,
+    sidebarOnSearch: false,
   },
   buttons: {
     style: "solid",

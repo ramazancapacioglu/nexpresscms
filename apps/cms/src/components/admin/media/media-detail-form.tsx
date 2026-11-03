@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle, Check, Copy, Info, XCircle } from "lucide-react";
+import { thumbnailUrl } from "@nexpress/core";
 import type { MediaAssetDto } from "@nexpress/database";
 import { saveMediaAssetAction } from "@/app/admin/actions";
 import { formatBytes, liveReport } from "./media-filter";
@@ -64,10 +65,23 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
 
   return (
     <div className="space-y-3 text-[12px]">
+      {primary && (
+        <div className="sticky top-0 z-10 -mx-1 bg-white/95 pb-2 pt-0.5 backdrop-blur-xs dark:bg-[#15171C]/95">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => (dirty ? save(primary.onDone) : primary.onDone(asset))}
+            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-[#266DF0] px-3 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
+          >
+            <Check className="h-4 w-4" />
+            {pending ? "Kaydediliyor…" : dirty ? primary.label : "Seç ve Ekle"}
+          </button>
+        </div>
+      )}
       <div className={`h-40 overflow-hidden rounded border ${border} bg-slate-900`}>
         {isImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`/media/${asset.id}/480.webp`} alt={f.altText} style={{ objectPosition: `${f.focalX}% ${f.focalY}%` }} className="h-full w-full object-cover" />
+          <img src={thumbnailUrl(asset.url, 480)} alt={f.altText} style={{ objectPosition: `${f.focalX}% ${f.focalY}%` }} className="h-full w-full object-cover" />
         ) : (
           <MediaThumb asset={asset} />
         )}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { DEFAULT_STUDIO_TOKENS } from "@/components/admin/editor/studio-model";
 import { useRouter } from "next/navigation";
-import { slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
+import { ensureUniqueBlockIds, slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
 import type { ContentDto, MediaAssetDto, TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 
 export interface DualModeEditorClientProps {
@@ -79,7 +79,10 @@ export function useDualModeEditorDocument({
     () => [{ id: "blk_new_paragraph", type: "paragraph", props: { text: "" } }],
     []
   );
-  const initialBlocks = initialDoc?.blocks?.length ? initialDoc.blocks : blankBlocks;
+  const initialBlocks = useMemo(
+    () => ensureUniqueBlockIds(initialDoc?.blocks?.length ? initialDoc.blocks : blankBlocks),
+    [initialDoc, blankBlocks]
+  );
   const [blocks, setBlocksState] = useState<BlockNode[]>(initialBlocks);
   const [history, setHistory] = useState<BlockNode[][]>([initialBlocks]);
   const [historyIdx, setHistoryIdx] = useState(0);
@@ -126,7 +129,8 @@ export function useDualModeEditorDocument({
     updater: BlockNode[] | ((prev: BlockNode[]) => BlockNode[]),
     recordHistory = true
   ) => {
-    const next = typeof updater === "function" ? updater(blocksRef.current) : updater;
+    const rawNext = typeof updater === "function" ? updater(blocksRef.current) : updater;
+    const next = ensureUniqueBlockIds(rawNext);
     blocksRef.current = next;
     setBlocksState(next);
     if (recordHistory) {

@@ -1,15 +1,48 @@
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { DEFAULT_CUSTOMIZER_SETTINGS, type DesignTokens, type SiteCustomizerSettings, type SiteSettings } from "@nexpress/core";
+import {
+  DEFAULT_CUSTOMIZER_SETTINGS,
+  type DesignTokens,
+  type SiteCustomizerSettings,
+  type SiteSettings,
+  type TemplateKind,
+} from "@nexpress/core";
 import { GLOBAL_TYPOGRAPHY_PAIRS, type ThemeManifest } from "@nexpress/themes";
 import { saveThemeCustomizerAction } from "@/app/admin/actions";
+
+export interface CustomizerTemplateSummary {
+  id: string;
+  name: string;
+  kind: TemplateKind;
+  isDefault: boolean;
+  blocks: number;
+}
 
 export interface ThemeStoreClientProps {
   themes: ThemeManifest[];
   activeThemeId: string;
   currentTokens: DesignTokens;
   currentSettings?: SiteSettings;
+  initialTemplates?: CustomizerTemplateSummary[];
 }
+
+export type CustomizerTabId =
+  | "themes"
+  | "colors"
+  | "typography"
+  | "layout"
+  | "chrome"
+  | "templates";
+
+export type PreviewPageType =
+  | "home"
+  | "post"
+  | "category"
+  | "tag"
+  | "page"
+  | "product"
+  | "shop"
+  | "search";
 
 /** ThemeStoreClient durum ve davranışları; JSX bölümleri bu nesneyi `s` olarak alır. */
 export function useThemeStore({
@@ -17,6 +50,7 @@ export function useThemeStore({
   activeThemeId: initialThemeId,
   currentTokens,
   currentSettings,
+  initialTemplates = [],
 }: ThemeStoreClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -27,13 +61,19 @@ export function useThemeStore({
   const [customizer, setCustomizer] = useState<SiteCustomizerSettings>(
     currentSettings?.customizer ?? DEFAULT_CUSTOMIZER_SETTINGS
   );
+  const [templatesList, setTemplatesList] = useState<CustomizerTemplateSummary[]>(initialTemplates);
 
-  const [activeTab, setActiveTab] = useState<
-    "themes" | "colors" | "typography" | "layout"
-  >("themes");
+  // Tema seçimi varsayılan olarak gizlidir; kullanıcı isterse "Temaları Göster / Gizle" ile açar
+  const [showThemeSelector, setShowThemeSelector] = useState<boolean>(false);
+  // Sol özelleştirici panelini gizleyip canlı önizlemeyi tam ekran yapma durumu
+  const [hideControlPanel, setHideControlPanel] = useState<boolean>(false);
+
+  const [activeTab, setActiveTab] = useState<CustomizerTabId>("colors");
   const [previewDevice, setPreviewDevice] = useState<
     "desktop" | "tablet" | "mobile"
   >("desktop");
+  const [previewPageType, setPreviewPageType] =
+    useState<PreviewPageType>("home");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -94,7 +134,41 @@ export function useThemeStore({
         ? "2px"
         : tokens.geometry.borderRadius;
 
-  return { themes, initialThemeId, currentTokens, currentSettings, isPending, startTransition, selectedThemeId, setSelectedThemeId, tokens, setTokens, customizer, setCustomizer, activeTab, setActiveTab, previewDevice, setPreviewDevice, toastMsg, setToastMsg, router, showToast, handleSelectTheme, handleApplyPalette, handleApplyTypographyPair, handleSaveAll, btnRadius };
+  return {
+    themes,
+    initialThemeId,
+    currentTokens,
+    currentSettings,
+    isPending,
+    startTransition,
+    selectedThemeId,
+    setSelectedThemeId,
+    tokens,
+    setTokens,
+    customizer,
+    setCustomizer,
+    templatesList,
+    setTemplatesList,
+    showThemeSelector,
+    setShowThemeSelector,
+    hideControlPanel,
+    setHideControlPanel,
+    activeTab,
+    setActiveTab,
+    previewDevice,
+    setPreviewDevice,
+    previewPageType,
+    setPreviewPageType,
+    toastMsg,
+    setToastMsg,
+    router,
+    showToast,
+    handleSelectTheme,
+    handleApplyPalette,
+    handleApplyTypographyPair,
+    handleSaveAll,
+    btnRadius,
+  };
 }
 
 export type ThemeStoreState = ReturnType<typeof useThemeStore>;

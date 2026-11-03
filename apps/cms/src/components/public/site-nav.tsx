@@ -1,15 +1,36 @@
 import React from "react";
-import type { DesignTokens, MegaMenuConfig, NavigationLink, NavigationMenuItem } from "@nexpress/core";
+import { ICON_PATHS, type DesignTokens, type MegaMenuConfig, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
 
 /**
  * Ziyaretçi menüsü (RSC, istemci JS'i yok). Masaüstü: açılır alt menü ve mega menü yalnızca CSS ile (hover + klavye odağı).
  * Mobil: `<details>` ile açılan iç içe liste. Bağlantılar düz `<a>`'dır (yönlendirici JS'i yüklenmez).
  */
-const WIDTH: Record<NonNullable<MegaMenuConfig["width"]>, string> = { narrow: "w-[min(420px,92vw)]", wide: "w-[min(720px,92vw)]", full: "w-[min(1100px,92vw)]" };
+const WIDTH: Record<NonNullable<MegaMenuConfig["width"]>, string> = { narrow: "w-[min(440px,92vw)]", wide: "w-[min(760px,92vw)]", full: "w-[min(1120px,92vw)]" };
 const COLS: Record<number, string> = { 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
 const SHOW = "invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100";
 
 const rel = (l: NavigationLink) => (l.target === "_blank" ? { target: "_blank", rel: "noopener noreferrer" } : {});
+
+function NavSvgIcon({ name, size = 15, className = "" }: { name?: string; size?: number; className?: string }) {
+  const path = name ? ICON_PATHS[name] : undefined;
+  if (!path) return null;
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`shrink-0 ${className}`}
+    >
+      <path d={path} />
+    </svg>
+  );
+}
 
 export function MenuList(props: { links: NavigationLink[] }) {
   return <SubList links={props.links} />;
@@ -20,9 +41,10 @@ function SubList({ links, depth = 0 }: { links: NavigationLink[]; depth?: number
     <ul className={depth ? "mt-0.5 space-y-0.5 border-l border-current/15 pl-3" : "space-y-0.5"}>
       {links.map((l) => (
         <li key={l.id}>
-          <a href={l.href} {...rel(l)} className="block rounded px-2 py-1.5 text-sm opacity-90 hover:bg-black/5 hover:opacity-100">
-            {l.label}
-            {l.badge ? <span className="ml-2 rounded bg-black/10 px-1.5 py-px text-[10px] font-bold uppercase">{l.badge}</span> : null}
+          <a href={l.href} {...rel(l)} className="flex items-center gap-2 rounded px-2 py-1.5 text-sm opacity-90 hover:bg-black/5 hover:opacity-100">
+            <NavSvgIcon name={l.icon} size={14} className="opacity-75" />
+            <span>{l.label}</span>
+            {l.badge ? <span className="ml-auto rounded bg-black/10 px-1.5 py-px text-[10px] font-bold uppercase">{l.badge}</span> : null}
           </a>
           {l.children?.length ? <SubList links={l.children} depth={depth + 1} /> : null}
         </li>
@@ -40,12 +62,28 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
       className={`absolute left-1/2 top-full z-50 -translate-x-1/2 ${WIDTH[mega.width ?? "wide"]} border p-5 shadow-xl transition-all duration-150 ${SHOW}`}
     >
       {(mega.mode ?? (mega.items.length > 0 ? "custom" : "children")) === "custom" ? (
-        <div className={`grid gap-4 ${cols}`}>
+        <div className={`grid gap-3.5 ${cols}`}>
           {mega.items.map((sub) => (
-            <a key={sub.id} href={sub.href} className="block space-y-1 rounded-lg border border-transparent p-3 hover:border-current/15 hover:bg-black/5">
-              {sub.badge ? <span style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }} className="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase">{sub.badge}</span> : null}
-              <div className="text-sm font-semibold">{sub.label}</div>
-              {sub.description ? <p className="text-xs leading-snug opacity-70">{sub.description}</p> : null}
+            <a key={sub.id} href={sub.href} className="group/card flex items-start gap-3 rounded-xl border border-transparent p-3 transition hover:border-current/15 hover:bg-black/5">
+              {sub.icon && ICON_PATHS[sub.icon] ? (
+                <span
+                  style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }}
+                  className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                >
+                  <NavSvgIcon name={sub.icon} size={18} />
+                </span>
+              ) : null}
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-sm font-semibold">{sub.label}</span>
+                  {sub.badge ? (
+                    <span style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }} className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                      {sub.badge}
+                    </span>
+                  ) : null}
+                </div>
+                {sub.description ? <p className="text-xs leading-snug opacity-70">{sub.description}</p> : null}
+              </div>
             </a>
           ))}
         </div>
@@ -53,21 +91,29 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
         <div className={`grid gap-6 ${cols}`}>
           {(item.children ?? []).map((col) => (
             <div key={col.id}>
-              <a href={col.href} {...rel(col)} className="block text-xs font-bold uppercase tracking-wider hover:underline">{col.label}</a>
+              <a href={col.href} {...rel(col)} className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider hover:underline">
+                <NavSvgIcon name={col.icon} size={14} />
+                <span>{col.label}</span>
+                {col.badge ? (
+                  <span style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }} className="ml-1 rounded px-1.5 py-px text-[9px] font-bold uppercase">
+                    {col.badge}
+                  </span>
+                ) : null}
+              </a>
               {col.description ? <p className="mt-0.5 text-xs opacity-70">{col.description}</p> : null}
               {col.children?.length ? <div className="mt-2"><SubList links={col.children} /></div> : null}
             </div>
           ))}
         </div>
       )}
-      {mega.promoBanner ? (
+      {mega.promoBanner && mega.promoBanner.title ? (
         <div style={{ backgroundColor: tokens.colors.muted, borderRadius: tokens.geometry.borderRadius }} className="mt-4 flex items-center justify-between gap-3 p-3.5">
           <div>
             <div className="text-xs font-bold">{mega.promoBanner.title}</div>
             {mega.promoBanner.subtitle ? <div className="text-xs opacity-70">{mega.promoBanner.subtitle}</div> : null}
           </div>
           <a href={mega.promoBanner.ctaHref} style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="shrink-0 rounded-md px-3 py-1.5 text-xs font-semibold">
-            {mega.promoBanner.ctaText}
+            {mega.promoBanner.ctaText || "İncele"}
           </a>
         </div>
       ) : null}
@@ -83,8 +129,14 @@ export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuI
         const hasPanel = Boolean(item.megaMenu?.enabled) || Boolean(item.children?.length);
         return (
           <div key={item.id} className={`group flex h-full items-center ${item.megaMenu?.enabled ? "static" : "relative"}`}>
-            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1 whitespace-nowrap text-sm font-medium ${linkCls}`}>
+            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1.5 whitespace-nowrap text-sm font-medium ${linkCls}`}>
+              <NavSvgIcon name={item.icon} size={15} className="opacity-80" />
               <span>{item.label}</span>
+              {item.badge ? (
+                <span style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }} className="rounded px-1.5 py-px text-[9px] font-bold uppercase">
+                  {item.badge}
+                </span>
+              ) : null}
               {hasPanel ? <span aria-hidden="true" className="text-[9px] opacity-60">▼</span> : null}
             </a>
             {item.megaMenu?.enabled ? (

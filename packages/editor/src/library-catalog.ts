@@ -51,13 +51,16 @@ export const CATALOG_LIBRARY_ITEMS: DesignLibraryItem[] = [
     summary: "Teknik notu aç",
     body: "Ayrıntı, sayfa ilk bakışta kısa kalsın diye kapalı durur. Açıklama ön yüzde ek betik gerektirmez.",
   }),
-  entry("lib_tabs", "Sekmeler", "data", "Aynı alanda birden fazla kısa metin. Sekme seçimi sayfa betiği yüklemez.", "bento-3", "tabs", {
+  entry("lib_tabs", "Kapsayıcı Sekmeler", "data", "Her sekmenin içine satır, sütun, görsel veya metin eklenebilir; ön yüzde 0 KB betik.", "bento-3", "tabs", {
+    title: "Çözüm Detayları",
+    tabStyle: "pills",
+    align: "left",
     items: [
-      { label: "Genel", body: "Ürünün kimlere uygun olduğu." },
-      { label: "Kurulum", body: "İlk gün nelerin hazır olduğu." },
-      { label: "Destek", body: "Ekibin hangi kanalı kullandığı." },
+      { label: "Genel Bakış", icon: "sparkles", body: "Ürünün kimlere uygun olduğu ve temel faydaları." },
+      { label: "Kurulum Süreci", icon: "rocket", body: "İlk gün nelerin hazır olduğu ve geçiş adımları." },
+      { label: "Kurumsal Destek", icon: "headphones", body: "7/24 uzman destek ve SLA kapsamı." },
     ],
-  }),
+  }, "Kapsayıcı"),
   entry("lib_accordion", "Akordeon", "data", "Soruları alt alta toplar. Her panel kendi içinde açılır.", "faq-list", "accordion", {
     title: "Sık sorulanlar",
     items: [

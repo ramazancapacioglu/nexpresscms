@@ -1,419 +1,571 @@
 "use client";
 
-import { usePageSchema } from "./page-schema-context";
+import React, { useState } from "react";
 import {
+  canAppendRepeaterItem,
   safeBlockDomId,
+  toCssVarTokens,
   type BlockNode,
-  type BlockStyle,
   type BlockStyleValues,
   type DesignTokens,
+  type DeviceKey,
 } from "@nexpress/core";
-import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
-import { RscBlockRenderer } from "@nexpress/themes";
-import { ArrowDown, ArrowUp, Columns, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
-import { Fragment, type DragEvent, type MouseEvent } from "react";
-import { DropZone, useEditorDnd } from "./dnd";
+import { RscSingleBlock } from "@nexpress/themes";
+import { GripVertical, Image as ImageIcon, Plus } from "lucide-react";
+import { BLOCK_TYPE_LABELS } from "./studio-model";
 import { FloatingToolbar } from "./floating-toolbar";
 import { InlineEditable } from "./inline-editable";
+import { ProseField } from "./prose-field";
 import { SlashMenu } from "./slash-menu";
-import { ProseField, type ProseStructureKind } from "./prose-field";
-import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "./studio-model";
+import { DropZone, readPayload, useEditorDnd } from "./dnd";
+import { InsertPoint } from "./quick-insert";
+import { RowLayoutPicker } from "./row-layout-picker";
+import { CanvasTabsBlock } from "./canvas-tabs-block";
+import { usePageSchema } from "./page-schema-context";
 
-interface CanvasBlockProps {
+const SPAN_CLASSES: Record<number, string> = {
+  1: "col-span-1", 2: "col-span-2", 3: "col-span-3", 4: "col-span-4",
+  5: "col-span-5", 6: "col-span-6", 7: "col-span-7", 8: "col-span-8",
+  9: "col-span-9", 10: "col-span-10", 11: "col-span-11", 12: "col-span-12",
+};
+
+const PROSE_TEXT_KEY: Partial<Record<BlockNode["type"], string>> = {
+  heading: "text",
+  heading_element: "text",
+  paragraph: "text",
+  paragraph_element: "text",
+  text_div: "text",
+  quote: "quote",
+  tldr_box: "summary",
+};
+
+export interface CanvasBlockProps {
   block: BlockNode;
+  index: number;
+  total: number;
+  parentId: string | null;
   selectedId: string | null;
-  activeColumnInsertId: string | null;
+  deviceViewport: DeviceKey;
   tokens: DesignTokens;
-  syncToken: number;
+  proseSyncToken: number;
   onSelect: (id: string) => void;
-  onMove: (id: string, direction: "up" | "down") => void;
+  onMove: (id: string, dir: "up" | "down") => void;
   onDuplicate: (id: string) => void;
   onRemove: (id: string) => void;
-  onChangeLayout: (id: string, layoutId: string) => void;
-  onUpdateProps: (id: string, patch: Record<string, unknown>) => void;
-  onConvertText: (id: string, kind: ProseStructureKind, level?: number) => void;
-  onCommit: () => void;
-  onInsert: (template: Omit<BlockNode, "id"> | BlockNode, parentId: string | null) => void;
-  onToggleInsert: (columnId: string | null) => void;
-  onInspectStyle: (id: string) => void;
+  onUpdateProp: (id: string, key: string, value: unknown, recordHistory?: boolean) => void;
+  onUpdateProps: (id: string, patch: Record<string, unknown>, recordHistory?: boolean) => void;
   onUpdateStyle: (id: string, patch: Partial<BlockStyleValues>) => void;
-  onSetStyle: (id: string, style: BlockStyle) => void;
-  onReplace: (id: string, block: BlockNode) => void;
-}
-
-function BlockActions({
-  onUp,
-  onDown,
-  onDuplicate,
-  onRemove,
-}: {
-  onUp: () => void;
-  onDown: () => void;
-  onDuplicate: () => void;
-  onRemove: () => void;
-}) {
-  const stop = (event: MouseEvent, action: () => void) => {
-    event.stopPropagation();
-    action();
-  };
-  return (
-    <div className="flex items-center gap-1">
-      <button type="button" title="Yukarı" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onUp)}>
-        <ArrowUp className="h-3 w-3" />
-      </button>
-      <button type="button" title="Aşağı" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onDown)}>
-        <ArrowDown className="h-3 w-3" />
-      </button>
-      <button type="button" title="Çoğalt" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onDuplicate)}>
-        <Copy className="h-3 w-3" />
-      </button>
-      <button type="button" title="Sil" className="inline-flex h-6 w-6 items-center justify-center rounded text-rose-600 hover:bg-rose-500/10" onClick={(event) => stop(event, onRemove)}>
-        <Trash2 className="h-3 w-3" />
-      </button>
-    </div>
-  );
+  onConvertText: (id: string, kind: "paragraph" | "heading" | "div", level?: number) => void;
+  onCommitHistory: () => void;
+  onOpenStyleInspector: (id: string) => void;
+  onReplaceWithBlock: (id: string, newBlock: BlockNode) => void;
+  onApplyColumnPreset: (blockId: string, presetId: string) => void;
+  onInsertIntoContainer: (block: BlockNode, parentId: string | null) => void;
+  onOpenMediaPicker?: (blockId: string) => void;
+  onOpenLibrary?: () => void;
+  onAppendRepeaterItem?: (blockId: string) => void;
+  onUpdateBlock?: (blockId: string, updater: (b: BlockNode) => BlockNode) => void;
 }
 
 export function CanvasBlock(props: CanvasBlockProps) {
-  const { block } = props;
+  const {
+    block,
+    index,
+    total,
+    parentId,
+    selectedId,
+    deviceViewport,
+    tokens,
+    proseSyncToken,
+    onSelect,
+    onMove,
+    onDuplicate,
+    onRemove,
+    onUpdateProp,
+    onUpdateProps,
+    onUpdateStyle,
+    onConvertText,
+    onCommitHistory,
+    onOpenStyleInspector,
+    onReplaceWithBlock,
+    onApplyColumnPreset,
+    onInsertIntoContainer,
+    onOpenMediaPicker,
+    onOpenLibrary,
+    onAppendRepeaterItem,
+    onUpdateBlock,
+  } = props;
+
+  const [showRowPicker, setShowRowPicker] = useState(false);
+  const [dropSide, setDropSide] = useState<"before" | "after" | null>(null);
+  const [overColId, setOverColId] = useState<string | null>(null);
+  const { begin, drop } = useEditorDnd();
   const pageSchema = usePageSchema();
-  const selected = props.selectedId === block.id;
+
+  const isSelected = selectedId === block.id;
+  const span = block.gridSpan?.[deviceViewport] ?? block.gridSpan?.desktop ?? 12;
+  const spanClass = SPAN_CLASSES[span] || "col-span-12";
+  const rawHide = block.style?.hideOn;
+  const hiddenNow = Array.isArray(rawHide)
+    ? rawHide.includes(deviceViewport)
+    : Boolean(rawHide?.[deviceViewport]);
   const domId = safeBlockDomId(block.id);
-  const propsOf = block.props ?? {};
-  const { begin } = useEditorDnd();
-  /** Başlık çubuğundan tutup sürüklemek bloğu taşır (tüm blok sürükleme görüntüsü olur). */
-  const dragProps = {
-    draggable: true,
-    title: "Sürükleyerek taşı",
-    onDragStart: (event: DragEvent<HTMLElement>) => {
-      event.stopPropagation();
-      begin(event, { kind: "move", id: block.id }, event.currentTarget.parentElement);
-    },
-  };
+  const proseKey = PROSE_TEXT_KEY[block.type];
 
-  const select = (event: MouseEvent) => {
-    event.stopPropagation();
-    props.onSelect(block.id);
-  };
+  const renderChild = (child: BlockNode, cIdx: number, cTotal: number, cParent: string) => (
+    <CanvasBlock
+      key={child.id}
+      {...props}
+      block={child}
+      index={cIdx}
+      total={cTotal}
+      parentId={cParent}
+    />
+  );
 
-  if (block.type === "columns") {
-    const columns = block.children ?? [];
-    const layout = String(propsOf.layout ?? "6+6");
-    return (
-      <div
-        data-nx-b={domId}
-        onClick={select}
-        className={`relative rounded-xl border-2 p-3 transition-all ${
-          selected
-            ? "border-blue-600 bg-blue-500/[0.02] shadow-sm"
-            : "border-dashed border-slate-300 hover:border-blue-400 dark:border-zinc-700"
-        }`}
-      >
-        <div {...dragProps} className="mb-3 flex cursor-grab flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/70 px-2.5 py-1.5 text-[11px] active:cursor-grabbing">
-          <div className="flex items-center gap-2">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-            <span className="inline-flex items-center gap-1 font-semibold text-blue-600">
-              <Columns className="h-3.5 w-3.5" />
-              Satır ({layout})
-            </span>
-            <div className="hidden items-center gap-1 border-l border-border pl-2 sm:flex">
-              {COLUMN_LAYOUT_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    props.onChangeLayout(block.id, preset.id);
-                  }}
-                  className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold ${
-                    layout === preset.id
-                      ? "bg-blue-600 text-white"
-                      : "border border-border bg-background text-muted-foreground"
-                  }`}
-                >
-                  {preset.id}
-                </button>
-              ))}
-            </div>
-          </div>
-          <BlockActions
-            onUp={() => props.onMove(block.id, "up")}
-            onDown={() => props.onMove(block.id, "down")}
-            onDuplicate={() => props.onDuplicate(block.id)}
-            onRemove={() => props.onRemove(block.id)}
-          />
-        </div>
-        <div className="flex flex-col items-stretch md:flex-row" style={{ gap: String(propsOf.gap ?? "24px") }}>
-          {columns.map((column, index) => {
-            const width = Number(column.props?.widthPct ?? 100 / Math.max(1, columns.length));
-            const columnSelected = props.selectedId === column.id;
-            const children = column.children ?? [];
-            return (
-              <div
-                key={column.id}
-                data-nx-b={safeBlockDomId(column.id)}
-                style={{ flexBasis: `${width}%` }}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  props.onSelect(column.id);
-                }}
-                className={`flex min-w-0 flex-1 flex-col justify-between rounded-lg border p-3 ${
-                  columnSelected
-                    ? "border-blue-500 ring-2 ring-blue-500"
-                    : "border-dashed border-slate-300/80 hover:border-blue-400/70"
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between border-b border-border/60 pb-1 font-mono text-[10px] text-muted-foreground">
-                    <span>Sütun {index + 1} · {Math.round(width)}%</span>
-                    <button
-                      type="button"
-                      className="font-sans font-medium text-blue-600"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        props.onInspectStyle(column.id);
-                      }}
-                    >
-                      Sütun stili
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {children.length === 0 ? (
-                      <DropZone parentId={column.id} index={0} large label="Bu sütun boş — blok sürükleyin" />
-                    ) : (
-                      <>
-                        <DropZone parentId={column.id} index={0} />
-                        {children.map((child, at) => (
-                          <Fragment key={child.id}>
-                            <CanvasBlock {...props} block={child} />
-                            <DropZone parentId={column.id} index={at + 1} />
-                          </Fragment>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-3 border-t border-border/50 pt-2">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onToggleInsert(props.activeColumnInsertId === column.id ? null : column.id);
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-blue-500/40 bg-blue-500/5 py-1.5 text-[11px] font-semibold text-blue-600"
-                  >
-                    <Plus className="h-3 w-3" />
-                    Sütuna element ekle
-                  </button>
-                  {props.activeColumnInsertId === column.id ? (
-                    <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-border bg-background p-2 shadow-lg">
-                      {ATOMIC_ELEMENTS_QUICK_BAR.filter(
-                        (item) => item.block.type !== "columns" && item.block.type !== "section"
-                      ).map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            props.onInsert(item.block, column.id);
-                          }}
-                          className="truncate rounded px-2 py-1.5 text-left text-[11px] font-medium hover:bg-muted"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  const isEmptyRow = block.type === "columns" && (block.children ?? []).length === 0;
+  const isEmptyImage =
+    block.type === "image_figure" && !String(block.props.url ?? "").trim();
 
-  if (block.type === "section") {
-    const children = block.children ?? [];
-    return (
-      <div
-        data-nx-b={domId}
-        onClick={select}
-        className={`relative rounded-xl border-2 p-4 ${
-          selected ? "border-blue-600 shadow-sm" : "border-dashed border-indigo-400/60"
-        }`}
-      >
-        <div {...dragProps} className="mb-3 flex cursor-grab items-center justify-between rounded-md bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 active:cursor-grabbing">
-          <span className="inline-flex items-center gap-1"><GripVertical className="h-3.5 w-3.5" aria-hidden />Kapsayıcı bölüm</span>
-          <BlockActions
-            onUp={() => props.onMove(block.id, "up")}
-            onDown={() => props.onMove(block.id, "down")}
-            onDuplicate={() => props.onDuplicate(block.id)}
-            onRemove={() => props.onRemove(block.id)}
-          />
-        </div>
-        <div className="space-y-4">
-          {children.length === 0 ? (
-            <DropZone parentId={block.id} index={0} large label="Bölüm boş — blok sürükleyin" />
-          ) : (
-            <>
-              <DropZone parentId={block.id} index={0} />
-              {children.map((child, at) => (
-                <Fragment key={child.id}>
-                  <CanvasBlock {...props} block={child} />
-                  <DropZone parentId={block.id} index={at + 1} />
-                </Fragment>
-              ))}
-            </>
-          )}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
-          {ATOMIC_ELEMENTS_QUICK_BAR.slice(0, 6).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                props.onInsert(item.block, block.id);
-              }}
-              className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[10px] font-medium hover:border-blue-500"
-            >
-              <Plus className="h-2.5 w-2.5 text-blue-600" />
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const rawProseText = proseKey ? String(block.props[proseKey] ?? "") : "";
+  const showSlash =
+    (block.type === "paragraph" || block.type === "paragraph_element") &&
+    rawProseText.startsWith("/") &&
+    !rawProseText.includes(" ");
 
   return (
-    <article
-      onClick={select}
-      className={`group relative rounded-lg border transition-colors ${
-        selected ? "border-blue-600 ring-2 ring-blue-500/20" : "border-transparent hover:border-blue-400/70"
-      }`}
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(block.id);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = "move";
+        const rect = e.currentTarget.getBoundingClientRect();
+        const nextSide = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+        if (dropSide !== nextSide) setDropSide(nextSide);
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setDropSide(null);
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const side = dropSide ?? "after";
+        setDropSide(null);
+        const payload = readPayload(e);
+        if (!payload) return;
+        if (payload.kind === "move" && payload.id === block.id) return;
+        drop(payload, parentId, side === "before" ? index : index + 1);
+      }}
+      className={`${spanClass} group/blk relative rounded-lg transition-all ${
+        isSelected
+          ? "outline-2 outline-blue-600"
+          : "hover:outline-1 hover:outline-dashed hover:outline-blue-400/75"
+      } ${
+        dropSide === "before"
+          ? "before:pointer-events-none before:absolute before:-top-1 before:right-0 before:left-0 before:z-30 before:h-1 before:rounded-full before:bg-blue-600"
+          : dropSide === "after"
+            ? "after:pointer-events-none after:absolute after:right-0 after:-bottom-1 after:left-0 after:z-30 after:h-1 after:rounded-full after:bg-blue-600"
+            : ""
+      } ${hiddenNow ? "opacity-40" : ""}`}
     >
-      <div
-        {...dragProps}
-        className={`absolute bottom-full left-2 right-2 mb-1 z-10 flex cursor-grab items-center justify-between gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] shadow-sm transition-opacity active:cursor-grabbing ${
-          selected ? "border-blue-500/40 text-blue-700 opacity-100" : "border-border text-muted-foreground invisible group-hover:visible group-focus-within:visible"
-        }`}
-      >
-        <span className="inline-flex items-center gap-1 font-semibold"><GripVertical className="h-3.5 w-3.5 opacity-60" aria-hidden />{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>
-        {selected ? <FloatingToolbar block={block} onConvertText={props.onConvertText} onUpdateStyle={props.onUpdateStyle} onSetStyle={props.onSetStyle} onInspectStyle={props.onInspectStyle} /> : <span />}
-        <BlockActions
-          onUp={() => props.onMove(block.id, "up")}
-          onDown={() => props.onMove(block.id, "down")}
-          onDuplicate={() => props.onDuplicate(block.id)}
-          onRemove={() => props.onRemove(block.id)}
+      {/* Seçili Olmayan Bloklar İçin Doğrudan Sürükle-Taşı ve Hızlı Seçim Rozeti */}
+      {!isSelected && (
+        <div
+          draggable
+          onDragStart={(e) => {
+            e.stopPropagation();
+            begin(e, { kind: "move", id: block.id }, e.currentTarget.parentElement);
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(block.id);
+          }}
+          title="Sürükleyip başka bir satır veya sütuna taşıyın"
+          className="absolute -top-5 left-2 z-20 hidden h-5 cursor-grab items-center gap-1 rounded-t bg-slate-800/90 px-2 text-[10px] font-semibold text-white opacity-0 shadow-xs transition select-none group-hover/blk:flex group-hover/blk:opacity-100 active:cursor-grabbing hover:bg-blue-600"
+        >
+          <GripVertical className="h-3 w-3 opacity-80" />
+          <span>
+            {block.type === "columns"
+              ? `Satır (${String(block.props.layout ?? "6+6")})`
+              : BLOCK_TYPE_LABELS[block.type] ?? block.type}
+          </span>
+        </div>
+      )}
+
+      {hiddenNow && (
+        <span className="pointer-events-none absolute right-2 top-2 z-20 rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white">
+          {deviceViewport} görünümde gizli
+        </span>
+      )}
+
+      {isSelected && (
+        <FloatingToolbar
+          block={block}
+          index={index}
+          total={total}
+          parentId={parentId}
+          onDragStart={(e) => begin(e, { kind: "move", id: block.id })}
+          onSelectParent={parentId ? () => onSelect(parentId) : undefined}
+          onMove={onMove}
+          onDuplicate={onDuplicate}
+          onRemove={onRemove}
+          onUpdateProp={(id, key, val) => onUpdateProp(id, key, val, true)}
+          onUpdateStyle={onUpdateStyle}
+          onConvertText={(kind, lvl) => onConvertText(block.id, kind, lvl)}
+          onOpenStyle={onOpenStyleInspector}
+          onApplyColumnPreset={onApplyColumnPreset}
+          onToggleRowPicker={
+            block.type === "columns" ? () => setShowRowPicker((v) => !v) : undefined
+          }
+          onOpenMediaPicker={onOpenMediaPicker}
+          onAppendRepeaterItem={onAppendRepeaterItem}
         />
-      </div>
-      <div className="relative px-1 py-2" data-nx-b={domId}>
-        {(block.type === "paragraph" || block.type === "paragraph_element") && selected && /^\/[^\n]{0,40}$/.test(String(propsOf.text ?? "")) ? (
-          <SlashMenu query={String(propsOf.text).slice(1)} onPick={(next) => props.onReplace(block.id, next)} />
-        ) : null}
-        {block.type === "heading" || block.type === "heading_element" ? (
-          <div
-            className={
-              Number(propsOf.level ?? 2) === 3
-                ? "text-xl font-bold"
-                : Number(propsOf.level ?? 2) === 4
-                  ? "text-lg font-semibold"
-                  : "text-2xl font-bold"
-            }
-          >
-            <ProseField
-              variant="inline"
-              text={String(propsOf.text ?? "")}
-              html={typeof propsOf.html === "string" ? propsOf.html : undefined}
-              placeholder="Başlık"
-              syncToken={props.syncToken}
-              structure={{
-                kind: "heading",
-                level: Number(propsOf.level ?? 2),
-                onChange: (kind, level) => props.onConvertText(block.id, kind, level),
+      )}
+
+      {/* 1. SATIR & SÜTUNLAR (`columns`) */}
+      {block.type === "columns" && (
+        <div data-nx-b={domId} className="rounded-lg py-1">
+          {isEmptyRow || showRowPicker ? (
+            <RowLayoutPicker
+              currentLayout={String(block.props.layout ?? "")}
+              onSelectPreset={(presetId) => {
+                onApplyColumnPreset(block.id, presetId);
+                setShowRowPicker(false);
               }}
-              onChange={(value) =>
-                props.onUpdateProps(block.id, { text: value.text, html: value.html })
-              }
-              onCommit={props.onCommit}
+              onOpenLibrary={onOpenLibrary}
+              onClose={!isEmptyRow ? () => setShowRowPicker(false) : undefined}
             />
+          ) : (
+            <div
+              className="flex flex-col md:flex-row"
+              style={{
+                gap: String(block.props.gap ?? "24px"),
+                alignItems:
+                  block.props.verticalAlign === "center"
+                    ? "center"
+                    : block.props.verticalAlign === "bottom" ||
+                        block.props.verticalAlign === "end"
+                      ? "flex-end"
+                      : "stretch",
+              }}
+            >
+              {(block.children ?? []).map((col, colIdx) => {
+                const widthPct = Number(
+                  col.props?.widthPct ?? Math.round(100 / (block.children?.length || 1))
+                );
+                const colSelected = selectedId === col.id;
+                const colChildren = col.children ?? [];
+                return (
+                  <div
+                    key={col.id}
+                    data-nx-b={safeBlockDomId(col.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(col.id);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.dataTransfer.dropEffect = "move";
+                      if (overColId !== col.id) setOverColId(col.id);
+                    }}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                        setOverColId((prev) => (prev === col.id ? null : prev));
+                      }
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setOverColId(null);
+                      const payload = readPayload(e);
+                      if (payload) drop(payload, col.id, colChildren.length);
+                    }}
+                    style={{
+                      flexBasis: `${widthPct}%`,
+                      flexGrow: 1,
+                    }}
+                    className={`group/col relative flex min-h-[72px] flex-col rounded-lg transition-all ${
+                      overColId === col.id
+                        ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
+                        : colSelected
+                          ? "outline-2 outline-blue-600"
+                          : "hover:outline-1 hover:outline-dashed hover:outline-slate-300"
+                    }`}
+                  >
+                    {/* Sütun Seçiliyse Yüzen Araç Çubuğu */}
+                    {colSelected && (
+                      <FloatingToolbar
+                        block={col}
+                        index={colIdx}
+                        total={(block.children ?? []).length}
+                        parentId={block.id}
+                        onSelectParent={() => onSelect(block.id)}
+                        onMove={onMove}
+                        onDuplicate={onDuplicate}
+                        onRemove={onRemove}
+                        onUpdateProp={(id, key, val) => onUpdateProp(id, key, val, true)}
+                        onUpdateStyle={onUpdateStyle}
+                        onOpenStyle={onOpenStyleInspector}
+                      />
+                    )}
+
+                    {/* Sütun Üzerine Gelindiğinde Küçük Sütun Seçim Rozeti */}
+                    {!colSelected && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(col.id);
+                        }}
+                        className="absolute right-1.5 top-1.5 z-10 hidden h-5 items-center rounded bg-slate-900/75 px-1.5 text-[9px] font-semibold text-white opacity-0 transition group-hover/col:inline-flex group-hover/col:opacity-100 hover:bg-blue-600"
+                      >
+                        {colIdx + 1}. Sütun ({Math.round(widthPct)}%)
+                      </button>
+                    )}
+
+                    <div className="flex flex-1 flex-col gap-2">
+                      <DropZone parentId={col.id} index={0} />
+                      {colChildren.length === 0 ? (
+                        <div className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300/90 bg-slate-50/50 py-6">
+                          <span className="text-[11px] font-medium text-slate-400">
+                            {colIdx + 1}. Sütun ({Math.round(widthPct)}%)
+                          </span>
+                          <div className="[&_.invisible]:!visible [&_.invisible]:!inline-flex">
+                            <InsertPoint
+                              onInsert={(b) => onInsertIntoContainer(b, col.id)}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        colChildren.map((child, cIdx) => (
+                          <React.Fragment key={child.id}>
+                            {renderChild(child, cIdx, colChildren.length, col.id)}
+                            <DropZone parentId={col.id} index={cIdx + 1} />
+                          </React.Fragment>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 2. KAPSAYICI BÖLÜM (`section`) */}
+      {block.type === "section" && (
+        <div data-nx-b={domId} className="rounded-xl p-6 transition-all">
+          <div className="space-y-2">
+            <DropZone parentId={block.id} index={0} />
+            {(block.children ?? []).length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300/90 bg-white/60 py-8">
+                <span className="text-xs text-slate-400">
+                  Bu kapsayıcı bölüm henüz boş
+                </span>
+                <div className="[&_.invisible]:!visible [&_.invisible]:!inline-flex">
+                  <InsertPoint
+                    onInsert={(b) => onInsertIntoContainer(b, block.id)}
+                  />
+                </div>
+              </div>
+            ) : (
+              (block.children ?? []).map((child, cIdx) => (
+                <React.Fragment key={child.id}>
+                  {renderChild(
+                    child,
+                    cIdx,
+                    (block.children ?? []).length,
+                    block.id
+                  )}
+                  <DropZone parentId={block.id} index={cIdx + 1} />
+                </React.Fragment>
+              ))
+            )}
           </div>
-        ) : block.type === "paragraph" ||
-          block.type === "paragraph_element" ||
-          block.type === "text_div" ? (
+        </div>
+      )}
+
+      {/* 2B. ETKİLEŞİMLİ KAPSAYICI SEKMELER (`tabs`) */}
+      {block.type === "tabs" && (
+        <CanvasTabsBlock
+          block={block}
+          tokens={tokens}
+          renderChild={renderChild}
+          onSelect={onSelect}
+          onInsertIntoContainer={onInsertIntoContainer}
+          onUpdateBlock={onUpdateBlock}
+          onAppendRepeaterItem={onAppendRepeaterItem}
+        />
+      )}
+
+      {/* 3. METİN BLOKLARI (TipTap Satır İçi Zengin Metin) */}
+      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && proseKey && (
+        <div
+          data-nx-b={domId}
+          className={`relative ${
+            block.type === "heading" || block.type === "heading_element"
+              ? Number(block.props.level ?? 2) === 1
+                ? "text-3xl font-extrabold tracking-tight"
+                : Number(block.props.level ?? 2) === 3
+                  ? "text-xl font-bold"
+                  : Number(block.props.level ?? 2) === 4
+                    ? "text-lg font-semibold"
+                    : "text-2xl font-bold tracking-tight"
+              : block.type === "tldr_box"
+                ? "rounded-xl border border-blue-200 bg-blue-50/60 p-4"
+                : block.type === "quote"
+                  ? "border-l-4 border-blue-600 pl-4"
+                  : ""
+          }`}
+        >
           <ProseField
-            variant="paragraph"
-            text={String(propsOf.text ?? "")}
-            html={typeof propsOf.html === "string" ? propsOf.html : undefined}
-            placeholder={block.type === "text_div" ? "Metin yazın" : "Paragrafı yazın"}
-            syncToken={props.syncToken}
-            structure={{
-              kind: block.type === "text_div" ? "div" : "paragraph",
-              level: 2,
-              onChange: (kind, level) => props.onConvertText(block.id, kind, level),
-            }}
-            onChange={(value) =>
-              props.onUpdateProps(block.id, { text: value.text, html: value.html })
+            text={rawProseText}
+            html={
+              typeof block.props.html === "string"
+                ? block.props.html
+                : undefined
             }
-            onCommit={props.onCommit}
+            placeholder={
+              block.type === "heading" || block.type === "heading_element"
+                ? "Başlık yazın…"
+                : block.type === "quote"
+                  ? "Alıntı metni yazın…"
+                  : block.type === "tldr_box"
+                    ? "Kısa yanıt özeti yazın…"
+                    : "Metin yazın veya blok seçmek için '/' tuşuna basın…"
+            }
+            variant={
+              block.type === "heading" || block.type === "heading_element"
+                ? "inline"
+                : block.type === "quote"
+                  ? "quote"
+                  : "paragraph"
+            }
+            syncToken={proseSyncToken}
+            structure={
+              block.type === "heading" ||
+              block.type === "heading_element" ||
+              block.type === "paragraph" ||
+              block.type === "paragraph_element" ||
+              block.type === "text_div"
+                ? {
+                    kind:
+                      block.type === "heading" ||
+                      block.type === "heading_element"
+                        ? "heading"
+                        : block.type === "text_div"
+                          ? "div"
+                          : "paragraph",
+                    level: Number(block.props.level ?? 2),
+                    onChange: (kind, lvl) => onConvertText(block.id, kind, lvl),
+                  }
+                : undefined
+            }
+            onChange={({ text, html }) =>
+              onUpdateProps(block.id, { [proseKey]: text, html }, false)
+            }
+            onCommit={onCommitHistory}
           />
-        ) : block.type === "tldr_box" ? (
-          <div className="space-y-1.5 rounded-lg border-l-4 border-blue-600 bg-slate-50 p-4 dark:bg-zinc-800/70">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-              Kısa yanıt
-            </div>
-            <ProseField
-              variant="paragraph"
-              text={String(propsOf.summary ?? "")}
-              html={typeof propsOf.html === "string" ? propsOf.html : undefined}
-              placeholder="Doğrudan yanıt"
-              syncToken={props.syncToken}
-              onChange={(value) =>
-                props.onUpdateProps(block.id, { summary: value.text, html: value.html })
-              }
-              onCommit={props.onCommit}
-            />
-          </div>
-        ) : block.type === "quote" ? (
-          <div className="space-y-2 rounded-r-lg border-l-4 border-blue-600 bg-slate-50/70 p-4 dark:bg-zinc-800/50">
-            <ProseField
-              variant="quote"
-              text={String(propsOf.quote ?? propsOf.text ?? "")}
-              html={typeof propsOf.html === "string" ? propsOf.html : undefined}
-              placeholder="Alıntı"
-              syncToken={props.syncToken}
-              onChange={(value) =>
-                props.onUpdateProps(block.id, {
-                  quote: value.text,
-                  text: value.text,
-                  html: value.html,
-                })
-              }
-              onCommit={props.onCommit}
-            />
-            <div className="grid grid-cols-2 gap-2">
+          {block.type === "quote" && (
+            <div className="mt-2 flex gap-2 text-xs text-slate-500">
               <input
-                value={String(propsOf.author ?? "")}
-                onChange={(event) => props.onUpdateProps(block.id, { author: event.target.value })}
-                placeholder="Yazar"
-                className="rounded border border-border bg-background px-2 py-1 text-xs"
+                type="text"
+                value={String(block.props.author ?? "")}
+                onChange={(e) =>
+                  onUpdateProp(block.id, "author", e.target.value, true)
+                }
+                placeholder="Yazar adı…"
+                aria-label="Alıntı yazarı"
+                className="border-b border-transparent bg-transparent focus:border-slate-300 focus:outline-none"
               />
+              <span>·</span>
               <input
-                value={String(propsOf.role ?? "")}
-                onChange={(event) => props.onUpdateProps(block.id, { role: event.target.value })}
-                placeholder="Ünvan"
-                className="rounded border border-border bg-background px-2 py-1 text-xs"
+                type="text"
+                value={String(block.props.role ?? "")}
+                onChange={(e) =>
+                  onUpdateProp(block.id, "role", e.target.value, true)
+                }
+                placeholder="Unvan / kaynak…"
+                aria-label="Alıntı unvanı veya kaynağı"
+                className="border-b border-transparent bg-transparent focus:border-slate-300 focus:outline-none"
               />
             </div>
-          </div>
-        ) : (
-          <InlineEditable block={block} onChange={(key, value) => props.onUpdateProps(block.id, { [key]: value })} onCommit={props.onCommit}>
-            <RscBlockRenderer blocks={[block]} themeId="corporate-aurora" tokens={props.tokens} pageSchema={pageSchema} preview />
-          </InlineEditable>
-        )}
-      </div>
-    </article>
+          )}
+          {showSlash && (
+            <SlashMenu
+              query={rawProseText.slice(1)}
+              onPick={(item) => onReplaceWithBlock(block.id, item)}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 4. DİĞER TÜM YAPRAK BLOKLAR (Gerçek Tema Görünümü + Satır İçi Düzenleme) */}
+      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && !proseKey && (
+        <div className="relative">
+          {isEmptyImage && onOpenMediaPicker ? (
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(block.id);
+                onOpenMediaPicker(block.id);
+              }}
+              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/90 p-10 text-center transition hover:border-blue-400 hover:bg-blue-50/40"
+            >
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                <ImageIcon className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-semibold text-slate-700">
+                Medya Kütüphanesinden Görsel Seçin veya Yükleyin
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Tıklayarak medya seçiciyi açın
+              </span>
+            </div>
+          ) : (
+            <InlineEditable
+              block={block}
+              onChange={(key, value) => onUpdateProp(block.id, key, value, false)}
+              onCommit={onCommitHistory}
+            >
+              <RscSingleBlock
+                block={block}
+                themeId="corporate-clean"
+                tokens={toCssVarTokens(tokens)}
+                isEditorial={false}
+                isCommerce={false}
+                pageSchema={pageSchema}
+                preview
+              />
+            </InlineEditable>
+          )}
+
+          {/* Çok Öğeli Bloklar İçin Kanvas Altı "+ Yeni Öğe Ekle" Çubuğu */}
+          {isSelected && canAppendRepeaterItem(block.type) && onAppendRepeaterItem && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 flex justify-center"
+            >
+              <button
+                type="button"
+                onClick={() => onAppendRepeaterItem(block.id)}
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 text-[11px] font-semibold text-blue-700 shadow-2xs transition hover:bg-blue-600 hover:text-white"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Yeni Öğe Ekle ({BLOCK_TYPE_LABELS[block.type]})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

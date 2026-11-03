@@ -1,4 +1,4 @@
-import type { BlockNode, DesignTokens } from "@nexpress/core";
+import { newBlockId, type BlockNode, type DesignTokens } from "@nexpress/core";
 
 export const DEFAULT_STUDIO_TOKENS: DesignTokens = {
   colors: {
@@ -110,10 +110,9 @@ export function cloneBlockWithFreshIds(
   block: Omit<BlockNode, "id"> | BlockNode
 ): BlockNode {
   const copy = structuredClone(block) as BlockNode;
-  let serial = 0;
   const walk = (node: BlockNode): BlockNode => ({
     ...node,
-    id: `blk_${node.type}_${Date.now().toString(36)}_${(serial++).toString(36)}`,
+    id: newBlockId(`blk_${node.type}`),
     children: node.children?.map((child) => walk(child)),
   });
 

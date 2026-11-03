@@ -8,7 +8,18 @@ export * from "./template-conditions";
  * Şablonlar `type: "template"` içerik olarak saklanır (mevcut stüdyo, revizyon ve kütüphane aynen kullanılır);
  * ASLA yayınlanmaz (durum her zaman taslak) ve hiçbir ziyaretçi yüzeyine (site haritası, llms, arama) girmez.
  */
-export type TemplateKind = "header" | "footer" | "sidebar" | "page" | "post" | "category" | "tag" | "product" | "shop";
+export type TemplateKind =
+  | "header"
+  | "footer"
+  | "sidebar"
+  | "page"
+  | "post"
+  | "category"
+  | "tag"
+  | "product"
+  | "shop"
+  | "product_category"
+  | "search";
 
 export interface TemplateKindInfo {
   label: string;
@@ -20,15 +31,68 @@ export interface TemplateKindInfo {
 }
 
 export const TEMPLATE_KINDS: Record<TemplateKind, TemplateKindInfo> = {
-  header: { label: "Header", description: "Tüm sayfaların üstü: logo, menü, düğme.", slots: ["tpl_site_logo", "tpl_menu"] },
-  footer: { label: "Footer", description: "Tüm sayfaların altı: kolonlar, menü, telif.", slots: ["tpl_site_logo", "tpl_menu", "tpl_copyright"] },
-  sidebar: { label: "Kenar çubuğu", description: "İçeriğin yanında duran bloklar (son yazılar, bağlantılar).", slots: ["dynamic_list", "tpl_menu"] },
-  page: { label: "Sayfa", description: "Sayfaların genel görünümü.", requiredBlock: "tpl_post_content", slots: ["tpl_post_title", "tpl_post_content", "tpl_featured_image", "tpl_breadcrumb"] },
-  post: { label: "Blog yazısı", description: "Yazıların görünümü: başlık, bilgi satırı, görsel, içerik.", requiredBlock: "tpl_post_content", slots: ["tpl_post_title", "tpl_post_meta", "tpl_featured_image", "tpl_post_content", "tpl_breadcrumb"] },
-  category: { label: "Kategori sayfası", description: "Kategori arşivlerinin görünümü.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"] },
-  tag: { label: "Etiket sayfası", description: "Etiket arşivlerinin görünümü.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"] },
-  product: { label: "Ürün sayfası", description: "Mağazadaki ürün sayfaları ve ürün türündeki içerikler. Satın alma kutusu (tpl_product_buy) yoksa mağaza ürün sayfası yerleşik görünümde kalır.", slots: ["tpl_post_title", "tpl_featured_image", "tpl_product_buy", "tpl_post_content", "tpl_cart_link"] },
-  shop: { label: "Mağaza / ürün listesi", description: "Mağaza ana sayfası ve ürün listesi. Arşiv listesi yuvası yoksa yerleşik görünüm kullanılır.", requiredBlock: "tpl_archive_list", slots: ["tpl_archive_title", "tpl_archive_list", "tpl_cart_link"] },
+  header: {
+    label: "Header (Üst Bölüm)",
+    description: "Tüm sayfaların üstü: logo, ana menü, arama, sepet ve çağrı düğmesi.",
+    slots: ["tpl_site_logo", "tpl_menu", "tpl_cart_link", "search_box"],
+  },
+  footer: {
+    label: "Footer (Alt Bölüm)",
+    description: "Tüm sayfaların altı: çoklu kolonlar, menü bağlantıları, bülten ve telif satırı.",
+    slots: ["tpl_site_logo", "tpl_menu", "tpl_copyright"],
+  },
+  sidebar: {
+    label: "Kenar çubuğu (Sağ / Sol Sidebar)",
+    description: "İçeriğin sağında veya solunda duran bileşenler (arama, son yazılar, kategoriler, hızlı menü).",
+    slots: ["dynamic_list", "tpl_menu", "search_box"],
+  },
+  page: {
+    label: "Sayfa",
+    description: "Kurumsal sayfaların genel görünümü (tam genişlik, sağ/sol kenar çubuklu veya dar okuma düzeni).",
+    requiredBlock: "tpl_post_content",
+    slots: ["tpl_post_title", "tpl_post_content", "tpl_featured_image", "tpl_breadcrumb"],
+  },
+  post: {
+    label: "Blog yazısı",
+    description: "Blog yazılarının görünümü: başlık, yazar/tarih bilgisi, öne çıkan görsel, içerik ve sağ/sol sidebar.",
+    requiredBlock: "tpl_post_content",
+    slots: ["tpl_post_title", "tpl_post_meta", "tpl_featured_image", "tpl_post_content", "tpl_breadcrumb"],
+  },
+  category: {
+    label: "Kategori sayfası",
+    description: "Blog kategori arşivlerinin görünümü (kart ızgarası, liste veya sağ/sol kenar çubuklu).",
+    requiredBlock: "tpl_archive_list",
+    slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"],
+  },
+  tag: {
+    label: "Etiket sayfası",
+    description: "Etiket arşivlerinin görünümü (kart ızgarası, liste veya kenar çubuklu).",
+    requiredBlock: "tpl_archive_list",
+    slots: ["tpl_archive_title", "tpl_archive_list", "tpl_breadcrumb"],
+  },
+  product: {
+    label: "Ürün sayfası",
+    description: "Mağazadaki ürün detay sayfaları. Satın alma kutusu (tpl_product_buy) yoksa mağaza ürün sayfası yerleşik görünümde kalır.",
+    slots: ["tpl_post_title", "tpl_featured_image", "tpl_product_buy", "tpl_post_content", "tpl_cart_link", "tpl_breadcrumb"],
+  },
+  shop: {
+    label: "Mağaza / ürün listesi",
+    description: "Mağaza ana vitrini ve tüm ürünlerin listesi. Arşiv listesi yuvası yoksa yerleşik görünüm kullanılır.",
+    requiredBlock: "tpl_archive_list",
+    slots: ["tpl_archive_title", "tpl_archive_list", "tpl_cart_link", "search_box"],
+  },
+  product_category: {
+    label: "Ürün kategorisi",
+    description: "Mağaza ürün kategorisi ve koleksiyon arşivlerinin görünümü (sol filtre/menü veya tam ızgara).",
+    requiredBlock: "tpl_archive_list",
+    slots: ["tpl_archive_title", "tpl_archive_list", "tpl_cart_link", "tpl_breadcrumb"],
+  },
+  search: {
+    label: "Arama sonuçları",
+    description: "Site içi arama sonuçları sayfasının görünümü (arama kutusu, sonuç listesi ve önerilen içerikler).",
+    requiredBlock: "tpl_archive_list",
+    slots: ["search_box", "tpl_archive_title", "tpl_archive_list"],
+  },
 };
 
 export const TEMPLATE_KIND_IDS = Object.keys(TEMPLATE_KINDS) as TemplateKind[];
@@ -168,27 +232,70 @@ export interface StarterTemplate {
 }
 
 const RELATED: BlockNode = b("rel", "dynamic_list", { source: "posts", limit: 4, layout: "list", showImage: false, showExcerpt: false, showDate: true, excludeCurrent: true, heading: "Son yazılar" });
+const SIDEBAR_SEARCH_AND_POSTS: BlockNode[] = [
+  b("sb_search", "search_box", { placeholder: "Yazılarda ara…" }),
+  { ...RELATED, id: "sb_rel" },
+  b("sb_menu", "tpl_menu", { layout: "list" }),
+];
 
 export const STARTER_TEMPLATES: StarterTemplate[] = [
-  { id: "header-classic", kind: "header", name: "Klasik header", description: "Solda logo, ortada menü.", blocks: [cols("h", "3+9", [25, 75], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })]], "24px")] },
-  { id: "header-centered", kind: "header", name: "Ortalı header", description: "Ortada logo, altında menü.", blocks: [b("logo", "tpl_site_logo", { align: "center" }), b("menu", "tpl_menu", { align: "center" })] },
-  { id: "header-cta", kind: "header", name: "Header — menü + çağrı düğmesi", description: "Solda logo, ortada menü, sağda düğme.", blocks: [cols("h", "3+6+3", [25, 50, 25], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "center" })], [b("cta", "button_element", { label: "Bize ulaşın", href: "#", styleVariant: "primary", align: "right" })]], "24px")] },
-  { id: "header-topbar", kind: "header", name: "Header — üst şeritli", description: "İnce duyuru şeridi + logo ve menü.", blocks: [b("bar", "paragraph", { text: "Yeni: ücretsiz kargo fırsatını kaçırmayın.", html: "<p>Yeni: ücretsiz kargo fırsatını kaçırmayın.</p>" }, { style: { textAlign: "center", fontSize: "13px", paddingTop: "6px", paddingBottom: "6px" } }), cols("h", "3+9", [25, 75], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "right" })]], "24px")] },
-  { id: "header-search", kind: "header", name: "Header — arama kutulu", description: "Logo, menü ve site içi arama.", blocks: [cols("h", "3+6+3", [25, 50, 25], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })], [b("search", "search_box", { placeholder: "Ara…" })]], "24px")] },
-  { id: "footer-columns", kind: "footer", name: "Üç kolonlu footer", description: "Logo/açıklama, menü ve telif satırı.", blocks: [cols("f", "6+3+3", [50, 25, 25], [[b("logo", "tpl_site_logo"), b("about", "paragraph", { text: "Kısa bir tanıtım metni yazın.", html: "<p>Kısa bir tanıtım metni yazın.</p>" })], [b("fm", "tpl_menu", { layout: "list" })], [b("fh", "heading", { text: "İletişim", level: 3, html: "İletişim" }), b("fp", "paragraph", { text: "bilgi@ornek.com", html: "<p>bilgi@ornek.com</p>" })]]), b("copy", "tpl_copyright")] },
-  { id: "footer-minimal", kind: "footer", name: "Minimal footer", description: "Yalnızca menü ve telif.", blocks: [b("fm", "tpl_menu", { align: "center" }), b("copy", "tpl_copyright", { align: "center" })] },
-  { id: "sidebar-recent", kind: "sidebar", name: "Son yazılar kenar çubuğu", description: "Son yazılar ve menü.", blocks: [{ ...RELATED, id: "sr" }, b("sm", "tpl_menu", { layout: "list" })] },
+  // 1. HEADER ŞABLONLARI
+  { id: "header-classic", kind: "header", name: "Klasik header", description: "Solda logo, sağda menü.", blocks: [cols("h", "3+9", [25, 75], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })]], "24px")] },
+  { id: "header-centered", kind: "header", name: "Ortalı header", description: "Üstte ortalı logo, altında ortalı menü.", blocks: [b("logo", "tpl_site_logo", { align: "center" }), b("menu", "tpl_menu", { align: "center" })] },
+  { id: "header-cta", kind: "header", name: "Header — menü + çağrı düğmesi", description: "Solda logo, ortada menü, sağda aksiyon düğmesi.", blocks: [cols("h", "3+6+3", [25, 50, 25], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "center" })], [b("cta", "button_element", { label: "Bize ulaşın", href: "/tr/iletisim", styleVariant: "primary", align: "right" })]], "24px")] },
+  { id: "header-topbar", kind: "header", name: "Header — üst duyuru şeritli", description: "İnce kampanya şeridi + logo ve sağa hizalı menü.", blocks: [b("bar", "paragraph", { text: "Yeni: Kurumsal paketlerde %20 erken lansman avantajı.", html: "<p>Yeni: Kurumsal paketlerde %20 erken lansman avantajı.</p>" }, { style: { textAlign: "center", fontSize: "13px", paddingTop: "6px", paddingBottom: "6px" } }), cols("h", "3+9", [25, 75], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "right" })]], "24px")] },
+  { id: "header-search", kind: "header", name: "Header — arama kutulu", description: "Logo, menü ve site içi arama kutusu.", blocks: [cols("h", "3+6+3", [25, 50, 25], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })], [b("search", "search_box", { placeholder: "Sitede ara…" })]], "24px")] },
+  { id: "header-commerce", kind: "header", name: "Header — e-ticaret & mağaza", description: "Logo, menü, ürün arama kutusu ve sepet bağlantısı.", blocks: [cols("h", "3+5+4", [22, 46, 32], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })], [cols("hc", "8+4", [65, 35], [[b("search", "search_box", { placeholder: "Ürün ara…" })], [b("cart", "tpl_cart_link", { align: "right" })]], "12px")]], "20px")] },
+
+  // 2. FOOTER ŞABLONLARI
+  { id: "footer-columns", kind: "footer", name: "Üç kolonlu footer", description: "Logo/açıklama, hızlı menü, iletişim bilgileri ve telif satırı.", blocks: [cols("f", "6+3+3", [50, 25, 25], [[b("logo", "tpl_site_logo"), b("about", "paragraph", { text: "Modern, hızlı ve arama motoru dostu dijital yayın platformu.", html: "<p>Modern, hızlı ve arama motoru dostu dijital yayın platformu.</p>" })], [b("fm", "tpl_menu", { layout: "list" })], [b("fh", "heading", { text: "İletişim", level: 3, html: "İletişim" }), b("fp", "paragraph", { text: "bilgi@ornek.com • +90 (212) 555 00 00", html: "<p>bilgi@ornek.com • +90 (212) 555 00 00</p>" })]]), b("copy", "tpl_copyright")] },
+  { id: "footer-four-col", kind: "footer", name: "Dört kolonlu kurumsal footer", description: "Marka özeti, kurumsal bağlantılar, çözümler, destek ve telif.", blocks: [cols("f4", "3+3+3+3", [25, 25, 25, 25], [[b("logo", "tpl_site_logo"), b("about", "paragraph", { text: "Kurumsal ölçekte yüksek performanslı web altyapısı.", html: "<p>Kurumsal ölçekte yüksek performanslı web altyapısı.</p>" })], [b("h1", "heading", { text: "Hızlı Erişim", level: 4, html: "Hızlı Erişim" }), b("fm1", "tpl_menu", { layout: "list" })], [b("h2", "heading", { text: "Çözümler", level: 4, html: "Çözümler" }), b("l2", "list_element", { style: "bullet", items: ["Kurumsal Web", "E-Ticaret Altyapısı", "Teknik SEO & GEO", "Bulut Barındırma"] })], [b("h3", "heading", { text: "Merkez Ofis", level: 4, html: "Merkez Ofis" }), b("fp", "paragraph", { text: "Levent, İstanbul\nbilgi@ornek.com", html: "<p>Levent, İstanbul<br/>bilgi@ornek.com</p>" })]]), b("copy", "tpl_copyright")] },
+  { id: "footer-minimal", kind: "footer", name: "Minimal footer", description: "Yalnızca ortalı menü ve telif satırı.", blocks: [b("fm", "tpl_menu", { align: "center" }), b("copy", "tpl_copyright", { align: "center" })] },
+
+  // 3. KENAR ÇUBUĞU (SIDEBAR) ŞABLONLARI
+  { id: "sidebar-recent", kind: "sidebar", name: "Blog kenar çubuğu (Arama + Son yazılar)", description: "Arama kutusu, son yazılar ve kategori/sayfa menüsü.", blocks: SIDEBAR_SEARCH_AND_POSTS },
+  { id: "sidebar-corporate", kind: "sidebar", name: "Kurumsal gezinme kenar çubuğu", description: "Bölüm menüsü, uzman destek kutusu ve iletişim butonu.", blocks: [b("sh", "heading", { text: "Bu Bölümde", level: 4, html: "Bu Bölümde" }), b("sm", "tpl_menu", { layout: "list" }), b("sbox", "info_box", { icon: "headphones", title: "Uzman Desteği", description: "Projeleriniz için ekibimizle hemen görüşün.", ctaText: "İletişime Geç", ctaHref: "/tr/iletisim" })] },
+  { id: "sidebar-commerce", kind: "sidebar", name: "Mağaza kenar çubuğu", description: "Ürün arama, mağaza menüsü ve popüler ürünler.", blocks: [b("ss", "search_box", { placeholder: "Ürünlerde ara…" }), b("sm", "tpl_menu", { layout: "list" }), b("sp", "dynamic_list", { source: "products", limit: 3, layout: "list", showImage: true, showExcerpt: false, heading: "Öne Çıkan Ürünler" })] },
+
+  // 4. SAYFA ŞABLONLARI (`page`)
   { id: "page-default", kind: "page", name: "Sayfa — tam genişlik", description: "Başlık ve içerik tam genişlikte.", blocks: [b("t", "tpl_post_title"), b("c", "tpl_post_content")] },
-  { id: "page-sidebar", kind: "page", name: "Sayfa — sağ kenar çubuklu", description: "İçerik solda, kenar çubuğu sağda.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("c", "tpl_post_content")], [{ ...RELATED, id: "sr" }]])] },
-  { id: "post-default", kind: "post", name: "Yazı — klasik", description: "Başlık, bilgi satırı, görsel, içerik.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")] },
-  { id: "post-sidebar", kind: "post", name: "Yazı — kenar çubuklu", description: "Yazı solda, son yazılar sağda.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")], [{ ...RELATED, id: "sr" }]])] },
-  { id: "category-grid", kind: "category", name: "Kategori — kart ızgarası", description: "Başlık ve yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
-  { id: "category-list", kind: "category", name: "Kategori — liste", description: "Başlık ve satır satır liste.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
-  { id: "tag-grid", kind: "tag", name: "Etiket — kart ızgarası", description: "Başlık ve yayın kartları.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
-  { id: "product-default", kind: "product", name: "Ürün — klasik", description: "Başlık, görsel, fiyat/satın alma kutusu ve açıklama.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content")] },
-  { id: "product-related", kind: "product", name: "Ürün — benzer ürünlerle", description: "Satın alma kutusu ve altında benzer ürünler.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content"), b("rel", "dynamic_list", { source: "products", limit: 4, layout: "cards", columns: 4, showExcerpt: false, excludeCurrent: true, heading: "Benzer ürünler" })] },
-  { id: "shop-grid", kind: "shop", name: "Mağaza — ürün ızgarası", description: "Ürünler kart ızgarasında, sepet bağlantısıyla.", blocks: [b("cart", "tpl_cart_link", { align: "right" }), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 4 })] },
-  { id: "shop-list", kind: "shop", name: "Mağaza — liste", description: "Ürünler satır satır.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 }), b("cart", "tpl_cart_link")] },
+  { id: "page-sidebar", kind: "page", name: "Sayfa — sağ kenar çubuklu", description: "İçerik solda (8 birim), kenar çubuğu sağda (4 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("c", "tpl_post_content")], SIDEBAR_SEARCH_AND_POSTS])] },
+  { id: "page-sidebar-left", kind: "page", name: "Sayfa — sol kenar çubuklu (Doküman düzeni)", description: "Gezinme menüsü solda (4 birim), sayfa içeriği sağda (8 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "4+8", [33.33, 66.66], [[b("sm", "tpl_menu", { layout: "list" }), { ...RELATED, id: "sr_left" }], [b("t", "tpl_post_title"), b("c", "tpl_post_content")]])] },
+
+  // 5. BLOG YAZISI ŞABLONLARI (`post`)
+  { id: "post-default", kind: "post", name: "Yazı — klasik okuma düzeni", description: "Breadcrumb, başlık, yazar/tarih bilgisi, kapak görseli ve içerik.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")] },
+  { id: "post-sidebar", kind: "post", name: "Yazı — sağ kenar çubuklu", description: "Yazı solda (8 birim), arama ve son yazılar sağ kenar çubuğunda (4 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")], SIDEBAR_SEARCH_AND_POSTS])] },
+  { id: "post-sidebar-left", kind: "post", name: "Yazı — sol kenar çubuklu", description: "İçindekiler ve son yazılar solda (4 birim), makale sağda (8 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "4+8", [33.33, 66.66], [[b("toc", "toc", { title: "İçindekiler" }), { ...RELATED, id: "sr_l" }], [b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")]])] },
+  { id: "post-magazine", kind: "post", name: "Yazı — dergi & benzer yazılarla", description: "Kapak görseli üstte, makale gövdesi ve altında 3 sütun benzer yazılar.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content"), b("rel_cards", "dynamic_list", { source: "posts", limit: 3, layout: "cards", columns: 3, showImage: true, showExcerpt: true, showDate: true, excludeCurrent: true, heading: "İlgili Yazılar" })] },
+
+  // 6. KATEGORİ ARŞİVİ ŞABLONLARI (`category`)
+  { id: "category-grid", kind: "category", name: "Kategori — 3 sütun kart ızgarası", description: "Kategori başlığı ve 3 sütunlu yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
+  { id: "category-sidebar-right", kind: "category", name: "Kategori — sağ kenar çubuklu", description: "Sol tarafta 2 sütun kategori yazıları, sağda arama ve son yazılar.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), cols("cl", "8+4", [66.66, 33.33], [[b("l", "tpl_archive_list", { layout: "cards", columns: 2 })], SIDEBAR_SEARCH_AND_POSTS])] },
+  { id: "category-sidebar-left", kind: "category", name: "Kategori — sol kenar çubuklu", description: "Solda kategori menüsü ve arama, sağda yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), cols("cl", "4+8", [33.33, 66.66], [SIDEBAR_SEARCH_AND_POSTS, [b("l", "tpl_archive_list", { layout: "cards", columns: 2 })]])] },
+  { id: "category-list", kind: "category", name: "Kategori — editoryal liste", description: "Başlık ve satır satır okuma listesi.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
+
+  // 7. ETİKET ARŞİVİ ŞABLONLARI (`tag`)
+  { id: "tag-grid", kind: "tag", name: "Etiket — 3 sütun kart ızgarası", description: "Etiket başlığı ve 3 sütunlu yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
+  { id: "tag-sidebar-right", kind: "tag", name: "Etiket — sağ kenar çubuklu", description: "Etiket yayınları solda, arama ve son yazılar sağda.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), cols("tl", "8+4", [66.66, 33.33], [[b("l", "tpl_archive_list", { layout: "cards", columns: 2 })], SIDEBAR_SEARCH_AND_POSTS])] },
+  { id: "tag-list", kind: "tag", name: "Etiket — kompakt liste", description: "Etikete ait tüm içerikler satır listesinde.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
+
+  // 8. ÜRÜN DETAY ŞABLONLARI (`product`)
+  { id: "product-default", kind: "product", name: "Ürün — klasik vitrin", description: "Görsel solda, başlık ve satın alma kutusu sağda, altında detaylı açıklama.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content")] },
+  { id: "product-related", kind: "product", name: "Ürün — benzer ürünlerle", description: "Satın alma kutusu, açıklama ve altında 4 sütun benzer ürünler.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content"), b("rel", "dynamic_list", { source: "products", limit: 4, layout: "cards", columns: 4, showExcerpt: false, excludeCurrent: true, heading: "Benzer ürünler" })] },
+  { id: "product-sidebar-right", kind: "product", name: "Ürün — sağ kenar çubuklu (Güven & Teslimat)", description: "Ürün detayı solda (8 birim), teslimat/garanti avantaj kutuları sağda (4 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("pl", "8+4", [66.66, 33.33], [[cols("p_top", "6+6", [50, 50], [[b("i", "tpl_featured_image")], [b("t", "tpl_post_title"), b("buy", "tpl_product_buy")]]), b("c", "tpl_post_content")], [b("p_features", "icon_list", { items: [{ icon: "truck", title: "Aynı Gün Kargo", description: "Saat 16:00'a kadar verilen siparişlerde." }, { icon: "shield", title: "2 Yıl Resmi Garanti", description: "Yetkili servis ve birebir değişim güvencesi." }, { icon: "credit-card", title: "Güvenli Ödeme", description: "256-bit SSL ve 12 taksit imkanı." }] }), b("p_rel", "dynamic_list", { source: "products", limit: 3, layout: "list", showExcerpt: false, excludeCurrent: true, heading: "Popüler Ürünler" })]])] },
+
+  // 9. MAĞAZA / ÜRÜN LİSTESİ ŞABLONLARI (`shop`)
+  { id: "shop-grid", kind: "shop", name: "Mağaza — 4 sütun ürün ızgarası", description: "Ürünler 4 sütunlu kart ızgarasında, üstte sepet bağlantısıyla.", blocks: [b("cart", "tpl_cart_link", { align: "right" }), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 4 })] },
+  { id: "shop-sidebar-left", kind: "shop", name: "Mağaza — sol filtre & kenar çubuklu", description: "Solda ürün arama ve kategori menüsü (4 birim), sağda 3 sütun ürün ızgarası (8 birim).", blocks: [cols("sh_top", "8+4", [66.66, 33.33], [[b("t", "tpl_archive_title")], [b("cart", "tpl_cart_link", { align: "right" })]]), cols("sh_body", "4+8", [28, 72], [[b("s_search", "search_box", { placeholder: "Ürün ara…" }), b("s_menu", "tpl_menu", { layout: "list" })], [b("l", "tpl_archive_list", { layout: "cards", columns: 3 })]])] },
+  { id: "shop-list", kind: "shop", name: "Mağaza — liste görünümü", description: "Ürünler satır satır karşılaştırmalı listede.", blocks: [b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "list", columns: 1 }), b("cart", "tpl_cart_link")] },
+
+  // 10. ÜRÜN KATEGORİSİ ŞABLONLARI (`product_category`)
+  { id: "product-category-grid", kind: "product_category", name: "Ürün kategorisi — 4 sütun vitrin", description: "Breadcrumb, kategori başlığı, sepet ve 4 sütunlu ürün kartları.", blocks: [cols("pc_top", "8+4", [66.66, 33.33], [[b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title")], [b("cart", "tpl_cart_link", { align: "right" })]]), b("l", "tpl_archive_list", { layout: "cards", columns: 4 })] },
+  { id: "product-category-sidebar-left", kind: "product_category", name: "Ürün kategorisi — sol kenar çubuklu", description: "Solda kategori menüsü ve arama, sağda 3 sütun kategori ürünleri.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), cols("pc_body", "4+8", [28, 72], [[b("pc_search", "search_box", { placeholder: "Kategoride ara…" }), b("pc_menu", "tpl_menu", { layout: "list" })], [b("l", "tpl_archive_list", { layout: "cards", columns: 3 })]])] },
+
+  // 11. ARAMA SONUÇLARI ŞABLONLARI (`search`)
+  { id: "search-default", kind: "search", name: "Arama sonuçları — standart", description: "Üstte geniş arama kutusu, altında bulunan içeriklerin listesi.", blocks: [b("t", "tpl_archive_title"), b("s_box", "search_box", { placeholder: "Yeni bir arama yapın…" }), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
+  { id: "search-sidebar-right", kind: "search", name: "Arama sonuçları — sağ kenar çubuklu", description: "Arama sonuçları solda (8 birim), popüler yazılar ve menü sağda (4 birim).", blocks: [b("t", "tpl_archive_title"), b("s_box", "search_box", { placeholder: "Anahtar kelime yazın…" }), cols("s_cols", "8+4", [66.66, 33.33], [[b("l", "tpl_archive_list", { layout: "cards", columns: 2 })], SIDEBAR_SEARCH_AND_POSTS])] },
 ];
 
 /** Her çağrıda benzersiz kimlikli kopya (stüdyoda aynı kimlikler çakışmasın). */

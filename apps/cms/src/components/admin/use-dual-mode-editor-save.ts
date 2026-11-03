@@ -127,6 +127,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
   };
 
   const inspectorApi: Omit<StudioInspectorApi, "applyRevision"> = {
+    siteTokens: p.siteTokens,
     editorMode,
     setEditorMode,
     viewport,
