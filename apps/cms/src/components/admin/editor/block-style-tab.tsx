@@ -1,6 +1,7 @@
 "use client";
 
 import { BLOCK_ANIMATIONS, type BlockAnimationName, type BlockHoverValues, type BlockStyleValues } from "@nexpress/core";
+import { GradientBuilder } from "./gradient-builder";
 import { StylePresetBar } from "./style-preset-bar";
 import { useStudioInspector } from "./studio-inspector-context";
 import { ColorInput, NumberInput, SelectInput, StylePanel, TextInput } from "./style-controls";
@@ -43,7 +44,8 @@ export function BlockStyleTab() {
           <ColorInput label="Arka plan rengi" value={g("backgroundColor")} onChange={set("backgroundColor")} />
           <ColorInput label="Metin rengi" value={g("textColor")} onChange={set("textColor")} fallback="#09090b" />
         </div>
-        <TextInput label="Gradyan" value={g("backgroundGradient")} onChange={set("backgroundGradient")} placeholder="linear-gradient(135deg, #eff6ff, #fff)" />
+        <GradientBuilder value={g("backgroundGradient")} onChange={set("backgroundGradient")} />
+        <TextInput label="Gradyan (CSS, elle)" value={g("backgroundGradient")} onChange={set("backgroundGradient")} placeholder="linear-gradient(135deg, #eff6ff, #fff)" />
         <TextInput label="Saydamlık (0–1)" value={g("opacity") === undefined ? undefined : String(g("opacity"))} onChange={(v) => updateSelectedBlockStyle({ opacity: v === undefined || Number.isNaN(Number(v)) ? undefined : Math.min(1, Math.max(0, Number(v))) })} placeholder="1" />
       </StylePanel>
 

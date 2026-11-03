@@ -64,7 +64,7 @@ test("sayfalama: sayfa sıkıştırılır, son sayfa kalanı verir; süzme adet 
   assert.equal(selectDynamicItems(many, normalizeDynamicQuery({ limit: 3 })).length, 3);
 });
 
-import { dynamicParamKey, resolveDynamicBlock, type DynamicCandidate } from "../src/dynamic-content";
+import { dynamicParamKey, hasDynamicQueryParams, resolveDynamicBlock, type DynamicCandidate } from "../src/dynamic-content";
 
 const mk = (n: number, cats: string[], title = `Yazı ${n}`): DynamicCandidate => ({ id: `p${n}`, kind: "posts", title, url: `/tr/y${n}`, excerpt: `özet ${n}`, date: new Date(2026, 0, n).toISOString(), categories: cats, tags: [] });
 const pool = [mk(1, ["Haber"]), mk(2, ["Haber", "Duyuru"]), mk(3, ["Duyuru"]), mk(4, ["Rehber"], "Işık Rehberi"), mk(5, ["Haber"])];
@@ -102,4 +102,27 @@ test("sorgu döngüsü: bloklar birbirinin parametresini okumaz; diğer parametr
   const r = resolveDynamicBlock(pool, q, { [`${dynamicParamKey("blk_other")}_q`]: "Rehber", utm: "x", nx_draft: "t" }, "blk_a");
   assert.equal(r.items.length, 5);
   assert.deepEqual(r.meta!.keep, { [`${dynamicParamKey("blk_other")}_q`]: "Rehber", utm: "x" });
+});
+
+test("sorgu parametresi tespiti: yalnızca blok parametreleri; diğer parametreler indekslemeyi etkilemez", () => {
+  assert.equal(hasDynamicQueryParams({ qab12cd_page: "2" }), true);
+  assert.equal(hasDynamicQueryParams({ qab12cd_cat: "haber", utm_source: "x" }), true);
+  assert.equal(hasDynamicQueryParams({ utm_source: "x", form: "sent", nx_draft: "t" }), false);
+  assert.equal(hasDynamicQueryParams({ qab12cd_q: "" }), false);
+  assert.equal(hasDynamicQueryParams({}), false);
+});
+
+test("sorgu döngüsü: fiyat aralığı süzgeci (ürünler), sınırlar ve geçersiz değerler", () => {
+  const prod = (n: number, cents: number): DynamicCandidate => ({ id: `r${n}`, kind: "products", title: `Ürün ${n}`, url: `/tr/magaza/u${n}`, excerpt: "", date: null, categories: [], tags: [], price: `${cents / 100} TL`, priceCents: cents });
+  const pool2 = [prod(1, 5000), prod(2, 15000), prod(3, 99900)];
+  const q = normalizeDynamicQuery({ source: "products", showPriceFilter: true, limit: 10 });
+  const key = dynamicParamKey("blk_p");
+  const all = resolveDynamicBlock(pool2, q, {}, "blk_p");
+  assert.deepEqual(all.meta!.price, { min: null, max: null, lo: 50, hi: 999 });
+  assert.equal(all.items.length, 3);
+  assert.deepEqual(resolveDynamicBlock(pool2, q, { [`${key}_min`]: "100", [`${key}_max`]: "500" }, "blk_p").items.map((i) => i.id), ["r2"]);
+  assert.equal(resolveDynamicBlock(pool2, q, { [`${key}_min`]: "abc", [`${key}_max`]: "-5" }, "blk_p").items.length, 3);
+  assert.ok(!("priceCents" in all.items[0]!));
+  // yazı kaynağında fiyat süzgeci açılamaz
+  assert.equal(normalizeDynamicQuery({ source: "posts", showPriceFilter: true }).showPriceFilter, false);
 });

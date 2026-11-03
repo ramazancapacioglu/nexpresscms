@@ -7,7 +7,8 @@ import type { BlockNode } from "./types";
  */
 export type DynamicSource = "posts" | "pages" | "products";
 export type DynamicOrder = "newest" | "oldest" | "title";
-export type DynamicLayout = "cards" | "list";
+export type DynamicLayout = "cards" | "list" | "carousel";
+export type DynamicCardStyle = "default" | "minimal" | "overlay" | "featured";
 
 export interface DynamicQuery {
   source: DynamicSource;
@@ -20,6 +21,8 @@ export interface DynamicQuery {
   /** Mevcut sayfayı listeden çıkar (örn. "ilgili yazılar") */
   excludeCurrent: boolean;
   layout: DynamicLayout;
+  /** Kart görünümü (kartlar/atlıkarınca düzeninde) */
+  cardStyle: DynamicCardStyle;
   columns: number;
   showImage: boolean;
   showExcerpt: boolean;
@@ -32,6 +35,8 @@ export interface DynamicQuery {
   showFilters: boolean;
   /** Sayfalama: `limit` sayfa başına öğe sayısıdır */
   paginate: boolean;
+  /** Yalnızca ürünler: ziyaretçi için fiyat aralığı süzgeci */
+  showPriceFilter: boolean;
 }
 
 export const DYNAMIC_MAX_ITEMS = 24;
@@ -65,7 +70,8 @@ export function normalizeDynamicQuery(props: Record<string, unknown> | null | un
     limit,
     orderBy: p.orderBy === "oldest" || p.orderBy === "title" ? p.orderBy : "newest",
     excludeCurrent: bool(p.excludeCurrent, false),
-    layout: p.layout === "list" ? "list" : "cards",
+    layout: p.layout === "list" || p.layout === "carousel" ? p.layout : "cards",
+    cardStyle: p.cardStyle === "minimal" || p.cardStyle === "overlay" || p.cardStyle === "featured" ? p.cardStyle : "default",
     columns: Math.min(4, Math.max(1, Math.round(Number(p.columns)) || 3)),
     showImage: bool(p.showImage, true),
     showExcerpt: bool(p.showExcerpt, true),
@@ -76,6 +82,7 @@ export function normalizeDynamicQuery(props: Record<string, unknown> | null | un
     showSort: bool(p.showSort, false),
     showFilters: bool(p.showFilters, false),
     paginate: bool(p.paginate, false),
+    showPriceFilter: source === "products" && bool(p.showPriceFilter, false),
   };
 }
 
@@ -94,9 +101,11 @@ export interface DynamicCandidate {
   tags: string[];
   /** Ürünler için biçimlenmiş fiyat */
   price?: string;
+  /** Ürünler için kuruş cinsinden fiyat (süzgeç için; öğeye taşınmaz) */
+  priceCents?: number;
 }
 
-export type DynamicItem = Omit<DynamicCandidate, "categories" | "tags" | "kind">;
+export type DynamicItem = Omit<DynamicCandidate, "categories" | "tags" | "kind" | "priceCents">;
 
 /** Sayfalama (saf): sayfa numarası geçerli aralığa sıkıştırılır. */
 export function paginate<T>(items: T[], page: number, size: number): { items: T[]; page: number; pages: number; total: number } {
@@ -110,7 +119,7 @@ export function selectDynamicItems(candidates: DynamicCandidate[], q: DynamicQue
   return filterDynamicItems(candidates, q, currentId).slice(0, q.limit);
 }
 
-const stripCandidate = ({ kind: _k, categories: _c, tags: _t, ...item }: DynamicCandidate): DynamicItem => item;
+const stripCandidate = ({ kind: _k, categories: _c, tags: _t, priceCents: _p, ...item }: DynamicCandidate): DynamicItem => item;
 
 function sortCandidates(list: DynamicCandidate[], orderBy: DynamicOrder): DynamicCandidate[] {
   const time = (c: DynamicCandidate) => (c.date ? new Date(c.date).getTime() || 0 : 0);
@@ -156,6 +165,8 @@ export interface DynamicMeta {
   sort: DynamicOrder;
   cat: string;
   categories: Array<{ slug: string; name: string; count: number }>;
+  /** Fiyat süzgeci: seçili aralık (tam para birimi) ve listedeki gerçek sınırlar; yalnızca ürünlerde */
+  price?: { min: number | null; max: number | null; lo: number; hi: number };
   /** Bu bloğa ait olmayan mevcut parametreler (formlar korusun diye) */
   keep: Record<string, string>;
 }
@@ -180,7 +191,7 @@ const norm = (v: string) => v.toLowerCase().replace(/ı/g, "i").normalize("NFD")
  * Açıkken: arama (başlık+özet), kategori süzgeci, sıralama ve sayfalama URL parametrelerinden okunur; hepsi doğrulanır.
  */
 export function resolveDynamicBlock(candidates: DynamicCandidate[], q: DynamicQuery, params: Params, blockId: string, currentId?: string | null): DynamicResult {
-  const interactive = q.showSearch || q.showSort || q.showFilters || q.paginate;
+  const interactive = q.showSearch || q.showSort || q.showFilters || q.paginate || q.showPriceFilter;
   if (!interactive) return { items: selectDynamicItems(candidates, q, currentId) };
   const key = dynamicParamKey(blockId);
   const base = filterDynamicCandidates(candidates, q, currentId);
@@ -196,6 +207,15 @@ export function resolveDynamicBlock(candidates: DynamicCandidate[], q: DynamicQu
   const sortParam = first(params[`${key}_sort`]);
   const sort: DynamicOrder = q.showSort && (sortParam === "oldest" || sortParam === "title" || sortParam === "newest") ? sortParam : q.orderBy;
   let list = base;
+  let price: DynamicMeta["price"];
+  if (q.showPriceFilter) {
+    const cents = base.map((c) => c.priceCents).filter((n): n is number => typeof n === "number");
+    const num = (v: string) => (v !== "" && Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.min(Number(v), 1e9) : null);
+    const min = num(first(params[`${key}_min`]));
+    const max = num(first(params[`${key}_max`]));
+    price = { min, max, lo: cents.length ? Math.floor(Math.min(...cents) / 100) : 0, hi: cents.length ? Math.ceil(Math.max(...cents) / 100) : 0 };
+    list = list.filter((c) => (min === null || (c.priceCents ?? 0) >= min * 100) && (max === null || (c.priceCents ?? 0) <= max * 100));
+  }
   if (cat) list = list.filter((c) => c.categories.some((x) => termSlug(x) === cat));
   if (search) {
     const needle = norm(search);
@@ -205,5 +225,13 @@ export function resolveDynamicBlock(candidates: DynamicCandidate[], q: DynamicQu
   const paged = q.paginate ? paginate(list, Number(first(params[`${key}_page`])), q.limit) : { items: list.slice(0, q.limit), page: 1, pages: 1, total: list.length };
   const keep: Record<string, string> = {};
   for (const [k, v] of Object.entries(params)) if (!k.startsWith(`${key}_`) && typeof first(v) === "string" && k !== "nx_draft" && first(v)) keep[k] = first(v).slice(0, 200);
-  return { items: paged.items.map(stripCandidate), meta: { key, total: paged.total, page: paged.page, pages: paged.pages, q: search, sort, cat, categories, keep } };
+  return { items: paged.items.map(stripCandidate), meta: { key, total: paged.total, page: paged.page, pages: paged.pages, q: search, sort, cat, categories, ...(price ? { price } : {}), keep } };
+}
+
+/**
+ * Sorgu döngüsü denetim parametresi (`q{anahtar}_q|_cat|_sort|_page|_min|_max`) taşıyan adresler yinelenen/ince içerik üretir:
+ * bu görünümler `noindex,follow` alır, canonical parametresiz sayfadır.
+ */
+export function hasDynamicQueryParams(params: Record<string, string | string[] | undefined>): boolean {
+  return Object.keys(params).some((k) => /^q[A-Za-z0-9]{1,8}_(q|cat|sort|page|min|max)$/.test(k) && params[k] !== undefined && params[k] !== "");
 }

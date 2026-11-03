@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { compileBlockStylesToCss, type BlockNode } from "../src";
+import { buildGradient, compileBlockStylesToCss, type BlockNode } from "../src";
 
 const b = (style: BlockNode["style"], id = "b1"): BlockNode[] => [{ id, type: "paragraph", props: {}, style }];
 
@@ -32,4 +32,11 @@ test("giriş animasyonu: anahtar kareler bir kez, @supports ile kaydırmaya bağ
 test("zararlı değerler temizlenir", () => {
   const css = compileBlockStylesToCss(b({ fontFamily: "x;}body{display:none", translateY: "1px}</style>", scale: 99 }));
   assert.ok(!css.includes("}body{") && !css.includes("</style>") && !css.includes("scale(99)"));
+});
+
+test("gradyan oluşturucu: doğrulanmış CSS; geçersiz renk atılır; tek durak boş", () => {
+  assert.equal(buildGradient({ type: "linear", angle: 135, stops: [{ color: "#2563eb", pos: 0 }, { color: "#4f46e5", pos: 100 }] }), "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)");
+  assert.equal(buildGradient({ type: "radial", angle: 0, stops: [{ color: "rgba(0,0,0,.5)", pos: 0 }, { color: "transparent", pos: 70 }] }), "radial-gradient(circle at center, rgba(0,0,0,.5) 0%, transparent 70%)");
+  assert.equal(buildGradient({ type: "linear", angle: -90, stops: [{ color: "#fff", pos: -5 }, { color: "red;}body{x:y", pos: 50 }, { color: "#000", pos: 200 }] }), "linear-gradient(270deg, #fff 0%, #000 100%)");
+  assert.equal(buildGradient({ type: "linear", angle: 0, stops: [{ color: "#fff", pos: 0 }] }), "");
 });

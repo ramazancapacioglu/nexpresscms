@@ -214,3 +214,6 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 
 ## Ek (2026-11-03): `dynamic_list` ziyaretçi denetimleri
 Yeni boolean özellikler (varsayılan `false`): `showSearch`, `showSort`, `showFilters`, `paginate`. Açıkken blok `id="nx-dl-{anahtar}"` taşır; parametreler `{anahtar}_q`, `_cat`, `_sort` (`newest|oldest|title`), `_page`. Anahtar = `q` + blok kimliğinin son 6 güvenli karakteri (`dynamicParamKey`). Sonuç her istekte güncel veriden üretilir, Markdown önbelleğine girmez.
+
+## Ek (2026-11-03): tablo, bölüm videosu, sorgu stilleri
+`data_table`: `striped`, `firstColumnHeader`, `stickyHeader`, `compact`, `alignNumbers` (boolean). `section`: `bgVideo` (/…/x.mp4|webm ya da https), `bgPoster`. `dynamic_list`: `layout` artık `cards|list|carousel`; `cardStyle` `default|minimal|overlay|featured`; `showPriceFilter` (yalnızca `source: "products"`). Blok türlerinin tek kaynağı `BLOCK_TYPES` (çekirdek, `types.ts`): yeni tür önce oraya eklenir.

@@ -332,34 +332,47 @@ export function renderStudioCatalogBlock(
       );
     }
 
-    case "data_table":
+    case "data_table": {
+      const headers = Array.isArray(p.headers) ? p.headers : [];
+      const body = Array.isArray(p.rows) ? p.rows : [];
+      const pad = p.compact === true ? "px-2 py-1" : "px-3 py-2";
+      const numeric = (v: unknown) => p.alignNumbers !== false && /^[-+]?[\d.,\s%₺$€]+$/.test(String(v).trim()) && String(v).trim() !== "";
+      const label = text(p.title, "Tablo");
       return (
-        <div className="overflow-x-auto">
-          {text(p.title) ? <h3 className="mb-2 text-lg font-bold text-nx-fg">{text(p.title)}</h3> : null}
+        // Kaydırılabilir bölge klavyeyle odaklanabilir (erişilebilirlik); başlık tablonun `caption`ıdır
+        <div className="overflow-x-auto" role="region" aria-label={label} tabIndex={0} style={p.stickyHeader === true ? { maxHeight: "28rem", overflowY: "auto" } : undefined}>
           <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr>
-                {(Array.isArray(p.headers) ? p.headers : []).map((header, index) => (
-                  <th key={index} className="border-b px-3 py-2 text-left font-semibold text-nx-fg">
-                    {String(header)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(Array.isArray(p.rows) ? p.rows : []).map((row, index) => (
-                <tr key={index}>
-                  {(Array.isArray(row) ? row : []).map((cell, cellIndex) => (
-                    <td key={cellIndex} className="border-b px-3 py-2 text-nx-soft">
-                      {String(cell)}
-                    </td>
+            {text(p.title) ? <caption className="mb-2 text-left text-lg font-bold text-nx-fg">{text(p.title)}</caption> : null}
+            {headers.length > 0 ? (
+              <thead>
+                <tr>
+                  {headers.map((header, index) => (
+                    <th key={index} scope="col" className={`border-b ${pad} text-left font-semibold text-nx-fg ${p.stickyHeader === true ? "sticky top-0 bg-nx-card" : ""}`}>
+                      {String(header)}
+                    </th>
                   ))}
+                </tr>
+              </thead>
+            ) : null}
+            <tbody>
+              {body.map((row, index) => (
+                <tr key={index} className={p.striped === true && index % 2 === 1 ? "bg-nx-subtle" : undefined}>
+                  {(Array.isArray(row) ? row : []).map((cell, cellIndex) =>
+                    cellIndex === 0 && p.firstColumnHeader === true ? (
+                      <th key={cellIndex} scope="row" className={`border-b ${pad} text-left font-semibold text-nx-fg`}>{String(cell)}</th>
+                    ) : (
+                      <td key={cellIndex} className={`border-b ${pad} text-nx-soft ${numeric(cell) ? "text-right tabular-nums" : ""}`}>
+                        {String(cell)}
+                      </td>
+                    )
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       );
+    }
 
     case "map_embed": {
       const query = text(p.query, "İstanbul");
@@ -375,14 +388,17 @@ export function renderStudioCatalogBlock(
 
     case "search_box":
       return (
-        <form action={safeUrl(p.action) ?? "/tr"} method="get" className="flex gap-2">
+        <form action={safeUrl(p.action) ?? `/${locale}/ara`} method="get" role="search" className="flex gap-2">
+          <label className="sr-only" htmlFor={`nx-sb-${safeBlockDomId(block.id)}`}>{t("search.title")}</label>
           <input
+            id={`nx-sb-${safeBlockDomId(block.id)}`}
+            type="search"
             name="q"
-            placeholder={text(p.placeholder, "Sitede ara")}
-            className="w-full rounded-md border border-nx-line px-3 py-2 text-sm"
+            placeholder={text(p.placeholder, t("search.placeholder"))}
+            className="w-full rounded-md border border-nx-line bg-nx-card px-3 py-2 text-sm text-nx-fg"
           />
-          <button type="submit" className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-            Ara
+          <button type="submit" className="rounded-md px-4 py-2 text-sm font-semibold" style={{ background: tokens.colors.primary, color: tokens.colors.primaryForeground }}>
+            {t("search.button")}
           </button>
         </form>
       );

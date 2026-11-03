@@ -63,13 +63,24 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
     case "section": {
       const children = Array.isArray(block.children) ? block.children : [];
       const containerMode = String(p.containerMode ?? "boxed");
+      // Arka plan videosu: yalnızca site içi (/…) ya da https mp4/webm; kapak görseli yedektir (mobil/hareket azaltma/yükleme)
+      const safeMedia = (v: unknown, re: RegExp) => (typeof v === "string" && /^(\/(?!\/)|https:\/\/)/.test(v.trim()) && re.test(v.trim().split("?")[0]!) ? v.trim() : "");
+      const video = safeMedia(p.bgVideo, /\.(mp4|webm)$/i);
+      const poster = safeMedia(p.bgPoster, /\.(jpe?g|png|webp|avif|gif)$|^\/media\//i);
       return (
         <section
           style={{
             borderRadius: tokens.geometry.borderRadius,
+            ...(video && poster ? { backgroundImage: `url("${poster.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
           }}
-          className="relative"
+          className={`relative ${video ? "isolate overflow-hidden" : ""}`}
         >
+          {video ? (
+            <>
+              <video className="nx-bgvideo absolute inset-0 -z-10 h-full w-full object-cover" src={video} poster={poster || undefined} autoPlay muted loop playsInline preload="none" aria-hidden="true" tabIndex={-1} />
+              <style>{"@media (max-width:640px),(prefers-reduced-motion:reduce){.nx-bgvideo{display:none}}"}</style>
+            </>
+          ) : null}
           <div
             style={{
               maxWidth:

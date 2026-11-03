@@ -55,16 +55,16 @@ function BlockActions({
   };
   return (
     <div className="flex items-center gap-1">
-      <button type="button" title="Yukarı" className="rounded p-1 hover:bg-background" onClick={(event) => stop(event, onUp)}>
+      <button type="button" title="Yukarı" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onUp)}>
         <ArrowUp className="h-3 w-3" />
       </button>
-      <button type="button" title="Aşağı" className="rounded p-1 hover:bg-background" onClick={(event) => stop(event, onDown)}>
+      <button type="button" title="Aşağı" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onDown)}>
         <ArrowDown className="h-3 w-3" />
       </button>
-      <button type="button" title="Çoğalt" className="rounded p-1 hover:bg-background" onClick={(event) => stop(event, onDuplicate)}>
+      <button type="button" title="Çoğalt" className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-background" onClick={(event) => stop(event, onDuplicate)}>
         <Copy className="h-3 w-3" />
       </button>
-      <button type="button" title="Sil" className="rounded p-1 text-rose-600 hover:bg-rose-500/10" onClick={(event) => stop(event, onRemove)}>
+      <button type="button" title="Sil" className="inline-flex h-6 w-6 items-center justify-center rounded text-rose-600 hover:bg-rose-500/10" onClick={(event) => stop(event, onRemove)}>
         <Trash2 className="h-3 w-3" />
       </button>
     </div>
@@ -293,7 +293,6 @@ export function CanvasBlock(props: CanvasBlockProps) {
           : "border-slate-200 hover:border-blue-400 dark:border-zinc-800"
       }`}
     >
-      {selected ? <FloatingToolbar block={block} onConvertText={props.onConvertText} onUpdateStyle={props.onUpdateStyle} onSetStyle={props.onSetStyle} onInspectStyle={props.onInspectStyle} /> : null}
       <div
         {...dragProps}
         className={`flex cursor-grab items-center justify-between border-b px-3 py-1.5 text-[11px] active:cursor-grabbing ${
@@ -303,6 +302,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
         }`}
       >
         <span className="inline-flex items-center gap-1 font-semibold"><GripVertical className="h-3.5 w-3.5 opacity-60" aria-hidden />{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>
+        {selected ? <FloatingToolbar block={block} onConvertText={props.onConvertText} onUpdateStyle={props.onUpdateStyle} onSetStyle={props.onSetStyle} onInspectStyle={props.onInspectStyle} /> : <span />}
         <BlockActions
           onUp={() => props.onMove(block.id, "up")}
           onDown={() => props.onMove(block.id, "down")}

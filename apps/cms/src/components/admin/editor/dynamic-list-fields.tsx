@@ -42,9 +42,15 @@ export function DynamicListFields() {
       <div className="grid grid-cols-3 gap-2">
         <div><label className={cap} htmlFor="dl-limit">Adet (1–24)</label><input id="dl-limit" type="number" min={1} max={24} className={box} value={q.limit} onChange={(e) => set({ limit: Number(e.target.value) })} /></div>
         <div><label className={cap} htmlFor="dl-layout">Görünüm</label>
-          <select id="dl-layout" className={box} value={q.layout} onChange={(e) => set({ layout: e.target.value })}><option value="cards">Kartlar</option><option value="list">Liste</option></select></div>
+          <select id="dl-layout" className={box} value={q.layout} onChange={(e) => set({ layout: e.target.value })}><option value="cards">Kartlar</option><option value="list">Liste</option><option value="carousel">Atlıkarınca</option></select></div>
         <div><label className={cap} htmlFor="dl-cols">Sütun</label>
           <select id="dl-cols" className={box} value={q.columns} disabled={q.layout === "list"} onChange={(e) => set({ columns: Number(e.target.value) })}>{[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+      </div>
+      <div>
+        <label className={cap} htmlFor="dl-card">Kart görünümü</label>
+        <select id="dl-card" className={box} value={q.cardStyle} disabled={q.layout === "list"} onChange={(e) => set({ cardStyle: e.target.value })}>
+          <option value="default">Klasik (çerçeveli)</option><option value="minimal">Sade (çerçevesiz)</option><option value="overlay">Görsel üstünde metin</option><option value="featured">İlk kart büyük</option>
+        </select>
       </div>
       <div className="space-y-1 text-[12px]">
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showImage} onChange={(e) => set({ showImage: e.target.checked })} /> Görsel göster</label>
@@ -53,6 +59,7 @@ export function DynamicListFields() {
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showSearch} onChange={(e) => set({ showSearch: e.target.checked })} /> Arama kutusu (ziyaretçi için)</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showSort} onChange={(e) => set({ showSort: e.target.checked })} /> Sıralama seçimi</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showFilters} onChange={(e) => set({ showFilters: e.target.checked })} /> Kategori süzgeci</label>
+        {q.source === "products" && <label className="flex items-center gap-2"><input type="checkbox" checked={q.showPriceFilter} onChange={(e) => set({ showPriceFilter: e.target.checked })} /> Fiyat aralığı süzgeci</label>}
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.paginate} onChange={(e) => set({ paginate: e.target.checked })} /> Sayfalama (adet = sayfa başına)</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.excludeCurrent} onChange={(e) => set({ excludeCurrent: e.target.checked })} /> Bu sayfayı listeden çıkar (ilgili içerikler için)</label>
       </div>

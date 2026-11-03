@@ -5,6 +5,7 @@ import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
 import { ICON_NAMES } from "@nexpress/core";
 import { SchemaFields } from "./schema-fields";
+import { SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
 
 /** Kendi özel alan arayüzü olan (veya düzenlenecek alanı olmayan) bloklar; kalan her blok şema tabanlı alanlarla düzenlenir. */
@@ -27,6 +28,8 @@ export function BlockGeneralTab() {
                           {(selectedBlock.type === "paragraph" || selectedBlock.type === "heading" || selectedBlock.type === "paragraph_element" || selectedBlock.type === "heading_element") && <AiComposePanel />}
                           {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
                           {selectedBlock.type === "schema_card" && <SchemaCardFields />}
+                          {selectedBlock.type === "section" && <SectionFields />}
+
                           {selectedBlock.type === "columns" && (
                             <div className="space-y-3">
                               <div>

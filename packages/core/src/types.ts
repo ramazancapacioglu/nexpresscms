@@ -106,80 +106,83 @@ export interface DesignTokens {
 /**
  * 5. Çift Modlu Görsel Editör: Hazır Bölümler + Temel Atomik Elementler (0-KB RSC Uyumlu)
  */
-export type BlockType =
-  | "hero"
-  | "heading"
-  | "heading_element"
-  | "paragraph"
-  | "paragraph_element"
-  | "text_div"
-  | "button_element"
-  | "image_figure"
-  | "media_file"
-  | "dynamic_list"
-  | "schema_card"
-  | "tpl_post_title"
-  | "tpl_post_content"
-  | "tpl_featured_image"
-  | "tpl_post_meta"
-  | "tpl_breadcrumb"
-  | "tpl_archive_title"
-  | "tpl_archive_list"
-  | "tpl_site_logo"
-  | "tpl_menu"
-  | "tpl_copyright"
-  | "tpl_cart_link"
-  | "tpl_product_buy"
-  | "divider_spacer"
-  | "review_box"
-  | "section"
-  | "columns"
-  | "column"
-  | "quote"
-  | "list_element"
-  | "video_embed"
-  | "testimonial_grid"
-  | "tldr_box"
-  | "grid_section"
-  | "bento_features"
-  | "product_embed"
-  | "pricing_table"
-  | "faq_accordion"
-  | "howto_steps"
-  | "comparison_table"
-  | "callout"
-  | "stats_strip"
-  | "cta_banner"
-  | "code_block"
-  | "info_box"
-  | "icon_list"
-  | "tabs"
-  | "accordion"
-  | "toc"
-  | "show_more"
-  | "button_row"
-  | "gallery"
-  | "image_overlay"
-  | "video_popup"
-  | "slider"
-  | "countdown"
-  | "progress_bar"
-  | "form_block"
-  | "data_table"
-  | "map_embed"
-  | "search_box"
-  | "post_grid"
-  | "modal_panel"
-  | "split_content"
-  | "portfolio_grid"
-  | "product_row"
-  | "user_card"
-  | "repeater"
-  | "vector_mark"
-  | "single_icon"
-  | "countup"
-  | "marquee"
-  | "shape_divider";
+/** Tüm blok türleri: TEK kaynak. `BlockType` ve `BlockNodeSchema` (içe aktarma/AI doğrulaması) buradan türetilir. */
+export const BLOCK_TYPES = [
+  "hero",
+  "heading",
+  "heading_element",
+  "paragraph",
+  "paragraph_element",
+  "text_div",
+  "button_element",
+  "image_figure",
+  "media_file",
+  "dynamic_list",
+  "schema_card",
+  "tpl_post_title",
+  "tpl_post_content",
+  "tpl_featured_image",
+  "tpl_post_meta",
+  "tpl_breadcrumb",
+  "tpl_archive_title",
+  "tpl_archive_list",
+  "tpl_site_logo",
+  "tpl_menu",
+  "tpl_copyright",
+  "tpl_cart_link",
+  "tpl_product_buy",
+  "divider_spacer",
+  "review_box",
+  "section",
+  "columns",
+  "column",
+  "quote",
+  "list_element",
+  "video_embed",
+  "testimonial_grid",
+  "tldr_box",
+  "grid_section",
+  "bento_features",
+  "product_embed",
+  "pricing_table",
+  "faq_accordion",
+  "howto_steps",
+  "comparison_table",
+  "callout",
+  "stats_strip",
+  "cta_banner",
+  "code_block",
+  "info_box",
+  "icon_list",
+  "tabs",
+  "accordion",
+  "toc",
+  "show_more",
+  "button_row",
+  "gallery",
+  "image_overlay",
+  "video_popup",
+  "slider",
+  "countdown",
+  "progress_bar",
+  "form_block",
+  "data_table",
+  "map_embed",
+  "search_box",
+  "post_grid",
+  "modal_panel",
+  "split_content",
+  "portfolio_grid",
+  "product_row",
+  "user_card",
+  "repeater",
+  "vector_mark",
+  "single_icon",
+  "countup",
+  "marquee",
+  "shape_divider",
+] as const;
+export type BlockType = (typeof BLOCK_TYPES)[number];
 
 export type DeviceKey = "desktop" | "tablet" | "mobile";
 
@@ -400,48 +403,7 @@ export interface SchemaGraphNode {
 export const BlockNodeSchema: z.ZodType<BlockNode> = z.lazy(() =>
   z.object({
     id: z.string(),
-    type: z.enum([
-      "hero",
-      "heading",
-      "paragraph",
-      "button_element",
-      "image_figure",
-      "media_file",
-      "dynamic_list",
-      "schema_card",
-      "tpl_post_title",
-      "tpl_post_content",
-      "tpl_featured_image",
-      "tpl_post_meta",
-      "tpl_breadcrumb",
-      "tpl_archive_title",
-      "tpl_archive_list",
-      "tpl_site_logo",
-      "tpl_menu",
-      "tpl_copyright",
-      "tpl_cart_link",
-      "tpl_product_buy",
-      "divider_spacer",
-      "review_box",
-      "section",
-      "columns",
-      "column",
-      "quote",
-      "list_element",
-      "video_embed",
-      "tldr_box",
-      "grid_section",
-      "bento_features",
-      "product_embed",
-      "pricing_table",
-      "faq_accordion",
-      "howto_steps",
-      "comparison_table",
-      "callout",
-      "stats_strip",
-      "cta_banner",
-      "code_block",
-    ]),
+    type: z.enum(BLOCK_TYPES),
     variant: z.string().optional(),
     props: z.record(z.string(), z.unknown()),
     style: z.record(z.string(), z.unknown()).optional() as unknown as z.ZodType<BlockStyle | undefined>,

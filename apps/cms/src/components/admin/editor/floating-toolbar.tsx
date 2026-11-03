@@ -9,7 +9,7 @@ const TEXT_TYPES = new Set(["heading", "heading_element", "paragraph", "paragrap
 const HEADING_TYPES = new Set(["heading", "heading_element"]);
 const btn = "inline-flex h-6 w-6 items-center justify-center rounded text-foreground hover:bg-muted";
 
-/** Seçili bloğun üstünde beliren araç çubuğu: başlık düzeyi, hizalama, stil ön ayarı ve Stil sekmesine kısayol. */
+/** Seçili bloğun başlık çubuğunda beliren araç çubuğu (butonlarla çakışmaz): başlık düzeyi, hizalama, stil ön ayarı ve Stil sekmesine kısayol. */
 export function FloatingToolbar({ block, onConvertText, onUpdateStyle, onSetStyle, onInspectStyle }: {
   block: BlockNode;
   onConvertText: (id: string, kind: ProseStructureKind, level?: number) => void;
@@ -25,7 +25,7 @@ export function FloatingToolbar({ block, onConvertText, onUpdateStyle, onSetStyl
       role="toolbar"
       aria-label="Blok araç çubuğu"
       onClick={(e) => e.stopPropagation()}
-      className="absolute -top-3.5 right-3 z-20 flex items-center gap-0.5 rounded-md border border-border bg-background px-1 py-0.5 text-[11px] shadow-md"
+      className="ml-auto mr-2 flex flex-wrap items-center gap-0.5 rounded-md border border-border bg-background px-1 py-0.5 text-[11px]"
     >
       {HEADING_TYPES.has(block.type) && (
         <select aria-label="Başlık düzeyi" value={Number(block.props?.level ?? 2)} onChange={(e) => onConvertText(block.id, "heading", Number(e.target.value))} className="h-6 rounded border border-border bg-background px-1 text-[11px] font-semibold">

@@ -47,3 +47,14 @@ test("sürükle-bırak: yeni blok yalnızca uygun kapsayıcıya girer, taşıma 
   assert.equal(moved[1]!.children![0]!.id, "p1");
   assert.equal(moveBlockTo(doc, "s", "s", 0), doc); // kendi içine
 });
+
+import { BLOCK_TYPES, BlockNodeSchema } from "@nexpress/core";
+
+test("tek kaynak: katalogdaki her tür BLOCK_TYPES'ta ve içe aktarma şemasından geçer", () => {
+  const known = new Set<string>(BLOCK_TYPES);
+  for (const i of BLOCK_CATALOG) {
+    assert.ok(known.has(i.block.type), `${i.id}: ${i.block.type} BLOCK_TYPES'ta yok`);
+    assert.ok(BlockNodeSchema.safeParse({ ...i.block, id: "x" }).success, `${i.id} şemadan geçmedi`);
+  }
+  for (const t of ROW_TEMPLATES) assert.ok(BlockNodeSchema.safeParse(buildRow(t.layout, t.widths, t.opts)).success, t.id);
+});

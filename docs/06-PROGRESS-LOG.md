@@ -21,6 +21,17 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Kalan bölümlerin toplanması (Faz 2/3/4 artıkları) ve CI düzeltmeleri
+- 🐛 **CI (axe) düzeltildi:** blok başlık çubuğu düğmeleri 24 px altındaydı ve kayan araç çubuğu onlarla çakışıyordu (`target-size`). Düğmeler 24×24 yapıldı, araç çubuğu başlık satırının içine alındı (çakışma yok). Yerelde axe ile editör sayfasında ihlal kalmadığı doğrulandı.
+- 🐛 **Blok türleri tek kaynağa bağlandı:** `BLOCK_TYPES` (çekirdek) artık hem `BlockType` birleşimini hem içe aktarma şeması `BlockNodeSchema`'yı besler. Şemadaki liste 33 türü eksik tutuyordu (tabs, data_table, info_box, single_icon, marquee…); bu türleri içeren şablon paketleri içe aktarılırken reddediliyordu. Test: katalogdaki her tür şemadan geçer.
+- ✅ **SEO — sayfalı/süzgeçli görünüm:** sorgu döngüsü parametresi (`q…_q|_cat|_sort|_page|_min|_max`) taşıyan adresler `noindex,follow` alır; canonical parametresiz sayfa (`hasDynamicQueryParams`, ana sayfa ve içerik sayfası). Parametresiz sayfa indekslenir (tarayıcıda doğrulandı).
+- ✅ **Gelişmiş tablo:** `<caption>`, `scope="col"`/`scope="row"` (ilk sütun satır başlığı), çizgili satır, yapışkan başlık, sıkı yoğunluk, sayısal hücreler sağa hizalı; kaydırılabilir bölge klavyeyle odaklanır.
+- ✅ **Gradyan oluşturucu** (Stil › Renk): tür, açı, 2–3 durak; çıktı `buildGradient` ile doğrulanır (geçersiz renk atılır). **Bölüm arka plan videosu:** `bgVideo` (mp4/webm, yalnızca site içi ya da https) + `bgPoster`; sessiz/döngülü/otomatik, mobilde ve "hareketi azalt" ayarında gizlenir (kapak görseli kalır), `preload="none"`. Bölüm için denetçi alanları eklendi (başlık, genişlik, video).
+- ✅ **Sorgu döngüsü:** `carousel` düzeni (CSS scroll-snap, klavyeyle odaklanır, JS yok), kart stilleri (klasik/sade/görsel üstü/ilk kart büyük), ürünlerde **fiyat aralığı süzgeci** (`_min`/`_max`, listedeki gerçek sınırlar placeholder); başlık artık denetimlerin üstünde. Kitaplığa "Ürün atlıkarıncası".
+- ✅ **Üst bilgi başlangıçları:** çağrı düğmeli, üst şeritli, arama kutulu header şablonları (üst bilgi oluşturucunun şablon+sütun tabanlı karşılığı). `search_box` bloğu artık `/{dil}/ara` adresine gider, erişilebilir etiket ve i18n metni kullanır.
+- Karar (yapılmadı): referans şeması — kendi sitesinin yorumlarını Review şemasıyla işaretlemek arama motoru kurallarına aykırı (kendi kendine yorum); bu yüzden `testimonial_grid` şema üretmez. Vektör bloğu — kullanıcı SVG'si saldırı yüzeyi taşıdığı için yerleşik simge/şekil kümeleriyle sınırlı kalır.
+- Testler: çekirdek 183, tema 17, editör 6. Tarayıcıda hepsi ve önceki editör akışları (araç çubuğu, ön ayar, sürükle-bırak) yeniden doğrulandı.
+
 ### [2026-11-03] — Faz 5: stil ön ayarları ve kayan blok araç çubuğu
 - ✅ **Stil ön ayarları:** bir bloğun görsel stilini adlandırıp kaydet, başka bloğa uygula, sil. Çekirdekte saf `style-presets.ts` (`extractPresetStyle`, `applyStylePreset`, `sanitizeStylePresets`, en çok 50): ön ayar yalnızca görsel stili (cihaz kuralları, hover, animasyon) taşır; bağlantı çapası, CSS sınıfı, özel CSS, gizleme ve tam genişlik bloğa özel kalır. Depolama `sites.settings.customizer.stylePresets` (şema/göç gerekmedi; site başına). Sunucu eylemleri `style-preset.list|save|delete` denetim kaydıyla (`requireUser`). Aynı adlı ön ayar güncellenir.
 - 🐛 `saveSiteSettings` birleştirmesi dizileri nesneye çeviriyordu (`{...dizi, ...dizi}`); dizi değerleri artık olduğu gibi yazılır.

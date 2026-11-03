@@ -238,3 +238,19 @@ export function compileBlockStylesToCss(blocks: BlockNode[]): string {
   const frames = [...used].map((n) => `@keyframes nx-${n}{${ANIMATION_FRAMES[n]}}`);
   return [...frames, ...out].join("\n");
 }
+
+export interface GradientStop { color: string; pos: number }
+export interface GradientSpec { type: "linear" | "radial"; angle: number; stops: GradientStop[] }
+
+const GRADIENT_COLOR = /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%/]+\)|hsla?\([\d\s.,%/]+\)|var\(--[a-z0-9-]+(,\s*#[0-9a-f]{3,8})?\)|[a-z]{3,20})$/i;
+
+/** Görsel gradyan oluşturucunun çıktısı: doğrulanmış CSS gradyan metni (geçersiz renk/duraklar atılır; en az 2 durak yoksa boş). */
+export function buildGradient(spec: GradientSpec): string {
+  const stops = spec.stops
+    .filter((s) => typeof s.color === "string" && GRADIENT_COLOR.test(s.color.trim()))
+    .slice(0, 5)
+    .map((s) => `${s.color.trim()} ${Math.min(100, Math.max(0, Math.round(Number.isFinite(s.pos) ? s.pos : 0)))}%`);
+  if (stops.length < 2) return "";
+  const angle = Math.round((((Number(spec.angle) || 0) % 360) + 360) % 360);
+  return spec.type === "radial" ? `radial-gradient(circle at center, ${stops.join(", ")})` : `linear-gradient(${angle}deg, ${stops.join(", ")})`;
+}

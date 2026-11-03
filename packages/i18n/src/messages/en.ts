@@ -92,6 +92,9 @@ export const en: Messages = {
     prev: "Previous",
     next: "Next",
     filters: "Categories",
+    priceMin: "Minimum price",
+    priceMax: "Maximum price",
+    carousel: "Scrollable list",
   },
   blocks: {
     readMore: "Read more",

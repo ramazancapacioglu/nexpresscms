@@ -49,6 +49,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
       categories: [],
       tags: [],
       price: money(p.priceCents, p.currency, locale),
+      priceCents: p.priceCents,
     });
   }
   return out;

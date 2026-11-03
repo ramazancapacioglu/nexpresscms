@@ -95,6 +95,9 @@ export const tr = {
     prev: "Önceki",
     next: "Sonraki",
     filters: "Kategoriler",
+    priceMin: "En düşük fiyat",
+    priceMax: "En yüksek fiyat",
+    carousel: "Kaydırılabilir liste",
   },
   blocks: {
     readMore: "Devamını gör",

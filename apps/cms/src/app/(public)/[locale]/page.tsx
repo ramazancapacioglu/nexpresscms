@@ -1,3 +1,4 @@
+import { hasDynamicQueryParams } from "@nexpress/core";
 import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
@@ -14,13 +15,15 @@ import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 
 /** Ana sayfa: dil başına canonical ve karşılıklı hreflang (yalnızca yayındaki çeviriler). */
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const { locale } = await params;
+  const sp0 = await searchParams;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const site = await getPublicSite(siteId);
   const home = await getPublicContentBySlug(siteId, site?.activeThemeId === INK_GRID_ID ? INK_GRID_HOME_SLUG : "ana-sayfa", locale);
   return {
+    ...(hasDynamicQueryParams(sp0) ? { robots: { index: false, follow: true } } : {}),
     alternates: {
       canonical: `${baseUrl}/${locale}`,
       ...(home ? { languages: await hreflangAlternates(siteId, home.contentId, baseUrl) } : {}),

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, resolvePublishing, termSlug } from "@nexpress/core";
+import { contentWidthStyle, hasDynamicQueryParams, resolvePublishing, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -27,10 +27,11 @@ export async function generateMetadata({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ nx_draft?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const { nx_draft } = await searchParams;
+  const sp0 = await searchParams;
+  const nx_draft = typeof sp0.nx_draft === "string" ? sp0.nx_draft : undefined;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
@@ -74,7 +75,7 @@ export async function generateMetadata({
       canonical: seoMeta.canonical,
       languages: await hreflangAlternates(siteId, content.contentId, baseUrl),
     },
-    robots: draftMeta ? { index: false, follow: false } : seoMeta.robots,
+    robots: draftMeta ? { index: false, follow: false } : hasDynamicQueryParams(sp0) ? { index: false, follow: true } : seoMeta.robots,
     openGraph: {
       title: seoMeta.openGraph.title,
       description: seoMeta.openGraph.description,
