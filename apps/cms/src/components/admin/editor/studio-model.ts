@@ -87,6 +87,7 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   countup: "Sayaç",
   marquee: "Kayan yazı şeridi",
   shape_divider: "Şekil ayırıcı",
+  anchor_nav: "Yapışkan çapa menüsü",
 };
 
 export interface ColumnLayoutPreset {

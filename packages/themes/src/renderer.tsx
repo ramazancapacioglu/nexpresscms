@@ -185,14 +185,24 @@ export function RscSingleBlock({
   if (!inner) return null;
 
   const domId = safeBlockDomId(block.id);
-  const anchorId = block.style?.anchorId?.trim() || undefined;
+  const rawPropAnchor = typeof block.props?.anchorId === "string" ? block.props.anchorId.trim() : "";
+  const anchorId = (block.style?.anchorId?.trim() || rawPropAnchor || "").replace(/^#+/, "") || undefined;
   const customClass = block.style?.cssClass?.trim() || "";
+  const isStickyAnchorNav = block.type === "anchor_nav" && block.props?.sticky !== false;
+  const blockClasses = [
+    "nx-block",
+    anchorId ? "scroll-mt-32" : "",
+    isStickyAnchorNav ? "sticky top-16 z-30" : "",
+    customClass,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
       id={anchorId}
       data-nx-b={domId}
-      className={customClass ? `nx-block ${customClass}` : "nx-block"}
+      className={blockClasses}
     >
       {inner}
     </div>

@@ -11,6 +11,7 @@ flowchart LR
         T2["Commerce Velocity (E-Ticaret / Katalog)"]
         T3["Editorial Pulse (Haber / Bilgi Bankası)"]
         T4["Ink Grid (Siyah ürün vitrini)"]
+        T5["Crimson ERP & Muhasebe (Kurumsal ERP & Yazılım)"]
     end
 
     subgraph ThemeContract [Tema Paketi Yapısı (theme.json)]
@@ -24,7 +25,7 @@ flowchart LR
         BlockMap["Aktif Temanın RSC Bileşen Haritası"]
     end
 
-    T1 & T2 & T3 & T4 --> Tokens & Skins & Presets
+    T1 & T2 & T3 & T4 & T5 --> Tokens & Skins & Presets
     Tokens --> CSSVars
     Skins & Presets --> BlockMap
 ```
@@ -62,6 +63,8 @@ Sayfa yerleşimi NexPress blok ağacıdır. Metin alanlarının motoru **TipTap*
 - Hazır bölüm kütüphanesi kategorilere ayrılır: vitrin, yerleşim, metin, medya, kartlar, sosyal kanıt, ticaret, formlar ve veri. Görünüm ve cihaz seçimi SEO skorunun yanındadır. Yeni sayfa ve yazı boş bir paragrafla açılır.
 - **Ink Grid** siyah, tam genişlik bir ürün vitrinidir. Etkinleşince ana sayfa örnek vitrini basar. Örnek sayfalar: `/tr/vitrin`, `/tr/urun`, `/tr/gelistiriciler`, `/tr/kurumsal`, `/tr/dokuman`, `/tr/fiyatlandirma`, `/tr/ornek-calismalar`. Bu sayfalar belge başlığı olmadan tuval olarak açılır.
 - Kütüphane öğeleri bilgi kutusu, ikonlu liste, sekmeler, akordeon, galeri, slayt, form, yazı ızgarası, ürün şeridi, geri sayım ve tablo gibi bölümleri kapsar. Ön yüz bunları sunucu bileşeni olarak basar.
+- **Yapışkan HTML Çapa Gezgini (`anchor_nav`):** Kategori ve ürün vitrini sayfalarında hero'nun hemen altına yerleşir. Sayfa kaydırıldıkça ekranda `sticky top-16 z-30` olarak sabitlenir; `Genel Bakış #genel-bakis`, `Ürünler & Çözümler #urunler`, `Detaylı İncele #detayli-incele`, `Sıkça Sorulan Sorular #sss`, `Referanslar #referanslar`, `Teklif Formu #teklif-formu` bağlantılarına tıklandığında `scroll-behavior: smooth` ile yumuşak kaydırır ve `scroll-mt-32` ile sabit başlığın altına temizce oturur.
+- **Tek Tıkla Çapa Kimliği (#id) ve Otomatik Haritalama:** Bölüm ve satır blokları denetçisinde `#id` önayarları (`genel-bakis`, `urunler`, `sss` vb.) hazır çiplerle sunulur; `anchor_nav` denetçisindeki **"⚡ Sayfadaki Bölümlerden Çapaları Otomatik Oluştur"** düğmesi sayfadaki tüm bölümleri tarayıp otomatik olarak sekme listesine bağlar. Ön yüzde sıfır istemci JS (0-KB RSC) çalışır.
 
 ---
 

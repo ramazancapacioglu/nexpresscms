@@ -1059,4 +1059,643 @@ export const BASE_LIBRARY: DesignLibraryItem[] = [
       },
     },
   },
+  {
+    id: "lib_sticky_anchor_bar",
+    name: "Yapışkan HTML Çapa Gezgini (Bölüm Sekmeleri)",
+    category: "layout",
+    description:
+      "Kategori ve ürün sayfalarında hero altına yerleşen, sayfa kaydırıldıkça ekranda yapışkan kalan ve tıklandığında #genel-bakis, #urunler, #sss vb. bölümlere yumuşak kaydıran 0-KB RSC gezgin çubuğu.",
+    badge: "Yeni • Yapışkan Çapa",
+    previewKind: "columns",
+    block: {
+      type: "anchor_nav",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: {
+        title: "Bölümler",
+        sticky: true,
+        styleVariant: "underline",
+        ctaLabel: "Sizi Arayalım",
+        ctaHref: "#teklif-formu",
+        items: [
+          { label: "Genel Bakış", href: "#genel-bakis", icon: "sparkles" },
+          { label: "Ürünler & Çözümler", href: "#urunler", icon: "layers" },
+          { label: "Detaylı İncele", href: "#detayli-incele", icon: "check-circle" },
+          { label: "Karşılaştırma", href: "#karsilastirma", icon: "bar-chart" },
+          { label: "Sıkça Sorulan Sorular", href: "#sss", icon: "help-circle" },
+          { label: "Başarı Hikayeleri", href: "#basari-hikayeleri", icon: "award" },
+          { label: "Referanslar", href: "#referanslar", icon: "shield" },
+          { label: "Teklif Formu", href: "#teklif-formu", icon: "send" },
+        ],
+      },
+    },
+  },
+  {
+    id: "lib_erp_overview_3col",
+    name: "Genel Bakış — 3 Sütunlu Ön Muhasebe Özellik Kartları (#genel-bakis)",
+    category: "bento",
+    description:
+      "Ön Muhasebe nedir, özellikleri ve neler yapılabileceğini açıklayan 3 sütunlu kurumsal bilgi matrisi. HTML çapa kimliği #genel-bakis ile hazır gelir.",
+    badge: "Ön Muhasebe • #genel-bakis",
+    previewKind: "bento-3",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: {
+        title: "",
+        containerMode: "boxed",
+      },
+      style: {
+        anchorId: "genel-bakis",
+        paddingTop: "64px",
+        paddingRight: "24px",
+        paddingBottom: "64px",
+        paddingLeft: "24px",
+        backgroundColor: "#ffffff",
+      },
+      children: [
+        {
+          id: "erp_ov_header",
+          type: "heading",
+          props: {
+            level: 2,
+            text: "Genel Bakış",
+            align: "center",
+          },
+        },
+        {
+          id: "erp_ov_subtitle",
+          type: "paragraph",
+          props: {
+            text: "Ön Muhasebe Programı'nın temel özelliklerini keşfedin.",
+            align: "center",
+          },
+          style: {
+            textAlign: "center",
+            textColor: "#64748b",
+            marginBottom: "36px",
+          },
+        },
+        {
+          id: "erp_ov_cols",
+          type: "columns",
+          props: {
+            layout: "4+4+4",
+            gap: "28px",
+            verticalAlign: "stretch",
+          },
+          children: [
+            {
+              id: "erp_ov_col1",
+              type: "column",
+              props: { widthPct: 33.33 },
+              style: {
+                paddingTop: "28px",
+                paddingRight: "24px",
+                paddingBottom: "28px",
+                paddingLeft: "24px",
+                backgroundColor: "#fcfcfd",
+                borderRadius: "16px",
+                borderWidth: "1px",
+                borderColor: "#f1f2f6",
+              },
+              children: [
+                {
+                  id: "erp_c1_icon",
+                  type: "single_icon",
+                  props: {
+                    icon: "help-circle",
+                    size: 36,
+                    color: "#c8102e",
+                    align: "left",
+                  },
+                },
+                {
+                  id: "erp_c1_h",
+                  type: "heading",
+                  props: {
+                    level: 3,
+                    text: "Ön Muhasebe Programı nedir?",
+                  },
+                  style: { marginTop: "16px", marginBottom: "12px" },
+                },
+                {
+                  id: "erp_c1_p",
+                  type: "paragraph",
+                  props: {
+                    text: "Ön muhasebe programı işletmelerin günlük finansal işlemlerini takip etmelerini sağlayan bir yazılımdır. Ön muhasebe programları karmaşık muhasebe süreçlerine girmeden temel finansal kayıtların tutulmasını sağlar. Bu sayede işletmeler faturalarını düzenleyebilir, ödemelerini planlayabilir, tahsilatlarını takip edebilir ve müşterileriyle olan finansal ilişkilerini yönetebilir.",
+                  },
+                  style: { textColor: "#4b5563" },
+                },
+              ],
+            },
+            {
+              id: "erp_ov_col2",
+              type: "column",
+              props: { widthPct: 33.33 },
+              style: {
+                paddingTop: "28px",
+                paddingRight: "24px",
+                paddingBottom: "28px",
+                paddingLeft: "24px",
+                backgroundColor: "#fcfcfd",
+                borderRadius: "16px",
+                borderWidth: "1px",
+                borderColor: "#f1f2f6",
+              },
+              children: [
+                {
+                  id: "erp_c2_icon",
+                  type: "single_icon",
+                  props: {
+                    icon: "bar-chart",
+                    size: 36,
+                    color: "#c8102e",
+                    align: "left",
+                  },
+                },
+                {
+                  id: "erp_c2_h",
+                  type: "heading",
+                  props: {
+                    level: 3,
+                    text: "Ön Muhasebe Programı'nın özellikleri",
+                  },
+                  style: { marginTop: "16px", marginBottom: "12px" },
+                },
+                {
+                  id: "erp_c2_list",
+                  type: "list_element",
+                  props: {
+                    listType: "bullet",
+                    items: [
+                      "Fatura yönetimi ve e-Fatura entegrasyonu",
+                      "Stok takibi ve kritik stok uyarıları",
+                      "Kasa ve banka hesap hareketleri",
+                      "Finansal durum ve kârlılık raporları",
+                      "Cari hesap takibi ve bakiye yaşlandırma",
+                      "Tam entegrasyon ve mobil uyumluluk",
+                      "Kullanıcı dostu, sade ve hızlı arayüz",
+                    ],
+                  },
+                  style: { textColor: "#374151" },
+                },
+              ],
+            },
+            {
+              id: "erp_ov_col3",
+              type: "column",
+              props: { widthPct: 33.33 },
+              style: {
+                paddingTop: "28px",
+                paddingRight: "24px",
+                paddingBottom: "28px",
+                paddingLeft: "24px",
+                backgroundColor: "#fcfcfd",
+                borderRadius: "16px",
+                borderWidth: "1px",
+                borderColor: "#f1f2f6",
+              },
+              children: [
+                {
+                  id: "erp_c3_icon",
+                  type: "single_icon",
+                  props: {
+                    icon: "check-circle",
+                    size: 36,
+                    color: "#c8102e",
+                    align: "left",
+                  },
+                },
+                {
+                  id: "erp_c3_h",
+                  type: "heading",
+                  props: {
+                    level: 3,
+                    text: "Ön Muhasebe ile neler yapabilirsiniz?",
+                  },
+                  style: { marginTop: "16px", marginBottom: "12px" },
+                },
+                {
+                  id: "erp_c3_list",
+                  type: "list_element",
+                  props: {
+                    listType: "bullet",
+                    items: [
+                      "Fatura ve irsaliye düzenleme (e-Arşiv / e-Fatura)",
+                      "Müşteri ve tedarikçi cari hesap yönetimi",
+                      "Çek, senet ve taksitli tahsilat takibi",
+                      "Depolar arası transfer ve barkodlu stok",
+                      "Nakit akışı kontrolü ve gelecek öngörüsü",
+                      "Detaylı KDV, ciro ve kâr-zarar analizi",
+                    ],
+                  },
+                  style: { textColor: "#374151" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_erp_split_hero_form",
+    name: "Ön Muhasebe & ERP Split Hero + Sizi Arayalım Kartı",
+    category: "hero",
+    description:
+      "Sol sütunda değer önerisi, rozet ve metrik şeridi; sağ sütunda 'Sizi Arayalım / Ücretsiz Demo' formu bulunan 7+5 oranlı kurumsal açılış vitrini.",
+    badge: "Kurumsal Vitrin • 7+5",
+    previewKind: "hero-split",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed" },
+      style: {
+        paddingTop: "56px",
+        paddingRight: "24px",
+        paddingBottom: "56px",
+        paddingLeft: "24px",
+        backgroundColor: "#f7f8fa",
+        borderRadius: "20px",
+        borderWidth: "1px",
+        borderColor: "#e5e7eb",
+      },
+      children: [
+        {
+          id: "erp_hero_cols",
+          type: "columns",
+          props: { layout: "8+4", gap: "36px", verticalAlign: "center" },
+          children: [
+            {
+              id: "erp_hero_left",
+              type: "column",
+              props: { widthPct: 65 },
+              children: [
+                {
+                  id: "erp_hero_badge",
+                  type: "callout",
+                  props: {
+                    tone: "NOTE",
+                    title: "BULUT TABANLI YENİ NESİL ÖN MUHASEBE",
+                    text: "14 gün ücretsiz deneyin • Kredi kartı gerekmez • 0-KB RSC hızı",
+                  },
+                },
+                {
+                  id: "erp_hero_h1",
+                  type: "heading",
+                  props: {
+                    level: 1,
+                    text: "İşletmenizin Tüm Ön Muhasebe Süreçlerini Tek Merkezden Yönetin",
+                  },
+                  style: { marginTop: "16px", marginBottom: "16px" },
+                },
+                {
+                  id: "erp_hero_p",
+                  type: "paragraph",
+                  props: {
+                    text: "Fatura ve e-Fatura kesme, gelir-gider takibi, stok yönetimi, cari hesap ve banka entegrasyonlarını saniyeler içinde yapın. Masaüstünden veya mobilden 7/24 finansal kontrol parmaklarınızın ucunda.",
+                  },
+                  style: { textColor: "#4b5563", marginBottom: "24px" },
+                },
+                {
+                  id: "erp_hero_stats",
+                  type: "stats_strip",
+                  props: {
+                    stats: [
+                      { value: "45.000+", label: "Aktif İşletme" },
+                      { value: "%99.9", label: "Bulut Erişilebilirlik" },
+                      { value: "0 TL", label: "Kurulum & Güncelleme" },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              id: "erp_hero_right",
+              type: "column",
+              props: { widthPct: 35 },
+              style: {
+                paddingTop: "28px",
+                paddingRight: "24px",
+                paddingBottom: "28px",
+                paddingLeft: "24px",
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                borderWidth: "1px",
+                borderColor: "#e5e7eb",
+              },
+              children: [
+                {
+                  id: "erp_lead_h",
+                  type: "heading",
+                  props: { level: 3, text: "Sizi Arayalım" },
+                },
+                {
+                  id: "erp_lead_p",
+                  type: "paragraph",
+                  props: {
+                    text: "Uzman danışmanlarımız işletmenize en uygun çözümü sunmak için hemen arasın.",
+                  },
+                  style: { textColor: "#64748b", marginBottom: "16px" },
+                },
+                {
+                  id: "erp_lead_form",
+                  type: "form_block",
+                  props: {
+                    title: "Hızlı Teklif Formu",
+                    submitLabel: "Beni Arayın",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_erp_solution_tabs",
+    name: "Ön Muhasebe Çözüm Ailesi (Bulut & On-Premise) (#urunler)",
+    category: "layout",
+    description:
+      "Bulut ve On-Premise ön muhasebe çözümlerini sekmeli vitrinde sunar. HTML çapa kimliği #urunler ile önceden bağlıdır.",
+    badge: "Çözüm Ailesi • #urunler",
+    previewKind: "columns",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed" },
+      style: {
+        anchorId: "urunler",
+        paddingTop: "60px",
+        paddingRight: "24px",
+        paddingBottom: "60px",
+        paddingLeft: "24px",
+        backgroundColor: "#f7f8fa",
+      },
+      children: [
+        {
+          id: "erp_sol_h",
+          type: "heading",
+          props: { level: 2, text: "Ön Muhasebe Çözüm Ailesi", align: "center" },
+        },
+        {
+          id: "erp_sol_p",
+          type: "paragraph",
+          props: {
+            text: "İşletmenizin büyüklüğüne ve çalışma şekline göre özelleştirilmiş çözümler.",
+            align: "center",
+          },
+          style: { textAlign: "center", textColor: "#64748b", marginBottom: "32px" },
+        },
+        {
+          id: "erp_sol_tabs",
+          type: "tabs",
+          props: {
+            tabStyle: "pills",
+            align: "center",
+            items: [
+              {
+                label: "Bulut Ön Muhasebe",
+                icon: "sparkles",
+                title: "Bulut Ön Muhasebe Çözümü",
+                body: "Web tarayıcısından ve mobilden her an erişilebilir. Sunucu maliyeti olmadan anında kullanmaya başlayın.",
+              },
+              {
+                label: "Masaüstü & Hibrit Çözüm",
+                icon: "layers",
+                title: "Masaüstü ve Hibrit ERP Entegre Ön Muhasebe",
+                body: "Gelişmiş üretim, çoklu şube ve offline çalışabilen kurumsal ön muhasebe altyapısı.",
+              },
+              {
+                label: "e-Dönüşüm Entegrasyonu",
+                icon: "shield",
+                title: "e-Fatura, e-Arşiv ve e-İrsaliye Paketi",
+                body: "GİB mevzuatına %100 uyumlu, kontör maliyetlerini minimuma indiren entegre e-dönüşüm modülü.",
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_erp_scale_comparison",
+    name: "Ölçeğe Göre Paket Karşılaştırma Matrisi (#karsilastirma)",
+    category: "editorial",
+    description:
+      "Mikro İşletmeler, KOBİ'ler ve Büyüyen Şirketler için özellik karşılaştırma tablosu. HTML çapa kimliği #karsilastirma ile önceden bağlıdır.",
+    badge: "Karşılaştırma • #karsilastirma",
+    previewKind: "bento-4",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed" },
+      style: {
+        anchorId: "karsilastirma",
+        paddingTop: "60px",
+        paddingRight: "24px",
+        paddingBottom: "60px",
+        paddingLeft: "24px",
+        backgroundColor: "#ffffff",
+      },
+      children: [
+        {
+          id: "erp_comp_h",
+          type: "heading",
+          props: {
+            level: 2,
+            text: "İşletme Büyüklüğünüze En Uygun Paketi Seçin",
+            align: "center",
+          },
+        },
+        {
+          id: "erp_comp_p",
+          type: "paragraph",
+          props: {
+            text: "İhtiyacınız olan özellikleri şeffafça karşılaştırın, bütçenize göre en doğru kararı verin.",
+            align: "center",
+          },
+          style: { textAlign: "center", textColor: "#64748b", marginBottom: "32px" },
+        },
+        {
+          id: "erp_comp_table",
+          type: "comparison_table",
+          props: {
+            title: "Ön Muhasebe Paket Özellik Karşılaştırması",
+            headers: ["Özellik", "Mikro Paket", "KOBİ Standart", "Kurumsal Pro"],
+            rows: [
+              ["Kullanıcı Sayısı", "1 Kullanıcı", "3 Kullanıcı", "Sınırsız"],
+              ["Fatura & e-Fatura", "Aylık 100 Adet", "Aylık 1.000 Adet", "Sınırsız"],
+              ["Stok & Depo Takibi", "Temel", "Gelişmiş + Kritik Stok", "Çoklu Depo + Barkod"],
+              ["Banka Entegrasyonu", "Opsiyonel", "Dahil (5 Banka)", "Dahil (Tüm Bankalar)"],
+              ["Mobil Uygulama (iOS/Android)", "Dahil", "Dahil", "Dahil"],
+              ["7/24 Teknik Destek", "E-posta", "Telefon + E-posta", "Özel Müşteri Temsilcisi"],
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_erp_faq_section",
+    name: "Ön Muhasebe Sıkça Sorulan Sorular (#sss)",
+    category: "aio_sge",
+    description:
+      "Ön muhasebe, e-fatura geçişi ve veri güvenliğiyle ilgili en çok sorulan soruları içeren FAQPage uyumlu akordeon bölümü (#sss).",
+    badge: "SSS • #sss",
+    previewKind: "faq-list",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed" },
+      style: {
+        anchorId: "sss",
+        paddingTop: "60px",
+        paddingRight: "24px",
+        paddingBottom: "60px",
+        paddingLeft: "24px",
+        backgroundColor: "#f7f8fa",
+      },
+      children: [
+        {
+          id: "erp_faq_h",
+          type: "heading",
+          props: {
+            level: 2,
+            text: "Sıkça Sorulan Sorular",
+            align: "center",
+          },
+        },
+        {
+          id: "erp_faq_p",
+          type: "paragraph",
+          props: {
+            text: "Ön muhasebe programları ve geçiş süreci hakkında merak edilenler.",
+            align: "center",
+          },
+          style: { textAlign: "center", textColor: "#64748b", marginBottom: "32px" },
+        },
+        {
+          id: "erp_faq_acc",
+          type: "faq_accordion",
+          props: {
+            title: "Sıkça Sorulan Sorular",
+            items: [
+              {
+                question: "Ön muhasebe programı ile genel muhasebe arasındaki fark nedir?",
+                answer:
+                  "Ön muhasebe işletmenin günlük fatura, cari, kasa, stok ve banka hareketlerini yönetir. Genel muhasebe ise devlet kurumlarına verilecek resmi defterler, beyannameler ve bilanço gibi yasal süreçleri kapsar. Ön muhasebe verileri doğrudan mali müşavirinize tek tıkla aktarılabilir.",
+              },
+              {
+                question: "Mevcut Excel veya eski programdaki verilerimi aktarabilir miyim?",
+                answer:
+                  "Evet, mevcut cari kartlarınızı, stok listelerinizi ve fiyatlarınızı Excel şablonuyla saniyeler içinde kayıpsız içe aktarabilirsiniz.",
+              },
+              {
+                question: "e-Fatura ve e-Arşiv faturaya geçiş zorunlu mu?",
+                answer:
+                  "GİB mevzuatına göre belirlenen ciro sınırını aşan firmalar için e-fatura zorunludur. Ancak sınırın altında kalsanız dahi kağıt, kargo ve arşivleme maliyetlerinden tasarruf etmek için isteğe bağlı olarak hemen e-faturaya geçebilirsiniz.",
+              },
+              {
+                question: "Verilerim nerede saklanıyor, ne kadar güvende?",
+                answer:
+                  "Verileriniz ISO 27001 sertifikalı Türkiye lokasyonlu Tier-3 veri merkezlerinde 256-bit SSL şifrelemeyle ve günlük otomatik yedeklemeyle korunur.",
+              },
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_erp_bottom_dock",
+    name: "3'lü İletişim & Destek Şeridi (#iletisim)",
+    category: "layout",
+    description:
+      "Sayfa altında veya yapışkan dock olarak çalışan; Dijital Danışman, Çözüm Bulucu ve WhatsApp hattını içeren kurumsal destek bandı.",
+    badge: "Destek Bandı",
+    previewKind: "columns",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed" },
+      style: {
+        anchorId: "iletisim",
+        paddingTop: "24px",
+        paddingRight: "24px",
+        paddingBottom: "24px",
+        paddingLeft: "24px",
+        backgroundColor: "#ffffff",
+        borderWidth: "1px",
+        borderColor: "#e5e7eb",
+      },
+      children: [
+        {
+          id: "erp_dock_cols",
+          type: "columns",
+          props: { layout: "4+4+4", gap: "24px", verticalAlign: "center" },
+          children: [
+            {
+              id: "dock_c1",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "dock_c1_b",
+                  type: "button_element",
+                  props: {
+                    label: "Dijital Danışman'a Sorun",
+                    subtext: "Yapay zeka asistanı 7/24 yanınızda",
+                    href: "#teklif-formu",
+                    icon: "sparkles",
+                    styleVariant: "outline",
+                    align: "center",
+                  },
+                },
+              ],
+            },
+            {
+              id: "dock_c2",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "dock_c2_b",
+                  type: "button_element",
+                  props: {
+                    label: "Size En Uygun Çözümü Bulun",
+                    subtext: "1 dakikada ihtiyacınızı belirleyin",
+                    href: "#karsilastirma",
+                    icon: "bar-chart",
+                    styleVariant: "outline",
+                    align: "center",
+                  },
+                },
+              ],
+            },
+            {
+              id: "dock_c3",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "dock_c3_b",
+                  type: "button_element",
+                  props: {
+                    label: "WhatsApp ile İletişime Geçin",
+                    subtext: "Satış uzmanımızla anında görüşün",
+                    href: "https://wa.me/908500000000",
+                    icon: "send",
+                    styleVariant: "primary",
+                    align: "center",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

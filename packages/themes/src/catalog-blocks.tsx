@@ -259,6 +259,135 @@ export function renderStudioCatalogBlock(
         </nav>
       );
 
+    case "anchor_nav": {
+      const styleVariant = text(p.styleVariant, "underline");
+      const titleText = text(p.title);
+      const ctaLabel = text(p.ctaLabel);
+      const ctaHref = safeUrl(p.ctaHref) ?? "#teklif-formu";
+      const navItems = items.length > 0 ? items : [
+        { label: "Genel Bakış", href: "#genel-bakis", icon: "sparkles" },
+        { label: "Ürün & Çözümler", href: "#urunler", icon: "layers" },
+        { label: "Detaylı İncele", href: "#detayli-incele", icon: "check-circle" },
+        { label: "Karşılaştırma", href: "#karsilastirma", icon: "bar-chart" },
+        { label: "Sıkça Sorulan Sorular", href: "#sss", icon: "help-circle" },
+        { label: "Referanslar", href: "#referanslar", icon: "award" },
+      ];
+      return (
+        <nav
+          aria-label={titleText || "Sayfa İçi Bölüm Gezgini"}
+          style={{ borderColor: tokens.colors.border }}
+          className="w-full rounded-xl border bg-nx-card/95 px-4 shadow-sm backdrop-blur-md"
+        >
+          <div className="flex items-center justify-between gap-4 overflow-x-auto">
+            {titleText ? (
+              <div
+                style={{ borderColor: tokens.colors.border }}
+                className="hidden shrink-0 items-center gap-2 border-r py-3 pr-4 text-xs font-extrabold tracking-wider text-nx-fg uppercase lg:flex"
+              >
+                <span
+                  style={{ backgroundColor: tokens.colors.primary }}
+                  className="inline-block h-2 w-2 rounded-full"
+                />
+                <span>{titleText}</span>
+              </div>
+            ) : null}
+
+            <div className="flex min-w-max flex-1 items-center gap-1 py-1.5">
+              {navItems.map((item, index) => {
+                const rawHref = text(item.href, `#bolum-${index + 1}`);
+                const href = rawHref.startsWith("#") ? rawHref : safeUrl(rawHref) ?? `#bolum-${index + 1}`;
+                const label = text(item.label, `${t("blocks.section")} ${index + 1}`);
+                const iconName = text(item.icon);
+                const badge = text(item.badge);
+                const isFirst = index === 0;
+
+                const variantClass =
+                  styleVariant === "pills"
+                    ? isFirst
+                      ? "rounded-full px-3.5 py-1.5 font-bold shadow-xs"
+                      : "rounded-full px-3.5 py-1.5 text-nx-soft hover:bg-nx-subtle hover:text-nx-fg"
+                    : styleVariant === "boxed"
+                      ? isFirst
+                        ? "rounded-lg border px-3.5 py-1.5 font-bold"
+                        : "rounded-lg border border-transparent px-3.5 py-1.5 text-nx-soft hover:border-nx-border hover:bg-nx-subtle hover:text-nx-fg"
+                      : isFirst
+                        ? "border-b-2 px-3.5 py-2.5 font-bold text-nx-fg"
+                        : "border-b-2 border-transparent px-3.5 py-2.5 text-nx-soft hover:border-current hover:text-nx-fg";
+
+                const variantStyle: React.CSSProperties =
+                  styleVariant === "pills" && isFirst
+                    ? { backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }
+                    : styleVariant === "boxed" && isFirst
+                      ? {
+                          borderColor: tokens.colors.primary,
+                          color: tokens.colors.primary,
+                          backgroundColor: `color-mix(in srgb, ${tokens.colors.primary} 10%, transparent)`,
+                        }
+                      : styleVariant === "underline" && isFirst
+                        ? { borderBottomColor: tokens.colors.primary, color: tokens.colors.primary }
+                        : {};
+
+                return (
+                  <a
+                    key={index}
+                    href={href}
+                    style={variantStyle}
+                    className={`inline-flex shrink-0 items-center gap-1.5 text-[13px] transition-colors ${variantClass}`}
+                  >
+                    {iconName && ICON_PATHS[iconName] ? (
+                      <span className="opacity-85">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width={14}
+                          height={14}
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d={ICON_PATHS[iconName]} />
+                        </svg>
+                      </span>
+                    ) : null}
+                    <span>{label}</span>
+                    {badge ? (
+                      <span
+                        style={{
+                          backgroundColor: `color-mix(in srgb, ${tokens.colors.primary} 14%, transparent)`,
+                          color: tokens.colors.primary,
+                        }}
+                        className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                      >
+                        {badge}
+                      </span>
+                    ) : null}
+                  </a>
+                );
+              })}
+            </div>
+
+            {ctaLabel ? (
+              <div className="shrink-0 py-2 pl-2">
+                <a
+                  href={ctaHref.startsWith("#") ? ctaHref : safeUrl(p.ctaHref) ?? "#"}
+                  style={{
+                    backgroundColor: tokens.colors.primary,
+                    color: tokens.colors.primaryForeground,
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold shadow-xs transition hover:opacity-95"
+                >
+                  <span>{ctaLabel}</span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            ) : null}
+          </div>
+        </nav>
+      );
+    }
+
     case "show_more":
       return (
         <details style={box} className="border bg-nx-card p-4">

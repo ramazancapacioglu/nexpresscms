@@ -102,6 +102,22 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     children: [{ id: "tpl_sh", type: "heading", props: { level: 2, text: "Bölüm başlığı" } }, { id: "tpl_sp", type: "paragraph", props: { text: "Bölüm içi açıklama." } }],
   })),
   item("divider", "Ayırıcı", "layout", "Çizgi ya da boşluk", node("divider_spacer", { style: "line", spacingPx: 32 })),
+  item("anchor_nav", "Yapışkan çapa menüsü (Bölüm gezgini)", "layout", "Hero altında yapışkan yatay bölüm bağlantıları (#genel-bakis, #urunler, #sss…)", node("anchor_nav", {
+    title: "Bölümler",
+    sticky: true,
+    styleVariant: "underline",
+    ctaLabel: "Teklif İste",
+    ctaHref: "#teklif-formu",
+    items: [
+      { label: "Genel Bakış", href: "#genel-bakis", icon: "sparkles" },
+      { label: "Ürün & Çözümler", href: "#urunler", icon: "layers" },
+      { label: "Detaylı İncele", href: "#detayli-incele", icon: "check-circle" },
+      { label: "Karşılaştırma", href: "#karsilastirma", icon: "bar-chart" },
+      { label: "Sıkça Sorulan Sorular", href: "#sss", icon: "help-circle" },
+      { label: "Referanslar", href: "#referanslar", icon: "award" },
+      { label: "Teklif Formu", href: "#teklif-formu", icon: "send" },
+    ],
+  })),
   item("split", "Bölünmüş içerik", "layout", "Görsel + metin yan yana", node("split_content", { title: "Başlık", text: "Açıklama metni.", image: "", alt: "", reverse: false })),
 
   item("heading", "Başlık", "basic", "H2/H3/H4", node("heading", { level: 2, text: "Yeni alt başlık", align: "left" })),

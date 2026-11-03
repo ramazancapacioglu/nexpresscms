@@ -2,7 +2,12 @@ import { darkModeCss, type DesignTokens, type SiteCustomizerSettings, type SiteP
 import { INK_GRID_ID, INK_GRID_TOKENS } from "./ink-grid";
 
 export interface ThemeManifest {
-  id: "corporate-aurora" | "commerce-velocity" | "editorial-pulse" | typeof INK_GRID_ID;
+  id:
+    | "corporate-aurora"
+    | "commerce-velocity"
+    | "editorial-pulse"
+    | "crimson-erp"
+    | typeof INK_GRID_ID;
   name: string;
   tagline: string;
   description: string;
@@ -119,6 +124,24 @@ export const GLOBAL_COLOR_PALETTES: GlobalColorPalettePreset[] = [
       muted: "#f4f4f5",
       mutedForeground: "#71717a",
       border: "#e4e4e7",
+    },
+  },
+  {
+    id: "crimson-erp-ruby",
+    name: "Crimson ERP & Kurumsal Yazılım",
+    description: "Kurumsal ERP, e-dönüşüm ve muhasebe platformları için yakut kırmızısı (#C8102E), koyu arduvaz ve yumuşak pembe vurgu paleti.",
+    colors: {
+      primary: "#c8102e",
+      primaryForeground: "#ffffff",
+      secondary: "#111827",
+      secondaryForeground: "#f9fafb",
+      accent: "#991b1b",
+      accentForeground: "#ffffff",
+      background: "#ffffff",
+      foreground: "#111827",
+      muted: "#f7f8fa",
+      mutedForeground: "#4b5563",
+      border: "#e5e7eb",
     },
   },
 ];
@@ -312,6 +335,50 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
     ],
     tokens: INK_GRID_TOKENS,
   },
+  {
+    id: "crimson-erp",
+    name: "Crimson ERP & Muhasebe",
+    tagline: "Kurumsal Yazılım, ERP, e-Dönüşüm ve Muhasebe Çözüm Platformları İçin",
+    description:
+      "Yakut kırmızısı (#C8102E) ve koyu arduvaz kurumsal kimlik, hero içinde sağ sütun 'Sizi Arayalım' teklif formu, yapışkan HTML çapa (sticky anchor) kategori gezgini, Bulut/On-Premise çözüm sekmeleri ve işletme ölçeğine göre karşılaştırma matrisi.",
+    version: "1.0.0",
+    author: "NexPress Design Lab",
+    recommendedProfile: "corporate",
+    features: [
+      "Yapışkan HTML Çapa (Sticky Anchor) Kategori Gezgini",
+      "Bölünmüş Hero + Hızlı Teklif & Demo Talep Kartı",
+      "Bulut / On-Premise Çözüm Ailesi Sekmeleri",
+      "İşletme Ölçeğine Göre Paket Karşılaştırma Matrisi",
+    ],
+    tokens: {
+      colors: {
+        primary: "#c8102e",
+        primaryForeground: "#ffffff",
+        secondary: "#111827",
+        secondaryForeground: "#f9fafb",
+        accent: "#991b1b",
+        accentForeground: "#ffffff",
+        background: "#ffffff",
+        foreground: "#111827",
+        muted: "#f7f8fa",
+        mutedForeground: "#4b5563",
+        border: "#e5e7eb",
+      },
+      typography: {
+        headingFont: "Plus Jakarta Sans, Inter, sans-serif",
+        bodyFont: "Inter, system-ui, sans-serif",
+        monoFont: "JetBrains Mono, monospace",
+        baseSizePx: 16,
+        scaleRatio: 1.25,
+      },
+      geometry: {
+        borderRadius: "0.75rem",
+        containerMaxWidth: "1320px",
+        sectionSpacingY: "4.5rem",
+        cardShadow: "md",
+      },
+    },
+  },
 ];
 
 export function getThemeManifest(themeId: string): ThemeManifest {
@@ -366,6 +433,7 @@ export function compileDesignTokensToCssVars(
       --nx-heading-weight: ${headingWeight};
       --nx-body-lh: ${bodyLineHeight};
     }
+    html { scroll-behavior: smooth; }
     ${customizer?.darkMode === "auto" ? darkModeCss(tokens.colors, customizer.darkColors ?? {}) : ""}
     ${customizer?.customCss ? customizer.customCss : ""}
   `.trim();

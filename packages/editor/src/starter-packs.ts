@@ -128,4 +128,23 @@ export const NEXPRESS_STARTER_PAGE_PACKS: StarterPagePack[] = [
       pick("lib_layout_faq_contact_split"),
     ],
   },
+  {
+    id: "pack_erp_category_landing",
+    name: "Ön Muhasebe & ERP Kategori Vitrini (Yapışkan Çapa Menülü)",
+    description:
+      "Bölünmüş Hero + Hızlı Teklif Formu + Yapışkan HTML Çapa Gezgini + Genel Bakış 3'lü Özellik Matrisi (#genel-bakis) + Çözüm Ailesi Sekmeleri (#urunler) + Paket Karşılaştırma (#karsilastirma) + SSS (#sss) + Referanslar + İletişim Dock.",
+    recommendedType: "page",
+    schemaType: "ItemPage",
+    tldr: "İşletmenizin fatura, cari hesap, gelir-gider ve stok süreçlerini tek merkezden kolayca yönetebileceğiniz bulut ve masaüstü ön muhasebe çözümleri.",
+    blocks: [
+      pick("lib_erp_split_hero_form"),
+      pick("lib_sticky_anchor_bar"),
+      pick("lib_erp_overview_3col"),
+      pick("lib_erp_solution_tabs"),
+      pick("lib_erp_scale_comparison"),
+      pick("lib_erp_faq_section"),
+      pick("lib_editorial_cta_banner"),
+      pick("lib_erp_bottom_dock"),
+    ],
+  },
 ];

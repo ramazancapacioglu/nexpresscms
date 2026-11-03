@@ -182,6 +182,7 @@ export const BLOCK_TYPES = [
   "countup",
   "marquee",
   "shape_divider",
+  "anchor_nav",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 

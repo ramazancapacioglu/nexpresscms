@@ -246,6 +246,21 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
       return `[▶ ${title}](${String(p.url ?? "")})`;
     }
 
+    case "anchor_nav": {
+      const title = typeof p.title === "string" && p.title.trim() ? `**${p.title.trim()}:** ` : "";
+      const items = Array.isArray(p.items) ? p.items : [];
+      const links = items
+        .map((it) => {
+          if (!it || typeof it !== "object") return "";
+          const rec = it as Record<string, unknown>;
+          const label = typeof rec.label === "string" ? rec.label.trim() : "";
+          const href = typeof rec.href === "string" ? rec.href.trim() : "#";
+          return label ? `[${label}](${href})` : "";
+        })
+        .filter(Boolean);
+      return links.length > 0 ? `${title}${links.join(" • ")}` : "";
+    }
+
     case "tabs": {
       const heading = typeof p.title === "string" && p.title.trim() ? `## ${p.title.trim()}\n\n` : "";
       const items = Array.isArray(p.items) ? p.items : [];

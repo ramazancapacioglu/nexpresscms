@@ -1,6 +1,6 @@
 import { type BlockNode } from "@nexpress/core";
 import { INK_GRID_PAGES } from "@nexpress/themes/starter";
-import { homeBlocks, productBlocks, kbBlocks, promptBlocks, campaignBlocks } from "./seed-blocks";
+import { homeBlocks, productBlocks, kbBlocks, promptBlocks, campaignBlocks, onMuhasebeBlocks } from "./seed-blocks";
 
 export const seedContents = [
   {
@@ -310,6 +310,25 @@ export const seedContents = [
     tldr: "WordPress veya eski CMS altyapısından NexPress Enterprise Cloud'a geçen kurumsal ekiplere yıllık planda %30 indirim ve ücretsiz teknik SEO göç desteği.",
     blocks: campaignBlocks,
     seoScore: 92,
+  },
+  {
+    id: "cnt_on_muhasebe",
+    type: "page" as const,
+    importanceScore: 10,
+    schemaType: "ItemPage",
+    schemaAttributes: {
+      _publishing: {
+        visibility: "public",
+        categories: ["muhasebe-yazilimlari"],
+        tags: ["on-muhasebe", "e-fatura", "stok-takibi", "bulut-muhasebe"],
+        focusKeyword: "Ön Muhasebe Programı",
+      },
+    },
+    slug: "on-muhasebe-programi",
+    title: "Ön Muhasebe Programı — Bulut & Web Tabanlı Finansal Yönetim",
+    tldr: "Fatura, e-Fatura, stok, cari hesap ve banka hareketlerinizi tek merkezden kolayca yönetebileceğiniz 0-KB RSC hızında yeni nesil bulut ön muhasebe platformu.",
+    blocks: onMuhasebeBlocks,
+    seoScore: 99,
   },
   ...INK_GRID_PAGES,
 ];

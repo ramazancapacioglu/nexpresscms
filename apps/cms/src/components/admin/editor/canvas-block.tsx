@@ -195,8 +195,26 @@ export function CanvasBlock(props: CanvasBlockProps) {
               ? `Satır (${String(block.props.layout ?? "6+6")})`
               : BLOCK_TYPE_LABELS[block.type] ?? block.type}
           </span>
+          {block.style?.anchorId ? (
+            <span className="ml-1 rounded bg-blue-500 px-1 py-0.2 font-mono text-[9px] font-bold text-white">
+              #{block.style.anchorId}
+            </span>
+          ) : null}
         </div>
       )}
+
+      {block.style?.anchorId ? (
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(block.id);
+          }}
+          title="Bu bölümün HTML çapa kimliği (Yapışkan çapa menüsü hedefi)"
+          className=" absolute right-2 -top-2.5 z-20 inline-flex cursor-pointer items-center gap-1 rounded-full border border-blue-500/40 bg-blue-600 px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow-xs"
+        >
+          <span>#{block.style.anchorId}</span>
+        </span>
+      ) : null}
 
       {hiddenNow && (
         <span className="pointer-events-none absolute right-2 top-2 z-20 rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white">

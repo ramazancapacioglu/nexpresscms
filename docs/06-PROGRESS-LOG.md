@@ -21,6 +21,31 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Yapışkan HTML Çapa Gezgini (Bölüm Sekmeleri), "Crimson ERP & Muhasebe" Teması, Kurumsal ERP Tasarım Kütüphanesi ve Canlı Ön Muhasebe Örnek Sayfası
+- ✅ **Yapışkan HTML Çapa Gezgini (`anchor_nav` Blok Türü — 0-KB Saf CSS):**
+  - Kategori ve kurumsal ürün sayfalarında hero altına yerleşen ve sayfa boyunca yapışkan kalan (`sticky top-16 z-30`) yatay bölüm gezgini eklendi.
+  - Üç görsel stil seçeneği (`underline` [aktif alt çizgi], `pills` [kapsül butonlar], `boxed` [kutulu sekmeler]), sağ tarafta isteğe bağlı CTA butonu (`Sizi Arayalım`, `Fiyat Al`), rozetler ve yerleşik SVG simge desteği sağlandı.
+  - `packages/themes/src/renderer.tsx` içinde `scroll-mt-32` (`scroll-margin-top: 8rem`) ve `compileDesignTokensToCssVars` içinde `html { scroll-behavior: smooth; }` eklenerek tıklanan `#çapa-id` hedefine yumuşak geçiş sağlandı; tarayıcıya sıfır istemci JavaScript'i (0-KB RSC) gönderilir.
+  - Markdown derleyicisine (`compileBlocksToMarkdown`) `anchor_nav` desteği eklenerek AI ve LLM çıktıları için temiz bağlantı listesi üretildi.
+- ✅ **Hızlı HTML Çapa (#id) Editörü ve Otomatik Haritalama (`section-fields.tsx`, `anchor-nav-fields.tsx`, `block-general-tab.tsx`, `canvas-block.tsx`):**
+  - Bölüm (`section`) ve tüm blokların denetçisine hazır çip butonlarla (`genel-bakis`, `urunler`, `detayli-incele`, `karsilastirma`, `sss`, `basari-hikayeleri`, `referanslar`, `teklif-formu`) anında temiz slug `#id` atama alanı (`QuickAnchorIdField`) yerleştirildi.
+  - Kanvas üzerinde çapa kimliği olan her bloğun sağ üst köşesine tıklanabilir canlı `#{anchorId}` rozeti konuldu.
+  - `AnchorNavFields` içine **"⚡ Sayfadaki Bölümlerden Çapaları Otomatik Oluştur"** düğmesi eklendi; sayfadaki tüm bölümleri tarar, eksik çapa kimliklerini otomatik slugify eder ve gezgin çubuğunu anında doldurur.
+- ✅ **"Crimson ERP & Muhasebe" Resmi Teması (`crimson-erp` — `packages/themes/src/registry.ts`):**
+  - Kurumsal ERP, e-dönüşüm ve muhasebe platformları için özel olarak kurgulanan resmi tema eklendi.
+  - Renk Paleti: Yakut kırmızısı (`#c8102e` primary), koyu arduvaz (`#111827` secondary), yumuşak zemin (`#f7f8fa` muted). Tipografi: `Plus Jakarta Sans` başlıklar + `Inter` gövde metinleri.
+- ✅ **Tasarım Kütüphanesine Kurumsal Ön Muhasebe & ERP Bölümleri Eklendi (`packages/editor/src/library-base.ts`, `starter-packs.ts`):**
+  - `lib_sticky_anchor_bar`: Yapışkan HTML Çapa Gezgini (Bölüm Sekmeleri).
+  - `lib_erp_split_hero_form`: 8+4 Bölünmüş Hero + "Sizi Arayalım / Ücretsiz Demo" kartı.
+  - `lib_erp_overview_3col`: Genel Bakış — 3 sütunlu özellik kartları (`#genel-bakis`: Ön Muhasebe nedir?, Özellikleri, Neler yapılabilir?).
+  - `lib_erp_solution_tabs`: Bulut & On-Premise Çözüm Ailesi sekmeli vitrini (`#urunler`).
+  - `lib_erp_scale_comparison`: İşletme büyüklüğüne göre paket karşılaştırma matrisi (`#karsilastirma`).
+  - `lib_erp_faq_section`: Ön Muhasebe ve e-Dönüşüm Sıkça Sorulan Sorular akordeonu (`#sss`).
+  - `lib_erp_bottom_dock`: 3'lü İletişim & Destek Şeridi (Dijital Danışman, Çözüm Bulucu, WhatsApp).
+  - `pack_erp_category_landing`: Tek tıkla eklenen tam sayfa Ön Muhasebe & ERP vitrin başlangıç paketi.
+- ✅ **Canlı Kanıt ve Örnek Sayfa (`/tr/on-muhasebe-programi` — `seed-contents.ts`, `seed-blocks.ts`):**
+  - Referans sitedeki mimariyi tam olarak yansıtan, tüm çapa bağlantıları (`#genel-bakis`, `#urunler`, `#detayli-incele`, `#karsilastirma`, `#sss`, `#basari-hikayeleri`, `#referanslar`, `#teklif-formu`) önceden yapılandırılmış canlı kurumsal örnek sayfa veritabanına yüklendi ve yayınlandı.
+
 ### [2026-11-03] — Kenar Çubuğu & Footer Bileşen (Widget) Stüdyosu, Gizlenebilir Tema Seçici / Tam Ekran Önizleme ve Doğrudan Şablon Oluşturucu
 - ✅ **Tema & Görünüm Özelleştiricide Tema Seçimini Gizle/Göster ve Tam Ekran Önizleme (`theme-store-header.tsx`, `theme-store-customizer.tsx`, `theme-store-tab-themes.tsx`, `use-theme-store.tsx`):**
   - `/admin/themes` ekranında tema seçim kartları varsayılan olarak gizlendi (`showThemeSelector = false`) ve doğrudan özelleştirme kontrolleri öne çıkarıldı; üst barda **`Tema Seçimini Göster / Gizle`** açılır çekmecesi ve **`Paneli Gizle (Tam Önizleme)`** (`hideControlPanel`) düğmesiyle canlı önizleme kanvasının 12 sütun tam genişlikte incelenmesi sağlandı.

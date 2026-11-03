@@ -1,15 +1,16 @@
 "use client";
 
 import { AiComposePanel } from "./ai-compose-panel";
+import { AnchorNavFields } from "./anchor-nav-fields";
 import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
 import { IconPickerField } from "./icon-picker-modal";
 import { SchemaFields } from "./schema-fields";
-import { SectionFields } from "./section-fields";
+import { QuickAnchorIdField, SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
 
 /** Kendi özel alan arayüzü olan (veya düzenlenecek alanı olmayan) bloklar; kalan her blok şema tabanlı alanlarla düzenlenir. */
-const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element"]);
+const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element", "anchor_nav"]);
 import { COLUMN_LAYOUT_PRESETS } from "./studio-model";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -29,6 +30,11 @@ export function BlockGeneralTab() {
                           {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
                           {selectedBlock.type === "schema_card" && <SchemaCardFields />}
                           {selectedBlock.type === "section" && <SectionFields />}
+                          {selectedBlock.type === "anchor_nav" && <AnchorNavFields />}
+                          {selectedBlock.type !== "section" &&
+                            selectedBlock.type !== "column" &&
+                            selectedBlock.type !== "anchor_nav" &&
+                            selectedBlock.type !== "divider_spacer" && <QuickAnchorIdField />}
 
                           {selectedBlock.type === "columns" && (
                             <div className="space-y-3">
