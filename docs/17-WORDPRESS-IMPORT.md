@@ -23,3 +23,5 @@ Varsayılan: görsel adresleri eski sitede kalır. Seçenek açıksa en çok 400
 
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
+
+- **Dosya boyutu (2026-11-03):** sınır 64 MB'tır; Next'in middleware gövde kesmesi (varsayılan 10 MB) `middlewareClientMaxBodySize: "70mb"` ile yükseltildi. Daha büyük dışa aktarmalar WordPress'te türe göre bölünmelidir.

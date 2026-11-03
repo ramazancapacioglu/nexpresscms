@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — WordPress içe aktarma: büyük dosyada "Dosya bulunamadı" düzeltmesi
+- 🐛 Next, middleware'den geçen isteklerin gövdesini 10 MB'ta kesiyordu; 10 MB üstü WXR dosyası çözülemeyip "Dosya bulunamadı" dönüyordu. `next.config.ts` `experimental.middlewareClientMaxBodySize: "70mb"` ile 64 MB sınırına uyduruldu (23 MB'lık dosya tarayıcıda doğrulandı). Rota artık "yükleme okunamadı/sınır aşıldı" ile "dosya seçilmedi" hatalarını ayırıyor.
+
 ### [2026-11-03] — Editör: Önizle/Göster, zengin blok kitaplığı, sürükle-bırak, geniş sahne
 - ✅ "Önizleme bağlantısı oluştur" kaldırıldı. Üst çubukta **Önizle** (son kaydedilmiş taslağı süreli, imzalı bağlantıyla yeni sekmede açar) ve Yayınla'nın yanında **Göster** (ziyaretçinin gördüğü gerçek, yayındaki sayfayı yeni sekmede açar; yayında değilken pasif) var. Şablon düzenlerken ikisi de gizli.
 - ✅ **+ Blok & Satır** yeniden yazıldı (`@nexpress/editor` `block-catalog.ts`): 8 kategoride 46 blok (düzen, temel, medya, içerik, pazarlama, etkileşim, veri, ticaret), 10 hazır satır düzeni (boş sütunlar ve kartlı/CTA'lı), arama (Türkçe i/ı, aksan duyarsız). Her blok eklenince düzenlenebilir props taşır; denetçi alanları bu props'tan çıkar.

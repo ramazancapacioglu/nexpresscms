@@ -64,6 +64,8 @@ const nextConfig: NextConfig = {
   // Yerel/yerel-ikili sürücüler paketlenmez (webpack README/LICENSE ve .node dosyalarını ayrıştıramaz)
   serverExternalPackages: ["@libsql/client", "libsql", "postgres", "sharp"],
   experimental: {
+    // Middleware tüm istekten geçer; Next gövdeyi varsayılan 10 MB'ta keser (WordPress dışa aktarma dosyası 64 MB'a kadar).
+    middlewareClientMaxBodySize: "70mb",
     serverActions: {
       bodySizeLimit: "4mb",
     },

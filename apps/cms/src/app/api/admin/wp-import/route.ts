@@ -22,8 +22,9 @@ export async function POST(request: Request) {
   const { session } = auth;
   if (Number(request.headers.get("content-length") ?? 0) > WP_IMPORT_LIMITS.fileBytes + 64 * 1024) return fail("Dosya 64 MB sınırını aşıyor.", 413);
   const form = await request.formData().catch(() => null);
-  const file = form?.get("file");
-  if (!form || !(file instanceof File)) return fail("Dosya bulunamadı.");
+  if (!form) return fail("Yükleme okunamadı: dosya yarım kaldı ya da sunucu sınırını aşıyor (en çok 64 MB).");
+  const file = form.get("file");
+  if (!(file instanceof File)) return fail("Dosya bulunamadı; lütfen bir .xml dosyası seçin.");
   if (file.size > WP_IMPORT_LIMITS.fileBytes) return fail("Dosya 64 MB sınırını aşıyor.", 413);
 
   const get = (k: string) => String(form.get(k) ?? "");
