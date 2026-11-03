@@ -5,6 +5,7 @@ import { getChunkRepository, getScopedRepository } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { SearchIndexCard } from "@/components/admin/seo/search-index-card";
+import { SearchConsolePanel } from "@/components/admin/seo/search-console-panel";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { SeoStudio } from "@/components/admin/seo/seo-studio";
 import { buildSeoSummary } from "@/components/admin/seo/seo-summary";
@@ -34,6 +35,7 @@ export default async function AdminSeoPage() {
         publishedCount={published}
       />
       <LinkAuditCard contents={contents} locales={site?.supportedLocales ?? ["tr"]} />
+      <SearchConsolePanel verification={seo.verification} />
       <SeoStudio initial={seo} summary={summary} siteName={site?.name ?? "NexPress"} />
     </div>
   );

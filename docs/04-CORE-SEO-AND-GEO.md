@@ -148,4 +148,8 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
   - **Yazılım Ürünleri (`SoftwareApplication`):** `operatingSystem`, `applicationCategory`, `applicationSubCategory`, `softwareVersion`, `device`, `featureList`, `modules`, `requirements`, `demoUrl` ve `offers` (fiyat/para birimi/lisans modeli) alanlarıyla tam Schema.org standartlarında zengin snippet çıktısı verir.
   - **Kampanya & Fırsat Sayfaları (`Offer`):** `price`, `priceCurrency`, `validThrough`, `validStart`, `availability`, `discountBadge`, `gift`, `couponCode` ve `targetProduct` ile arama motorlarına zaman duyarlı kampanya sinyali gönderir.
   - **Soru-Cevap & AI Prompts (`QAPage` / `FAQPage`):** `mainEntity` altında `Question` ve `acceptedAnswer` (uzman yanıtı ve kısa TL;DR) ile Google Featured Snippets ve SGE/AIO motorları için optimize edilmiş doğrudan yanıt grafiği üretir.
-  - **Teknik Makaleler (`TechArticle`):** `proficiencyLevel`, `prerequisites`, `dependencies` ve adım adım uygulama talimatlarıyla geliştirici ve BT uzmanı hedefli zengin bilgi grafiği oluşturur.
+  - **Search Console & Arama Performansı Paneli (2026-11-03):**
+  - `@nexpress/seo-core` içine `search-console.ts` analiz motoru eklendi: `parseSearchConsoleCsv`, `parseSearchConsoleJson` ve `analyzeSearchPerformance`.
+  - Google Search Console (`Top queries.csv`), Bing Webmaster Tools ve Yandex Webmaster sorgu/tıklama/gösterim/TO (CTR)/ortalama pozisyon verilerini çözümler.
+  - `/admin/seo` sayfasına `SearchConsolePanel` entegre edildi: 4'lü metrik özeti (Toplam Tık, Gösterim, Ortalama TO, Ortalama Sıralama), ilk sayfaya yükselme fırsatları (Striking Distance: Pozisyon 4-15) ve düşük tıklama oranına sahip başlık optimizasyon fırsatları (Pozisyon 1-5, CTR < %3).
+  - `@nexpress/seo-basic` manifestosundaki `search-console` modülü `status: "ready"` durumuna getirildi.

@@ -78,3 +78,12 @@ Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/sr
 - **Hâlâ "Yakında" (dış servis/anahtar gerektirir; manifestte nedeni yazılı):** citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, ve SEO Temel'deki search-console.
 
 - **`ai-compose` (2026-11-02):** `ai-writer.compose` eylemi (`registerAiCompose`): `write|rewrite|expand|shorten|fix`; girdi sınırları (istek 600, metin 4000, bağlam 3000), çıktı en çok 6 paragraf × 1200 karakter (başlıkta tek, 90). `findClaims` / `findUnverifiedNumbers` uydurma riskini işaretler. Testli (`test/compose.test.ts`, sahte model).
+- **Agentic SEO Pro Tam Modül Genişlemesi (2026-11-03):**
+  - **`citations` (AI Alıntı İzleme):** Perplexity, ChatGPT, Gemini ve Claude arama motorlarında markanın alıntılanma olasılığı, AI Görünürlük Skoru (%0-100) ve canlı simülasyon kartı (`CitationsCard`).
+  - **`google-reviews` (Google Haritalar & Yorumlar):** Google Place ID, puan ve doğrulanmış müşteri yorumlarını LocalBusiness AggregateRating ve Review grafiğine enjekte eden motor (`enrichWithGoogleReviews`) ve panel kartı (`GoogleReviewsCard`).
+  - **`serper-intel` (Serper SERP & PAA Soru Madenciliği):** Canlı Google ilk sayfa organik sıralama, "İnsanlar Bunu da Sordu" (PAA) soruları, LSI terimleri ve tek tıkla Soru-Cevap taslak içeriği oluşturma aracı (`SerperCard`).
+  - **`decay` (İçerik Erimesi Analizi):** 90+ gündür güncellenmeyen, TL;DR özeti eksik veya zayıf içerikli sayfaları tespit edip tek tıkla yenileme aksiyonu sunan panel kartı (`DecayCard`).
+  - **`kb-transform` (Bilgi Bankası Dönüşümü):** Destek notlarını, teknik rehberleri veya mevzuat maddelerini 0-KB RSC bloklu ve TL;DR'li zengin makalelere dönüştüren fabrika (`KbTransformCard`).
+  - **`catalog-ai` (E-Ticaret AI SEO Denetçisi):** Ürün başlıkları, açıklamaları, SKU ve Google Merchant Center uyumunu denetleyen katalog sağlığı analiz kartı (`CatalogAiCard`).
+  - **`support-hub` (Destek Merkezi & İçerik Açığı Raporu):** RAG destek arama günlüğü üzerinden müşterilerin aratıp sonuç bulamadığı cevapsız konuları listeleyip yeni içerik açığını kapatma aracı (`SupportHubCard`).
+  - Manifestodaki tüm modüller `status: "ready"` durumuna getirildi ve `dashboard.overview.cards` yuvasına kaydedildi.

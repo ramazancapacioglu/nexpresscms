@@ -15,6 +15,14 @@ import { ModuleGate, PLUGIN_ID } from "./module-gate";
 import { getMcpLogRepository, getScopedRepository } from "@nexpress/database";
 import { BotTelemetryCard } from "./bot-telemetry-card";
 import { McpLogCard } from "./mcp-log-card";
+import { CitationsCard } from "./citations-card";
+import { GoogleReviewsCard } from "./schema/google-reviews-card";
+import { enrichWithGoogleReviews, type GoogleReviewsSettings } from "./schema/google-reviews";
+import { SerperCard } from "./content-ops/serper-card";
+import { DecayCard } from "./content-ops/decay-card";
+import { KbTransformCard } from "./content-ops/kb-transform-card";
+import { CatalogAiCard } from "./commerce/catalog-ai-card";
+import { SupportHubCard } from "./support/support-hub-card";
 import {
   handleWebMcpJsonRpc,
   NEXPRESS_MCP_TOOLS,
@@ -97,10 +105,15 @@ export function registerAgenticSeoProPlugin(): void {
       nodes = await appendRichSchema(payload, nodes);
       if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "speakable")) nodes = addSpeakable(nodes);
       if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "local-seo") && isHomeUrl(payload.url, payload.locale)) {
-        const settings = (await getPluginSettings(payload.siteId, PLUGIN_ID)) as LocalBusinessSettings;
+        const settings = (await getPluginSettings(payload.siteId, PLUGIN_ID)) as LocalBusinessSettings & GoogleReviewsSettings;
         const site = await getScopedRepository(payload.siteId).getSite();
-        const node = buildLocalBusinessNode(settings, { siteName: site?.name ?? "NexPress", url: payload.url, id: `${payload.url}#localbusiness` });
-        if (node) nodes.push(node as SchemaGraphNode);
+        let node = buildLocalBusinessNode(settings, { siteName: site?.name ?? "NexPress", url: payload.url, id: `${payload.url}#localbusiness` });
+        if (node) {
+          if (await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "google-reviews")) {
+            node = enrichWithGoogleReviews(node as SchemaGraphNode, settings) as never;
+          }
+          nodes.push(node as SchemaGraphNode);
+        }
       }
       return { ...payload, nodes };
     },
@@ -241,6 +254,97 @@ export function registerAgenticSeoProPlugin(): void {
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="bot-analytics">
         <BotTelemetryCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
+
+  // Citations & AI Citation Tracker
+  slotRegistry.register({
+    id: "agentic-seo-citations",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 13,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="citations">
+        <CitationsCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
+
+  // Google Haritalar & Yorumlar
+  slotRegistry.register({
+    id: "agentic-seo-google-reviews",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 14,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="google-reviews">
+        <GoogleReviewsCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
+
+  // Serper SERP & PAA Soru Madenciliği
+  slotRegistry.register({
+    id: "agentic-seo-serper",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 16,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="serper-intel">
+        <SerperCard />
+      </ModuleGate>
+    ),
+  });
+
+  // İçerik Erimesi (Content Decay)
+  slotRegistry.register({
+    id: "agentic-seo-decay",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 17,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="decay">
+        <DecayCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
+
+  // Bilgi Bankası Dönüşümü (KB Transform)
+  slotRegistry.register({
+    id: "agentic-seo-kb-transform",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 18,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="kb-transform">
+        <KbTransformCard />
+      </ModuleGate>
+    ),
+  });
+
+  // Katalog AI SEO Denetçisi
+  slotRegistry.register({
+    id: "agentic-seo-catalog-ai",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 19,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="catalog-ai">
+        <CatalogAiCard siteId={siteId} />
+      </ModuleGate>
+    ),
+  });
+
+  // Destek Merkezi & İçerik Açığı Raporu
+  slotRegistry.register({
+    id: "agentic-seo-support-hub",
+    pluginId: PLUGIN_ID,
+    slot: "dashboard.overview.cards",
+    priority: 20,
+    render: ({ siteId }) => (
+      <ModuleGate siteId={siteId} module="support-hub">
+        <SupportHubCard siteId={siteId} />
       </ModuleGate>
     ),
   });

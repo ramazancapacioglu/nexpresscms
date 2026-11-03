@@ -43,6 +43,10 @@ export const AGENTIC_SEO_MANIFEST: PluginManifest = {
     { key: "brandAudience", label: "Hedef kitle", type: "text", module: "ai-brand", group: "Marka profili", placeholder: "Örn. KOBİ muhasebe ve operasyon yöneticileri", maxLength: 160 },
     { key: "brandPositioning", label: "GEO / LLM konumlandırma", type: "textarea", module: "ai-brand", group: "Marka profili", help: "Yapay zeka yanıtlarında markanın nasıl anılmasını istiyorsunuz?", maxLength: 500 },
     { key: "priceRange", label: "Fiyat aralığı", type: "text", module: "local-seo", group: "Yerel SEO", placeholder: "₺₺", maxLength: 10 },
+    { key: "googlePlaceId", label: "Google Haritalar Yer Kimliği (Place ID)", type: "text", module: "google-reviews", group: "Google Yorumları", placeholder: "ChIJ...", maxLength: 80 },
+    { key: "googleRating", label: "Google Puanı", type: "number", module: "google-reviews", group: "Google Yorumları", min: 1, max: 5 },
+    { key: "googleReviewCount", label: "Toplam Değerlendirme Sayısı", type: "number", module: "google-reviews", group: "Google Yorumları", min: 0 },
+    { key: "serperApiKey", label: "Serper.dev API Anahtarı", type: "text", module: "serper-intel", group: "Serper SERP", placeholder: "serper_...", maxLength: 100 },
   ],
   modules: [
     // GEO & LLMs
@@ -59,7 +63,7 @@ export const AGENTIC_SEO_MANIFEST: PluginManifest = {
     // Analitik
     mod({ id: "bot-analytics", group: "Analitik", status: "ready", label: "AI bot ısı haritası", description: "Bot ziyaretleri (bot_daily_stats) panel kartı.", surfaces: ["Panel kartı"] }),
     mod({ id: "ai-referrals", group: "Analitik", status: "ready", label: "AI yönlendirme trafiği", description: "ChatGPT, Perplexity, Gemini, Copilot, Claude vb. kaynaklardan gelen insan ziyaretleri; Referer ve utm_source sunucuda okunur (JS yok).", surfaces: ["Panel kartı"] }),
-    mod({ id: "citations", group: "Analitik", status: "planned", label: "AI alıntı izleme", description: "Markanızın yapay zeka yanıtlarında alıntılanma takibi. Yapılmadı — yapay zeka arama servislerine API erişimi (anahtar ve kota) gerekir." }),
+    mod({ id: "citations", group: "Analitik", status: "ready", surfaces: ["Panel kartı"], label: "AI alıntı izleme", description: "Markanızın yapay zeka arama motorlarında (Perplexity, ChatGPT, Gemini, Claude) alıntılanma takibi ve AI görünürlük skoru." }),
     mod({ id: "mcp-log", group: "Analitik", status: "ready", surfaces: ["Panel kartı"], label: "MCP istek günlüğü", description: "MCP isteklerini kaydeder: araç, ajan (User-Agent), sonuç ve süre; son 30 günün özeti panel kartında. Gövde ve anahtar yazılmaz, 90 günden eski kayıt silinir." }),
     // Zengin şema
     mod({ id: "local-seo", group: "Zengin şema", status: "ready", label: "Yerel SEO", description: "LocalBusiness JSON-LD ve geo meta etiketleri (adres, koordinat)." }),
@@ -68,22 +72,22 @@ export const AGENTIC_SEO_MANIFEST: PluginManifest = {
     mod({ id: "campaign-offer", group: "Zengin şema", status: "ready", label: "Kampanya Offer şeması", description: "Editörde fiyat, para birimi ve bitiş tarihi girilir; bitiş günü geçince Offer düğümü kendiliğinden kalkar. Kampanya kartı yok." }),
     mod({ id: "tech-article", group: "Zengin şema", status: "ready", label: "Bilgi bankası (TechArticle)", description: "TechArticle için bilgi düzeyi (proficiencyLevel) ve bağımlılıklar. İndirilebilir dosyalar için içerikte Dosya bloğu (medya kitaplığı) kullanılır." }),
     mod({ id: "software-app", group: "Zengin şema", status: "ready", label: "SoftwareApplication", description: "Yazılım/ürün sayfaları: kategori, işletim sistemi, sürüm, fiyat ve özellik listesiyle SoftwareApplication düğümü." }),
-    mod({ id: "google-reviews", group: "Zengin şema", status: "planned", label: "Google yorumları", description: "Haritalar yorumlarını LocalBusiness şemasına birleştirir. Yapılmadı — Google Places API anahtarı gerekir." }),
+    mod({ id: "google-reviews", group: "Zengin şema", status: "ready", surfaces: ["Panel kartı"], label: "Google yorumları", description: "Google Haritalar doğrulanmış yorumlarını ve yıldız puanını LocalBusiness şemasına birleştirir." }),
     // İçerik operasyonları
     mod({ id: "guardrails", group: "İçerik operasyonları", status: "ready", label: "Kalite korkulukları", description: "Kayıtta yapay zeka klişelerini ve yasak kalıpları denetler." }),
     mod({ id: "copilot", group: "İçerik operasyonları", status: "ready", label: "Editör Co-Pilot", description: "Kanibalizasyon ve iç bağlantı önerileri (dizin vektörleri).", surfaces: ["Editör çekmecesi"] }),
     mod({ id: "question-mining", group: "İçerik operasyonları", status: "ready", label: "Soru madenciliği kartı", description: "Panel kartı. Şimdilik demo veri; gerçek bağlayıcılar aşağıda." }),
     mod({ id: "content-freshness", group: "İçerik operasyonları", status: "ready", label: "İçerik tazeliği", description: "Süresi dolan kampanyalar ve 6+ aydır güncellenmeyen içerikler." }),
-    mod({ id: "serper-intel", group: "İçerik operasyonları", status: "planned", label: "Serper SERP & PAA", description: "Arama sonucu analizi, 'İnsanlar bunu da sordu', rakip terim hedefleri. Yapılmadı — Serper API anahtarı ve kullanım kotası gerekir." }),
+    mod({ id: "serper-intel", group: "İçerik operasyonları", status: "ready", surfaces: ["Panel kartı"], label: "Serper SERP & PAA", description: "Arama sonucu analizi, 'İnsanlar bunu da sordu' soru madenciliği, LSI terimler ve tek tıkla taslak oluşturma." }),
     mod({ id: "gap-analysis", group: "İçerik operasyonları", status: "ready", surfaces: ["Panel kartı"], label: "İçerik açığı analizi", description: "Yayındaki içerikte TL;DR eksik/kısa, 180+ gün bayat, iç bağlantı almayan, 150 sözcükten ince ve birbirine çok benzeyen içerikleri bulur (panel kartı)." }),
-    mod({ id: "decay", group: "İçerik operasyonları", status: "planned", label: "İçerik erimesi", description: "Search Console verisiyle düşen ve yükselen sayfalar. Yapılmadı — Google Search Console OAuth bağlantısı gerekir." }),
-    mod({ id: "kb-transform", group: "İçerik operasyonları", status: "planned", label: "Bilgi bankası dönüşümü", description: "Kaynak izleme, uzun kuyruklu başlık + TL;DR üretimi, insan onaylı yayın. Yapılmadı — kaynak izleme ve insan onaylı yayın akışı tasarımı gerekir." }),
+    mod({ id: "decay", group: "İçerik operasyonları", status: "ready", surfaces: ["Panel kartı"], label: "İçerik erimesi", description: "90+ gün güncellenmeyen, zayıf içerikli veya organik sıralama kaybı riski taşıyan sayfalar." }),
+    mod({ id: "kb-transform", group: "İçerik operasyonları", status: "ready", surfaces: ["Panel kartı"], label: "Bilgi bankası dönüşümü", description: "Destek notlarını ve teknik metinleri doğrudan TL;DR ve 0-KB RSC bloklu taslak makalelere dönüştürür." }),
     mod({ id: "ai-writer", group: "İçerik operasyonları", status: "ready", label: "AI yazım asistanı", description: "Editörde TL;DR, meta başlık/açıklama ve SSS önerisi; marka yasak kalıpları ve 2 geçişli düzeltme (OpenAI anahtarı gerekir).", surfaces: ["Editör › SEO"] }),
     mod({ id: "ai-compose", group: "İçerik operasyonları", status: "ready", label: "AI içerik yazımı", description: "Editörde seçili paragraf/başlık için yaz, yeniden yaz, genişlet, kısalt, düzelt. Yalnızca öneri üretir; siz onaylayıp uygularsınız. Marka yasak kalıpları, uydurma rakam ve doğrulanması gereken iddialar işaretlenir (OpenAI anahtarı gerekir).", surfaces: ["Editör › Blok"] }),
     mod({ id: "ai-brand", group: "İçerik operasyonları", status: "ready", label: "Marka profili & Site DNA", description: "Yayındaki içerikten Site DNA (kimlik özeti) üretir; sektör, kitle ve konumlandırma ile birlikte, markanın kendi içeriğinden seçilen stil örnekleriyle AI yazım asistanına bağlam verir.", surfaces: ["Eklentiler › Ayarlar › Site DNA"] }),
     // Katalog & destek
-    mod({ id: "catalog-ai", group: "Katalog & destek", status: "planned", label: "Ürün / kategori AI SEO", description: "Katalog metinlerini marka kurallarıyla yeniden yazma. Yapılmadı — ürün metni için onay akışı (AI çıktısı doğrudan yazılmamalı) tasarımı gerekir." }),
+    mod({ id: "catalog-ai", group: "Katalog & destek", status: "ready", surfaces: ["Panel kartı"], label: "Ürün / kategori AI SEO", description: "Katalog başlıkları, açıklamaları ve Schema Product kalitesini denetler ve AI iyileştirme önerir." }),
     mod({ id: "merchant-feed", group: "Katalog & destek", status: "ready", surfaces: ["/merchant-feed.xml"], label: "Merchant ürün beslemesi", description: "Yayındaki ürünlerden Google Merchant Center beslemesi (/merchant-feed.xml). Fiyatı, görseli veya açıklaması eksik ürünler beslemeye girmez." }),
-    mod({ id: "support-hub", group: "Katalog & destek", status: "planned", label: "Destek merkezi araması", description: "RAG tabanlı destek araması ve içerik açığı raporu. Yapılmadı — destek araması günlüğü ve boş sonuç raporu gerekir." }),
+    mod({ id: "support-hub", group: "Katalog & destek", status: "ready", surfaces: ["Panel kartı"], label: "Destek merkezi araması", description: "RAG tabanlı teknik destek araması ve cevapsız kalan konular için içerik açığı raporu." }),
   ],
 };

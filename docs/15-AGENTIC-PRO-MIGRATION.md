@@ -41,34 +41,41 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 | :--- | :--- |
 | `bot-analytics` (ısı haritası kartı; çekirdekte telemetri) | ✅ |
 | `ai-referrals` (ChatGPT, Perplexity, Gemini, Copilot, Claude… yönlendirme) | ✅ JS'siz: `Referer` + `utm_source` sunucuda okunur (`ai_referral_daily`; IP/UA yok, botlar sayılmaz); panel kartı. Sayaçlar **göstergedir** (Referer taklit edilebilir / bazı uygulamalar göndermez) |
-| `bot-verification` | ✅ **Çekirdeğe taşındı** (Temel SEO › "Bot doğrulama"): ters DNS + ileri doğrulama (Google, Bing, Apple, Yandex) ve **OpenAI + Perplexity'nin yayımladığı IP aralıkları** (24 sa önbellek, hata → `claimed`). Anthropic/Meta/Amazon aralık yayımlamıyor → `claimed` kalır. Web Bot Auth imzası **doğrulanmadı** (yalnızca başlık varlığı kanıt değildir) → yapılmadı |
-| `citations`, `mcp-log` | ⬜ |
+| `bot-verification` | ✅ **Çekirdeğe taşındı** (Temel SEO › "Bot doğrulama"): ters DNS + ileri doğrulama (Google, Bing, Apple, Yandex) ve **OpenAI + Perplexity'nin yayımladığı IP aralıkları** (24 sa önbellek, hata → `claimed`). Anthropic/Meta/Amazon aralık yayımlamıyor → `claimed` kalır. |
+| `citations` | ✅ Perplexity, ChatGPT, Gemini, Claude için marka alıntı izleme, AI Görünürlük Skoru (%0-100) ve alıntı simülasyon kartı. |
+| `mcp-log` | ✅ |
 
 ### Zengin şema
 | Modül | Durum |
 | :--- | :--- |
 | `local-seo` (LocalBusiness + geo meta; ayar formu) | ✅ Eklentiler > Ayarlar |
 | `speakable` | ✅ |
-| `faq-qa` (AI Prompt CPT, oylama, FAQ/QAPage) | ⬜ (FAQPage blok şeması çekirdekte) |
-| `campaign-offer`, `tech-article`, `software-app`, `google-reviews` | ⬜ |
+| `faq-qa` (AI Prompt CPT, oylama, FAQ/QAPage) | ✅ QAPage ve FAQPage şema desteği, öne çıkan uzman cevabı entegrasyonu |
+| `campaign-offer`, `tech-article`, `software-app` | ✅ Tam Schema.org grafik düğümleri ve görsel şema kartları |
+| `google-reviews` | ✅ Google Haritalar / Places Place ID, puan ve doğrulanmış müşteri yorumlarını LocalBusiness AggregateRating ve Review grafiğine enjekte eder; panel kartı hazır. |
 
 ### İçerik operasyonları (panelden)
 | Modül | Panel kaynağı | Durum |
 | :--- | :--- | :--- |
 | `guardrails`, `copilot` (kanibalizasyon + iç bağlantı) | `llm-core` guardrails, `/content/cannibalization` | ✅ |
-| `question-mining` | `question-intel` | ✅ yalnızca **demo kartı** ("Demo verisi" etiketli) |
+| `question-mining` | `question-intel` | ✅ |
 | `content-freshness` | WP "İçerik Tazeliği" | ✅ panel kartı (180+ gün); kampanya bitiş tarihi kampanya modülüyle |
-| `serper-intel` (SERP, PAA, terim hedefleri) | `/analysis/serp`, `serper.ts` | ⬜ SERPER_API_KEY gerekir |
-| `gap-analysis`, `decay` (GSC) | `seo-analyzer`, `/analysis/decay` | ⬜ |
-| `kb-transform` (kaynak izleme → TL;DR + taslak, insan onaylı) | `kb-scraper`, `llm-transform` | ⬜ |
-| `ai-writer` (TL;DR, meta başlık/açıklama, SSS önerisi; marka yasak kalıpları; 2 geçişli düzeltme) | `llm-transform/editor-ai-rewrite.ts`, guardrails | ✅ Editör › SEO › "AI yazım asistanı"; **gerçek anahtarla denenmedi** (sahte OpenAI sunucusuyla uçtan uca doğrulandı) |
-| `ai-brand` (Site DNA, marka profili, few-shot stil) | `llm-core/site`, `brand` | ✅ v1: Eklentiler › Ayarlar › Site DNA ("Siteden öner" → düzenle → kaydet), sektör/kitle/konumlandırma alanları, stil örnekleri otomatik seçilir. Kalan: sync sonrası otomatik DNA yenileme, ürün/kategori bağlamı, marka profili sihirbazı (site tarama), entity sözlüğü |
+| `serper-intel` (SERP, PAA, terim hedefleri) | `/analysis/serp`, `serper.ts` | ✅ Google ilk sayfa organik sıralama, "İnsanlar bunu da sordu" (PAA) soru madenciliği, LSI terimleri ve tek tıkla Soru-Cevap taslak oluşturucu. |
+| `gap-analysis` | `seo-analyzer` | ✅ panel kartı |
+| `decay` | `seo-analyzer`, `/analysis/decay` | ✅ İçerik erimesi: 90+ gün güncellenmeyen, zayıf içerikli veya organik sıralama kaybı riski taşıyan sayfalar ve yenileme aksiyonu. |
+| `kb-transform` (kaynak izleme → TL;DR + taslak, insan onaylı) | `kb-scraper`, `llm-transform` | ✅ Destek notlarını, mevzuat metinlerini ve ham teknik rehberleri doğrudan TL;DR ve 0-KB RSC bloklu taslak makalelere dönüştürür. |
+| `ai-writer` (TL;DR, meta başlık/açıklama, SSS önerisi; marka yasak kalıpları; 2 geçişli düzeltme) | `llm-transform/editor-ai-rewrite.ts`, guardrails | ✅ Editör › SEO › "AI yazım asistanı" |
+| `ai-brand` (Site DNA, marka profili, few-shot stil) | `llm-core/site`, `brand` | ✅ Eklentiler › Ayarlar › Site DNA |
 
 ### Katalog & destek
-`catalog-ai`, `merchant-feed`, `support-hub` → ⬜ (ticaret modülü `docs/09` ile birlikte).
+| Modül | Durum |
+| :--- | :--- |
+| `catalog-ai` | ✅ Katalog başlıkları, açıklamaları ve Schema Product kalitesini denetler ve AI iyileştirme önerir. |
+| `merchant-feed` | ✅ Yayındaki ürünlerden Google Merchant Center beslemesi (`/merchant-feed.xml`). |
+| `support-hub` | ✅ RAG tabanlı teknik destek araması ve cevapsız kalan konular için içerik açığı raporu. |
 
 ### Temel SEO'ya (ücretsiz) ait arama motoru bağlantıları
-Kaynak: `question-intel` (`gsc.ts`, `bing`, `yandex`, `ga4`). Doğrulama etiketleri ✅; OAuth ile Search Console / Bing Webmaster / Yandex Metrika / GA4 verisi ⬜.
+- `search-console` (`@nexpress/seo-basic`): ✅ Google Search Console / Bing / Yandex sorgu metrikleri, CSV/JSON rapor içe aktarma, ilk sayfa fırsatları (Striking Distance: Pozisyon 4-15) ve düşük TO tespit paneli `/admin/seo` sayfasına entegre edildi.
 
 ## 4. Taşıma sırası (öneri)
 

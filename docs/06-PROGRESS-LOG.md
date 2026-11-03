@@ -21,6 +21,22 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Agentic SEO Pro ve Temel SEO Eklentisi: Kalan Tüm "Yakında" (Planned) Özelliklerin Tamamlanması
+- ✅ **Temel SEO (`@nexpress/seo-basic`): Search Console & Arama Verisi Bağlantıları Modülü:**
+  - `@nexpress/seo-core` içine `search-console.ts` eklendi (`parseSearchConsoleCsv`, `parseSearchConsoleJson`, `analyzeSearchPerformance`) ve 2 yeni birim testi yazıldı (31/31 test geçti).
+  - Google Search Console (`Top queries.csv`), Bing Webmaster Tools ve Yandex Webmaster raporlarını içe aktaran, 4'lü metrik özetleyen, ilk sayfa fırsatlarını (Striking Distance: Pozisyon 4-15) ve düşük TO'lu başlık optimizasyonlarını tespit eden `SearchConsolePanel` `/admin/seo` sayfasına entegre edildi.
+  - `@nexpress/seo-basic` manifestosundaki `search-console` modülü `status: "ready"` yapıldı.
+- ✅ **Agentic SEO Pro (`@nexpress-pro/agentic-seo`): 7 Yeni Modül Tamamlandı ve "Ready"ye Alındı:**
+  1. **`citations` (AI Alıntı İzleme):** Perplexity, ChatGPT, Gemini, Claude alıntı olasılıkları, AI Görünürlük Skoru (%0-100) ve alıntı simülasyon kartı (`CitationsCard`).
+  2. **`google-reviews` (Google Haritalar & Yorumlar):** Google Place ID, puan ve doğrulanmış müşteri yorumlarını LocalBusiness AggregateRating ve Review grafiğine enjekte eden `enrichWithGoogleReviews` motoru ve `GoogleReviewsCard`.
+  3. **`serper-intel` (Serper SERP & PAA Soru Madenciliği):** Google ilk sayfa organik sıralama, "İnsanlar bunu da sordu" (PAA) soruları, LSI terimleri ve tek tıkla taslak içerik oluşturan `SerperCard`.
+  4. **`decay` (İçerik Erimesi Analizi):** 90+ gün güncellenmeyen, TL;DR özeti eksik veya zayıf içerikli sayfaları tespit edip tek tıkla yenileme sunan `DecayCard`.
+  5. **`kb-transform` (Bilgi Bankası Dönüşümü):** Destek notlarını ve teknik metinleri 0-KB RSC bloklu ve TL;DR'li zengin makalelere dönüştüren fabrika (`KbTransformCard`).
+  6. **`catalog-ai` (E-Ticaret AI SEO Denetçisi):** Ürün başlıkları, açıklamaları, SKU ve Google Merchant Center uyumunu denetleyen katalog sağlığı analiz kartı (`CatalogAiCard`).
+  7. **`support-hub` (Destek Merkezi & İçerik Açığı Raporu):** RAG destek arama günlüğü üzerinden müşterilerin aratıp sonuç bulamadığı cevapsız konuları listeleyip yeni içerik açığını kapatma aracı (`SupportHubCard`).
+  - Tüm yeni modüller `plugins-pro/agentic-seo-pro/src/manifest.ts` içinde `status: "ready"` durumuna getirildi ve `dashboard.overview.cards` yuvasına bağlandı.
+- ✅ **Monorepo Tip & Test Doğrulaması:** 13 paketin tamamı TypeScript kontrolünden sıfır hatayla geçti; 197/197 `@nexpress/core` ve 31/31 `@nexpress/seo-core` testleri başarıyla doğrulandı.
+
 ### [2026-11-03] — WordPress Tarzı Senkronize Model (Synced Pattern / Reusable Block) Modülü, Genişletilmiş Schema.org Grafikleri ve Akınsoft/Logo Referanslı Şablon & Kütüphane Paketleri
 - ✅ **Senkronize Model (Synced Pattern) Modülü (`synced_pattern` & `TemplateKind: "pattern"`):**
   - Editörde kanvastaki herhangi bir bloğun (bölüm, satır, kartlar, form vb.) kayan araç çubuğundaki **✨ Model Oluştur** butonuyla ad ve kategori girilerek senkronize modele dönüştürülmesi sağlandı (`CreatePatternModal`).

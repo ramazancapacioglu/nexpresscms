@@ -5,6 +5,7 @@ export * from "./engine";
 export * from "./feed";
 export * from "./schema-validate";
 export * from "./commerce-schema";
+export * from "./search-console";
 
 export interface BuildCoreSchemaInput {
   siteId: string;
