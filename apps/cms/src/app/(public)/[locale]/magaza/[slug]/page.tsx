@@ -86,7 +86,7 @@ export default async function ShopProductPage({
   const schemaScript = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />;
 
   // Tema oluşturucu: ürün şablonu. Satın alma kutusu (tpl_product_buy) yoksa ürün alınamaz: yerleşik görünüm kalır.
-  const tpl = await templateFor(siteId, "product");
+  const tpl = await templateFor(siteId, "product", null, { locale, contentType: "product", slug: product.slug });
   if (tpl && templateHasBlock(tpl.blocks, "tpl_product_buy")) {
     const site = await getPublicSite(siteId);
     const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");

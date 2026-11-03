@@ -64,7 +64,10 @@ export default async function PublicLocaleLayout({
   const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, site?.settings?.customizer);
   const menu = await getResolvedMenu(siteId, locale);
   // Tema oluşturucu şablonları: varsayılan header/footer/kenar çubuğu şablonu varsa yerleşik olanın yerine geçer
-  const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header"), templateFor(siteId, "footer"), templateFor(siteId, "sidebar")]);
+  // Koşullar yalnızca dil ve sayfa adresiyle eşleşebilir (içerik türü/kategori bilgisi bu katmanda yoktur)
+  const segs = (reqHeaders.get("x-nexpress-pathname") ?? "").split("/").filter(Boolean);
+  const chromeCtx = { locale, slug: segs.length >= 2 ? decodeURIComponent(segs[1]!) : "ana-sayfa" };
+  const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
   const cust = resolveSiteSettings(site?.settings).customizer.header;
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
   const sidebar = nav?.sidebarConfig?.enabled ? nav.sidebarConfig : null;
@@ -90,7 +93,7 @@ export default async function PublicLocaleLayout({
       <PluginSlot name="public.head.meta" siteId={siteId} />
 
       {headerTpl && tplCtx ? (
-        <header style={{ borderColor: tokens.colors.border }} className="nx-public-header sticky top-0 z-40 border-b bg-white/95 backdrop-blur-md">
+        <header style={{ borderColor: tokens.colors.border }} className={`nx-public-header z-40 border-b ${headerTpl.meta.behavior?.sticky === false ? "relative" : "sticky top-0"} ${headerTpl.meta.behavior?.glass === false ? "bg-white" : "bg-white/95 backdrop-blur-md"}`}>
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto px-4 py-3 sm:px-6">
             <RscBlockRenderer blocks={headerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
           </div>

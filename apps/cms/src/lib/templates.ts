@@ -1,5 +1,5 @@
 import "server-only";
-import { readTemplateMeta, resolveTemplate, type TemplateKind, type TemplateRecord } from "@nexpress/core";
+import { readTemplateMeta, resolveTemplate, type TemplateContext, type TemplateKind, type TemplateRecord } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
 
@@ -16,8 +16,8 @@ export const listTemplates = cachedRead("templates", async (siteId: string): Pro
     });
 });
 
-/** Atama: `"none"` = yerleşik görünüm (şablon kullanma); kimlik = o şablon; boş = türün varsayılanı. */
-export async function templateFor(siteId: string, kind: TemplateKind, assigned?: string | null): Promise<TemplateRecord | null> {
+/** Atama: `"none"` = yerleşik görünüm (şablon kullanma); kimlik = o şablon; boş = görüntüleme koşulu eşleşen şablon, yoksa türün varsayılanı. */
+export async function templateFor(siteId: string, kind: TemplateKind, assigned?: string | null, ctx?: TemplateContext): Promise<TemplateRecord | null> {
   if (assigned === "none") return null;
-  return resolveTemplate(kind, await listTemplates(siteId), assigned);
+  return resolveTemplate(kind, await listTemplates(siteId), assigned, ctx);
 }

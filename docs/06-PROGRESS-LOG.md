@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Faz 4a: şablon görüntüleme koşulları ve header davranışı
+- ✅ **Görüntüleme koşulları** (çekirdek, saf: `template-conditions.ts`): şablon, atama olmasa da koşula uyan sayfalarda kendiliğinden devreye girer. Kural türleri: sayfa adresi, kategori, etiket, içerik türü, dil; "kullan" ve "kullanma" listeleri (en çok 20 kural). Çözümleme: **atama → en özgül eşleşen koşul (slug 100 > kategori 80 > etiket 70 > tür 50 > dil 30) → türün varsayılanı → yerleşik görünüm**; eşitlikte kimlik sırası (kararlı). Oturum/rol koşulu bilerek yok: ziyaretçi sayfaları önbelleklenir. Bu, "dil başına header/footer" ve "kategoriye özel yazı şablonu" ihtiyaçlarını karşılar.
+- ✅ Çağrı noktaları bağlam verir: sayfa/yazı (tür, slug, kategori/etiketler), arşivler, ürün/mağaza, header/footer/kenar çubuğu (dil + sayfa adresi).
+- ✅ **Header davranışı:** yapışkan ve buzlu cam açılıp kapanır (`meta.behavior`).
+- ✅ Yönetim: Şablonlar sayfasında her şablonda **Ayarlar** paneli (kurallar + header davranışı), "N KOŞUL" rozeti; sunucu eylemi `updateTemplateSettingsAction` (`template.settings` denetim kaydı, koşullar doğrulanır).
+- Testler: çekirdek 171 (4 yeni). Tarayıcıda: iki header şablonu, birine slug koşulu + yapışkan kapalı → koşula uyan sayfada o header (relative), diğer sayfada varsayılan (sticky) doğrulandı.
+- Ertelendi (Faz 4b): üst bilgi oluşturucu, tür başına yerleşim, karanlık mod — nedenleri docs/12'de.
+
 ### [2026-11-03] — Faz 3: sorgu döngüsü (arama, kategori süzgeci, sıralama, sayfalama)
 - ✅ `dynamic_list` bloğu ziyaretçi denetimleri kazandı (hepsi kapalı varsayılır; mevcut bloklar değişmez): arama kutusu (başlık+özet, Türkçe i/ı ve aksan duyarsız), kategori süzgeci (sayımlı bağlantılar), sıralama seçimi, sayfalama (`adet` = sayfa başına). Denetimler **URL parametreleriyle** çalışır (`q{blokKimliği}_q|_cat|_sort|_page`), düz `<form method="get">` ve bağlantılardır: **istemci JS'i yok**, bloklar birbirinin parametresini okumaz, diğer parametreler korunur, tüm değerler doğrulanır (geçersiz kategori/sıralama yok sayılır, sayfa aralığa sıkıştırılır).
 - ✅ Çekirdekte saf `resolveDynamicBlock` + `DynamicMeta`/`DynamicResult`; `DynamicDataMap` artık `{items, meta?}` taşır. Ön yüz metinleri `query.*` i18n anahtarlarıdır (tr/en). Kitaplığa "Sorgu döngüsü" eklendi; inspector'a dört anahtar.

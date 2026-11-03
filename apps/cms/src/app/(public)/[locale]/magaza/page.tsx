@@ -48,7 +48,7 @@ export default async function ShopIndexPage({
   const count = cartItemCount(cart);
 
   // Tema oluşturucu: mağaza listesi şablonu (arşiv listesi yuvası zorunlu; yoksa yerleşik görünüm)
-  const tpl = await templateFor(siteId, "shop");
+  const tpl = await templateFor(siteId, "shop", null, { locale });
   if (tpl && templateHasBlock(tpl.blocks, "tpl_archive_list")) {
     const site = await getPublicSite(siteId);
     const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");

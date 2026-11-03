@@ -2,11 +2,12 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { STARTER_TEMPLATES, TEMPLATE_KINDS, type TemplateKind } from "@nexpress/core";
-import { AlertTriangle, Check, Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { STARTER_TEMPLATES, TEMPLATE_KINDS, type TemplateConditions, type TemplateKind } from "@nexpress/core";
+import { AlertTriangle, Check, Download, Pencil, Plus, SlidersHorizontal, Trash2, Upload } from "lucide-react";
+import { TemplateSettings } from "./template-settings";
 import { createTemplateAction, deleteTemplateAction, setDefaultTemplateAction } from "./actions";
 
-export interface TemplateRow { id: string; name: string; kind: TemplateKind; isDefault: boolean; blocks: number; errors: string[] }
+export interface TemplateRow { id: string; name: string; kind: TemplateKind; isDefault: boolean; conditions: TemplateConditions; behavior: { sticky?: boolean; glass?: boolean }; blocks: number; errors: string[] }
 
 const panel = "rounded-lg border border-[#D5D8DE] bg-white dark:border-[#2E333D] dark:bg-[#15171C]";
 
@@ -14,6 +15,7 @@ export function TemplatesManager({ rows: initial, kinds }: { rows: TemplateRow[]
   const [rows, setRows] = useState(initial);
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const create = (starterId: string) =>
     start(async () => {
@@ -81,16 +83,20 @@ export function TemplatesManager({ rows: initial, kinds }: { rows: TemplateRow[]
             ) : (
               <ul className="divide-y divide-[#E6E8EC] dark:divide-[#262A33]">
                 {list.map((r) => (
-                  <li key={r.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                  <li key={r.id}>
+                    <div className="flex flex-wrap items-center gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2"><span className="truncate text-[13px] font-semibold">{r.name}</span>{r.isDefault && <span className="inline-flex items-center gap-1 rounded bg-emerald-600 px-1.5 py-px text-[10px] font-bold text-white"><Check className="h-3 w-3" /> VARSAYILAN</span>}</div>
+                      <div className="flex items-center gap-2"><span className="truncate text-[13px] font-semibold">{r.name}</span>{r.isDefault && <span className="inline-flex items-center gap-1 rounded bg-emerald-600 px-1.5 py-px text-[10px] font-bold text-white"><Check className="h-3 w-3" /> VARSAYILAN</span>}{r.conditions.include.length > 0 && <span className="rounded bg-blue-700 px-1.5 py-px text-[10px] font-bold text-white">{r.conditions.include.length} KOŞUL</span>}</div>
                       <div className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">{r.blocks} kök blok</div>
                       {r.errors.map((e) => <div key={e} className="mt-1 flex items-center gap-1 text-[12px] text-red-600"><AlertTriangle className="h-3 w-3" /> {e}</div>)}
                     </div>
                     <Link href={`/admin/contents?id=${encodeURIComponent(r.id)}&type=template`} className="inline-flex h-8 items-center gap-1.5 rounded border border-[#D5D8DE] px-3 text-[12px] font-medium dark:border-[#2E333D]"><Pencil className="h-3.5 w-3.5" /> Düzenle</Link>
                     <a href={`/api/admin/templates/export?id=${encodeURIComponent(r.id)}`} download aria-label={`${r.name} dışa aktar`} className="inline-flex h-8 items-center gap-1.5 rounded border border-[#D5D8DE] px-3 text-[12px] font-medium dark:border-[#2E333D]"><Download className="h-3.5 w-3.5" /> Dışa aktar</a>
                     <button type="button" disabled={pending} onClick={() => setDefault(r.id, !r.isDefault, kind)} className="h-8 rounded border border-[#D5D8DE] px-3 text-[12px] font-medium dark:border-[#2E333D]">{r.isDefault ? "Varsayılanı kaldır" : "Varsayılan yap"}</button>
+                    <button type="button" aria-expanded={openId === r.id} onClick={() => setOpenId(openId === r.id ? null : r.id)} className="inline-flex h-8 items-center gap-1.5 rounded border border-[#D5D8DE] px-3 text-[12px] font-medium dark:border-[#2E333D]"><SlidersHorizontal className="h-3.5 w-3.5" /> Ayarlar</button>
                     <button type="button" aria-label={`${r.name} sil`} disabled={pending} onClick={() => remove(r.id, r.name)} className="h-8 w-8 rounded border border-[#D5D8DE] text-red-600 dark:border-[#2E333D]"><Trash2 className="mx-auto h-3.5 w-3.5" /></button>
+                    </div>
+                    {openId === r.id && <TemplateSettings id={r.id} kind={r.kind} conditions={r.conditions} behavior={r.behavior} onSaved={(conditions, behavior) => setRows((cur) => cur.map((x) => (x.id === r.id ? { ...x, conditions, behavior } : x)))} />}
                   </li>
                 ))}
               </ul>

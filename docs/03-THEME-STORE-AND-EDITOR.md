@@ -139,3 +139,6 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 
 ## Stil motoru v2 (2026-11-03)
 `compileBlockStylesToCss` artık tipografi, metin gölgesi, kenar başına dış boşluk, kenarlık biçimi, arka plan boyut/konum/sabit, dönüşüm, **hover** (`style.hover`, `@media (hover:hover)`) ve **giriş animasyonu** (`style.animation`, CSS `animation-timeline: view()`; `BLOCK_ANIMATIONS`) üretir. Cihazdan bağımsız alanlar (hover, animasyon, `transitionMs`) `updateSelectedBlockStyleRoot` ile kök stile yazılır. Yol haritası: `docs/20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md`.
+
+## Şablon görüntüleme koşulları (2026-11-03)
+`TemplateMeta.conditions` (`include`/`exclude`) ve `behavior` (`sticky`, `glass`, yalnızca header). `resolveTemplate(kind, templates, assignedId, ctx)` sırası: atama → en özgül eşleşen koşul → varsayılan → yerleşik. Bağlam (`TemplateContext`) çağıran katmanda bilinen alanlardan oluşur; bilinmeyen alana bağlı kural eşleşmez. Yönetim: Görünüm › Şablonlar › şablonun **Ayarlar** paneli.

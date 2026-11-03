@@ -1,4 +1,7 @@
 import type { BlockNode } from "./types";
+import { conditionScore, sanitizeConditions, type TemplateConditions, type TemplateContext } from "./template-conditions";
+
+export * from "./template-conditions";
 
 /**
  * Şablon sistemi (saf mantık): şablon türleri, çözümleme, doğrulama ve hazır (starter) şablonlar.
@@ -36,11 +39,23 @@ export interface TemplateMeta {
   kind: TemplateKind;
   /** Bu türde atama yapılmamış her yerde kullanılır (türde en çok bir tane) */
   isDefault: boolean;
+  /** Görüntüleme koşulları: atama yokken koşula uyan sayfalarda şablon kendiliğinden kullanılır */
+  conditions?: TemplateConditions;
+  /** Yalnızca header: yapışkan (sayfa kayarken üstte kalır) ve buzlu cam arka plan. Varsayılan: ikisi de açık. */
+  behavior?: { sticky?: boolean; glass?: boolean };
 }
 
 export function readTemplateMeta(attrs: Record<string, unknown> | null | undefined): TemplateMeta | null {
-  const t = attrs?.template as { kind?: unknown; isDefault?: unknown } | undefined;
-  return t && isTemplateKind(t.kind) ? { kind: t.kind, isDefault: t.isDefault === true } : null;
+  const t = attrs?.template as { kind?: unknown; isDefault?: unknown; conditions?: unknown; behavior?: { sticky?: unknown; glass?: unknown } } | undefined;
+  if (!t || !isTemplateKind(t.kind)) return null;
+  const conditions = t.conditions ? sanitizeConditions(t.conditions) : undefined;
+  const behavior = t.behavior ? { ...(typeof t.behavior.sticky === "boolean" ? { sticky: t.behavior.sticky } : {}), ...(typeof t.behavior.glass === "boolean" ? { glass: t.behavior.glass } : {}) } : undefined;
+  return {
+    kind: t.kind,
+    isDefault: t.isDefault === true,
+    ...(conditions && (conditions.include.length || conditions.exclude.length) ? { conditions } : {}),
+    ...(behavior && Object.keys(behavior).length ? { behavior } : {}),
+  };
 }
 
 export interface TemplateRecord {
@@ -50,12 +65,22 @@ export interface TemplateRecord {
   blocks: BlockNode[];
 }
 
-/** Atanmış şablon (türü uyuyorsa) → türün varsayılanı → null (yerleşik görünüm). */
-export function resolveTemplate(kind: TemplateKind, templates: TemplateRecord[], assignedId?: string | null): TemplateRecord | null {
+/**
+ * Atanmış şablon (türü uyuyorsa) → koşulu bağlamla eşleşen en özgül şablon → türün varsayılanı → null (yerleşik görünüm).
+ * Eşit özgüllükte kimliği alfabetik ilk olan kazanır (kararlı).
+ */
+export function resolveTemplate(kind: TemplateKind, templates: TemplateRecord[], assignedId?: string | null, ctx?: TemplateContext): TemplateRecord | null {
   const ofKind = templates.filter((t) => t.meta.kind === kind);
   if (assignedId) {
     const hit = ofKind.find((t) => t.id === assignedId);
     if (hit) return hit;
+  }
+  if (ctx) {
+    const scored = ofKind
+      .map((t) => ({ t, score: conditionScore(t.meta.conditions, ctx) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || a.t.id.localeCompare(b.t.id));
+    if (scored[0]) return scored[0].t;
   }
   return ofKind.find((t) => t.meta.isDefault) ?? null;
 }

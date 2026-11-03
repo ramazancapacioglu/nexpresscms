@@ -15,7 +15,7 @@ export default async function TemplatesPage() {
   const locale = (await repo.getSite())?.defaultLocale ?? "tr";
   const rows: TemplateRow[] = (await repo.listContents({ locale, type: "template" })).flatMap((c) => {
     const meta = readTemplateMeta(c.schemaAttributes);
-    return meta ? [{ id: c.contentId, name: c.title, kind: meta.kind, isDefault: meta.isDefault, blocks: c.blocks.length, errors: validateTemplate(meta.kind, c.blocks).filter((i) => i.level === "error").map((i) => i.message) }] : [];
+    return meta ? [{ id: c.contentId, name: c.title, kind: meta.kind, isDefault: meta.isDefault, conditions: meta.conditions ?? { include: [], exclude: [] }, behavior: meta.behavior ?? {}, blocks: c.blocks.length, errors: validateTemplate(meta.kind, c.blocks).filter((i) => i.level === "error").map((i) => i.message) }] : [];
   });
   return (
     <div className="space-y-4">

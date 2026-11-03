@@ -54,7 +54,7 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   const tokens = data.site?.designTokens ?? getThemeManifest(data.site?.activeThemeId ?? "corporate-aurora").tokens;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   // Tema oluşturucu şablonu: terimin seçtiği şablon → türün varsayılanı → yerleşik görünüm
-  const tpl = await templateFor(siteId, kind, data.term.templateId);
+  const tpl = await templateFor(siteId, kind, data.term.templateId, { locale, slug, ...(kind === "category" ? { categories: [slug] } : { tags: [slug] }) });
   if (tpl) {
     const menu = await getResolvedMenu(siteId, locale);
     const prefix = kind === "category" ? "kategori" : "etiket";

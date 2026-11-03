@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { cloneStarterBlocks, isTemplateKind, readTemplateMeta, STARTER_TEMPLATES, validateTemplate } from "@nexpress/core";
+import { cloneStarterBlocks, isTemplateKind, readTemplateMeta, sanitizeConditions, STARTER_TEMPLATES, validateTemplate } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
 import { requireUser } from "@/lib/auth/session";
@@ -104,5 +104,33 @@ export async function assignTaxonomyTemplateAction(input: { taxonomyId: string; 
   await repo.saveTaxonomy({ id: term.id, taxonomyType: term.taxonomyType, slug: term.slug, name: term.name, description: term.description ?? undefined, parentId: term.parentId, imageUrl: term.imageUrl, sortOrder: term.sortOrder, color: term.color ?? undefined, seoTitle: term.seoTitle ?? undefined, seoDescription: term.seoDescription ?? undefined, templateId: input.templateId || null });
   await refresh(siteId);
   await revalidatePath("/admin/taxonomies");
+  return { ok: true };
+}
+
+/** Şablonun görüntüleme koşullarını ve (header için) yapışkan/cam davranışını kaydeder. Koşullar doğrulanır ve sınırlanır. */
+export async function updateTemplateSettingsAction(input: { id: string; conditions: unknown; behavior?: { sticky?: boolean; glass?: boolean } }): Promise<TemplateResult> {
+  const { session, siteId, repo, locale } = await ctx("template.settings");
+  const target = (await repo.listContents({ locale, type: "template" })).find((c) => c.contentId === input.id);
+  const meta = target ? readTemplateMeta(target.schemaAttributes) : null;
+  if (!target || !meta) return { ok: false, error: "Şablon bulunamadı." };
+  const conditions = sanitizeConditions(input.conditions);
+  const behavior = meta.kind === "header" ? { ...(typeof input.behavior?.sticky === "boolean" ? { sticky: input.behavior.sticky } : {}), ...(typeof input.behavior?.glass === "boolean" ? { glass: input.behavior.glass } : {}) } : undefined;
+  const { conditions: _c, behavior: _b, ...rest } = meta;
+  await repo.saveContent({
+    actor: { id: session.sub, email: session.email },
+    contentId: target.contentId,
+    type: "template",
+    status: "draft",
+    importanceScore: target.importanceScore,
+    schemaType: target.schemaType,
+    schemaAttributes: { ...target.schemaAttributes, template: { ...rest, ...(conditions.include.length || conditions.exclude.length ? { conditions } : {}), ...(behavior && Object.keys(behavior).length ? { behavior } : {}) } },
+    locale,
+    region: "TR",
+    slug: target.slug,
+    title: target.title,
+    tldr: target.tldr ?? "",
+    blocks: target.blocks,
+  } as never);
+  await refresh(siteId);
   return { ok: true };
 }
