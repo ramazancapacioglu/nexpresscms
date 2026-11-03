@@ -117,6 +117,52 @@ export async function buildPageSchemaGraph(
     };
     baseNodes.push(entity);
 
+    // Gelişmiş Şema (richSchema) düğümleri
+    const rich = ((c.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.rich ??
+      ((c.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined) ?? {};
+    if (rich.software && (c.schemaType === "SoftwareApplication" || c.schemaType === "Product" || c.schemaType === "WebPage")) {
+      const sw = rich.software;
+      baseNodes.push({
+        "@type": "SoftwareApplication",
+        "@id": `${input.pageUrl}#software`,
+        name: sw.name || c.title,
+        ...(sw.alternateName ? { alternateName: sw.alternateName } : {}),
+        operatingSystem: sw.os || "Windows, Web",
+        applicationCategory: sw.category || "BusinessApplication",
+        ...(sw.subCategory ? { applicationSubCategory: sw.subCategory } : {}),
+        ...(sw.version ? { softwareVersion: sw.version } : {}),
+        ...(sw.requirements ? { memoryRequirements: sw.requirements } : {}),
+        ...(sw.ratingValue ? { aggregateRating: { "@type": "AggregateRating", ratingValue: sw.ratingValue, reviewCount: sw.ratingCount || 1, bestRating: 5, worstRating: 1 } } : {}),
+        ...(sw.price ? { offers: { "@type": "Offer", price: String(sw.price).replace(",", "."), priceCurrency: sw.currency || "TRY" } } : {}),
+      });
+    }
+    if (rich.offer) {
+      const o = rich.offer;
+      baseNodes.push({
+        "@type": "Offer",
+        "@id": `${input.pageUrl}#offer`,
+        name: o.name || c.title,
+        price: String(o.price ?? "0").replace(",", "."),
+        priceCurrency: o.currency || "TRY",
+        ...(o.validThrough ? { validThrough: o.validThrough } : {}),
+        availability: o.availability ? `https://schema.org/${o.availability}` : "https://schema.org/InStock",
+        ...(o.discount ? { description: `${o.discount} indirim. ${o.terms ?? ""}`.trim() } : {}),
+      });
+    }
+    if (rich.qa) {
+      const q = rich.qa;
+      baseNodes.push({
+        "@type": "Question",
+        "@id": `${input.pageUrl}#question`,
+        name: c.title,
+        text: c.tldr || c.title,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: q.shortAnswer || c.tldr || c.title,
+        },
+      });
+    }
+
     if (input.autoSchema !== false && c.blocks) {
       baseNodes.push(...deriveAutoSchemaNodes(c.blocks, input.pageUrl));
     }

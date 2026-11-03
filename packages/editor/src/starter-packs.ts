@@ -147,4 +147,66 @@ export const NEXPRESS_STARTER_PAGE_PACKS: StarterPagePack[] = [
       pick("lib_erp_bottom_dock"),
     ],
   },
+  {
+    id: "pack_software_erp",
+    name: "Kurumsal ERP & Yazılım Ürün Lansman Paketi",
+    description:
+      "8+4 Hero & Demo İstek Kartı + Modül Sekmeleri + Donanım/Teknik Spek Tablosu + SSS Akordeonu + Destek Araçları.",
+    recommendedType: "product",
+    schemaType: "SoftwareApplication",
+    tldr: "Wolvox ERP; ön muhasebe, genel muhasebe, e-Dönüşüm, stok, üretim ve finans süreçlerini tek merkezden yöneten yeni nesil kurumsal kaynak planlama yazılımıdır.",
+    blocks: [
+      pick("lib_software_hero_demo"),
+      pick("lib_sticky_anchor_bar"),
+      pick("lib_software_modules_tabs"),
+      pick("lib_software_specs_grid"),
+      pick("lib_erp_faq_section"),
+      pick("lib_support_remote_tools"),
+      pick("lib_erp_bottom_dock"),
+    ],
+  },
+  {
+    id: "pack_campaign_single",
+    name: "Kampanya & Özel Fırsat Tanıtım Paketi",
+    description:
+      "Geri Sayım Şeridi + İndirim ve Hediye Kartı + Paket Karşılaştırma + Hızlı Başvuru Çağrısı.",
+    recommendedType: "campaign",
+    schemaType: "Offer",
+    tldr: "Yıl sonu ERP ve e-Dönüşüm kampanyası kapsamında %30 indirim ve 1 yıllık bulut yedekleme hediyesi fırsatını kaçırmayın.",
+    blocks: [
+      pick("lib_campaign_hero_countdown"),
+      pick("lib_erp_overview_3col"),
+      pick("lib_erp_scale_comparison"),
+      pick("lib_editorial_cta_banner"),
+    ],
+  },
+  {
+    id: "pack_qa_knowledge_base",
+    name: "Soru-Cevap & AI Prompts Bilgi Bankası Paketi",
+    description:
+      "Öne Çıkan Uzman Cevabı Kutusu + Mevzuat Detayı + İlgili Alt Sorular Akordeonu + Soru Sorma Formu.",
+    recommendedType: "ai_prompt",
+    schemaType: "QAPage",
+    tldr: "Mevzuat ve teknik süreçler hakkında sıkça sorulan soruların net, doğrudan uzman yanıtları ve adım adım uygulama rehberi.",
+    blocks: [
+      pick("lib_qa_featured_answer"),
+      pick("lib_aio_howto_steps"),
+      pick("lib_erp_faq_section"),
+      pick("lib_support_remote_tools"),
+    ],
+  },
+  {
+    id: "pack_support_center",
+    name: "Müşteri Destek ve İndirme Merkezi Paketi",
+    description:
+      "Uzak Masaüstü İndirme Çubuğu + Lisans Aktivasyon ve Sıkça Sorulan Sorular + 7/24 İletişim Hatları.",
+    recommendedType: "page",
+    schemaType: "WebPage",
+    tldr: "Akınsoft İzmir yetkili destek merkezi: AnyDesk, TeamViewer indirme bağlantıları, lisans sorgulama ve telefonla kesintisiz teknik destek.",
+    blocks: [
+      pick("lib_support_remote_tools"),
+      pick("lib_erp_faq_section"),
+      pick("lib_erp_bottom_dock"),
+    ],
+  },
 ];

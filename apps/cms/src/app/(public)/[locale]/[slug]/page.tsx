@@ -9,7 +9,7 @@ import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, r
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
-import { templateFor } from "@/lib/templates";
+import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -191,7 +191,8 @@ export default async function PublicDynamicContentPage({
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
   // Tema oluşturucu şablonu (sayfa / yazı / ürün): tam genişlik tuval tasarımlarında uygulanmaz; sayfada "none" seçilmişse yerleşik görünüm
-  const tplKind = content.type === "product" ? "product" : content.type === "page" || content.type === "campaign" ? "page" : "post";
+  const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
+  const syncedPatterns = await getSyncedPatternsMap(siteId);
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
   if (tpl) {
     const [menu, catIndex] = await Promise.all([getResolvedMenu(siteId, locale), getScopedRepository(siteId).listTaxonomies("category")]);
@@ -204,7 +205,7 @@ export default async function PublicDynamicContentPage({
       breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: content.title, href: `/${locale}/${content.slug}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} form={formCtx} />,
+        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
         author: pub.authorName || content.authorName || null,
@@ -217,7 +218,7 @@ export default async function PublicDynamicContentPage({
         {banner}
         {switcher}
         <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}>
-          <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} />
+          <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} patterns={syncedPatterns} />
         </div>
       </>
     );
@@ -239,6 +240,7 @@ export default async function PublicDynamicContentPage({
           mediaFocal={mediaFocal}
           locale={locale}
           dynamic={dynamicData} pageSchema={pageSchema}
+          patterns={syncedPatterns}
           form={formCtx}
         />
       </>
@@ -362,6 +364,7 @@ export default async function PublicDynamicContentPage({
         mediaFocal={mediaFocal}
         locale={locale}
         dynamic={dynamicData} pageSchema={pageSchema}
+        patterns={syncedPatterns}
         form={formCtx}
       />
 

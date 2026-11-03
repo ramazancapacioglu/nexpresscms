@@ -13,6 +13,7 @@ import { Check, Layers, LayoutTemplate, Plus, Search, Sparkles, X } from "lucide
 import { LibraryWireframe } from "./library-wireframe";
 import { BLOCK_TYPE_LABELS } from "./studio-model";
 import { exportPromptAction, validateDesignJsonAction } from "@/app/admin/design-library/actions";
+import { listPatternsAction } from "@/app/admin/appearance/templates/actions";
 
 type LibraryTab = "sections" | "packs" | "mine" | "ai_import";
 
@@ -54,6 +55,7 @@ export function DesignLibraryModal({
   const [query, setQuery] = useState("");
   const [aiJson, setAiJson] = useState("");
   const [saved, setSaved] = useState<SavedDesign[] | null>(null);
+  const [patterns, setPatterns] = useState<Array<{ id: string; name: string; description: string; category: string; blocks: BlockNode[] }> | null>(null);
   const [sitePrompt, setSitePrompt] = useState<string | null>(null);
   const [report, setReport] = useState<{
     score: number;
@@ -62,14 +64,22 @@ export function DesignLibraryModal({
   } | null>(null);
 
   useEffect(() => {
-    if (!open || tab !== "mine" || saved) return;
-    fetch("/api/admin/design-library", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((j: { ok: boolean; items?: SavedDesign[] }) =>
-        setSaved(j.ok ? (j.items ?? []) : [])
-      )
-      .catch(() => setSaved([]));
-  }, [open, tab, saved]);
+    if (!open || tab !== "mine") return;
+    if (!saved) {
+      fetch("/api/admin/design-library", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((j: { ok: boolean; items?: SavedDesign[] }) =>
+          setSaved(j.ok ? (j.items ?? []) : [])
+        )
+        .catch(() => setSaved([]));
+    }
+    if (!patterns) {
+      void listPatternsAction().then((res) => {
+        if (res.ok) setPatterns(res.patterns);
+        else setPatterns([]);
+      }).catch(() => setPatterns([]));
+    }
+  }, [open, tab, saved, patterns]);
 
   useEffect(() => {
     if (!open || tab !== "ai_import" || sitePrompt) return;
@@ -366,11 +376,69 @@ export function DesignLibraryModal({
                 AI ile yeni tasarım üret →
               </a>
             </div>
+            {/* 1. Senkronize Modeller (Global / Ortak Akıllı Bloklar) */}
+            {patterns && patterns.length > 0 && (
+              <div className="mb-6 space-y-3">
+                <div className="flex items-center justify-between border-b border-border/80 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-purple-600 text-white text-[11px]">✨</span>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300">
+                      Senkronize Modeller ({patterns.length})
+                    </h4>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">Düzenlendiğinde tüm sayfalarda otomatik güncellenir</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {patterns.map((p) => (
+                    <div key={p.id} className="rounded-xl border border-purple-200 bg-purple-50/30 p-3.5 dark:border-purple-900/60 dark:bg-purple-950/20">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-sm font-bold text-foreground">{p.name}</h3>
+                        <span className="shrink-0 rounded-full bg-purple-600/10 px-2 py-0.5 text-[10px] font-bold text-purple-800 dark:text-purple-300">
+                          {p.category}
+                        </span>
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
+                        {p.description || "Senkronize ortak model"}
+                      </p>
+                      <div className="mt-3 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onInsert({
+                              type: "synced_pattern",
+                              props: { patternId: p.id, title: p.name },
+                              children: p.blocks,
+                            });
+                            onClose();
+                          }}
+                          className="flex-1 rounded-md bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-purple-700"
+                        >
+                          Model Olarak Ekle
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            p.blocks.forEach((b) => onInsert(b));
+                            onClose();
+                          }}
+                          title="Model bağlantısı olmadan bağımsız kopya olarak ekle"
+                          className="rounded-md border border-input bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+                        >
+                          Kopya ({p.blocks.length})
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 2. Kayıtlı Statik Tasarımlar */}
             {!saved ? (
               <p className="py-10 text-center text-xs text-muted-foreground">Yükleniyor…</p>
-            ) : saved.length === 0 ? (
+            ) : saved.length === 0 && (!patterns || patterns.length === 0) ? (
               <p className="py-10 text-center text-xs text-muted-foreground">
-                Henüz kayıtlı bölüm veya sayfa tasarımı yok.
+                Henüz kayıtlı model veya sayfa tasarımı yok.
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">

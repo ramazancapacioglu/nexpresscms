@@ -19,7 +19,11 @@ export type TemplateKind =
   | "product"
   | "shop"
   | "product_category"
-  | "search";
+  | "search"
+  | "pattern"
+  | "campaign"
+  | "kb_tech"
+  | "ai_prompt";
 
 export interface TemplateKindInfo {
   label: string;
@@ -92,6 +96,29 @@ export const TEMPLATE_KINDS: Record<TemplateKind, TemplateKindInfo> = {
     description: "Site içi arama sonuçları sayfasının görünümü (arama kutusu, sonuç listesi ve önerilen içerikler).",
     requiredBlock: "tpl_archive_list",
     slots: ["search_box", "tpl_archive_title", "tpl_archive_list"],
+  },
+  pattern: {
+    label: "Senkronize Model (Yeniden Kullanılabilir Blok)",
+    description: "WordPress tarzı senkronize model: tek bir yerden düzenlenince tüm sayfalarda otomatik güncellenen akıllı blok kümesi.",
+    slots: [],
+  },
+  campaign: {
+    label: "Kampanya & Teklif Şablonu",
+    description: "Özel kampanya detay sayfası: geri sayım, indirim tutarı, hediye avantajları, kampanya koşulları ve başvuru formu.",
+    requiredBlock: "tpl_post_content",
+    slots: ["schema_card", "tpl_post_title", "tpl_featured_image", "tpl_post_content", "countdown", "form_block"],
+  },
+  kb_tech: {
+    label: "Teknik Makale & Rehber Şablonu",
+    description: "Teknik dokümantasyon, kılavuz ve HowTo içerikleri: zorluk derecesi, sistem gereksinimleri, adım adım rehber.",
+    requiredBlock: "tpl_post_content",
+    slots: ["schema_card", "tpl_breadcrumb", "tpl_post_title", "tpl_post_meta", "tpl_post_content", "toc", "howto_steps"],
+  },
+  ai_prompt: {
+    label: "Soru-Cevap & AI Prompts Şablonu",
+    description: "Soru madenciliği ve PAA sayfası: öne çıkan uzman cevabı, mevzuat detayı, ilgili sorular ve soru sorma formu.",
+    requiredBlock: "tpl_post_content",
+    slots: ["schema_card", "tpl_breadcrumb", "tpl_post_title", "tpl_post_content", "faq_accordion", "form_block"],
   },
 };
 
@@ -202,13 +229,13 @@ export function validateTemplate(kind: TemplateKind, blocks: BlockNode[]): Templ
   const all = flat(blocks);
   if (info.requiredBlock) {
     const n = all.filter((b) => b.type === info.requiredBlock).length;
-    if (n === 0) issues.push({ level: "error", message: kind === "page" || kind === "post" ? "Şablonda \"İçerik\" yuvası (tpl_post_content) yok: sayfanın kendi içeriği görünmez." : "Şablonda \"Arşiv listesi\" yuvası yok: yayın listesi görünmez." });
+    if (n === 0) issues.push({ level: "error", message: kind === "category" || kind === "tag" || kind === "shop" || kind === "product_category" || kind === "search" ? "Şablonda \"Arşiv listesi\" yuvası yok: yayın listesi görünmez." : "Şablonda \"İçerik\" yuvası (tpl_post_content) yok: sayfanın kendi içeriği görünmez." });
     if (n > 1) issues.push({ level: "error", message: "Bu yuva şablonda yalnızca bir kez bulunabilir." });
   }
-  if ((kind === "header" || kind === "footer" || kind === "sidebar") && all.some((b) => b.type === "tpl_post_content" || b.type === "tpl_archive_list")) {
-    issues.push({ level: "error", message: "Header, footer ve kenar çubuğunda içerik/arşiv yuvası kullanılamaz." });
+  if ((kind === "header" || kind === "footer" || kind === "sidebar" || kind === "pattern") && all.some((b) => b.type === "tpl_post_content" || b.type === "tpl_archive_list")) {
+    issues.push({ level: "error", message: "Header, footer, kenar çubuğu ve senkronize modelde ana sayfa içerik/arşiv yuvası kullanılamaz." });
   }
-  if (kind === "page" || kind === "post") {
+  if (kind === "page" || kind === "post" || kind === "campaign" || kind === "kb_tech" || kind === "ai_prompt") {
     if (!all.some((b) => b.type === "tpl_post_title") && !all.some((b) => b.type === "hero")) issues.push({ level: "warning", message: "Şablonda sayfa başlığı (h1) yok: arama motorları için bir başlık yuvası ekleyin." });
   }
   if (kind === "product" && !all.some((b) => b.type === "tpl_product_buy")) issues.push({ level: "warning", message: "Satın alma kutusu (tpl_product_buy) yok: mağaza ürün sayfalarında bu şablon kullanılmaz (yerleşik görünüm kalır); yalnızca ürün türündeki içerik sayfalarına uygulanır." });
@@ -296,6 +323,208 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   // 11. ARAMA SONUÇLARI ŞABLONLARI (`search`)
   { id: "search-default", kind: "search", name: "Arama sonuçları — standart", description: "Üstte geniş arama kutusu, altında bulunan içeriklerin listesi.", blocks: [b("t", "tpl_archive_title"), b("s_box", "search_box", { placeholder: "Yeni bir arama yapın…" }), b("l", "tpl_archive_list", { layout: "list", columns: 1 })] },
   { id: "search-sidebar-right", kind: "search", name: "Arama sonuçları — sağ kenar çubuklu", description: "Arama sonuçları solda (8 birim), popüler yazılar ve menü sağda (4 birim).", blocks: [b("t", "tpl_archive_title"), b("s_box", "search_box", { placeholder: "Anahtar kelime yazın…" }), cols("s_cols", "8+4", [66.66, 33.33], [[b("l", "tpl_archive_list", { layout: "cards", columns: 2 })], SIDEBAR_SEARCH_AND_POSTS])] },
+
+  // 12. KURUMSAL YAZILIM & ERP ŞABLONU (`product`)
+  {
+    id: "product-software-erp",
+    kind: "product",
+    name: "Yazılım & ERP Vitrini — Demo ve Modül Sekmeli",
+    description: "Referans ERP standartlarında: Hero + Demo istek formu, SoftwareApplication şema kartı, modül sekmeleri ve donanım gereksinimleri.",
+    blocks: [
+      b("bc", "tpl_breadcrumb"),
+      cols("soft_top", "7+5", [58, 42], [
+        [
+          b("t", "tpl_post_title", { level: "h1" }),
+          b("soft_schema", "schema_card", { schema: "software" }),
+          b("buy", "tpl_product_buy", { buttonText: "Teklif Al / Sipariş Ver" }),
+        ],
+        [
+          b("soft_card", "info_box", {
+            icon: "sparkles",
+            title: "Ücretsiz Canlı Demo Talebi",
+            text: "Uzmanlarımız işletmenizi ziyaret etsin veya online ortamda ekran paylaşımıyla tüm modülleri tanıtsın.",
+            linkText: "Demo Formunu Doldurun",
+            linkHref: "/tr/akinsoft-demo-talebi",
+            tone: "primary",
+          }),
+        ],
+      ]),
+      b("c", "tpl_post_content"),
+    ],
+  },
+
+  // 13. KAMPANYA VE TEKLİF ŞABLONU (`campaign`)
+  {
+    id: "campaign-detail",
+    kind: "campaign",
+    name: "Kampanya Detayı — İndirim, Geri Sayım ve Başvuru",
+    description: "Özel indirim tutarı, hediye avantajı, geçerlilik tarihi, şartlar tablosu ve hızlı teklif formu.",
+    blocks: [
+      b("bc", "tpl_breadcrumb"),
+      b("t", "tpl_post_title", { level: "h1" }),
+      b("camp_card", "schema_card", { schema: "offer" }),
+      cols("camp_body", "8+4", [66.66, 33.33], [
+        [
+          b("i", "tpl_featured_image", { rounded: true }),
+          b("c", "tpl_post_content"),
+        ],
+        [
+          b("camp_apply", "info_box", {
+            icon: "megaphone",
+            title: "Fırsattan Yararlanın",
+            text: "Kampanya süresi dolmadan müşteri temsilcimizle görüşün ve özel indirim kodunuzu tanımlayın.",
+            linkText: "Bizi Arayın: 0 (232) 555 00 00",
+            linkHref: "tel:02325550000",
+            tone: "accent",
+          }),
+          b("camp_rel", "dynamic_list", {
+            source: "posts",
+            limit: 3,
+            layout: "cards",
+            showExcerpt: false,
+            excludeCurrent: true,
+            heading: "Diğer Kampanyalar",
+          }),
+        ],
+      ]),
+    ],
+  },
+
+  // 14. TEKNİK MAKALE VE REHBER ŞABLONU (`kb_tech`)
+  {
+    id: "tech-article-guide",
+    kind: "kb_tech",
+    name: "Teknik Makale — Ön Koşullar & Rehber Düzeni",
+    description: "Teknik doküman, HowTo ve kılavuz: zorluk derecesi, bağımlılıklar, içindekiler ve adım adım rehber.",
+    blocks: [
+      b("bc", "tpl_breadcrumb"),
+      b("t", "tpl_post_title", { level: "h1" }),
+      b("m", "tpl_post_meta", { showAuthor: true, showDate: true, showReadingTime: true }),
+      b("tech_badge", "schema_card", { schema: "tech" }),
+      cols("tech_layout", "4+8", [33.33, 66.66], [
+        [
+          b("toc", "toc", { title: "İçindekiler" }),
+          b("support_box", "info_box", {
+            icon: "headphones",
+            title: "Teknik Destek Masası",
+            text: "Kurulum veya veri aktarımında takıldığınız her an uzak masaüstü desteğimizle yanınızdayız.",
+            linkText: "Destek Talebi Aç",
+            linkHref: "/tr/akinsoft-destek",
+            tone: "primary",
+          }),
+        ],
+        [
+          b("c", "tpl_post_content"),
+        ],
+      ]),
+    ],
+  },
+
+  // 15. SORU-CEVAP VE AI PROMPT ŞABLONU (`ai_prompt`)
+  {
+    id: "qa-single",
+    kind: "ai_prompt",
+    name: "Soru-Cevap — Öne Çıkan Uzman Cevabı (PAA)",
+    description: "Google Featured Snippet uyumlu tekil soru sayfası: öne çıkan kısa cevap, detaylı mevzuat ve soru sorma alanı.",
+    blocks: [
+      b("bc", "tpl_breadcrumb"),
+      b("t", "tpl_post_title", { level: "h1" }),
+      b("qa_box", "schema_card", { schema: "qa" }),
+      cols("qa_layout", "8+4", [66.66, 33.33], [
+        [
+          b("c", "tpl_post_content"),
+        ],
+        [
+          b("ask_box", "info_box", {
+            icon: "help-circle",
+            title: "Sorunuz mu Var?",
+            text: "Bu konu hakkında aklınıza takılan soruları uzmanlarımıza iletin, en kısa sürede yanıtlayalım.",
+            linkText: "Uzmana Soru Sorun",
+            linkHref: "/tr/iletisim",
+            tone: "primary",
+          }),
+          b("related_qa", "dynamic_list", {
+            source: "posts",
+            limit: 4,
+            layout: "list",
+            showDate: false,
+            excludeCurrent: true,
+            heading: "İlgili Sorular",
+          }),
+        ],
+      ]),
+    ],
+  },
+
+  // 16. DESTEK VE İNDİRME MERKEZİ ŞABLONU (`page`)
+  {
+    id: "destek-hub",
+    kind: "page",
+    name: "Destek ve İndirme Merkezi (Hub)",
+    description: "Uzak masaüstü AnyDesk/TeamViewer araçları, lisans sorgulama, telefon/WhatsApp hatları ve SSS.",
+    blocks: [
+      b("bc", "tpl_breadcrumb"),
+      b("t", "tpl_post_title", { level: "h1" }),
+      b("c", "tpl_post_content"),
+      cols("remote_tools", "4+4+4", [33.33, 33.33, 33.33], [
+        [
+          b("t1", "info_box", {
+            icon: "monitor",
+            title: "AnyDesk İndir",
+            text: "Hızlı ve güvenli uzak masaüstü bağlantı istemcisi.",
+            linkText: "AnyDesk İndir (v7)",
+            linkHref: "https://anydesk.com",
+            tone: "primary",
+          }),
+        ],
+        [
+          b("t2", "info_box", {
+            icon: "monitor",
+            title: "Alpemix İndir",
+            text: "Kurulum gerektirmeyen pratik yerli uzak destek aracı.",
+            linkText: "Alpemix İndir",
+            linkHref: "https://alpemix.com",
+            tone: "accent",
+          }),
+        ],
+        [
+          b("t3", "info_box", {
+            icon: "headphones",
+            title: "Çağrı Merkezi",
+            text: "Hafta içi 08:30 - 18:30 arası kesintisiz telefon desteği.",
+            linkText: "0 (232) 555 00 00",
+            linkHref: "tel:02325550000",
+            tone: "muted",
+          }),
+        ],
+      ]),
+    ],
+  },
+
+  // 17. SENKRONİZE MODEL BAŞLANGICI (`pattern`)
+  {
+    id: "pattern-hero-cta",
+    kind: "pattern",
+    name: "Senkronize Model: Kurumsal Hero & Hızlı İletişim",
+    description: "Tek bir yerden düzenlenince kullanıldığı tüm sayfalarda otomatik güncellenen akıllı çağrı bloğu.",
+    blocks: [
+      cols("pat_cols", "8+4", [66.66, 33.33], [
+        [
+          b("pat_h", "heading", { level: 2, text: "İşletmenizi Dijital Çağa Taşıyın" }),
+          b("pat_p", "paragraph", { text: "Wolvox ERP ve e-Dönüşüm çözümleriyle fatura, stok ve finans süreçlerinizi tek ekrandan yönetin." }),
+          b("pat_btn", "button_element", { label: "Hemen Teklif Alın", href: "/tr/akinsoft-demo-talebi", styleVariant: "primary" }),
+        ],
+        [
+          b("pat_box", "info_box", {
+            icon: "award",
+            title: "Neden Biz?",
+            text: "15+ yıllık tecrübe, 5.000+ mutlu müşteri, İzmir ve Ege genelinde yerinde kurulum & eğitim güvencesi.",
+            tone: "primary",
+          }),
+        ],
+      ]),
+    ],
+  },
 ];
 
 /** Her çağrıda benzersiz kimlikli kopya (stüdyoda aynı kimlikler çakışmasın). */

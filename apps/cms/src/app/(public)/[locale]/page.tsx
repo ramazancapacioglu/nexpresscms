@@ -5,6 +5,7 @@ import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
+import { getSyncedPatternsMap } from "@/lib/templates";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme } from "@/lib/public-theme";
@@ -90,6 +91,7 @@ export default async function PublicHomePage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
+          patterns={await getSyncedPatternsMap(siteId)}
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId, sp)}
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
           form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}

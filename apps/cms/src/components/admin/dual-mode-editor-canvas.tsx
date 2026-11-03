@@ -6,6 +6,7 @@ import { RscBlockRenderer } from "@nexpress/themes";
 import {
   appendRepeaterItem,
   duplicateBlockById,
+  findBlock,
   moveBlockStep,
   removeBlockById,
   updateBlockById,
@@ -17,13 +18,24 @@ import { CanvasBlock } from "./editor/canvas-block";
 import { DropZone } from "./editor/dnd";
 import { TitleField } from "./editor/title-field";
 import { PageSchemaContext } from "./editor/page-schema-context";
+import { CreatePatternModal } from "./editor/create-pattern-modal";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
   const isTemplateMode = s.lockedType === "template";
+  const [patternModalBlock, setPatternModalBlock] = React.useState<BlockNode | null>(null);
 
   const addEmptyRowAtRoot = () => {
     s.handleInsertBlock(buildEmptyRow(), null);
+  };
+
+  const handleOpenCreatePattern = (blockId: string) => {
+    const b = findBlock(s.blocks, blockId);
+    if (b) setPatternModalBlock(b);
+  };
+
+  const handleDetachPattern = (blockId: string) => {
+    s.handleDetachPattern(blockId);
   };
 
   const handleOpenMediaPickerForBlock = (blockId: string) => {
@@ -192,6 +204,8 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                             onOpenMediaPicker={handleOpenMediaPickerForBlock}
                             onOpenLibrary={() => s.setLibraryOpen(true)}
                             onAppendRepeaterItem={handleAppendRepeaterItem}
+                            onOpenCreatePattern={handleOpenCreatePattern}
+                            onDetachPattern={handleDetachPattern}
                             onUpdateBlock={(id, updater) =>
                               s.setBlocks((prev) => updateBlockById(prev, id, updater))
                             }
@@ -315,6 +329,19 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
             </pre>
           </div>
         )}
+
+        {/* Senkronize Model Oluşturma Modalı */}
+        <CreatePatternModal
+          open={Boolean(patternModalBlock)}
+          block={patternModalBlock}
+          onClose={() => setPatternModalBlock(null)}
+          onCreated={(pattern) => {
+            if (patternModalBlock) {
+              s.handlePatternCreated(patternModalBlock.id, pattern);
+              setPatternModalBlock(null);
+            }
+          }}
+        />
       </main>
     </PageSchemaContext.Provider>
   );

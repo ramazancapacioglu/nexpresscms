@@ -34,6 +34,8 @@ export interface BlockRenderContext {
   tpl?: TemplateRenderContext;
   /** Şema kartları (schema_card) için sayfanın şema verisi */
   pageSchema?: PageSchemaData;
+  /** Senkronize modeller (synced_pattern için modelId → BlockNode[] haritası) */
+  patterns?: Record<string, BlockNode[]>;
   preview?: boolean;
   /** İç içe blokları (bölüm, sütun) aynı bağlamla işler. */
   renderChild: (child: BlockNode) => React.ReactElement | null;

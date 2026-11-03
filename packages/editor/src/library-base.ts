@@ -1698,4 +1698,394 @@ export const BASE_LIBRARY: DesignLibraryItem[] = [
       ],
     },
   },
+
+  // ---------------------------------------------------------------------------
+  // KURUMSAL YAZILIM, KAMPANYA VE BİLGİ BANKASI TASARIMLARI
+  // ---------------------------------------------------------------------------
+  {
+    id: "lib_software_hero_demo",
+    name: "Yazılım & ERP Hero + Demo İstek Kartı",
+    category: "hero",
+    description: "8+4 Bölünmüş ERP yazılım hero başlığı, sürüm rozetleri ve canlı demo istek formu.",
+    previewKind: "hero-split",
+    badge: "ERP & Yazılım",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "yazilim-genel" },
+      style: { paddingTop: "48px", paddingBottom: "48px" },
+      children: [
+        {
+          id: "sw_hero_cols",
+          type: "columns",
+          props: { ratio: "8+4", gap: "2.5rem", verticalAlign: "center" },
+          children: [
+            {
+              id: "sw_hero_left",
+              type: "column",
+              props: { widthPct: 66.66 },
+              children: [
+                {
+                  id: "sw_hero_badge",
+                  type: "paragraph",
+                  props: { text: "🚀 YENİ NESİL KURUMSAL KAYNAK PLANLAMA (ERP) ÇÖZÜMÜ", html: "<span style='color:#c8102e;font-weight:700;font-size:12px;letter-spacing:1px;'>🚀 YENİ NESİL KURUMSAL KAYNAK PLANLAMA (ERP) ÇÖZÜMÜ</span>" },
+                },
+                {
+                  id: "sw_hero_h1",
+                  type: "heading",
+                  props: { level: 1, text: "İşletmenizin Tüm Süreçlerini Tek Merkezden Yönetin" },
+                },
+                {
+                  id: "sw_hero_p",
+                  type: "paragraph",
+                  props: { text: "Ön muhasebe, genel muhasebe, e-Dönüşüm (e-Fatura/e-Arşiv), stok-depo, üretim ve finans süreçlerinizi hatasız, hızlı ve güvenle kontrol altına alın." },
+                },
+                {
+                  id: "sw_hero_btns",
+                  type: "button_row",
+                  props: {
+                    align: "left",
+                    buttons: [
+                      { label: "Ücretsiz Canlı Demo Talebi →", href: "#demo-formu", variant: "primary" },
+                      { label: "Modülleri İncele", href: "#moduller", variant: "outline" },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              id: "sw_hero_right",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "sw_hero_card",
+                  type: "info_box",
+                  props: {
+                    icon: "sparkles",
+                    title: "Hemen Canlı Tanıtım Alın",
+                    text: "Sektörünüze özel demo için formu doldurun veya uzmanımızı arayın.",
+                    linkText: "0 (232) 555 00 00",
+                    linkHref: "tel:02325550000",
+                    tone: "primary",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_software_modules_tabs",
+    name: "Yazılım Çözüm ve Modül Sekmeleri",
+    category: "layout",
+    description: "Ön Muhasebe, ERP, e-Dönüşüm, CRM ve Üretim modüllerini içeren zengin sekmeli vitrin.",
+    previewKind: "columns",
+    badge: "Modül Sekmeleri",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "moduller" },
+      style: { paddingTop: "40px", paddingBottom: "40px" },
+      children: [
+        {
+          id: "mod_head",
+          type: "heading",
+          props: { level: 2, text: "Geniş Modüler Yapı ile İhtiyacınıza Göre Ölçekleyin", align: "center" },
+        },
+        {
+          id: "mod_desc",
+          type: "paragraph",
+          props: { text: "Yalnızca ihtiyacınız olan modülleri lisanslayın, işletmeniz büyüdükçe yeni yetenekler ekleyin.", align: "center" },
+        },
+        {
+          id: "mod_tabs",
+          type: "tabs",
+          props: {
+            title: "Yazılım Modülleri",
+            tabStyle: "pills",
+            tabs: [
+              { id: "tab_muhasebe", label: "Ön & Genel Muhasebe", icon: "file-text" },
+              { id: "tab_edonusum", label: "e-Dönüşüm Entegrasyonu", icon: "check-circle" },
+              { id: "tab_stok", label: "Stok & Çoklu Depo", icon: "layers" },
+              { id: "tab_uretim", label: "Üretim & MRP Planlama", icon: "settings" },
+              { id: "tab_crm", label: "Müşteri İlişkileri (CRM)", icon: "users" },
+            ],
+          },
+          children: [
+            {
+              id: "tab_col_1",
+              type: "column",
+              props: { widthPct: 100 },
+              children: [
+                {
+                  id: "tab_1_row",
+                  type: "columns",
+                  props: { ratio: "6+6", gap: "2rem", verticalAlign: "center" },
+                  children: [
+                    {
+                      id: "tab_1_c1",
+                      type: "column",
+                      props: { widthPct: 50 },
+                      children: [
+                        { id: "t1_h", type: "heading", props: { level: 3, text: "Cari, Kasa, Banka ve Çek/Senet Takibi" } },
+                        { id: "t1_p", type: "paragraph", props: { text: "Tüm borç-alacak hesaplarınızı anlık olarak izleyin, vade günlerini otomatik takip edin ve resmi muhasebe standartlarına tam uyum sağlayın." } },
+                        { id: "t1_l", type: "icon_list", props: { items: [{ icon: "check", title: "Otomatik Ekstre Gönderimi", text: "Müşterilerinize tek tıkla WhatsApp veya e-posta ile bakiye ekstresi iletin." }, { icon: "check", title: "Çoklu Para Birimi & Döviz Takibi", text: "TCMB kurlarıyla anlık dövizli cari değerleme ve kur farkı hesaplama." }] } },
+                      ],
+                    },
+                    {
+                      id: "tab_1_c2",
+                      type: "column",
+                      props: { widthPct: 50 },
+                      children: [
+                        { id: "t1_box", type: "info_box", props: { icon: "award", title: "Tam Mevzuat Uyumu", text: "Gelir İdaresi Başkanlığı güncel muhasebe tebliğleri ve tek düzen hesap planı ile %100 entegre.", tone: "primary" } },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_software_specs_grid",
+    name: "Yazılım Teknik Özellikler & Donanım Tablosu",
+    category: "data",
+    description: "İşletim sistemi, veritabanı desteği ve minimum/önerilen donanım gereksinimleri matrisi.",
+    previewKind: "columns",
+    badge: "Teknik Spek",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "teknik-ozellikler" },
+      style: { paddingTop: "40px", paddingBottom: "40px" },
+      children: [
+        {
+          id: "specs_h",
+          type: "heading",
+          props: { level: 2, text: "Teknik Altyapı & Sistem Gereksinimleri", align: "center" },
+        },
+        {
+          id: "specs_cols",
+          type: "columns",
+          props: { ratio: "4+4+4", gap: "1.5rem", verticalAlign: "top" },
+          children: [
+            {
+              id: "spec_c1",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "spec_box1",
+                  type: "info_box",
+                  props: {
+                    icon: "monitor",
+                    title: "Desteklenen İşletim Sistemleri",
+                    text: "Windows 10, Windows 11 (64-bit), Windows Server 2019/2022. İstemciler için Web Tarayıcı ve Mobil uyumlu.",
+                    tone: "primary",
+                  },
+                },
+              ],
+            },
+            {
+              id: "spec_c2",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "spec_box2",
+                  type: "info_box",
+                  props: {
+                    icon: "layers",
+                    title: "Güçlü Veritabanı Mimarisi",
+                    text: "Yüksek hızlı Firebird SQL ve kurumsal ölçekte Microsoft SQL Server desteğiyle milyonlarca kayıtta sıfır yavaşlama.",
+                    tone: "accent",
+                  },
+                },
+              ],
+            },
+            {
+              id: "spec_c3",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "spec_box3",
+                  type: "info_box",
+                  props: {
+                    icon: "shield",
+                    title: "Yedekleme & Veri Güvenliği",
+                    text: "Günlük yerel ve bulut otomatik yedekleme entegrasyonu. SSL ve rol tabanlı kullanıcı yetkilendirme güvenliği.",
+                    tone: "muted",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_campaign_hero_countdown",
+    name: "Kampanya Fırsat Şeridi + Geri Sayım ve İndirim",
+    category: "commerce",
+    description: "Sınırlı süreli kampanya bannerı, indirim rozeti, hediye avantajları ve çağrı butonu.",
+    previewKind: "cta-strip",
+    badge: "Kampanya",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "firsat" },
+      style: { paddingTop: "32px", paddingBottom: "32px", backgroundColor: "#fffbeb", borderRadius: "16px", borderWidth: "1px", borderColor: "#fde68a" },
+      children: [
+        {
+          id: "camp_cols",
+          type: "columns",
+          props: { ratio: "8+4", gap: "2rem", verticalAlign: "center" },
+          children: [
+            {
+              id: "camp_left",
+              type: "column",
+              props: { widthPct: 66.66 },
+              children: [
+                {
+                  id: "camp_badge",
+                  type: "paragraph",
+                  props: { text: "🔥 SINIRLI SÜRELİ YIL SONU FIRSATI", html: "<span style='background:#c8102e;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;'>🔥 %30 İNDİRİM FIRSATI</span>" },
+                },
+                {
+                  id: "camp_h2",
+                  type: "heading",
+                  props: { level: 2, text: "Yeni Lisans Alımlarında 1 Yıl Bulut Yedekleme Hediye!" },
+                },
+                {
+                  id: "camp_p",
+                  type: "paragraph",
+                  props: { text: "Yıl sonuna kadar geçerli kampanya kapsamında ERP paketlerinde %30 indirim ve 1.000 adet e-Fatura kontörü hediye ediyoruz." },
+                },
+              ],
+            },
+            {
+              id: "camp_right",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "camp_btn",
+                  type: "button_element",
+                  props: {
+                    label: "Fırsattan Hemen Yararlanın →",
+                    href: "#demo-formu",
+                    styleVariant: "primary",
+                    align: "center",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_qa_featured_answer",
+    name: "Öne Çıkan Uzman Kısa Cevabı (Featured Answer)",
+    category: "aio_sge",
+    description: "Google Featured Snippet ve AI arama motorları için öne çıkan doğrudan cevap ve onay rozeti.",
+    previewKind: "prose-section",
+    badge: "AI Soru-Cevap",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "uzman-cevabi" },
+      style: { paddingTop: "32px", paddingBottom: "32px" },
+      children: [
+        {
+          id: "qa_head",
+          type: "heading",
+          props: { level: 2, text: "Uzman Cevabı & Mevzuat Özeti" },
+        },
+        {
+          id: "qa_box_info",
+          type: "info_box",
+          props: {
+            icon: "check-circle",
+            title: "Net ve Doğrudan Yanıt",
+            text: "Gelir İdaresi Başkanlığı tebliğine göre yıllık brüt satış hasılatı sınırını aşan tüm işletmeler takip eden yılbaşında sisteme geçmekle yükümlüdür. Lisanslı ERP yazılımınız üzerinden tek tıkla e-Dönüşüm aktivasyonu tamamlanabilmektedir.",
+            tone: "primary",
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "lib_support_remote_tools",
+    name: "Uzak Masaüstü İndirme Çubuğu & Destek Araçları",
+    category: "layout",
+    description: "AnyDesk, TeamViewer ve Alpemix hızlı indirme butonları ile teknik çağrı merkezi iletişim kartı.",
+    previewKind: "cta-strip",
+    badge: "Destek Hub",
+    block: {
+      type: "section",
+      gridSpan: { desktop: 12, tablet: 12, mobile: 12 },
+      props: { containerMode: "boxed", anchorId: "uzak-destek" },
+      style: { paddingTop: "32px", paddingBottom: "32px" },
+      children: [
+        {
+          id: "sup_h",
+          type: "heading",
+          props: { level: 2, text: "Uzak Masaüstü Bağlantı Araçları", align: "center" },
+        },
+        {
+          id: "sup_cols",
+          type: "columns",
+          props: { ratio: "4+4+4", gap: "1.5rem", verticalAlign: "center" },
+          children: [
+            {
+              id: "sup_c1",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "sup_b1",
+                  type: "button_element",
+                  props: { label: "AnyDesk İndir (Windows)", href: "https://anydesk.com", styleVariant: "primary", align: "center" },
+                },
+              ],
+            },
+            {
+              id: "sup_c2",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "sup_b2",
+                  type: "button_element",
+                  props: { label: "Alpemix Uzak Destek İndir", href: "https://alpemix.com", styleVariant: "outline", align: "center" },
+                },
+              ],
+            },
+            {
+              id: "sup_c3",
+              type: "column",
+              props: { widthPct: 33.33 },
+              children: [
+                {
+                  id: "sup_b3",
+                  type: "button_element",
+                  props: { label: "Çağrı Merkezi: 0 (232) 555 00 00", href: "tel:02325550000", styleVariant: "ghost", align: "center" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

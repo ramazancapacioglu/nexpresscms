@@ -21,6 +21,23 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — WordPress Tarzı Senkronize Model (Synced Pattern / Reusable Block) Modülü, Genişletilmiş Schema.org Grafikleri ve Akınsoft/Logo Referanslı Şablon & Kütüphane Paketleri
+- ✅ **Senkronize Model (Synced Pattern) Modülü (`synced_pattern` & `TemplateKind: "pattern"`):**
+  - Editörde kanvastaki herhangi bir bloğun (bölüm, satır, kartlar, form vb.) kayan araç çubuğundaki **✨ Model Oluştur** butonuyla ad ve kategori girilerek senkronize modele dönüştürülmesi sağlandı (`CreatePatternModal`).
+  - Model veritabanına `type: "template"`, `kind: "pattern"` olarak kaydedilir ve sayfadaki blok anında `{ type: "synced_pattern", props: { patternId, title } }` referans düğümüne dönüştürülür.
+  - Model düzenlendiğinde (`/admin/appearance/templates`), kullanıldığı tüm sayfalarda eş zamanlı güncellenir.
+  - **Bağlantıyı Kopar (Detach Pattern):** Kayan araç çubuğundan tek tıkla senkronize model sayfaya özel bağımsız blok kopyalarına dönüştürülebilir.
+  - **Tasarım Kütüphanesi Entegrasyonu (`✨ Tasarım Kütüphanesi`):** "Modellerim" sekmesi altında kaydedilen tüm modeller listelenir; kullanıcı "Model Olarak Ekle (Senkronize)" veya "Kopya Olarak Ekle (Bağımsız)" seçebilir.
+  - **0-KB RSC Render Motoru:** Ziyaretçi yüzeyinde (`RscBlockRenderer`), `patterns` sözlüğü üzerinden önbellekli bloklar sıfır istemci JS yüküyle sunucuda derlenir.
+- ✅ **Genişletilmiş Schema.org Bilgi Grafikleri (`agentic-seo-gateway` Entegrasyonu):**
+  - `packages/core/src/page-schema.ts` ve `@nexpress/seo-core` içinde `SoftwareApplication`, `Offer`, `QAPage` ve `TechArticle` şemaları zenginleştirildi.
+  - Yazılım ürünleri için işletim sistemi, modül listesi, sürüm, donanım gereksinimleri, demo bağlantısı; kampanyalar için indirim, hediye, kupon kodu ve bitiş tarihi; Soru-Cevap için uzman yanıtı ve SGE/AIO özetleri eklendi.
+  - `packages/themes/src/schema-card.tsx` içinde zengin görsel şema kartları tasarlandı.
+- ✅ **Referans Akınsoft & Logo İçerik Şablonları ve Başlangıç Paketleri (`STARTER_TEMPLATES`, `starter-packs.ts`):**
+  - 6 Uzmanlaşmış Şablon: ERP & Yazılım Vitrini (`product-software-erp`), Kampanya Detayı (`campaign-detail`), Teknik Makale (`tech-article-guide`), Soru-Cevap & PAA (`qa-single`), Destek Hub (`destek-hub`), Senkronize Hero CTA Modeli (`pattern-hero-cta`).
+  - 6 Tasarım Kütüphanesi Bölümü & 4 Tam Sayfa Başlangıç Paketi: `pack_software_erp`, `pack_campaign_single`, `pack_qa_knowledge_base`, `pack_support_center`.
+  - Tüm testler (197/197 `@nexpress/core`, 29/29 `@nexpress/seo-core`) ve 13 paketin tip kontrolleri başarıyla doğrulandı.
+
 ### [2026-11-03] — Çoklu Kenar Çubuğu (Multi-Sidebar) Stüdyosu, Sayfa Başına Sidebar İzolasyonu (Leakage Fix) ve İçerik Türü Sidebar Eşlemesi
 - ✅ **Çoklu Kenar Çubuğu (Multi-Sidebar) Mimarisi (`@nexpress/core/widgets`, `STANDARD_SIDEBAR_AREAS`):**
   - Tek global sidebar yerine içerik türlerine göre ayrışmış çoklu sidebar alanları (`SidebarAreaConfig`: `id`, `name`, `description`, `enabled`, `position`, `width`, `sticky`, `styleVariant`, `widgets`) tanımlandı.

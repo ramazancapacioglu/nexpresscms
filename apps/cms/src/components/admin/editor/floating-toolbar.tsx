@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Plus,
   Columns3,
+  Sparkles,
 } from "lucide-react";
 
 export interface FloatingToolbarProps {
@@ -41,6 +42,8 @@ export interface FloatingToolbarProps {
   onToggleRowPicker?: () => void;
   onOpenMediaPicker?: (blockId: string) => void;
   onAppendRepeaterItem?: (blockId: string) => void;
+  onOpenCreatePattern?: (blockId: string) => void;
+  onDetachPattern?: (blockId: string) => void;
 }
 
 /**
@@ -66,6 +69,8 @@ export function FloatingToolbar({
   onToggleRowPicker,
   onOpenMediaPicker,
   onAppendRepeaterItem,
+  onOpenCreatePattern,
+  onDetachPattern,
 }: FloatingToolbarProps) {
   const align = String(block.props.align ?? block.style?.textAlign ?? "left");
   const isRepeater = canAppendRepeaterItem(block.type);
@@ -361,6 +366,50 @@ export function FloatingToolbar({
       )}
 
       <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
+
+      {/* Senkronize Model (Synced Pattern) Kontrolleri */}
+      {block.type === "synced_pattern" ? (
+        <>
+          <span className="inline-flex items-center gap-1 rounded bg-purple-600/90 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+            <Sparkles className="h-3 w-3" />
+            Model
+          </span>
+          {block.props?.patternId ? (
+            <a
+              href={`/admin/contents?id=${block.props.patternId}&type=template`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Bu modeli ana şablon stüdyosunda düzenleyin (tüm sayfalarda güncellenir)"
+              className="inline-flex h-6 items-center gap-1 rounded bg-slate-800 px-2 text-[10px] text-purple-300 hover:bg-purple-900 hover:text-white"
+            >
+              Modeli Düzenle ↗
+            </a>
+          ) : null}
+          {onDetachPattern && (
+            <button
+              type="button"
+              onClick={() => onDetachPattern(block.id)}
+              title="Model bağlantısını kopar: Bu sayfada bağımsız bloklara dönüştürür"
+              className="inline-flex h-6 items-center gap-1 rounded bg-slate-800 px-2 text-[10px] text-amber-300 hover:bg-amber-900 hover:text-white"
+            >
+              Bağlantıyı Kopar
+            </button>
+          )}
+        </>
+      ) : (
+        onOpenCreatePattern && (
+          <button
+            type="button"
+            onClick={() => onOpenCreatePattern(block.id)}
+            aria-label="Bu bloğu ortak senkronize model olarak kaydet"
+            title="Model Oluştur (Birden fazla sayfada ortak kullanın, tek yerden güncelleyin)"
+            className="inline-flex h-6 items-center gap-1 rounded bg-purple-600/80 px-2 text-[10px] font-semibold text-white hover:bg-purple-600"
+          >
+            <Sparkles className="h-3 w-3 text-purple-200" />
+            Model Oluştur
+          </button>
+        )
+      )}
 
       {/* Stil Sekmesi + Çoğalt + Sil */}
       <button

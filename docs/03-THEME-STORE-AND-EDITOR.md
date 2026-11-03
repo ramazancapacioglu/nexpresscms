@@ -250,3 +250,21 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
     - Arşiv ve kategoriler: `sidebarOnArchive` ve `archiveSidebarId` alanını kullanır.
     - Sayfa içi özel kenar çubuğu geçersiz kılma (`content.schemaAttributes._sidebar`) ve şablon kuralları önceliklidir.
   - Tüm bileşenler ve kenar çubukları 0-KB RSC mimarisiyle sıfır istemci JavaScript'iyle çalışır.
+
+### 5. Senkronize Modeller (Synced Patterns / Reusable Blocks) ve Uzmanlaşmış Şablonlar
+- **WordPress Tarzı Senkronize Model Modülü (`synced_pattern`):**
+  - Editörde kanvastaki herhangi bir bloğun (bölüm, satır, kart grubu vb.) kayan araç çubuğundaki **✨ Model Oluştur** butonuna tıklanarak açılan modal ile model adı ve kategorisi girilir.
+  - Model `type: "template"`, `kind: "pattern"` olarak veritabanına kaydedilir.
+  - Sayfadaki blok anında `{ type: "synced_pattern", props: { patternId, title } }` referans düğümüne dönüştürülür.
+  - Model tasarım stüdyosunda (`/admin/appearance/templates`) güncellendiğinde, bu modeli kullanan yüzlerce sayfadaki bloklar anında ve otomatik olarak güncellenir.
+  - **Bağlantıyı Kopar (Detach Pattern):** Kayan araç çubuğundaki "Bağlantıyı Kopar" aksiyonu ile senkronize model, ana modeli etkilemeden sayfaya özel bağımsız blok kopyalarına dönüştürülebilir.
+  - **Tasarım Kütüphanesi Entegrasyonu (`✨ Tasarım Kütüphanesi`):**
+    - Kullanıcının kaydettiği tüm modeller "Modellerim" sekmesi altında listelenir.
+    - Kullanıcı modele tıklayıp "Model Olarak Ekle (Senkronize)" veya "Kopya Olarak Ekle (Bağımsız)" seçimi yapabilir.
+- **Uzmanlaşmış İçerik Şablonları & Hazır Başlangıç Paketleri:**
+  - **ERP & Yazılım Vitrin Şablonu (`product-software-erp`):** Logo ve Akınsoft kurumsal yazılım sayfalarındaki gibi yapışkan sekme menü, modül detayları, donanım spekleri, demo talep çağrısı ve `SoftwareApplication` şeması.
+  - **Kampanya Detay Şablonu (`campaign-detail`):** Geri sayım, indirim/hediye kutuları, şartlar & kupon ve `Offer` şeması.
+  - **Teknik Makale Şablonu (`tech-article-guide`):** Ön koşul ve mimari matrisi, adım adım kurulum ve `TechArticle` şeması.
+  - **Soru-Cevap & AI Prompt Şablonu (`qa-single`):** Öne çıkan uzman yanıtı, mevzuat özeti, PAA alt soruları ve `QAPage` şeması.
+  - **Destek Hub Şablonu (`destek-hub`):** AnyDesk/TeamViewer uzaktan bağlantı butonları ve 7/24 teknik servis çağrısı.
+- **0-KB RSC Hız Kuralı:** Senkronize modeller ziyaretçi yüzeyinde (`RscBlockRenderer`) önbelleğe alınmış desen sözlüğü (`patterns`) üzerinden derlenir; sayfaya tek bir satır dahi istemci JS yükü binmez.

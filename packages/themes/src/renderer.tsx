@@ -41,6 +41,8 @@ export interface RscBlockRendererProps {
   tpl?: TemplateRenderContext;
   /** `schema_card` blokları için sayfanın şema verisi (SEO sekmesindeki Gelişmiş şema) */
   pageSchema?: PageSchemaData;
+  /** Senkronize modeller (synced_pattern için modelId → BlockNode[] haritası) */
+  patterns?: Record<string, BlockNode[]>;
   /** Stüdyo önizlemesi: veri eksik olan şema kartı yönlendirme gösterir (ziyaretçide gizlenir) */
   preview?: boolean;
 }
@@ -81,6 +83,7 @@ export function RscBlockRenderer({
   dynamic,
   tpl,
   pageSchema,
+  patterns,
   preview,
 }: RscBlockRendererProps): React.ReactElement {
   // Renkler CSS değişkeninden okunur: palet/karanlık mod değişince blok kodu aynı kalır
@@ -112,6 +115,7 @@ export function RscBlockRenderer({
           dynamic={dynamic}
           tpl={tpl}
           pageSchema={pageSchema}
+          patterns={patterns}
           preview={preview}
         />
       ))}
@@ -122,6 +126,25 @@ export function RscBlockRenderer({
 type BlockRenderInput = Omit<BlockRenderContext, "renderChild">;
 
 function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
+  if (input.block.type === "synced_pattern") {
+    const patternId = String(input.block.props?.patternId ?? "");
+    const patternBlocks = (patternId && input.patterns?.[patternId]) || (Array.isArray(input.block.children) ? input.block.children : []);
+    const title = String(input.block.props?.title ?? "Senkronize Model");
+    if (!patternBlocks || patternBlocks.length === 0) {
+      return input.preview ? (
+        <div className="rounded-xl border-2 border-dashed border-purple-400 bg-purple-50/60 p-4 text-xs text-purple-800 dark:bg-purple-950/20 dark:text-purple-300">
+          ✨ <strong>Senkronize Model: {title}</strong> (İçerik yükleniyor veya model boş)
+        </div>
+      ) : null;
+    }
+    return (
+      <div data-synced-pattern-id={patternId} className="w-full">
+        {patternBlocks.map((child) => (
+          <RscSingleBlock key={child.id} {...input} block={child} />
+        ))}
+      </div>
+    );
+  }
   if (input.block.type === "schema_card") return <SchemaCardView kind={(input.block.props?.schema as SchemaCardKind) ?? "software"} data={input.pageSchema} tokens={input.tokens} locale={input.locale} preview={input.preview} />;
   if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
   if (input.block.type === "dynamic_list") {
@@ -151,6 +174,7 @@ export function RscSingleBlock({
   dynamic,
   tpl,
   pageSchema,
+  patterns,
   preview,
 }: {
   block: BlockNode;
@@ -165,6 +189,7 @@ export function RscSingleBlock({
   dynamic?: DynamicDataMap;
   tpl?: TemplateRenderContext;
   pageSchema?: PageSchemaData;
+  patterns?: Record<string, BlockNode[]>;
   preview?: boolean;
 }): React.ReactElement | null {
   const inner = renderBlockInner({
@@ -180,6 +205,7 @@ export function RscSingleBlock({
     dynamic,
     tpl,
     pageSchema,
+    patterns,
     preview,
   });
   if (!inner) return null;

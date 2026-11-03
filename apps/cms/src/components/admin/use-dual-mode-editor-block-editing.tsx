@@ -219,5 +219,43 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
-  return { ...p, replaceBlockById, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, updateBlockStyleById, setBlockStyleById, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
+  /** Senkronize Model (Pattern) bağlantısını koparır ve bağımsız bloklara dönüştürür. */
+  const handleDetachPattern = (patternBlockId: string) => {
+    setBlocks((prev) => {
+      const block = findBlock(prev, patternBlockId);
+      if (!block || block.type !== "synced_pattern") return prev;
+      const children = Array.isArray(block.children) && block.children.length > 0 ? block.children : [];
+      if (children.length === 0) {
+        showToast("Model içeriği boş.");
+        return prev;
+      }
+      const loc = locateBlock(prev, patternBlockId);
+      if (!loc) return prev;
+      const freshChildren = children.map((c) => cloneBlockWithFreshIds(c));
+      let updated = removeBlockById(prev, patternBlockId);
+      for (let i = 0; i < freshChildren.length; i++) {
+        updated = insertBlockAt(updated, freshChildren[i]!, loc.parentId, loc.index + i);
+      }
+      return updated;
+    });
+    showToast("Model bağlantısı koparıldı (Bağımsız standart bloklara dönüştürüldü).");
+  };
+
+  /** Oluşturulan modeli sayfadaki bloğun yerine senkronize model olarak bağlar. */
+  const handlePatternCreated = (
+    patternBlockId: string,
+    pattern: { id: string; name: string; blocks: BlockNode[] }
+  ) => {
+    setBlocks((prev) =>
+      updateBlockById(prev, patternBlockId, () => ({
+        id: `blk_pattern_${Date.now()}`,
+        type: "synced_pattern",
+        props: { patternId: pattern.id, title: pattern.name },
+        children: pattern.blocks,
+      }))
+    );
+    showToast(`"${pattern.name}" senkronize modeli oluşturuldu ve sayfaya bağlandı.`);
+  };
+
+  return { ...p, replaceBlockById, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, updateBlockStyleById, setBlockStyleById, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock, handleDetachPattern, handlePatternCreated };
 }

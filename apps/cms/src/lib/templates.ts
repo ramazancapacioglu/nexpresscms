@@ -21,3 +21,15 @@ export async function templateFor(siteId: string, kind: TemplateKind, assigned?:
   if (assigned === "none") return null;
   return resolveTemplate(kind, await listTemplates(siteId), assigned, ctx);
 }
+
+/** Senkronize modeller haritası: patternId -> BlockNode[] */
+export const getSyncedPatternsMap = async (siteId: string): Promise<Record<string, import("@nexpress/core").BlockNode[]>> => {
+  const templates = await listTemplates(siteId);
+  const map: Record<string, import("@nexpress/core").BlockNode[]> = {};
+  for (const t of templates) {
+    if (t.meta.kind === "pattern") {
+      map[t.id] = t.blocks;
+    }
+  }
+  return map;
+};

@@ -54,7 +54,7 @@ export interface StarterPagePack {
   id: string;
   name: string;
   description: string;
-  recommendedType: "page" | "product" | "kb_tech" | "campaign";
+  recommendedType: "page" | "product" | "kb_tech" | "campaign" | "ai_prompt" | "post";
   schemaType: string;
   tldr: string;
   blocks: Array<Omit<BlockNode, "id">>;

@@ -279,3 +279,62 @@ export async function updateTemplateSettingsAction(input: { id: string; conditio
   await refresh(siteId);
   return { ok: true };
 }
+
+/** WordPress tarzı Senkronize Model (Reusable Pattern) oluşturur. */
+export async function createPatternAction(input: {
+  name: string;
+  description?: string;
+  category?: string;
+  blocks: BlockNode[];
+}): Promise<TemplateResult<{ id: string; name: string }>> {
+  const { session, siteId, repo, locale } = await ctx("pattern.create");
+  const suffix = Math.random().toString(36).slice(2, 8);
+  const name = input.name.trim() || `Senkronize Model (${suffix})`;
+  const description = input.description?.trim() || "Tek yerden düzenlenen ortak model";
+
+  const res = await repo.saveContent({
+    actor: { id: session.sub, email: session.email },
+    type: "template",
+    status: "draft",
+    importanceScore: 1,
+    schemaType: "WebPage",
+    schemaAttributes: {
+      template: {
+        kind: "pattern",
+        isDefault: false,
+        category: input.category || "custom",
+      },
+    },
+    locale,
+    region: "TR",
+    slug: `pat-${suffix}`,
+    title: name,
+    tldr: description,
+    blocks: cloneStarterBlocks(input.blocks, suffix),
+  } as never);
+
+  await refresh(siteId);
+  return { ok: true, id: res.contentId, name };
+}
+
+/** Kayıtlı tüm Senkronize Modelleri listeler. */
+export async function listPatternsAction(): Promise<
+  TemplateResult<{ patterns: Array<{ id: string; name: string; description: string; category: string; blocks: BlockNode[]; updatedAt?: string }> }>
+> {
+  const { repo, locale } = await ctx("pattern.list");
+  const all = await repo.listContents({ locale, type: "template" });
+  const patterns = all
+    .filter((c) => readTemplateMeta(c.schemaAttributes)?.kind === "pattern")
+    .map((c) => {
+      const meta = readTemplateMeta(c.schemaAttributes);
+      return {
+        id: c.contentId,
+        name: c.title,
+        description: c.tldr ?? "",
+        category: (meta as any)?.category ?? "custom",
+        blocks: c.blocks,
+        updatedAt: c.updatedAt?.toISOString(),
+      };
+    });
+  return { ok: true, patterns };
+}

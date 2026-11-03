@@ -51,8 +51,18 @@ const panel =
 const KIND_GROUPS: Array<{ id: string; label: string; kinds: TemplateKind[] }> = [
   {
     id: "all",
-    label: "Tüm Şablonlar (11 Tür)",
-    kinds: ["post", "category", "tag", "page", "product", "shop", "product_category", "search", "header", "footer", "sidebar"],
+    label: "Tüm Şablonlar & Modeller",
+    kinds: ["post", "category", "tag", "page", "product", "shop", "product_category", "search", "header", "footer", "sidebar", "pattern", "campaign", "kb_tech", "ai_prompt"],
+  },
+  {
+    id: "patterns",
+    label: "✨ Senkronize Modeller",
+    kinds: ["pattern"],
+  },
+  {
+    id: "specialized",
+    label: "Kampanya, SSS & Teknik",
+    kinds: ["campaign", "ai_prompt", "kb_tech"],
   },
   {
     id: "editorial",

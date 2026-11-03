@@ -65,6 +65,8 @@ export interface CanvasBlockProps {
   onOpenLibrary?: () => void;
   onAppendRepeaterItem?: (blockId: string) => void;
   onUpdateBlock?: (blockId: string, updater: (b: BlockNode) => BlockNode) => void;
+  onOpenCreatePattern?: (blockId: string) => void;
+  onDetachPattern?: (blockId: string) => void;
 }
 
 export function CanvasBlock(props: CanvasBlockProps) {
@@ -94,6 +96,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
     onOpenLibrary,
     onAppendRepeaterItem,
     onUpdateBlock,
+    onOpenCreatePattern,
+    onDetachPattern,
   } = props;
 
   const [showRowPicker, setShowRowPicker] = useState(false);
@@ -243,6 +247,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
           }
           onOpenMediaPicker={onOpenMediaPicker}
           onAppendRepeaterItem={onAppendRepeaterItem}
+          onOpenCreatePattern={onOpenCreatePattern}
+          onDetachPattern={onDetachPattern}
         />
       )}
 
@@ -424,8 +430,52 @@ export function CanvasBlock(props: CanvasBlockProps) {
         />
       )}
 
+      {/* 2C. SENKRONİZE MODEL (`synced_pattern`) */}
+      {block.type === "synced_pattern" && (
+        <div data-nx-b={domId} className="rounded-xl border-2 border-purple-400/80 bg-purple-50/20 p-4 transition-all dark:bg-purple-950/10 dark:border-purple-600/60">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-200/60 dark:border-purple-800/40">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-purple-600 text-white shadow-xs text-xs">
+                ✨
+              </span>
+              <span className="text-xs font-bold text-purple-950 dark:text-purple-200">
+                Senkronize Model: {String(block.props?.title ?? "Ortak Model")}
+              </span>
+              <span className="text-[10px] text-purple-700 bg-purple-100 dark:bg-purple-900/50 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">
+                Global Akıllı Blok
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {block.props?.patternId ? (
+                <a
+                  href={`/admin/contents?id=${block.props.patternId}&type=template`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-purple-700 hover:text-purple-900 dark:text-purple-300 underline"
+                >
+                  Ana Modeli Düzenle ↗
+                </a>
+              ) : null}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {(block.children ?? []).length === 0 ? (
+              <div className="p-6 rounded-lg bg-background/80 border border-dashed border-purple-300 text-center text-xs text-muted-foreground">
+                Model içeriği ana şablondan senkronize ediliyor
+              </div>
+            ) : (
+              (block.children ?? []).map((child, cIdx) => (
+                <React.Fragment key={child.id}>
+                  {renderChild(child, cIdx, (block.children ?? []).length, block.id)}
+                </React.Fragment>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 3. METİN BLOKLARI (TipTap Satır İçi Zengin Metin) */}
-      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && proseKey && (
+      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && block.type !== "synced_pattern" && proseKey && (
         <div
           data-nx-b={domId}
           className={`relative ${
@@ -527,7 +577,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
       )}
 
       {/* 4. DİĞER TÜM YAPRAK BLOKLAR (Gerçek Tema Görünümü + Satır İçi Düzenleme) */}
-      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && !proseKey && (
+      {block.type !== "columns" && block.type !== "section" && block.type !== "tabs" && block.type !== "synced_pattern" && !proseKey && (
         <div className="relative">
           {isEmptyImage && onOpenMediaPicker ? (
             <div
