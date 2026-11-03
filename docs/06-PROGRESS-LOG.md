@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Tuval v2 adım 5: sayfa başlığı tuvalde
+- ✅ Görsel kipte sayfa başlığı artık tuvalin ilk satırıdır (`editor/title-field.tsx`): sitenin başlık yazı tipi ve kalınlığıyla büyük h1, uzun başlıkta otomatik büyür, Enter satır eklemez. Üstteki ayrı başlık alanı yalnızca JSON/Markdown/önizleme kiplerinde ve şablon düzenlerken (başlık = şablon adı) kalır. Adres (slug), SEO başlık/açıklama çubuğu üstte durur.
+- ✅ Seçili blokun etiket/araç çubuğu artık bloğun **üstünde** (içeriğin üstüne binmez).
+- CI c199ee0: dört iş de yeşil (iframe tuvali dahil). Tarayıcıda: başlık yazma, Enter, otomatik büyüme, kip geçişinde korunma, yayında kullanım doğrulandı.
+- Tuval v2'de kalan: `/` komutu.
+
 ### [2026-11-03] — Tuval v2 adım 4: gerçek önizleme çerçevesi (iframe)
 - ✅ Görsel tuval ve canlı önizleme artık bir **iframe** içinde çizilir (`editor/canvas-frame.tsx`): içerik React portalıyla çerçeve belgesine basılır (durum/olaylar aynı ağaçta), üst belgenin stil sayfaları çerçeveye kopyalanır ve izlenir (sıcak yenileme dahil), sitenin `--nx-*` değişkenleri eklenir, yönetim temasının `<html>` sınıfı yansıtılır. **Tablet (768) ve mobil (390) gerçek çerçeve genişliğidir: medya sorguları bu genişliğe göre çalışır** (ölçüm: vitrin başlığı masaüstünde 48px → mobilde 30px).
 - ✅ Çerçeveye uyarlamalar: seçili metin araç çubuğu ve "+" açılırı çerçeve belgesinde (ownerDocument) çalışır; çerçevedeki Ctrl+S ve sürükleme-bitiş/pointer olayları üst pencereye iletilir; sürükle-bırak yükü çerçeve içinde ve dışarıdan (kitaplık → tuval) işlenir.

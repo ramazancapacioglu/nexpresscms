@@ -34,7 +34,7 @@ Sıra (her adım ayrı teslim edilir, hepsi AST'yi ve 0-KB ön yüzü korur):
 2. ✅ (yapıldı) **Sade tuval:** kart/başlık çubuğu kaldırılır; seçili blokta ince çerçeve + yüzen araç çubuğu (üstte), üzerine gelince etiket.
 3. ✅ "+" yapıldı; `/` komutu kaldı.
 4. ✅ (yapıldı 2026-11-03) **Gerçek önizleme çerçevesi (iframe):** site CSS'iyle, gerçek header/footer bağlamıyla; cihaz genişlikleri gerçek medya sorgularıyla.
-5. **Sayfa başlığı tuval içinde** (ilk satır), SEO/meta alanları kenar panelde.
+5. ✅ (yapıldı) **Sayfa başlığı tuval içinde** (ilk satır), SEO/meta alanları kenar panelde.
 Bu adımlarla ilgili ilerleme `docs/06-PROGRESS-LOG.md`'de tutulur.
 
 ## 5. Açık kalan karar (sizin)

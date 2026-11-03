@@ -8,12 +8,16 @@ import { Columns, Globe, Sparkles } from "lucide-react";
 import { Fragment } from "react";
 import { DropZone } from "@/components/admin/editor/dnd";
 import { CanvasFrame } from "@/components/admin/editor/canvas-frame";
+import { TitleField } from "@/components/admin/editor/title-field";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
   const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock, updateBlockStyleById, setBlockStyleById } = s;
   const pageSchema = { title, tldr: s.tldr, rich: s.richSchema as never };
+  // Görsel/önizleme kipinde başlık tuvalin ilk satırıdır (şablon düzenlerken şablon adı olduğu için üstte kalır)
+  const framed = editorMode === "visual" || editorMode === "preview";
+  const inCanvasTitle = editorMode === "visual" && s.lockedType !== "template";
   return (
     <PageSchemaContext.Provider value={pageSchema}>
         {/* 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */}
@@ -40,19 +44,23 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                 <span>{totalWords} kelime</span>
               </div>
             </div>
-            <textarea
-              rows={Math.min(3, Math.max(1, Math.ceil(title.length / 36)))}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Başlık"
-              className="w-full min-w-0 resize-none overflow-hidden bg-transparent px-4 pb-2 text-3xl font-extrabold leading-tight tracking-tight text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-            />
+            {!inCanvasTitle && (
+              <textarea
+                rows={Math.min(3, Math.max(1, Math.ceil(title.length / 36)))}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Başlık"
+                aria-label="Başlık"
+                className="w-full min-w-0 resize-none overflow-hidden bg-transparent px-4 pb-2 text-3xl font-extrabold leading-tight tracking-tight text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+              />
+            )}
             <SearchSnippetBar title={title} tldr={s.tldr} metaTitle={s.metaTitle} setMetaTitle={s.setMetaTitle} metaDescription={s.metaDescription} setMetaDescription={s.setMetaDescription} />
           </div>
           {editorMode === "visual" || editorMode === "preview" ? (
             <div className="min-h-0 flex-1 bg-muted/40 p-3">
               <CanvasFrame device={viewport} tokens={siteTokens} blockCss={s.compiledBlockCss}>
                 <div className="px-6 py-8">
+                  {inCanvasTitle && <TitleField value={title} onChange={setTitle} fontFamily={siteTokens.typography.headingFont} />}
             {/* MOD 1: GÖRSEL KANVAS */}
                   {editorMode === "visual" && (
                     <div className="space-y-4 pb-16">
