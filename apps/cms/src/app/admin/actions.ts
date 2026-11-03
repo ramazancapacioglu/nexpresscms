@@ -171,12 +171,13 @@ export async function saveContentAction(input: {
   await revalidatePath("/admin/posts");
   await revalidatePath("/admin/contents");
   await revalidatePath(`/${locale}`);
-  await revalidatePath(`/${locale}/${input.slug}`);
+  await revalidatePath(`/${locale}/${res.slug}`);
   await revalidatePath("/llms.txt");
 
   return {
     ok: true,
     contentId: res.contentId,
+    slug: res.slug,
     markdownCache: res.markdownCache,
     seoScore: res.seoScore,
   };

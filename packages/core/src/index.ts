@@ -10,6 +10,7 @@ export * from "./icons";
 export * from "./dark-palette";
 export * from "./style-presets";
 export * from "./inline-text";
+export * from "./slug";
 export * from "./site-settings";
 export * from "./taxonomy";
 export * from "./session-token";

@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Adres başlıktan türer (yeni içerik)
+- ✅ Yeni sayfa/yazıda adres, başlık yazıldıkça **başlıktan türer** (`slugFromTitle`: Türkçe harfler sadeleşir, en çok 70 karakter, kelime sınırında kesilir). Kullanıcı adresi elle değiştirdiği an başlığı izlemeyi bırakır; **ilk kayıttan sonra adres sabitlenir** (yayındaki adres başlık düzeltmesiyle kendiliğinden değişmez, bozuk bağlantı/301 üretmez).
+- ✅ **Çakışma:** aynı dilde adres doluysa yeni içerik kayıtta kendiliğinden `-2`, `-3`… alır (`uniqueSlug`; çöp kutusu ve şablon satırları da sayılır çünkü benzersiz indeks hepsini kapsar). `saveContent` artık gerçek adresi döner, editör alanı günceller. Mevcut içeriğin adresi asla sessizce değişmez; başka kiracıda aynı adres serbesttir.
+- Testler: çekirdek 189 (3 yeni), veritabanı 63 (SQLite + PostgreSQL'de yeni çakışma testi). Tarayıcıda: türetme, ilk kayıttan sonra sabitlenme, ikinci sayfada `-2`, elle girilen adresin korunması doğrulandı.
+
 ### [2026-11-03] — Tuval v2 adım 6: eğik çizgi (/) komutu — Tuval v2 tamam
 - ✅ Boş paragrafa `/` yazınca blok menüsü açılır; `/sss`, `/fiyat`, `/sütun` gibi yazdıkça süzülür (katalog + satır düzenleri, en çok 9). Ok tuşları + Enter seçer ve **paragrafı seçilen blokla yer değiştirir** (`replaceBlockById`, kapsayıcı kuralları `canInsertInto` ile denetlenir); Esc kapatır ve `/` karakterini silmez. Klavye çerçeve belgesinde yakalanır, menü ARIA `listbox/option` kullanır. Seçenek mantığı (`blockChoices`) editör paketine taşındı ve test edildi (7 test); "+" hızlı ekleme aynı listeyi kullanır.
 - Tuval v2'nin altı adımı tamam: satır içi düzenleme, sade tuval, "+" ve "/" ile ekleme, gerçek önizleme çerçevesi, başlık tuvalde. Tarayıcıda "/" menüsü, süzme, Enter ile değiştirme, ok tuşları ve Esc doğrulandı; axe (mobil+masaüstü) temiz.

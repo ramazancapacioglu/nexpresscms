@@ -54,6 +54,8 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
 
       if (res.ok) {
         setContentId(res.contentId);
+        // Adres doluysa sunucu benzersizleştirir (-2, -3…): alanda gerçek adres görünür
+        if (res.slug && res.slug !== slug) p.setSlug(res.slug);
         showToast(
           nextStatus === "draft"
             ? `Taslak kaydedildi (SEO Skoru: ${res.seoScore}/100)`

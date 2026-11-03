@@ -1,6 +1,6 @@
 import type { SaveContentInput } from "./types";
-import { eq, and, inArray } from "drizzle-orm";
-import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, type ContentStatus } from "@nexpress/core";
+import { eq, and, inArray, like } from "drizzle-orm";
+import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type ContentStatus } from "@nexpress/core";
 import { analyzeSeo, extractContentStats } from "@nexpress/seo-core";
 import { CmsRevisionRepository, type RevisionSnapshot } from "./revisions";
 
@@ -138,9 +138,11 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
    * 3. `content:beforeSave` kancasını tetikler.
    * 4. Veritabanına yazar ve `content:afterPublish` kancasını tetikler.
    */
-  public async saveContent(rawInput: SaveContentInput): Promise<{ contentId: string; markdownCache: string; seoScore: number }> {
+  public async saveContent(rawInput: SaveContentInput): Promise<{ contentId: string; markdownCache: string; seoScore: number; slug: string }> {
     // Şablonlar ASLA yayınlanmaz: her kayıt taslaktır (ziyaretçi yüzeylerine girmez)
-    const input: SaveContentInput = rawInput.type === "template" ? { ...rawInput, status: "draft" } : rawInput;
+    let input: SaveContentInput = rawInput.type === "template" ? { ...rawInput, status: "draft" } : rawInput;
+    // Yeni içerikte adres doluysa kendiliğinden benzersizleşir (-2, -3…); mevcut içeriğin adresi asla sessizce değişmez
+    if (!input.contentId) input = { ...input, slug: await this.availableSlug(input.locale, input.slug) };
     const contentId = input.contentId ?? `cnt_${Date.now()}`;
     const rawMarkdown = compileBlocksToMarkdown(input.blocks, {
       title: input.title,
@@ -337,6 +339,16 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       });
     }
 
-    return { contentId, markdownCache: hookResult.markdownCache, seoScore: hookResult.seoScore ?? analysis.score };
+    return { contentId, markdownCache: hookResult.markdownCache, seoScore: hookResult.seoScore ?? analysis.score, slug: input.slug };
+  }
+
+  /** Aynı dilde `slug` doluysa `slug-2`, `slug-3`… ilk boş olanı döner (çöp kutusu ve şablonlar dahil tüm satırlar sayılır: benzersiz indeks hepsini kapsar). */
+  private async availableSlug(locale: string, slug: string): Promise<string> {
+    const { db, t } = this.backend;
+    const rows = await db
+      .select({ slug: t.contentTranslations.slug })
+      .from(t.contentTranslations)
+      .where(and(eq(t.contentTranslations.siteId, this.siteId), eq(t.contentTranslations.locale, locale), like(t.contentTranslations.slug, `${slug.replace(/[%_\\]/g, "")}%`)));
+    return uniqueSlug(slug, new Set(rows.map((r) => r.slug)));
   }
 }

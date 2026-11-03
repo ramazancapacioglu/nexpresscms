@@ -825,3 +825,19 @@ test("şablon içerikleri: her zaman taslak, varsayılan listelerde görünmez, 
   assert.deepEqual((mine.schemaAttributes as { template?: unknown }).template, { kind: "post", isDefault: true });
   await repo.deleteContents([saved.contentId]);
 });
+
+test("içerik: yeni içerikte dolu adres kendiliğinden -2, -3 olur; mevcut içeriğin adresi değişmez; başka kiracı etkilenmez", async () => {
+  const mk = (over: Record<string, unknown> = {}) => ({ ...baseInput({ title: "Çakışma", slug: "cakisma-deneme", blocks: [para("p1", "x")] }), ...over });
+  const a = await repo.saveContent(mk());
+  const b = await repo.saveContent(mk());
+  const c = await repo.saveContent(mk());
+  assert.equal(a.slug, "cakisma-deneme");
+  assert.equal(b.slug, "cakisma-deneme-2");
+  assert.equal(c.slug, "cakisma-deneme-3");
+  // mevcut içeriği aynı adresle yeniden kaydetmek adresi değiştirmez
+  const again = await repo.saveContent(mk({ contentId: a.contentId }));
+  assert.equal(again.slug, "cakisma-deneme");
+  // başka kiracıda aynı adres serbest
+  const o = await other.saveContent(mk());
+  assert.equal(o.slug, "cakisma-deneme");
+});

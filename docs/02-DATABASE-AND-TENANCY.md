@@ -92,3 +92,5 @@ Tüm tablolar `siteId` kapsamındadır:
 - `mcp_request_log` (göç `0016_mcp_log`): `tool`, `agent` (User-Agent, en çok 80 karakter; ajan anahtarı ASLA yazılmaz), `ok`, `duration_ms`, `at`; `(site_id, at)` indeksi. Yalnızca Pro `mcp-log` modülü açıkken yazılır; 90 günden eski kayıtlar kendiliğinden silinir (`McpLogRepository`).
 
 - Göç `0017_taxonomy_template`: `taxonomies.template_id` (kategori/etiket arşivi şablonu; boş = türün varsayılanı). Şablonlar ayrı tablo değildir: `contents` içinde `type: "template"`, ayar `schemaAttributes.template = { kind, isDefault }`, atama `schemaAttributes._template`.
+
+- **Adres benzersizliği (2026-11-03):** `content_translations(site_id, locale, slug)` benzersiz indeksi tüm satırları kapsar. Yeni içerik kaydında dolu adres `saveContent` içinde `-2`, `-3` ile benzersizleşir; mevcut içeriğin adresi değişmez ve çakışırsa veritabanı hatası verir.
