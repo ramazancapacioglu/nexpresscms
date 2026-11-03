@@ -103,7 +103,7 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   })),
   item("divider", "Ayırıcı", "layout", "Çizgi ya da boşluk", node("divider_spacer", { style: "line", spacingPx: 32 })),
   item("synced_pattern", "Senkronize model", "layout", "Kayıtlı model: tek yerden düzenlenir, tüm sayfalarda anında güncellenir", node("synced_pattern", { patternId: "", title: "Kayıtlı Model" })),
-  item("anchor_nav", "Yapışkan çapa menüsü (Bölüm gezgini)", "layout", "Hero altında yapışkan yatay bölüm bağlantıları (#genel-bakis, #urunler, #sss…)", node("anchor_nav", {
+  item("anchor_nav", "Yapışkan çapa menüsü (Bölüm gezgini)", "layout", "Hero altında yapışkan yatay bölüm bağlantıları (#genel-bakis, #urunler, #ozellikler…)", node("anchor_nav", {
     title: "Bölümler",
     sticky: true,
     styleVariant: "underline",
@@ -218,12 +218,19 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("product_embed", "Ürün kartı", "commerce", "Product şeması bağlı", node("product_embed", { productName: "Ürün adı", sku: "", price: "", summary: "Kısa açıklama." })),
 ];
 
-/** Ada, ipucuna ve kategoriye göre süzer (büyük/küçük harf ve Türkçe i/ı duyarsız). */
+/** Ada, ipucuna ve kategoriye göre süzer (büyük/küçük harf ve Türkçe i/ı duyarsız, tam/önek eşleşmeler öncelikli). */
 export function searchCatalog(query: string, list: BlockCatalogItem[] = BLOCK_CATALOG): BlockCatalogItem[] {
   const norm = (v: string) => v.toLowerCase().replace(/ı/g, "i").normalize("NFD").replace(/[̀-ͯ]/g, "");
   const q = norm(query.trim());
   if (!q) return list;
-  return list.filter((i) => norm(`${i.label} ${i.hint} ${i.block.type}`).includes(q));
+  const matches = list.filter((i) => norm(`${i.label} ${i.hint} ${i.block.type}`).includes(q));
+  return matches.sort((a, b) => {
+    const aNorm = norm(a.label);
+    const bNorm = norm(b.label);
+    const aScore = aNorm === q || a.id === q ? 1 : aNorm.startsWith(q) || a.id.startsWith(q) ? 2 : 3;
+    const bScore = bNorm === q || b.id === q ? 1 : bNorm.startsWith(q) || b.id.startsWith(q) ? 2 : 3;
+    return aScore - bScore;
+  });
 }
 
 export interface BlockChoice { id: string; label: string; hint: string; block: BlockNode }

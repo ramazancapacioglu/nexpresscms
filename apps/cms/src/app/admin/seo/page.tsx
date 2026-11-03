@@ -7,6 +7,7 @@ import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { SearchIndexCard } from "@/components/admin/seo/search-index-card";
 import { SearchConsolePanel } from "@/components/admin/seo/search-console-panel";
 import { SeoTabs } from "@/components/admin/section-tabs";
+import { SeoIntegrationsStudio } from "@/components/admin/seo/seo-integrations-studio";
 import { SeoStudio } from "@/components/admin/seo/seo-studio";
 import { buildSeoSummary } from "@/components/admin/seo/seo-summary";
 
@@ -33,6 +34,10 @@ export default async function AdminSeoPage() {
         activeModel={provider.model}
         semantic={provider.semantic}
         publishedCount={published}
+      />
+      <SeoIntegrationsStudio
+        initialIntegrations={seo.integrations}
+        siteUrl={site?.domain ? `https://${site.domain}` : "http://localhost:3000"}
       />
       <LinkAuditCard contents={contents} locales={site?.supportedLocales ?? ["tr"]} />
       <SearchConsolePanel verification={seo.verification} />

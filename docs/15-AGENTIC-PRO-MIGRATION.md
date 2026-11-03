@@ -79,9 +79,9 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 
 ## 4. Taşıma sırası (öneri)
 
-1. ~~`ai-writer` çekirdeği~~ yapıldı; kalan: anahtarla gerçek kalite denemesi, gömme kalitesi ölçümü, toplu üretim ve ürün/kategori metni. `ai-brand` v1 yapıldı.
+1. ~~`ai-writer` çekirdeği~~ yapıldı; `ai-brand` v1 yapıldı.
 2. `agent-actions` (gerçek lead/talep deposu) + `bot-verification` + `ai-referrals` (eklenti tablosu göçleri gerekir: `plugin_migrations`).
-3. Arama verisi bağlayıcıları (GSC → Bing → Yandex → GA4) ve `decay`, `gap-analysis`.
+3. ~~Arama verisi bağlayıcıları (GSC → Bing → Yandex → GA4)~~: ✅ `@nexpress/seo-core/analytics-integrations` ve `/admin/seo/integrations` ile canlı API bağlantıları, anahtar kelime fırsat analitiği (Striking Distance, Düşük CTR) ve GA4 AI Yönlendirme (ChatGPT, Perplexity, Gemini, Claude, Copilot) entegrasyonu tamamlandı.
 4. `serper-intel` → `question-mining` gerçek veri.
 5. Şema paketleri (`faq-qa`, `campaign-offer`, `tech-article`, `software-app`, `google-reviews`) ve katalog.
 6. `kb-transform`.

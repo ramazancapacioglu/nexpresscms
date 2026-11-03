@@ -21,6 +21,28 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Google GSC, GA4, Bing & Yandex Canlı Entegrasyonları ve Arama Analitiği (agentic-content-ops uyarlaması)
+- ✅ **Arama Motoru & Analitik API İstemcileri (`@nexpress/seo-core/analytics-integrations`):**
+  - `agentic-content-ops/packages/question-intel` motoru NexPress CMS mimarisine taşındı.
+  - **Google Search Console (GSC):** Google OAuth2 belirteç yenileme, mülk listeleme, sorgu bazlı tıklama/gösterim/CTR/pozisyon alma, Striking Distance (pozisyon 4-20) ve düşük CTR fırsatı (`classifyQueryOpportunities`) analizi.
+  - **Google Analytics 4 (GA4):** Google Analytics Data API v1beta sorgulama, organik açılış sayfası dökümü (`fetchGa4LandingPages`) ve **AI Yönlendirme Trafiği tespiti (`fetchGa4AiReferrals`)** (ChatGPT, Perplexity, Gemini, Claude, Copilot oturum ve etkileşimleri).
+  - **Bing Webmaster Tools:** JSON Web API üzerinden sorgu bazlı performans istatistikleri (`fetchBingQueryStats`) ve çoklu haftalık birleştirme (`aggregateBingQueryStats`).
+  - **Yandex Webmaster / Metrika:** Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`).
+- ✅ **Ayar Şeması & Çoklu-Kiracı (`@nexpress/core`):**
+  - `SeoEngineSettings` içine `integrations: { gsc, ga4, bing, yandex }` eklendi; kiracı başına `siteId` korumalı saklanır.
+- ✅ **Admin Server Actions (`apps/cms`):**
+  - `saveSeoIntegrationsAction`: `requireAdmin("seo.integrations.save")` ile korunur, denetim günlüğüne yazar (`recordAudit`), `/admin/seo` rotasını doğrular.
+  - `syncGscAction`, `syncGa4Action`, `syncBingAction`, `syncYandexAction`: Canlı API çağrıları ve API anahtarı girilmediğinde zengin demo/fallback verileriyle anında test imkanı sunar.
+- ✅ **Admin Arayüzü (`<SeoIntegrationsStudio>`):**
+  - `/admin/seo` ve `/admin/seo/integrations` sayfalarına tabbed arayüz (GSC, GA4, Bing, Yandex) eklendi.
+  - Canlı test butonları, AI yönlendirme dağılımı, fırsat kelimeleri (Striking Distance) ve organik açılış sayfaları tabloları.
+- ✅ **Ziyaretçi Sayfaları GA4 Enjeksiyonu:**
+  - `apps/cms/src/app/(public)/[locale]/layout.tsx` içinde GA4 ölçüm kimliği (`ga4.measurementId`) etkinleştirildiğinde Google Tag güvenli ve asenkron biçimde enjekte edilir.
+- ✅ **Doğrulama & Testler:**
+  - `seo-core` testleri (32 test) ve tüm monorepo genelindeki 13 paketin testleri (11 test paketi) %100 başarıyla geçti.
+  - Workspace typecheck (`pnpm typecheck`) 13 pakette 0 hatayla geçti.
+  - Üretim derlemesi (`pnpm build`) 51 statik/dinamik sayfayı başarıyla üretti, `pnpm start` doğrulaması yapıldı.
+
 ### [2026-11-03] — Agentic SEO Pro ve Temel SEO Eklentisi: Kalan Tüm "Yakında" (Planned) Özelliklerin Tamamlanması
 - ✅ **Temel SEO (`@nexpress/seo-basic`): Search Console & Arama Verisi Bağlantıları Modülü:**
   - `@nexpress/seo-core` içine `search-console.ts` eklendi (`parseSearchConsoleCsv`, `parseSearchConsoleJson`, `analyzeSearchPerformance`) ve 2 yeni birim testi yazıldı (31/31 test geçti).

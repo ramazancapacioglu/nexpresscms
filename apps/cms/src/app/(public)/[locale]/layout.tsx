@@ -75,7 +75,10 @@ export default async function PublicLocaleLayout({
   const segs = (reqHeaders.get("x-nexpress-pathname") ?? "").split("/").filter(Boolean);
   const chromeCtx = { locale, slug: segs.length >= 2 ? decodeURIComponent(segs[1]!) : "ana-sayfa" };
   const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
-  const resolvedCustomizer = resolveSiteSettings(site?.settings).customizer;
+  const resolvedSettings = resolveSiteSettings(site?.settings);
+  const resolvedCustomizer = resolvedSettings.customizer;
+  const ga4Settings = resolvedSettings.seo?.integrations?.ga4;
+  const ga4MeasurementId = (ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
@@ -207,6 +210,19 @@ export default async function PublicLocaleLayout({
       ) : null}
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
+      {ga4MeasurementId ? (
+        <>
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4MeasurementId)}`}
+          />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4MeasurementId.replace(/'/g, "\\'")}');`,
+            }}
+          />
+        </>
+      ) : null}
 
       {headerTpl && tplCtx ? (
         <header

@@ -153,3 +153,27 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
   - Google Search Console (`Top queries.csv`), Bing Webmaster Tools ve Yandex Webmaster sorgu/tıklama/gösterim/TO (CTR)/ortalama pozisyon verilerini çözümler.
   - `/admin/seo` sayfasına `SearchConsolePanel` entegre edildi: 4'lü metrik özeti (Toplam Tık, Gösterim, Ortalama TO, Ortalama Sıralama), ilk sayfaya yükselme fırsatları (Striking Distance: Pozisyon 4-15) ve düşük tıklama oranına sahip başlık optimizasyon fırsatları (Pozisyon 1-5, CTR < %3).
   - `@nexpress/seo-basic` manifestosundaki `search-console` modülü `status: "ready"` durumuna getirildi.
+
+## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
+
+`agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:
+
+1. **Google Search Console (GSC):**
+   - Google OAuth2 yenileme akışı (`refreshGscAccessToken`)
+   - Doğrulanmış mülk listeleme (`fetchGscSiteList`)
+   - Tarih aralıklı anahtar kelime, tıklama, gösterim, CTR ve pozisyon analitiği (`fetchGscSearchQueries`)
+   - Çarpıcı mesafe (Striking Distance - pozisyon 4-20) ve düşük CTR fırsatı (`classifyQueryOpportunities`) tespiti
+
+2. **Google Analytics 4 (GA4):**
+   - Google Analytics Data API v1beta üzerinden organik açılış sayfaları (`fetchGa4LandingPages`)
+   - **AI Yönlendirme Trafiği Tespiti (`fetchGa4AiReferrals`):** ChatGPT (`chatgpt.com`), Perplexity (`perplexity.ai`), Google Gemini (`gemini.google.com`), Claude (`claude.ai`) ve Microsoft Copilot (`copilot.microsoft.com`) oturum ve etkileşim dökümü
+   - Ön yüzde GA4 ölçüm etiketi enjeksiyonu (`seo.integrations.ga4.measurementId` etkinleştirildiğinde)
+
+3. **Bing Webmaster Tools:**
+   - JSON Web Service üzerinden sorgu performans istatistikleri (`fetchBingQueryStats`)
+   - Çoklu haftalık veri tekilleştirme ve pozisyon ağırlıklı birleştirme (`aggregateBingQueryStats`)
+
+4. **Yandex Webmaster / Metrika:**
+   - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
+
+Tüm entegrasyonlar `/admin/seo/integrations` ve `/admin/seo` içerisindeki `<SeoIntegrationsStudio>` bileşeni üzerinden canlı test edilebilir, ayarları kaydedilebilir ve API anahtarı girilmeden önce gerçekçi demo verileriyle görüntülenebilir.

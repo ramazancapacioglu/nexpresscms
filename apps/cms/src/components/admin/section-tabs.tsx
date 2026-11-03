@@ -38,6 +38,7 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
 
 export const SEO_TABS: SectionTab[] = [
   { href: "/admin/seo", label: "SEO motoru & dizin" },
+  { href: "/admin/seo/integrations", label: "Webmaster & Analitik (GSC, GA4, Bing, Yandex)" },
   { href: "/admin/seo/audit", label: "Site denetimi" },
   { href: "/admin/redirects", label: "Yönlendirmeler & 404" },
 ];

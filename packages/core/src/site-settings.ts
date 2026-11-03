@@ -22,6 +22,35 @@ export interface SeoEngineSettings {
   botPolicy?: Record<string, "allow" | "block">;
   /** Arama konsolu site sahipliği doğrulama kodları (yalnızca içerik değeri, etiket değil) */
   verification?: { google?: string; bing?: string; yandex?: string };
+  /** Arama motoru ve analitik API entegrasyon ayarları (GSC, GA4, Bing, Yandex) */
+  integrations?: {
+    gsc?: {
+      clientId?: string;
+      clientSecret?: string;
+      refreshToken?: string;
+      siteUrl?: string;
+      enabled?: boolean;
+      lastSync?: string;
+    };
+    ga4?: {
+      propertyId?: string;
+      measurementId?: string;
+      enabled?: boolean;
+      lastSync?: string;
+    };
+    bing?: {
+      apiKey?: string;
+      siteUrl?: string;
+      enabled?: boolean;
+      lastSync?: string;
+    };
+    yandex?: {
+      token?: string;
+      counterId?: string;
+      enabled?: boolean;
+      lastSync?: string;
+    };
+  };
   autoSchema: boolean; // Bloklardan FAQPage/HowTo/BreadcrumbList/Review otomatik türet
   autoSchemaFromBlocks?: boolean;
   autoCanonical: boolean;
@@ -173,6 +202,12 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   robotsTxtExtra: "",
   botPolicy: {},
   verification: {},
+  integrations: {
+    gsc: {},
+    ga4: {},
+    bing: {},
+    yandex: {},
+  },
   autoSchema: true,
   autoSchemaFromBlocks: true,
   autoCanonical: true,
