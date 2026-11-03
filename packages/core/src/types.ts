@@ -175,7 +175,11 @@ export type BlockType =
   | "product_row"
   | "user_card"
   | "repeater"
-  | "vector_mark";
+  | "vector_mark"
+  | "single_icon"
+  | "countup"
+  | "marquee"
+  | "shape_divider";
 
 export type DeviceKey = "desktop" | "tablet" | "mobile";
 

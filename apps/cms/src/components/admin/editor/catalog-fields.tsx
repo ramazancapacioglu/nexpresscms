@@ -29,6 +29,10 @@ const CATALOG_TYPES = new Set([
   "user_card",
   "repeater",
   "vector_mark",
+  "single_icon",
+  "countup",
+  "marquee",
+  "shape_divider",
 ]);
 
 const LABELS: Record<string, string> = {

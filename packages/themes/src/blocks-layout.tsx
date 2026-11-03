@@ -1,5 +1,5 @@
 import React from "react";
-import type { BlockNode } from "@nexpress/core";
+import { ICON_PATHS, type BlockNode } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { ResponsiveImage } from "./responsive-image";
@@ -122,7 +122,7 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
       return (
         <div
           style={{ gap: themeId === INK_GRID_ID ? "0px" : gap }}
-          className={`flex flex-col md:flex-row ${alignItems} ${themeId === INK_GRID_ID ? "border-b border-white/15" : ""}`}
+          className={`flex ${p.mobileReverse ? "flex-col-reverse" : "flex-col"} ${p.stackAt === "tablet" ? "lg:flex-row" : "md:flex-row"} ${alignItems} ${themeId === INK_GRID_ID ? "border-b border-white/15" : ""}`}
         >
           {children.map((col, idx) => (
             <div
@@ -170,6 +170,13 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
     case "button_element": {
       const styleVariant = String(p.styleVariant ?? "primary");
       const align = String(p.align ?? "left");
+      const iconPath = typeof p.icon === "string" ? ICON_PATHS[p.icon] : undefined;
+      const iconSide = String(p.iconSide ?? "right");
+      const icon = (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ margin: iconSide === "left" ? "0 8px 0 -4px" : "0 -4px 0 8px" }}>
+          <path d={iconPath} />
+        </svg>
+      );
       return (
         <div
           className={`flex ${
@@ -202,7 +209,9 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
               styleVariant === "outline" ? "border-2" : "shadow-xs"
             }`}
           >
+            {iconPath && iconSide === "left" ? icon : null}
             {String(p.label ?? "Buton")}
+            {iconPath && iconSide !== "left" ? icon : null}
           </a>
         </div>
       );

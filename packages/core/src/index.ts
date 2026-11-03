@@ -6,6 +6,7 @@ export * from "./markdown-compiler";
 export * from "./inline-html";
 export * from "./block-style";
 export * from "./block-tree";
+export * from "./icons";
 export * from "./site-settings";
 export * from "./taxonomy";
 export * from "./session-token";

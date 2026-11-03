@@ -51,7 +51,7 @@ Desen merkezi (ortak tasarım kitaplığı + sayfa desenleri), Dönüşümler (a
 3. Denetçi **Stil** sekmesi katlanır panellere bölünür; her denetimde aygıt anahtarı ve "düzenlendi + sıfırla".
 4. Birim testleri (derleyici çıktısı, güvenlik temizliği).
 
-**Faz 2 — Blok zenginliği**: simge/tek simge, sayaç (countup), referans (şema ile), gelişmiş tablo, ilerleme çubuğu, marquee, vektör; düğmede hover/simge/gradyan; satırda sütun sırası ve mobil yığılma, şekil ayırıcılar; arka plan video/gradyan oluşturucu.
+**Faz 2 — Blok zenginliği (kısmen tamam: simge, sayaç, marquee, şekil ayırıcı, düğme simgesi, sütun yığılma/sıra; kalan: referans şeması, gelişmiş tablo, vektör, arka plan video/gradyan oluşturucu)**: simge/tek simge, sayaç (countup), referans (şema ile), gelişmiş tablo, ilerleme çubuğu, marquee, vektör; düğmede hover/simge/gradyan; satırda sütun sırası ve mobil yığılma, şekil ayırıcılar; arka plan video/gradyan oluşturucu.
 
 **Faz 3 — Dinamik içerik**: sorgu döngüsü bloğu (süzgeç/sıralama/sayfalama, URL parametreli, RSC), kart şablonu seçimi, ürün atlıkarıncası.
 

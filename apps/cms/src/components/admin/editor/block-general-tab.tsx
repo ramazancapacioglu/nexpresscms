@@ -3,6 +3,7 @@
 import { AiComposePanel } from "./ai-compose-panel";
 import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
+import { ICON_NAMES } from "@nexpress/core";
 import { SchemaFields } from "./schema-fields";
 import { SchemaCardFields } from "./schema-card-fields";
 
@@ -96,6 +97,17 @@ export function BlockGeneralTab() {
                                   <option value="bottom">Alta Hizala</option>
                                 </select>
                               </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">Alt alta geçiş</label>
+                                <select aria-label="Alt alta geçiş" value={String(selectedBlock.props.stackAt ?? "mobile")} onChange={(e) => updateSelectedBlockProps({ stackAt: e.target.value })} className="h-8 w-full rounded border border-border bg-background px-2">
+                                  <option value="mobile">Mobilde (768px altı)</option>
+                                  <option value="tablet">Tablette de (1024px altı)</option>
+                                </select>
+                              </div>
+                              <label className="flex items-center gap-2 text-[11px]">
+                                <input type="checkbox" checked={Boolean(selectedBlock.props.mobileReverse)} onChange={(e) => updateSelectedBlockProps({ mobileReverse: e.target.checked || undefined })} />
+                                Alt alta geçince sütun sırasını tersine çevir
+                              </label>
                             </div>
                           )}
 
@@ -200,6 +212,16 @@ export function BlockGeneralTab() {
                                   }
                                   className="h-8 w-full rounded border border-border bg-background px-2 font-mono"
                                 />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <select aria-label="Düğme simgesi" value={String(selectedBlock.props.icon ?? "")} onChange={(e) => updateSelectedBlockProps({ icon: e.target.value || undefined })} className="h-8 rounded border border-border bg-background px-2 text-xs">
+                                  <option value="">Simge yok</option>
+                                  {ICON_NAMES.map((n) => <option key={n} value={n}>{n}</option>)}
+                                </select>
+                                <select aria-label="Simge yönü" value={String(selectedBlock.props.iconSide ?? "right")} onChange={(e) => updateSelectedBlockProps({ iconSide: e.target.value })} className="h-8 rounded border border-border bg-background px-2 text-xs">
+                                  <option value="right">Sağda</option>
+                                  <option value="left">Solda</option>
+                                </select>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <select

@@ -121,6 +121,11 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("testimonials", "Referanslar", "marketing", "Müşteri yorumları", node("testimonial_grid", { title: "Müşterilerimiz", items: [{ quote: "Harika bir deneyim.", name: "Ad Soyad", role: "Şirket" }] })),
   item("comparison", "Karşılaştırma", "marketing", "Yan yana tablo", node("comparison_table", { title: "Karşılaştırma", headers: ["Kriter", "Biz", "Diğer"], rows: [["Hız", "Çok hızlı", "Ortalama"]] })),
 
+  item("single_icon", "Simge", "media", "24 yerleşik simge", node("single_icon", { icon: "star", size: 40, color: "#2563eb", background: "", href: "", label: "", align: "left" })),
+  item("countup", "Sayaç", "marketing", "Kaydırınca sayar (CSS)", node("countup", { value: 1250, prefix: "", suffix: "+", label: "Mutlu müşteri", duration: 2, align: "center" })),
+  item("marquee", "Kayan şerit", "marketing", "Sonsuz kayan metin (CSS)", node("marquee", { items: ["Hızlı", "Güvenli", "Esnek", "Ölçeklenebilir"], speed: 30, direction: "left" })),
+  item("shape_divider", "Şekil ayırıcı", "layout", "Dalga, eğim, üçgen", node("shape_divider", { shape: "wave", color: "#0f172a", height: 80, flip: false })),
+
   item("tabs", "Sekmeler", "interactive", "CSS ile çalışır, JS yok", node("tabs", { items: [{ label: "Sekme 1", body: "İçerik 1" }, { label: "Sekme 2", body: "İçerik 2" }] })),
   item("accordion", "Akordeon", "interactive", "Aç/kapa liste", node("accordion", { items: [{ title: "Başlık", body: "İçerik" }] })),
   item("show_more", "Devamını göster", "interactive", "Açılır ek metin", node("show_more", { summary: "Devamını göster", body: "Ek içerik." })),

@@ -4,6 +4,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
 import type { FormRenderContext } from "./block-context";
 import { RscForm } from "./rsc-form";
+import { renderMotionBlock } from "./blocks-motion";
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value : fallback;
@@ -486,6 +487,6 @@ export function renderStudioCatalogBlock(
       );
 
     default:
-      return null;
+      return renderMotionBlock(block) ?? null;
   }
 }

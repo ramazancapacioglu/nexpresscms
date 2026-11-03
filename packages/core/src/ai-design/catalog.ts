@@ -1,3 +1,4 @@
+import { ICON_NAMES } from "../icons";
 /**
  * AI tasarım sözleşmesi: modelin üretebileceği bloklar, her blokun alanları ve sınırları.
  * Tek kaynak: hem bilgi paketi (komut metni) hem doğrulayıcı bu kataloğu kullanır; ikisi hiç ayrışmaz.
@@ -107,6 +108,10 @@ export const AI_BLOCK_CATALOG: Record<string, BlockSpec> = {
   data_table: { label: "Veri tablosu", usage: "Gerçek tablo verisi (en çok 8 sütun).", props: { title: title(90), headers: { kind: "strings", maxItems: 8, maxLen: 40 }, rows: { kind: "matrix", maxRows: 40, maxCols: 8, maxLen: 80 } } },
   code_block: { label: "Kod bloğu", usage: "Yalnızca teknik içerikte.", props: { language: { kind: "enum", values: ["typescript", "javascript", "bash", "json", "html", "css", "text", "python"] }, code: { kind: "text", max: 2000, required: true } } },
   image_figure: { label: "Görsel", usage: "Yalnızca medya kitaplığındaki görsel; alt metin zorunlu.", props: { url: { kind: "image", required: true }, altText: t(125, true), titleText: t(80), caption: t(160), aspectRatio: t(10) } },
+  single_icon: { label: "Simge", usage: "Tek simge (yerleşik küme); süs ya da özellik işareti.", props: { icon: { kind: "enum", values: ICON_NAMES }, size: { kind: "number", min: 12, max: 160 }, color: t(30), background: t(30), href, label: t(60), align: { kind: "enum", values: ["left", "center", "right"] } } },
+  countup: { label: "Sayaç", usage: "Tek büyük sayı (gerçek veri); kaydırınca sayar.", maxPerPage: 6, props: { value: { kind: "number", min: -1000000000, max: 1000000000 }, prefix: t(8), suffix: t(12), label: t(60), duration: { kind: "number", min: 1, max: 10 } } },
+  marquee: { label: "Kayan şerit", usage: "Logo/ifade şeridi; kısa metinler.", maxPerPage: 2, props: { items: { kind: "strings", maxItems: 12, maxLen: 40 }, speed: { kind: "number", min: 5, max: 180 }, direction: { kind: "enum", values: ["left", "right"] } } },
+  shape_divider: { label: "Şekil ayırıcı", usage: "Bölümler arası dalga/eğim; süs.", maxPerPage: 4, props: { shape: { kind: "enum", values: ["wave", "tilt", "curve", "triangle", "slant"] }, color: t(30), height: { kind: "number", min: 20, max: 300 }, flip: { kind: "boolean" } } },
   form_block: { label: "Form", usage: "Yalnızca var olan bir form (`formId`). Form uydurma.", props: { formId: t(60, true), title: t(80) } },
 };
 

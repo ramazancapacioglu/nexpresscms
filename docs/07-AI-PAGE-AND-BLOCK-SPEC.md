@@ -208,3 +208,6 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 
 - `schema_card`: `props = { schema: "software"|"offer"|"qa"|"tech" }`; veri `schemaAttributes.richSchema`'dan gelir. **AI tasarım kataloğunda yoktur.**
 - `tpl_post_title`, `tpl_post_content`, `tpl_featured_image`, `tpl_post_meta`, `tpl_breadcrumb`, `tpl_archive_title`, `tpl_archive_list`, `tpl_site_logo`, `tpl_menu`, `tpl_copyright`: yalnızca şablonlarda anlamlıdır (yuva blokları); sayfa içeriğinde kullanılmaz ve AI kataloğunda yoktur.
+
+## Ek (2026-11-03): hareket ve süs blokları
+`single_icon` (`icon`: yerleşik 24 simgeden biri, `size`, `color`, `background`, `href`, `label`, `align`), `countup` (`value`, `prefix`, `suffix`, `label`, `duration` sn), `marquee` (`items: string[]`, `speed` sn, `direction`), `shape_divider` (`shape`: wave|tilt|curve|triangle|slant, `color`, `height`, `flip`). `button_element` artık `icon` + `iconSide`; `columns` artık `stackAt` (`mobile`|`tablet`) ve `mobileReverse` alır. Sözleşme `AI_BLOCK_CATALOG` içindedir.

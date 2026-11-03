@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Faz 2: yeni bloklar (simge, sayaç, kayan şerit, şekil ayırıcı), düğme simgesi, satır yığılma seçenekleri
+- ✅ Yeni bloklar (hepsi HTML+CSS, istemci JS'i yok): `single_icon` (24 yerleşik çizgi simgesi, `ICON_PATHS` çekirdekte), `countup` (nihai değer metinde; sayma animasyonu `@property` + `animation-timeline: view()` ile `@supports` altında), `marquee` (CSS kayan şerit, `prefers-reduced-motion` desteği, ikinci kopya `aria-hidden`), `shape_divider` (dalga/eğim/eğri/üçgen/yamuk). Renk/simge/şekil girdileri izin listesi ve düzenli ifadeyle doğrulanır.
+- ✅ Düğmeye simge (ad + yön); satıra "tablette de alt alta geçir" (`stackAt`) ve "alt alta geçince sırayı ters çevir" (`mobileReverse`).
+- ✅ Kitaplık (+ Blok & Satır) ve AI kataloğu yeni bloklarla genişledi (kitaplık 50 blok); `icon` alanı denetçide açılır liste.
+- Testler: çekirdek 163, tema paketi 10 (yeni `blocks-motion.test.tsx`; `test` betiği `.tsx` dosyalarını da kapsıyor). Tarayıcıda yeni blokların eklenmesi, satır seçenekleri, düğme simgesi ve yayındaki çıktı doğrulandı.
+
 ### [2026-11-03] — Referans incelemesi, plan (docs/20) ve Faz 1: stil motoru
 - ✅ Referans paketler (blok paketi, tema, Pro modülleri, yaratıcı paket) kaynak + canlı editör olarak incelendi; bulgular, boşluk matrisi ve 5 fazlı plan `docs/20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md`'de.
 - ✅ **Faz 1 — stil motoru:** `BlockStyleValues` tipografi (aile, kalınlık, satır yüksekliği, harf aralığı, harf düzeni), metin gölgesi, sol/sağ dış boşluk, kenarlık biçimi, arka plan boyut/konum/sabit, dönüşüm (kaydır/ölçek/döndür) ile genişledi; `hover` (hover:hover ortamında, geçişli) ve CSS-only **giriş animasyonu** (`animation-timeline: view()`, `@supports` altında, JS yok) eklendi. Tüm değerler `cssSafe`/izin listesinden geçer.

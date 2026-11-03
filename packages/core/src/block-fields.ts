@@ -1,4 +1,5 @@
 import { AI_BLOCK_CATALOG, type FieldSpec } from "./ai-design/catalog";
+import { ICON_NAMES } from "./icons";
 
 /**
  * Şema tabanlı blok alanları (saf): editörün denetçisi her bloğu bu tanımlardan çizer. Kaynak sırası:
@@ -75,6 +76,7 @@ export function inferField(key: string, value: unknown): EditorField | null {
   if (typeof value === "boolean") return { ...base, kind: "boolean" };
   if (typeof value === "number") return { ...base, kind: "number" };
   if (typeof value === "string") {
+    if (key === "icon" && (value === "" || ICON_NAMES.includes(value))) return { ...base, kind: "enum", options: ["", ...ICON_NAMES] };
     if (/^#[0-9a-f]{3,8}$/i.test(value) && (COLOR_KEY.test(key) || value.length <= 9)) return { ...base, kind: "color" };
     if (IMAGE_KEY.test(key)) return { ...base, kind: "image" };
     if (URL_KEY.test(key)) return { ...base, kind: "url" };

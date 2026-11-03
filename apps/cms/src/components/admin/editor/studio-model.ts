@@ -83,6 +83,10 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   user_card: "Kişi kartı",
   repeater: "Tekrarlayan kayıt",
   vector_mark: "Vektör işaret",
+  single_icon: "Simge",
+  countup: "Sayaç",
+  marquee: "Kayan yazı şeridi",
+  shape_divider: "Şekil ayırıcı",
 };
 
 export interface ColumnLayoutPreset {
