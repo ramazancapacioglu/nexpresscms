@@ -1,0 +1,34 @@
+# ==============================================================================
+# NexPress CMS — Systemd Servis Dosyası
+# Konum: /etc/systemd/system/nexpress.service
+# Komutlar:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable nexpress
+#   sudo systemctl start nexpress
+#   sudo systemctl status nexpress
+# ==============================================================================
+
+[Unit]
+Description=NexPress CMS Next.js Server
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/nexpresscms
+ExecStart=/usr/bin/node /var/www/nexpresscms/scripts/start.cjs
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+SyslogIdentifier=nexpress
+
+# Ortam değişkenleri
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+# Kaynak sınırları
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

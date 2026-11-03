@@ -21,6 +21,20 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Docker Gerektirmeyen Doğrudan VPS/Hosting Kurulum Paketi (PostgreSQL + pgvector)
+- ✅ **1-Tık Kurulum Sihirbazı (`scripts/install-host.sh`):**
+  - Docker gerektirmeyen standart VPS, bulut sunucu ve Node.js hostingleri için interaktif kurulum betiği hazırlandı.
+  - Node.js (>=20) ve `pnpm` doğrulaması, PostgreSQL (`DATABASE_URL`) bağlantı kontrolü, otomatik kriptografik `AUTH_SECRET`/`SECRETS_KEY` üretimi ve `.env` yapılandırması.
+  - `pnpm db:migrate` (PostgreSQL + pgvector şeması) ve `pnpm db:seed` ile başlangıç verisi kurulumu, `pnpm build` üretimi.
+- ✅ **Süreç Yöneticisi & Başlatıcı (`ecosystem.config.cjs`, `scripts/start.cjs`):**
+  - PM2, systemd ve cPanel / Plesk Node.js Selector için ortak `scripts/start.cjs` üretim başlatıcısı yazıldı.
+  - `ecosystem.config.cjs` ile 1G bellek limiti, otomatik yeniden başlatma ve birleştirilmiş loglama desteği sağlandı.
+- ✅ **1-Tık Güncelleme Betiği (`scripts/update-host.sh`):**
+  - Sunucuda `git pull`, `pnpm install`, `pnpm db:migrate`, `pnpm build` ve `pm2 reload nexpress` işlemlerini tek komutla sıfır kesintiyle (zero-downtime) yürüten güncelleme betiği eklendi.
+- ✅ **Nginx & Systemd Şablonları (`scripts/nginx-nexpress.conf`, `scripts/nexpress.service`):**
+  - WebSocket desteği, 70MB dosya yükleme sınırı (`client_max_body_size 70M`), statik varlık (`/_next/static`, `/media/`) önbelleklemesi ve SSL yapılandırması içeren Nginx vekil şablonu eklendi.
+- ✅ **Dokümantasyon:** `docs/19-DEPLOYMENT.md` sunucu kurulum adımları ve mimarisiyle güncellendi.
+
 ### [2026-11-03] — Panel Yapışkan Sol Kenar Çubuğu (Sticky Sidebar) ve SEO Sekmeleri Geçiş Düzeltmesi
 - 🐛 **Panel Sol Sidebar Sabitliği (`apps/cms/src/components/admin/admin-shell-client.tsx`):**
   - Masaüstünde (`md:`) statik kalan ve uzun içerik/sayfa tablolarında kaydırıldığında yukarıda kaybolan sol menü; `md:sticky md:top-0 md:h-screen md:max-h-screen` ve bağımsız iç kaydırma (`flex-1 overflow-y-auto`) ile tamamen yapışkan hale getirildi. Kullanıcı profili, telemetri ve canlı vitrin bağlantısı (`shrink-0 border-t`) her zaman altta sabit kalacak şekilde düzenlendi.

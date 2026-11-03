@@ -23,14 +23,71 @@ Bu rehber, uygulamanın üretimde nasıl çalıştırılacağını ve yayından 
 
 İsteğe bağlı: `REQUIRE_ADMIN_2FA=1`, `SMTP_URL`, `OPENAI_API_KEY`, `MCP_AGENT_KEY`, `MEDIA_DIR`, `REDIS_URL` (bugün yalnızca bildirilmiş altyapı; giriş sınırları süreç belleğindedir).
 
-## 3. İlk kurulum
+## 3. İlk kurulum (Otomatik & Doğrudan Host Dağıtımı)
+
+NexPress CMS, Docker gerektirmeden standart Ubuntu/Debian VPS, Cloud sunucu veya Node.js destekli hostinglerde doğrudan çalışacak şekilde tasarlanmıştır.
+
+### A) 1-Tık Kurulum Sihirbazı (Önerilen)
+
+Sunucunuza depoyu klonladıktan sonra tek bir komutla kurulum sihirbazını başlatabilirsiniz:
+
+```bash
+bash scripts/install-host.sh
+```
+
+Bu betik sırasıyla:
+1. Node.js (>=20) ve `pnpm` gereksinimlerini doğrular (eksikse kurar/etkinleştirir).
+2. PostgreSQL (pgvector) bağlantısı (`DATABASE_URL`), alan adı ve yönetici bilgilerini sorarak güvenli `.env` dosyasını oluşturur (kriptografik `AUTH_SECRET` ve `SECRETS_KEY` otomatik üretilir).
+3. `pnpm install --frozen-lockfile` ile bağımlılıkları yükler.
+4. `pnpm db:migrate` ile veritabanı tablolarını ve pgvector uzantısını kurar.
+5. `pnpm db:seed` ile başlangıç sitesini ve hazır şablonları ekler.
+6. `pnpm build` ile Next.js 15 üretim derlemesini alır.
+7. PM2 yüklüyse uygulamayı `ecosystem.config.cjs` üzerinden arka planda başlatır ve `pm2 save` eder.
+
+### B) Manuel Kurulum Adımları
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm db:migrate        # şemayı kurar/günceller (eski push veritabanlarını tabana alır)
+pnpm db:migrate        # şemayı kurar/günceller (PostgreSQL pgvector tabloları)
 pnpm db:seed           # YALNIZCA yeni ve boş kurulumda: site kaydı ve başlangıç içeriği
-pnpm --filter @nexpress/cms build
-pnpm --filter @nexpress/cms start     # 3000 numaralı bağlantı noktası
+pnpm build             # üretim derlemesi
+pm2 start ecosystem.config.cjs   # veya: pnpm start
+```
+
+### C) Süreç Yönetimi (PM2 & systemd)
+
+- **PM2 ile Çalıştırma:**
+  ```bash
+  pm2 start ecosystem.config.cjs
+  pm2 reload nexpress --update-env   # sıfır kesintiyle yeniden başlatma
+  pm2 logs nexpress                  # canlı günlükler
+  pm2 save && pm2 startup            # sunucu açılışında otomatik başlatma
+  ```
+- **Systemd ile Çalıştırma:**
+  `scripts/nexpress.service` dosyasını `/etc/systemd/system/nexpress.service` konumuna kopyalayın:
+  ```bash
+  sudo systemctl daemon-reload
+  sudo systemctl enable nexpress
+  sudo systemctl start nexpress
+  ```
+
+### D) Nginx Tersine Vekil (Reverse Proxy & SSL)
+
+`scripts/nginx-nexpress.conf` şablonu WebSocket, 70MB dosya yükleme sınırı ve `/_next/static` ile `/media` için statik önbellekleme kurallarını içerir:
+
+```bash
+sudo cp scripts/nginx-nexpress.conf /etc/nginx/sites-available/nexpress.conf
+sudo ln -s /etc/nginx/sites-available/nexpress.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d alanadiniz.com
+```
+
+### E) 1-Tık Güncelleme (Update Script)
+
+Yeni bir sürüm yayınlandığında sunucuda tek komutla güncelleme yapılır:
+
+```bash
+bash scripts/update-host.sh
 ```
 
 - Her sürüm güncellemesinden sonra **önce `pnpm db:migrate`**, sonra yeniden başlatın. Bekleyen göç varsa panelde *Sistem durumu → Göçler* uyarı verir; çalıştırılmamış göçle bazı sayfalar `column … does not exist` hatası verir.
