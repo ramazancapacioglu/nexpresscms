@@ -1,4 +1,4 @@
-import type { BlockNode, BlockStyle, BlockStyleValues } from "./types";
+import type { BlockAnimationName, BlockHoverValues, BlockNode, BlockStyle, BlockStyleValues } from "./types";
 
 export const BREAKPOINTS = {
   tabletMax: 1024,
@@ -23,9 +23,55 @@ const SHADOWS: Record<string, string> = {
   xl: "0 20px 50px rgba(0,0,0,.20)",
 };
 
+const TEXT_SHADOWS: Record<string, string> = {
+  none: "none",
+  sm: "0 1px 2px rgba(0,0,0,.25)",
+  md: "0 2px 8px rgba(0,0,0,.35)",
+  lg: "0 4px 18px rgba(0,0,0,.45)",
+};
+
+/** Giriş animasyonu anahtar kareleri: `animation-timeline: view()` ile kaydırmaya bağlı, JS gerektirmez. */
+const ANIMATION_FRAMES: Record<string, string> = {
+  "fade-in": "from{opacity:0}to{opacity:1}",
+  "fade-up": "from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}",
+  "fade-down": "from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}",
+  "fade-left": "from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}",
+  "fade-right": "from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}",
+  "zoom-in": "from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}",
+};
+export const BLOCK_ANIMATIONS = Object.keys(ANIMATION_FRAMES) as BlockAnimationName[];
+
 function cssSafe(value: string): string {
   // Stil enjeksiyonunu engelle: `;`, `{`, `}`, `<` ve `@import` yasak.
   return value.replace(/[;{}<>]/g, "").replace(/@import/gi, "").trim();
+}
+
+const BORDER_STYLES = new Set(["solid", "dashed", "dotted", "double"]);
+const TEXT_TRANSFORMS = new Set(["none", "uppercase", "lowercase", "capitalize"]);
+
+function transformOf(v: Pick<BlockStyleValues, "translateY" | "scale" | "rotate">): string {
+  const t: string[] = [];
+  if (v.translateY) t.push(`translateY(${cssSafe(v.translateY)})`);
+  if (typeof v.scale === "number" && Number.isFinite(v.scale) && v.scale > 0 && v.scale <= 3) t.push(`scale(${v.scale})`);
+  if (v.rotate) t.push(`rotate(${cssSafe(v.rotate)})`);
+  return t.join(" ");
+}
+
+function hoverDeclarations(h: BlockHoverValues | undefined): string {
+  if (!h) return "";
+  const d: string[] = [];
+  const push = (prop: string, val: string | number | undefined) => {
+    if (val === undefined || val === null || val === "") return;
+    d.push(`${prop}:${typeof val === "number" ? val : cssSafe(String(val))}`);
+  };
+  push("color", h.textColor);
+  push("background-color", h.backgroundColor);
+  push("border-color", h.borderColor);
+  if (h.boxShadow) push("box-shadow", SHADOWS[h.boxShadow]);
+  push("opacity", h.opacity);
+  const tf = transformOf(h);
+  if (tf) d.push(`transform:${tf}`);
+  return d.join(";");
 }
 
 function valuesToDeclarations(v: BlockStyleValues | undefined): string {
@@ -64,10 +110,24 @@ function valuesToDeclarations(v: BlockStyleValues | undefined): string {
   push("border-radius", v.borderRadius);
   if (v.boxShadow) push("box-shadow", SHADOWS[v.boxShadow]);
   push("opacity", v.opacity);
+  push("margin-left", v.marginLeft);
+  push("margin-right", v.marginRight);
+  if (v.borderStyle && v.borderWidth) d.push(`border-style:${BORDER_STYLES.has(v.borderStyle) ? v.borderStyle : "solid"}`);
+  push("font-family", v.fontFamily);
+  push("font-weight", v.fontWeight && /^[1-9]00$/.test(v.fontWeight) ? v.fontWeight : undefined);
+  push("line-height", v.lineHeight);
+  push("letter-spacing", v.letterSpacing);
+  if (v.textTransform && TEXT_TRANSFORMS.has(v.textTransform)) d.push(`text-transform:${v.textTransform}`);
+  if (v.textShadow) push("text-shadow", TEXT_SHADOWS[v.textShadow]);
+  if (v.backgroundSize && ["cover", "contain", "auto"].includes(v.backgroundSize)) d.push(`background-size:${v.backgroundSize}`);
+  push("background-position", v.backgroundPosition);
+  if (v.backgroundFixed) d.push("background-attachment:fixed");
+  const tf = transformOf(v);
+  if (tf) d.push(`transform:${tf}`);
   return d.join(";");
 }
 
-function collect(blocks: BlockNode[], parentType: string | null, out: string[]): void {
+function collect(blocks: BlockNode[], parentType: string | null, out: string[], used: Set<string>): void {
   for (const b of blocks) {
     const sel = `[data-nx-b="${safeBlockDomId(b.id)}"]`;
     const s: BlockStyle | undefined = b.style;
@@ -101,6 +161,20 @@ function collect(blocks: BlockNode[], parentType: string | null, out: string[]):
           `${sel}{position:relative}${sel}::before{content:"";position:absolute;inset:0;background:${cssSafe(
             s.backgroundOverlay
           )};border-radius:inherit;pointer-events:none}${sel}>*{position:relative}`
+        );
+      }
+
+      const hover = hoverDeclarations(s.hover);
+      if (hover) {
+        const ms = Number.isFinite(s.transitionMs) ? Math.min(Math.max(Number(s.transitionMs), 0), 3000) : 200;
+        out.push(`${sel}{transition:all ${ms}ms ease}`);
+        out.push(`@media (hover:hover){${sel}:hover{${hover}}}`);
+      }
+      if (s.animation && ANIMATION_FRAMES[s.animation]) {
+        used.add(s.animation);
+        const ms = Number.isFinite(s.transitionMs) ? Math.min(Math.max(Number(s.transitionMs), 0), 3000) : 0;
+        out.push(
+          `@supports (animation-timeline:view()){${sel}{animation:nx-${s.animation} linear both;animation-timeline:view();animation-range:entry 0% entry ${ms > 0 ? Math.round(ms / 20) : 60}%}}`
         );
       }
 
@@ -148,7 +222,7 @@ function collect(blocks: BlockNode[], parentType: string | null, out: string[]):
     }
 
     if (b.children && b.children.length > 0) {
-      collect(b.children, b.type, out);
+      collect(b.children, b.type, out, used);
     }
   }
 }
@@ -159,6 +233,8 @@ function collect(blocks: BlockNode[], parentType: string | null, out: string[]):
  */
 export function compileBlockStylesToCss(blocks: BlockNode[]): string {
   const out: string[] = [];
-  collect(blocks, null, out);
-  return out.join("\n");
+  const used = new Set<string>();
+  collect(blocks, null, out, used);
+  const frames = [...used].map((n) => `@keyframes nx-${n}{${ANIMATION_FRAMES[n]}}`);
+  return [...frames, ...out].join("\n");
 }

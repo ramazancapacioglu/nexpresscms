@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Referans incelemesi, plan (docs/20) ve Faz 1: stil motoru
+- ✅ Referans paketler (blok paketi, tema, Pro modülleri, yaratıcı paket) kaynak + canlı editör olarak incelendi; bulgular, boşluk matrisi ve 5 fazlı plan `docs/20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md`'de.
+- ✅ **Faz 1 — stil motoru:** `BlockStyleValues` tipografi (aile, kalınlık, satır yüksekliği, harf aralığı, harf düzeni), metin gölgesi, sol/sağ dış boşluk, kenarlık biçimi, arka plan boyut/konum/sabit, dönüşüm (kaydır/ölçek/döndür) ile genişledi; `hover` (hover:hover ortamında, geçişli) ve CSS-only **giriş animasyonu** (`animation-timeline: view()`, `@supports` altında, JS yok) eklendi. Tüm değerler `cssSafe`/izin listesinden geçer.
+- ✅ **Denetçi Stil sekmesi** katlanır panellere bölündü (Renk, Boşluk, Tipografi, Kenarlık, Arka plan görseli, Dönüşüm, Hover, Animasyon); her denetimde "düzenlendi" noktası ve tek tıkla sıfırlama (`style-controls.tsx`).
+- Testler: çekirdek 163 (yeni `block-style-v2.test.ts`: derleme, güvenlik, anahtar kare tekilliği). Tarayıcıda paneller, sıfırlama, kanvas CSS'i ve yayındaki sayfa çıktısı doğrulandı.
+
 ### [2026-11-03] — Yerel WordPress referans ortamı (araç)
 - ✅ `tools/wp-reference/`: Docker Compose (MariaDB + WordPress + wp-cli) ve `setup.sh`; lisanslı referans paketleri `docs/kadence-referans-eklentiler/` altından salt okunur bağlanır, depoya girmez (`.gitignore`). Amaç: eklenti davranışını canlı inceleyip kendi editörümüzü buna göre geliştirmek.
 

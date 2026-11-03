@@ -50,6 +50,7 @@ export interface StudioInspectorApi {
   /** Bloğa dışarıdan metin yazıldığında metin editörünü yeniden eşler */
   bumpProseSync: () => void;
   updateSelectedBlockStyle: (patch: Partial<BlockStyle>) => void;
+  updateSelectedBlockStyleRoot: (patch: Partial<BlockStyle>) => void;
   getActiveStyleValue: <K extends keyof BlockStyleValues>(
     key: K
   ) => BlockStyleValues[K] | undefined;

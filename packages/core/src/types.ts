@@ -206,11 +206,49 @@ export interface BlockStyleValues {
   borderRadius?: string;
   boxShadow?: "none" | "sm" | "md" | "lg" | "xl";
   opacity?: number;
+  // Tipografi
+  fontFamily?: string;
+  fontWeight?: string; // 100–900
+  lineHeight?: string;
+  letterSpacing?: string;
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
+  textShadow?: "none" | "sm" | "md" | "lg";
+  // Kenar boşluğu (sol/sağ) ve kenarlık biçimi
+  marginLeft?: string;
+  marginRight?: string;
+  borderStyle?: "solid" | "dashed" | "dotted" | "double";
+  // Arka plan görseli
+  backgroundSize?: "cover" | "contain" | "auto";
+  backgroundPosition?: string; // "center", "top left", "50% 20%"
+  backgroundFixed?: boolean; // paralaks benzeri sabit arka plan
+  // Dönüşüm
+  translateY?: string;
+  scale?: number;
+  rotate?: string;
 }
+
+/** Üzerine gelince (hover) uygulanan değerler; yalnızca geçişle güvenli biçimde değişen alanlar. */
+export interface BlockHoverValues {
+  textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  boxShadow?: "none" | "sm" | "md" | "lg" | "xl";
+  opacity?: number;
+  translateY?: string;
+  scale?: number;
+}
+
+/** CSS ile çalışan giriş animasyonları (görünüme girerken; JS yok, desteklenmeyen tarayıcıda animasyonsuz). */
+export type BlockAnimationName = "fade-in" | "fade-up" | "fade-down" | "fade-left" | "fade-right" | "zoom-in";
 
 export interface BlockStyle extends BlockStyleValues {
   tablet?: BlockStyleValues;
   mobile?: BlockStyleValues;
+  hover?: BlockHoverValues;
+  /** Giriş animasyonu */
+  animation?: BlockAnimationName;
+  /** Geçiş süresi (ms); hover geçişi için de kullanılır */
+  transitionMs?: number;
   hideOn?: DeviceKey[] | { desktop?: boolean; tablet?: boolean; mobile?: boolean };
   fullWidth?: boolean; // Kapsayıcıdan taşarak tam ekran genişlik
   anchorId?: string;

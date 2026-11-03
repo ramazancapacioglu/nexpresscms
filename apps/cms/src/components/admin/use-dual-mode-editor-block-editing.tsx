@@ -85,6 +85,12 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     );
   };
 
+  /** Cihazdan bağımsız alanlar (hover, animasyon, geçiş süresi) her zaman kök stile yazılır. */
+  const updateSelectedBlockStyleRoot = (patch: Partial<BlockStyle>) => {
+    if (!selectedBlockId) return;
+    setBlocks((prev) => updateBlockById(prev, selectedBlockId, (b) => ({ ...b, style: { ...(b.style ?? {}), ...patch } })));
+  };
+
   // Aktif cihaza göre seçili bloğun stil değerini oku
   const getActiveStyleValue = <K extends keyof BlockStyleValues>(
     key: K
@@ -196,5 +202,5 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
-  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
+  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
 }

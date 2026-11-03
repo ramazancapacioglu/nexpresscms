@@ -82,3 +82,5 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - Sayfa/yazı şablonu uygulanırken paylaşım çubuğu ve yorum/inceleme bölümü şablonda yuva olmadığından çizilmez.
 - Şema kartları dört tür (yazılım, kampanya, soru-cevap, teknik künye); Product/LocalBusiness/Event gibi türler ve kartların çoklu varyantı yok.
 - Canvas üzerinde alan içi (inline) metin düzenleme yalnızca paragraf/başlıkta; diğer bloklar denetçiden düzenlenir.
+
+- **Editör zenginleştirme (docs/20):** Faz 1 (stil motoru) tamam. Sırada Faz 2 (simge/sayaç/referans/marquee blokları, düğme hover-simge, sütun sırası, şekil ayırıcılar), Faz 3 (sorgu döngüsü + süzgeçler), Faz 4 (üst bilgi oluşturucu, tür başına yerleşim, görüntüleme koşulları, karanlık mod), Faz 5 (stil ön ayarları, kayan blok araç çubuğu).
