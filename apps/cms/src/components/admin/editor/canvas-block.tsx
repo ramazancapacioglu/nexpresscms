@@ -295,7 +295,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
       <div
         {...dragProps}
         className={`absolute -top-3.5 left-2 right-2 z-10 flex cursor-grab items-center justify-between gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] shadow-sm transition-opacity active:cursor-grabbing ${
-          selected ? "border-blue-500/40 text-blue-700 opacity-100" : "border-border text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+          selected ? "border-blue-500/40 text-blue-700 opacity-100" : "border-border text-muted-foreground invisible group-hover:visible group-focus-within:visible"
         }`}
       >
         <span className="inline-flex items-center gap-1 font-semibold"><GripVertical className="h-3.5 w-3.5 opacity-60" aria-hidden />{BLOCK_TYPE_LABELS[block.type] ?? block.type}</span>

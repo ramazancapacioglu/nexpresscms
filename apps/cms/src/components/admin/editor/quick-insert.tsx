@@ -29,7 +29,7 @@ export function InsertPoint({ onInsert }: { onInsert: (block: BlockNode) => void
         aria-label="Buraya blok ekle"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="relative z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white opacity-0 shadow transition-opacity hover:bg-blue-700 focus:opacity-100 group-hover/ins:opacity-100"
+        className={`relative z-10 h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow hover:bg-blue-700 ${open ? "inline-flex" : "invisible group-hover/ins:visible"} group-hover/ins:inline-flex`}
       >
         <Plus className="h-3.5 w-3.5" />
       </button>
