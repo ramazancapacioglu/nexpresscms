@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Panel Yapışkan Sol Kenar Çubuğu (Sticky Sidebar) ve SEO Sekmeleri Geçiş Düzeltmesi
+- 🐛 **Panel Sol Sidebar Sabitliği (`apps/cms/src/components/admin/admin-shell-client.tsx`):**
+  - Masaüstünde (`md:`) statik kalan ve uzun içerik/sayfa tablolarında kaydırıldığında yukarıda kaybolan sol menü; `md:sticky md:top-0 md:h-screen md:max-h-screen` ve bağımsız iç kaydırma (`flex-1 overflow-y-auto`) ile tamamen yapışkan hale getirildi. Kullanıcı profili, telemetri ve canlı vitrin bağlantısı (`shrink-0 border-t`) her zaman altta sabit kalacak şekilde düzenlendi.
+- 🐛 **SEO Merkezi / Site Denetimi Sekme Geçişi Düzeltmesi (`apps/cms/src/components/admin/section-tabs.tsx`, `app/admin/seo/layout.tsx`):**
+  - `/admin/seo` rotasında ortak bir `layout.tsx` bulunmadığı için Next.js 15 App Router yaprak sayfa (leaf) ile alt rota (`/admin/seo/audit`, `/admin/seo/integrations`) arasındaki segment mutabakatında istemci içi geçişi durduruyordu.
+  - `apps/cms/src/app/admin/seo/layout.tsx`, `apps/cms/src/app/admin/themes/layout.tsx` ve `apps/cms/src/app/admin/forms/layout.tsx` segment yerleşimleri eklendi.
+  - `SectionTabs` bileşeninde `prefetch={false}` ve `router.push(t.href)` kontrollü programatik yönlendirme sağlanarak sekmelerin her koşulda ilk tıklamada anında açılması garanti edildi.
+- ✅ **Doğrulama & Testler:** 13 paketin tamamında `pnpm typecheck` ve 11 test paketinin tamamı (63 veritabanı, 32 SEO, 7 editör testi) %100 yeşil geçti.
+
 ### [2026-11-03] — Google GSC, GA4, Bing & Yandex Canlı Entegrasyonları ve Arama Analitiği (agentic-content-ops uyarlaması)
 - ✅ **Arama Motoru & Analitik API İstemcileri (`@nexpress/seo-core/analytics-integrations`):**
   - `agentic-content-ops/packages/question-intel` motoru NexPress CMS mimarisine taşındı.

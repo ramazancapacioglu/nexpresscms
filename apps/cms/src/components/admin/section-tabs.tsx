@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export interface SectionTab {
   href: string;
@@ -13,6 +13,7 @@ export interface SectionTab {
 /** Bir çatı altındaki ilgili sayfaları (SEO, Görünüm) tek sekme çubuğunda toplar. Etkin sekme adresten bulunur. */
 export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string }) {
   const path = usePathname() ?? "";
+  const router = useRouter();
   const score = (t: SectionTab) => Math.max(...[t.href, ...(t.match ?? [])].map((p) => (path === p || path.startsWith(`${p}/`) ? p.length : -1)));
   const best = tabs.reduce((acc, t) => (score(t) > score(acc) ? t : acc), tabs[0]!);
   return (
@@ -23,6 +24,15 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
           <Link
             key={t.href}
             href={t.href}
+            prefetch={false}
+            onClick={(e) => {
+              if (path === t.href) {
+                e.preventDefault();
+                return;
+              }
+              e.preventDefault();
+              router.push(t.href);
+            }}
             aria-current={active ? "page" : undefined}
             className={`shrink-0 rounded-md px-3 py-1.5 text-[13px] font-medium transition ${
               active ? "bg-[#266DF0] text-white shadow-sm" : "text-[#454B55] hover:bg-[#E9ECF1] dark:text-[#B4BAC5] dark:hover:bg-[#22252D]"

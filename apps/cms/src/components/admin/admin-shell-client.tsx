@@ -125,8 +125,12 @@ export function AdminShellClient({
         <div className="fixed inset-0 z-30 bg-black/40 md:hidden" aria-hidden="true" onClick={() => setSidebarOpen(false)} />
       )}
       {sidebarOpen && !studioOpen && (
-        <aside id="admin-sidebar" aria-label="Yönetim menüsü" className="fixed inset-y-0 left-0 z-40 h-dvh w-[260px] max-w-[85vw] overflow-y-auto shadow-xl md:static md:z-auto md:h-auto md:w-[252px] md:max-w-none md:overflow-visible md:shadow-none shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none">
-          <div className="p-2 space-y-2.5">
+        <aside
+          id="admin-sidebar"
+          aria-label="Yönetim menüsü"
+          className="fixed inset-y-0 left-0 z-40 h-dvh w-[260px] max-w-[85vw] shadow-xl md:sticky md:top-0 md:z-20 md:h-screen md:max-h-screen md:w-[252px] md:max-w-none md:shadow-none shrink-0 border-r border-[#E6E7EA] dark:border-[#23262E] bg-[#F4F5F6] dark:bg-[#121317] flex flex-col justify-between select-none overflow-hidden"
+        >
+          <div className="flex-1 overflow-y-auto p-2 space-y-2.5">
             <div className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-[#EAECED]/70 dark:hover:bg-[#1C1E24] transition">
               <Link href="/admin" className="flex items-center gap-2 min-w-0">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] bg-[#14151A] dark:bg-[#F3F4F6] text-[10px] font-bold text-white dark:text-[#14151A]">
@@ -248,7 +252,7 @@ export function AdminShellClient({
           </div>
 
           {/* Alt Sistem Telemetri Özeti */}
-          <div className="p-2 border-t border-[#E6E7EA] dark:border-[#23262E] space-y-1.5">
+          <div className="shrink-0 p-2 border-t border-[#E6E7EA] dark:border-[#23262E] space-y-1.5 bg-[#F4F5F6] dark:bg-[#121317]">
             <div className="rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 py-1.5 space-y-1 text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="text-[#5F6570] dark:text-[#8C9099] flex items-center gap-1.5">
