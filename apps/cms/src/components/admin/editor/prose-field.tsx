@@ -136,8 +136,10 @@ function ProseToolbar({
   );
 
   useEffect(() => {
+    const doc = editor.view.dom.ownerDocument;
+    const win = doc.defaultView ?? window;
     const place = () => {
-      const selection = window.getSelection();
+      const selection = win.getSelection();
       const outside = () => {
         if (linkDraft !== null) return;
         setAnchor(null);
@@ -163,13 +165,13 @@ function ProseToolbar({
         below,
       });
     };
-    document.addEventListener("selectionchange", place);
-    window.addEventListener("resize", place);
+    doc.addEventListener("selectionchange", place);
+    win.addEventListener("resize", place);
     const scroller = editor.view.dom.closest(".overflow-y-auto");
     scroller?.addEventListener("scroll", place, { passive: true });
     return () => {
-      document.removeEventListener("selectionchange", place);
-      window.removeEventListener("resize", place);
+      doc.removeEventListener("selectionchange", place);
+      win.removeEventListener("resize", place);
       scroller?.removeEventListener("scroll", place);
     };
   }, [editor, linkDraft]);
@@ -466,7 +468,7 @@ function ProseToolbar({
         ) : null}
       </div>
     </div>,
-    document.body
+    editor.view.dom.ownerDocument.body
   );
 }
 
@@ -504,7 +506,7 @@ export function ProseField({
     content: toDocument(text, html),
     editorProps: {
       attributes: {
-        class: rich ? "nx-prose text-sm leading-relaxed" : "nx-prose-inline",
+        class: rich ? "nx-prose min-h-7 text-sm leading-relaxed" : "nx-prose-inline min-h-7",
         role: "textbox",
         "aria-multiline": rich ? "true" : "false",
         "aria-label": rich ? "Zengin metin alanı" : "Metin alanı",

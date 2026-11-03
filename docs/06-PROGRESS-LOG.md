@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Tuval v2 adım 4: gerçek önizleme çerçevesi (iframe)
+- ✅ Görsel tuval ve canlı önizleme artık bir **iframe** içinde çizilir (`editor/canvas-frame.tsx`): içerik React portalıyla çerçeve belgesine basılır (durum/olaylar aynı ağaçta), üst belgenin stil sayfaları çerçeveye kopyalanır ve izlenir (sıcak yenileme dahil), sitenin `--nx-*` değişkenleri eklenir, yönetim temasının `<html>` sınıfı yansıtılır. **Tablet (768) ve mobil (390) gerçek çerçeve genişliğidir: medya sorguları bu genişliğe göre çalışır** (ölçüm: vitrin başlığı masaüstünde 48px → mobilde 30px).
+- ✅ Çerçeveye uyarlamalar: seçili metin araç çubuğu ve "+" açılırı çerçeve belgesinde (ownerDocument) çalışır; çerçevedeki Ctrl+S ve sürükleme-bitiş/pointer olayları üst pencereye iletilir; sürükle-bırak yükü çerçeve içinde ve dışarıdan (kitaplık → tuval) işlenir.
+- 🐛 CI axe (`target-size`): zengin metin alanı (TipTap) boş blokta 24 px altına inebiliyordu; `min-h-7` ile alt sınır verildi. (Önceki düzeltme yerelde yeterli görünmüştü ama CI'da — farklı yazı tipi ölçüleri — yetmedi; alt sınır artık ölçüden bağımsız.)
+- Tarayıcıda: çerçevede stil sayfaları, gerçek medya sorgusu, satır içi düzenleme, kayan araç çubuğu, çerçeve içi taşıma ve dışarıdan gelen blok yükü doğrulandı. Bilinen sınır: Playwright'ın fare tabanlı sürüklemesi belge sınırını geçen kitaplık sürüklemesini simüle edemedi; yük işleme sentetik DragEvent ile doğrulandı, gerçek tarayıcıda elle denenmesi önerilir.
+- Kalan (Tuval v2): `/` komutu, sayfa başlığının tuval içine alınması.
+
 ### [2026-11-03] — Editör yönü kararı (docs/21) ve Tuval v2 adım 1–3
 - 📄 `docs/21-EDITOR-DIRECTION.md`: WordPress blok editörünü (`@wordpress/block-editor`) ve Puck'u araştırdım. Gutenberg paketlerinin hepsi **GPL-2.0-or-later** (açık çekirdek + kapalı Pro modeliyle çakışır), 50 MB+ bağımlılık, HTML-yorum içerik modeli, PHP'ye bağlı bloklar → **benimsenmedi**; Puck (MIT) 1.0 öncesi ve ~70 blok oluşturucusunun yeniden yazımını gerektirir → şimdilik benimsenmedi. Karar: kendi yığınımızda "Tuval v2".
 - ✅ **Satır içi metin düzenleme (her blokta):** blok `props` metinleri render edilmiş DOM'daki yaprak metin öğeleriyle eşleştirilir (`collectEditableStrings` / `assignStringsToTexts` / `patchAtPath`, çekirdekte saf, 3 test); eşleşen öğe `contenteditable="plaintext-only"` olur, Enter/blur'da yola (`items.0.title`) geri yazılır, Esc iptal eder. Render koduna dokunulmadı: vitrin, istatistik şeridi, özellik ızgarası, ürün kartı, SSS… **30 metin düğümü** tuvalde doğrudan düzenlenebiliyor (tarayıcıda doğrulandı). Önizlemedeki bağlantı/düğme/form editörden ayırmaz.

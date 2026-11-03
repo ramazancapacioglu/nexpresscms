@@ -30,10 +30,10 @@ Referans editörde sayfa **sitenin kendisi gibi** görünür; her metne doğruda
 
 ## 4. Karar: "Tuval v2" — kendi yığınımızda
 Sıra (her adım ayrı teslim edilir, hepsi AST'yi ve 0-KB ön yüzü korur):
-1. **Satır içi metin düzenleme (her blokta):** bloğun render çıktısındaki metin düğümleri blok özellikleriyle **DOM eşleştirmesiyle** bağlanır (`assignStringsToTexts`); eşleşen yaprak öğe `contenteditable` olur, `blur`/Enter'da `props` güncellenir. Render kodlarına dokunmadan ~70 blokta çalışır; eşleşmeyen metin sağ panelde kalır.
-2. **Sade tuval:** kart/başlık çubuğu kaldırılır; seçili blokta ince çerçeve + yüzen araç çubuğu (üstte), üzerine gelince etiket.
-3. **Bloklar arası "+" ve `/` komutu.**
-4. **Gerçek önizleme çerçevesi (iframe):** site CSS'iyle, gerçek header/footer bağlamıyla; cihaz genişlikleri gerçek medya sorgularıyla.
+1. ✅ (yapıldı) **Satır içi metin düzenleme (her blokta):** bloğun render çıktısındaki metin düğümleri blok özellikleriyle **DOM eşleştirmesiyle** bağlanır (`assignStringsToTexts`); eşleşen yaprak öğe `contenteditable` olur, `blur`/Enter'da `props` güncellenir. Render kodlarına dokunmadan ~70 blokta çalışır; eşleşmeyen metin sağ panelde kalır.
+2. ✅ (yapıldı) **Sade tuval:** kart/başlık çubuğu kaldırılır; seçili blokta ince çerçeve + yüzen araç çubuğu (üstte), üzerine gelince etiket.
+3. ✅ "+" yapıldı; `/` komutu kaldı.
+4. ✅ (yapıldı 2026-11-03) **Gerçek önizleme çerçevesi (iframe):** site CSS'iyle, gerçek header/footer bağlamıyla; cihaz genişlikleri gerçek medya sorgularıyla.
 5. **Sayfa başlığı tuval içinde** (ilk satır), SEO/meta alanları kenar panelde.
 Bu adımlarla ilgili ilerleme `docs/06-PROGRESS-LOG.md`'de tutulur.
 

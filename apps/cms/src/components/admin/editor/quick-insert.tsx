@@ -16,8 +16,9 @@ export function InsertPoint({ onInsert }: { onInsert: (block: BlockNode) => void
   useEffect(() => {
     if (!open) return;
     const away = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", away);
-    return () => document.removeEventListener("mousedown", away);
+    const doc = box.current?.ownerDocument ?? document;
+    doc.addEventListener("mousedown", away);
+    return () => doc.removeEventListener("mousedown", away);
   }, [open]);
   const results: Choice[] = query.trim() ? searchCatalog(query).slice(0, 8).map((i) => ({ id: i.id, label: i.label, hint: i.hint, block: i.block })) : [...ROWS, ...BLOCK_CATALOG.slice(3, 7).map((i) => ({ id: i.id, label: i.label, hint: i.hint, block: i.block }))];
   const pick = (c: Choice) => { setOpen(false); setQuery(""); onInsert(c.block); };

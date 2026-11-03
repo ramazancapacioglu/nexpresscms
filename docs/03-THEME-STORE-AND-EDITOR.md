@@ -151,3 +151,6 @@ Ziyaretçi renkleri `var(--nx-bg|fg|primary|…)` okunur: `toCssVarTokens` (rend
 
 ## Tuval v2: satır içi düzenleme (2026-11-03)
 `InlineEditable` (`editor/inline-editable.tsx`) zengin bloğun render çıktısını sarar; `props` içindeki görünen metinleri DOM yaprak öğelerine eşler ve `contenteditable` yapar. Yeni blok yazarken **özel bir şey gerekmez**: metin `props` içinde düz dize olarak durup bloğun çıktısında tek başına bir öğede (yaprak) görünüyorsa tuvalde otomatik düzenlenebilir. Eşleşmeyen alanlar (birleştirilmiş/biçimlendirilmiş metin) sağ panelden düzenlenir. Yapısal alanlar (`href`, `align`, `layout`…) `SKIP_KEYS` ile hariçtir. Yön kararı: `docs/21-EDITOR-DIRECTION.md`.
+
+## Tuval çerçevesi (2026-11-03)
+Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde çalışacak kod `document`/`window` yerine öğenin `ownerDocument`/`defaultView`'ini kullanmalıdır (örn. `prose-field`, `quick-insert`); `document.body`'e portal yapılmaz. Çerçeve dışına taşması gereken olaylar (Ctrl+S, dragend, pointerdown) `CanvasFrame` içinde üst pencereye iletilir.
