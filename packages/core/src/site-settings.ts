@@ -1,3 +1,4 @@
+import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 
 /**
@@ -45,6 +46,8 @@ export interface SiteCustomizerSettings {
   darkMode: "off" | "auto";
   /** Karanlık palette elle ezilen renkler (yalnızca geçerli hex) */
   darkColors: Record<string, string>;
+  /** Adlandırılmış blok stil ön ayarları (en çok 50) */
+  stylePresets: StylePreset[];
   typography: {
     headingWeight: number | string;
     bodyLineHeight: number | string;
@@ -171,6 +174,7 @@ export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
   activePaletteId: "aurora-cobalt",
   darkMode: "off",
   darkColors: {},
+  stylePresets: [],
   typography: {
     headingWeight: 700,
     bodyLineHeight: 1.7,
@@ -253,6 +257,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       ...(typeof c.activePaletteId === "string" ? { activePaletteId: c.activePaletteId } : { activePaletteId: d.activePaletteId }),
       darkMode: c.darkMode === "auto" ? "auto" : "off",
       darkColors: Object.fromEntries(Object.entries((c.darkColors && typeof c.darkColors === "object" ? c.darkColors : {}) as Record<string, unknown>).filter(([, v]) => typeof v === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))) as Record<string, string>,
+      stylePresets: sanitizeStylePresets(c.stylePresets),
       typography: mergeSection(d.typography, c.typography),
       layout: mergeSection(d.layout, c.layout),
       buttons: mergeSection(d.buttons, c.buttons),

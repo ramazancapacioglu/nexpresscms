@@ -85,6 +85,14 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     );
   };
 
+  /** Kayan araç çubuğu: belirli bir bloğun masaüstü stiline değer yazar (undefined = alanı kaldır). */
+  const updateBlockStyleById = (id: string, patch: Partial<BlockStyleValues>) => {
+    setBlocks((prev) => updateBlockById(prev, id, (b) => ({ ...b, style: { ...(b.style ?? {}), ...patch } })));
+  };
+  const setBlockStyleById = (id: string, style: BlockStyle) => {
+    setBlocks((prev) => updateBlockById(prev, id, (b) => ({ ...b, style })));
+  };
+
   /** Cihazdan bağımsız alanlar (hover, animasyon, geçiş süresi) her zaman kök stile yazılır. */
   const updateSelectedBlockStyleRoot = (patch: Partial<BlockStyle>) => {
     if (!selectedBlockId) return;
@@ -202,5 +210,5 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
     showToast(`${BLOCK_TYPE_LABELS[fresh.type] ?? fresh.type} eklendi.`);
   };
 
-  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
+  return { ...p, handleDropBlock, updateSelectedBlockProps, convertTextBlock, updateBlockPropsById, updateSelectedBlockStyle, updateSelectedBlockStyleRoot, updateBlockStyleById, setBlockStyleById, getActiveStyleValue, handleChangeColumnLayout, handleInsertBlock };
 }

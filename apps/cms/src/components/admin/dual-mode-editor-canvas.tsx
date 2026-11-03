@@ -11,7 +11,7 @@ import type { DualModeEditorState } from "./use-dual-mode-editor";
 
 /** 2. ORTA KANVAS: GÖRSEL STÜDYO / CANLI RSC / JSON AST / MARKDOWN */
 export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
-  const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock } = s;
+  const { siteTokens, title, setTitle, slug, setSlug, schemaType, blocks, proseSyncToken, editorMode, viewport, setRightTab, setBlockInspectorSubTab, selectedBlockId, setSelectedBlockId, activeColumnInsertId, setActiveColumnInsertId, setLibraryOpen, codeJsonDraft, setCodeJsonDraft, codeJsonError, setCodeJsonError, setBlocks, flushHistory, showToast, compiledMarkdown, totalWords, convertTextBlock, updateBlockPropsById, handleChangeColumnLayout, handleInsertBlock, updateBlockStyleById, setBlockStyleById } = s;
   const pageSchema = { title, tldr: s.tldr, rich: s.richSchema as never };
   return (
     <PageSchemaContext.Provider value={pageSchema}>
@@ -85,6 +85,8 @@ export function DualModeEditorCanvas({ s }: { s: DualModeEditorState }) {
                     onCommit={flushHistory}
                     onInsert={handleInsertBlock}
                     onToggleInsert={setActiveColumnInsertId}
+                    onUpdateStyle={(id, patch) => updateBlockStyleById(id, patch)}
+                    onSetStyle={(id, style) => setBlockStyleById(id, style)}
                     onInspectStyle={(id) => {
                       setSelectedBlockId(id);
                       setRightTab("block");

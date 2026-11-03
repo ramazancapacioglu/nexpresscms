@@ -4,6 +4,8 @@ import { usePageSchema } from "./page-schema-context";
 import {
   safeBlockDomId,
   type BlockNode,
+  type BlockStyle,
+  type BlockStyleValues,
   type DesignTokens,
 } from "@nexpress/core";
 import { ATOMIC_ELEMENTS_QUICK_BAR } from "@nexpress/editor";
@@ -11,6 +13,7 @@ import { RscBlockRenderer } from "@nexpress/themes";
 import { ArrowDown, ArrowUp, Columns, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
 import { Fragment, type DragEvent, type MouseEvent } from "react";
 import { DropZone, useEditorDnd } from "./dnd";
+import { FloatingToolbar } from "./floating-toolbar";
 import { ProseField, type ProseStructureKind } from "./prose-field";
 import { BLOCK_TYPE_LABELS, COLUMN_LAYOUT_PRESETS } from "./studio-model";
 
@@ -31,6 +34,8 @@ interface CanvasBlockProps {
   onInsert: (template: Omit<BlockNode, "id"> | BlockNode, parentId: string | null) => void;
   onToggleInsert: (columnId: string | null) => void;
   onInspectStyle: (id: string) => void;
+  onUpdateStyle: (id: string, patch: Partial<BlockStyleValues>) => void;
+  onSetStyle: (id: string, style: BlockStyle) => void;
 }
 
 function BlockActions({
@@ -288,6 +293,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
           : "border-slate-200 hover:border-blue-400 dark:border-zinc-800"
       }`}
     >
+      {selected ? <FloatingToolbar block={block} onConvertText={props.onConvertText} onUpdateStyle={props.onUpdateStyle} onSetStyle={props.onSetStyle} onInspectStyle={props.onInspectStyle} /> : null}
       <div
         {...dragProps}
         className={`flex cursor-grab items-center justify-between border-b px-3 py-1.5 text-[11px] active:cursor-grabbing ${

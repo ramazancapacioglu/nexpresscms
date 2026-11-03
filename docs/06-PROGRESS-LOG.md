@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Faz 5: stil ön ayarları ve kayan blok araç çubuğu
+- ✅ **Stil ön ayarları:** bir bloğun görsel stilini adlandırıp kaydet, başka bloğa uygula, sil. Çekirdekte saf `style-presets.ts` (`extractPresetStyle`, `applyStylePreset`, `sanitizeStylePresets`, en çok 50): ön ayar yalnızca görsel stili (cihaz kuralları, hover, animasyon) taşır; bağlantı çapası, CSS sınıfı, özel CSS, gizleme ve tam genişlik bloğa özel kalır. Depolama `sites.settings.customizer.stylePresets` (şema/göç gerekmedi; site başına). Sunucu eylemleri `style-preset.list|save|delete` denetim kaydıyla (`requireUser`). Aynı adlı ön ayar güncellenir.
+- 🐛 `saveSiteSettings` birleştirmesi dizileri nesneye çeviriyordu (`{...dizi, ...dizi}`); dizi değerleri artık olduğu gibi yazılır.
+- ✅ **Kayan blok araç çubuğu:** seçili bloğun üstünde başlık düzeyi (H1–H4), hizalama, stil ön ayarı uygulama ve Stil sekmesine kısayol. Ön ayar listesi Stil sekmesiyle paylaşılan tek kopyadan gelir (`use-style-presets`).
+- Testler: çekirdek 180 (4 yeni). Tarayıcıda: araç çubuğu, düzey/hizalama, ön ayar kaydet → ikinci bloğa araç çubuğundan uygula, veritabanında dizi olarak kalıcılık doğrulandı. CI 98ed0da'da dört iş de yeşil (Faz 2'den beri süren kırmızı CI düzelmişti).
+- Kalan (Faz 5): A/B testi ve açılır pencere (Pro eklenti adayı), desen kitaplığı paylaşımı (içe/dışa aktarma mevcut), kayan araç çubuğunda yapay zekâ ve dinamik içerik kısayolları.
+
 ### [2026-11-03] — Faz 4b: karanlık mod, palet değişkenleri, şeffaf header, şablon içerik genişliği
 - ✅ **Palet değişkenleri:** ziyaretçi yüzeyi renkleri artık `var(--nx-*)` okur (`toCssVarTokens`; blok/şablon kodu `tokens.colors.x` yazmaya devam eder, yedek değer açık palettir). Sabit yazılmış Tailwind renkleri (`text-slate-*`, `bg-white`, `border-slate-*`, `text-blue-*`; 14 dosyada ~220 kullanım) anlamsal sınıflara taşındı: `text-nx-fg|soft|muted|link`, `bg-nx-card|subtle`, `border-nx-line` (`globals.css` `@theme`). Açık modda görünüm aynı kaldı (tarayıcıda karşılaştırıldı).
 - ✅ **Karanlık mod (CSS-only):** `customizer.darkMode: "off" | "auto"` (varsayılan kapalı) + elle ezilebilen `darkColors`. `deriveDarkColors` açık paletten WCAG AA (4.5) okunaklı karanlık palet türetir (bağlantı/düğme renkleri gerekirse açılır, ön plan renkleri en iyi kontrastla seçilir); `@media (prefers-color-scheme: dark)` altında yalnızca değişkenler değişir, **JS yok**. Yönetim: Tema › Renkler › "Karanlık mod" (önizleme renkleri, kontrast uyarısı, otomatiğe sıfırla). Mevcut `contrastRatio` (theme-lint) yeniden kullanıldı.

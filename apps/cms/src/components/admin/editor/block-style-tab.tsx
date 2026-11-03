@@ -1,6 +1,7 @@
 "use client";
 
 import { BLOCK_ANIMATIONS, type BlockAnimationName, type BlockHoverValues, type BlockStyleValues } from "@nexpress/core";
+import { StylePresetBar } from "./style-preset-bar";
 import { useStudioInspector } from "./studio-inspector-context";
 import { ColorInput, NumberInput, SelectInput, StylePanel, TextInput } from "./style-controls";
 
@@ -25,6 +26,7 @@ export function BlockStyleTab() {
 
   return (
     <div className="space-y-2.5">
+      <StylePresetBar />
       <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-2.5 py-1.5">
         <span className="text-[11px] font-semibold">Cihaz kuralı</span>
         <div className="inline-flex items-center gap-1">

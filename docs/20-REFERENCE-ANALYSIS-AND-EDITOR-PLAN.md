@@ -57,7 +57,7 @@ Desen merkezi (ortak tasarım kitaplığı + sayfa desenleri), Dönüşümler (a
 
 **Faz 4 — Tema özelleştirici (4a tamam: görüntüleme koşulları, header yapışkan/cam; 4b tamam: karanlık mod, palet değişkenleri, şeffaf header, içerik genişliği; kalan: üst bilgi oluşturucu)**: üst bilgi oluşturucu (satır/öğe, yapışkan/şeffaf, mobil ayrı), tür başına yerleşim seçenekleri, düğme/kırıntı/yukarı çık ayarları, **görüntüleme koşulları** (şablon koşulları: sayfa türü, kullanıcı oturumu, dil), karanlık mod (CSS `prefers-color-scheme` + kalıcı seçim), genel palet değişkenleri.
 
-**Faz 5 — Hazır ayar/kitaplık**: stil ön ayarı kaydet/uygula, desen kitaplığı paylaşımı (içe/dışa aktarma zaten var), kayan blok araç çubuğu, A/B ve açılır pencere (Dönüşümler) Pro eklentisi olarak değerlendirilir.
+**Faz 5 — Hazır ayar/kitaplık (tamam: stil ön ayarları, kayan blok araç çubuğu; kalan: A/B ve açılır pencere Pro eklentisi, araç çubuğuna yapay zekâ/dinamik içerik kısayolları)**: stil ön ayarı kaydet/uygula, desen kitaplığı paylaşımı (içe/dışa aktarma zaten var), kayan blok araç çubuğu, A/B ve açılır pencere (Dönüşümler) Pro eklentisi olarak değerlendirilir.
 
 ## 3b. İlke notu (2026-11-03)
 Proje tamamen TypeScript/Next.js'tir (PHP yok). "JS'siz" ifadesi yalnızca **ziyaretçi yüzeyi** içindir: AGENTS.md §5 gereği ziyaretçi sayfalarında sayfaya özel istemci JS'i yoktur (hız ve SEO kırmızı çizgisi). Sayfa/blok yapıları JSON AST (TypeScript türleri + `AI_BLOCK_CATALOG` sözleşmesi) olduğundan yapay zekâ "neyi nereye koyacağını" sözleşmeden bilir. Referanstan farkımız: aynı yapıyı RSC + CSS ile üretmek, şemayı/SEO'yu bloğun parçası yapmak ve düzenleyiciyi aynı AST üzerinde çalıştırmaktır.

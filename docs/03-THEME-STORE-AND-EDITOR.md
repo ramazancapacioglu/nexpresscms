@@ -145,3 +145,6 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 
 ## Palet değişkenleri ve karanlık mod (2026-11-03)
 Ziyaretçi renkleri `var(--nx-bg|fg|primary|…)` okunur: `toCssVarTokens` (renderer girişinde ve layout'ta uygulanır), anlamsal Tailwind sınıfları `text-nx-fg|soft|muted|link`, `bg-nx-card|subtle`, `border-nx-line` aynı değişkenleri kullanır. **Yeni blok/bileşende sabit `slate/zinc/white` renk sınıfı yazılmaz; anlamsal sınıf kullanılır** (karanlık mod bunu varsayar). `customizer.darkMode = "auto"` iken `darkModeCss` yalnızca `prefers-color-scheme: dark` altında değişkenleri değiştirir. Şablon davranışı: `TemplateBehavior` (`sticky`, `glass`, `transparent`, `tone`, `contentWidth`).
+
+## Stil ön ayarları ve kayan araç çubuğu (2026-11-03)
+`StylePreset {id, name, style}` site başına `settings.customizer.stylePresets` içinde durur (en çok 50). Uygulama `applyStylePreset`: görsel stil ön ayar olur, bloğa özel alanlar (`anchorId`, `cssClass`, `customCss`, `hideOn`, `fullWidth`) korunur. Arayüz: Stil sekmesi üstündeki ön ayar çubuğu + seçili bloğun üstündeki `FloatingToolbar` (`editor/floating-toolbar.tsx`).

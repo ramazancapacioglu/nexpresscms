@@ -72,7 +72,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
         Object.entries(current.customizer).map(([k, v]) => {
           const p = (patch.customizer as Record<string, unknown> | undefined)?.[k];
           if (p === undefined) return [k, v];
-          if (v && typeof v === "object" && p && typeof p === "object") {
+          if (v && typeof v === "object" && !Array.isArray(v) && p && typeof p === "object" && !Array.isArray(p)) {
             return [k, { ...(v as object), ...(p as object) }];
           }
           return [k, p];
