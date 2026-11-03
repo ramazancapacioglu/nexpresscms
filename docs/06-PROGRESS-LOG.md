@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-03] — Faz 3: sorgu döngüsü (arama, kategori süzgeci, sıralama, sayfalama)
+- ✅ `dynamic_list` bloğu ziyaretçi denetimleri kazandı (hepsi kapalı varsayılır; mevcut bloklar değişmez): arama kutusu (başlık+özet, Türkçe i/ı ve aksan duyarsız), kategori süzgeci (sayımlı bağlantılar), sıralama seçimi, sayfalama (`adet` = sayfa başına). Denetimler **URL parametreleriyle** çalışır (`q{blokKimliği}_q|_cat|_sort|_page`), düz `<form method="get">` ve bağlantılardır: **istemci JS'i yok**, bloklar birbirinin parametresini okumaz, diğer parametreler korunur, tüm değerler doğrulanır (geçersiz kategori/sıralama yok sayılır, sayfa aralığa sıkıştırılır).
+- ✅ Çekirdekte saf `resolveDynamicBlock` + `DynamicMeta`/`DynamicResult`; `DynamicDataMap` artık `{items, meta?}` taşır. Ön yüz metinleri `query.*` i18n anahtarlarıdır (tr/en). Kitaplığa "Sorgu döngüsü" eklendi; inspector'a dört anahtar.
+- Testler: çekirdek 167 (4 yeni: eski davranış, süzgeç+sayım, arama/sıralama/sayfalama, parametre yalıtımı). Tarayıcıda: form, sayfalama bağlantıları, 2. sayfa, sonuçsuz not doğrulandı.
+- Bilinen: sayfalı görünümler (`?..._page=2`) için canonical/noindex henüz eklenmedi; kalan Faz 3 maddesi ürün atlıkarıncası ve kart şablonu seçimi.
+
 ### [2026-11-03] — Faz 2: yeni bloklar (simge, sayaç, kayan şerit, şekil ayırıcı), düğme simgesi, satır yığılma seçenekleri
 - ✅ Yeni bloklar (hepsi HTML+CSS, istemci JS'i yok): `single_icon` (24 yerleşik çizgi simgesi, `ICON_PATHS` çekirdekte), `countup` (nihai değer metinde; sayma animasyonu `@property` + `animation-timeline: view()` ile `@supports` altında), `marquee` (CSS kayan şerit, `prefers-reduced-motion` desteği, ikinci kopya `aria-hidden`), `shape_divider` (dalga/eğim/eğri/üçgen/yamuk). Renk/simge/şekil girdileri izin listesi ve düzenli ifadeyle doğrulanır.
 - ✅ Düğmeye simge (ad + yön); satıra "tablette de alt alta geçir" (`stackAt`) ve "alt alta geçince sırayı ters çevir" (`mobileReverse`).

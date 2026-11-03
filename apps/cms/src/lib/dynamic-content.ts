@@ -1,5 +1,5 @@
 import "server-only";
-import { collectDynamicBlocks, normalizeDynamicQuery, resolvePublishing, selectDynamicItems, type BlockNode, type DynamicCandidate, type DynamicDataMap } from "@nexpress/core";
+import { collectDynamicBlocks, normalizeDynamicQuery, resolveDynamicBlock, resolvePublishing, type BlockNode, type DynamicCandidate, type DynamicDataMap } from "@nexpress/core";
 import { getCommerceRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
 import { listPublishedContents } from "./public-data";
@@ -55,9 +55,9 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
 });
 
 /** Sayfadaki `dynamic_list` blokları için öğeleri çözer; blok yoksa veritabanına hiç dokunmaz. */
-export async function loadDynamicData(siteId: string, locale: string, blocks: BlockNode[], currentContentId?: string | null): Promise<DynamicDataMap> {
+export async function loadDynamicData(siteId: string, locale: string, blocks: BlockNode[], currentContentId?: string | null, params: Record<string, string | string[] | undefined> = {}): Promise<DynamicDataMap> {
   const found = collectDynamicBlocks(blocks);
   if (found.length === 0) return {};
   const candidates = await getDynamicCandidates(siteId, locale);
-  return Object.fromEntries(found.map((b) => [b.id, selectDynamicItems(candidates, normalizeDynamicQuery(b.props), currentContentId)]));
+  return Object.fromEntries(found.map((b) => [b.id, resolveDynamicBlock(candidates, normalizeDynamicQuery(b.props), params, b.id, currentContentId)]));
 }

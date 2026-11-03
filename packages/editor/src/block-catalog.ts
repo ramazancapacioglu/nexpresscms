@@ -136,6 +136,7 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("search", "Arama", "interactive", "Site içi arama kutusu", node("search_box", { placeholder: "Ara…" })),
 
   item("table", "Veri tablosu", "data", "Başlık + satırlar", node("data_table", { title: "Tablo", headers: ["Sütun 1", "Sütun 2"], rows: [["A", "B"], ["C", "D"]] })),
+  item("query", "Sorgu döngüsü", "data", "Otomatik liste + arama, süzgeç, sayfalama", node("dynamic_list", { source: "posts", limit: 6, orderBy: "newest", layout: "cards", columns: 3, heading: "Yazılar", showImage: true, showExcerpt: true, showDate: true, showSearch: true, showSort: true, showFilters: true, paginate: true, category: "", tag: "", excludeCurrent: false, emptyText: "" })),
   item("posts", "Yazı ızgarası", "data", "Kart ızgarası", node("post_grid", { title: "Son yazılar", items: items3("Yazı").map((s) => ({ ...s, excerpt: s.text, href: "" })) })),
   item("portfolio", "Çalışma ızgarası", "data", "Portföy kartları", node("portfolio_grid", { title: "Çalışmalar", items: items3("Çalışma").map((s) => ({ ...s, excerpt: s.text, href: "" })) })),
   item("user_card", "Kişi kartı", "data", "Ad, rol, tarih", node("user_card", { name: "Ad Soyad", role: "Ünvan", since: "" })),

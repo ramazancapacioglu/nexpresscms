@@ -50,6 +50,10 @@ export function DynamicListFields() {
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showImage} onChange={(e) => set({ showImage: e.target.checked })} /> Görsel göster</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showExcerpt} onChange={(e) => set({ showExcerpt: e.target.checked })} /> Özet göster</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.showDate} onChange={(e) => set({ showDate: e.target.checked })} /> Tarih göster</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={q.showSearch} onChange={(e) => set({ showSearch: e.target.checked })} /> Arama kutusu (ziyaretçi için)</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={q.showSort} onChange={(e) => set({ showSort: e.target.checked })} /> Sıralama seçimi</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={q.showFilters} onChange={(e) => set({ showFilters: e.target.checked })} /> Kategori süzgeci</label>
+        <label className="flex items-center gap-2"><input type="checkbox" checked={q.paginate} onChange={(e) => set({ paginate: e.target.checked })} /> Sayfalama (adet = sayfa başına)</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={q.excludeCurrent} onChange={(e) => set({ excludeCurrent: e.target.checked })} /> Bu sayfayı listeden çıkar (ilgili içerikler için)</label>
       </div>
       <div><label className={cap} htmlFor="dl-empty">Hiç sonuç yoksa gösterilecek not (boşsa blok görünmez)</label><input id="dl-empty" className={box} value={q.emptyText} maxLength={160} onChange={(e) => set({ emptyText: e.target.value })} /></div>

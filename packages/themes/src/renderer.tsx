@@ -120,7 +120,7 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   if (input.block.type === "schema_card") return <SchemaCardView kind={(input.block.props?.schema as SchemaCardKind) ?? "software"} data={input.pageSchema} tokens={input.tokens} locale={input.locale} preview={input.preview} />;
   if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
   if (input.block.type === "dynamic_list") {
-    return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id] ?? []} tokens={input.tokens} locale={input.locale} />;
+    return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id]?.items ?? []} meta={input.dynamic?.[input.block.id]?.meta} tokens={input.tokens} locale={input.locale} />;
   }
   const ctx: BlockRenderContext = {
     ...input,

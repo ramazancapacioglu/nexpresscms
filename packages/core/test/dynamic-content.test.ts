@@ -63,3 +63,43 @@ test("sayfalama: sayfa sıkıştırılır, son sayfa kalanı verir; süzme adet 
   assert.equal(filterDynamicItems(many, normalizeDynamicQuery({ limit: 3 })).length, 40);
   assert.equal(selectDynamicItems(many, normalizeDynamicQuery({ limit: 3 })).length, 3);
 });
+
+import { dynamicParamKey, resolveDynamicBlock, type DynamicCandidate } from "../src/dynamic-content";
+
+const mk = (n: number, cats: string[], title = `Yazı ${n}`): DynamicCandidate => ({ id: `p${n}`, kind: "posts", title, url: `/tr/y${n}`, excerpt: `özet ${n}`, date: new Date(2026, 0, n).toISOString(), categories: cats, tags: [] });
+const pool = [mk(1, ["Haber"]), mk(2, ["Haber", "Duyuru"]), mk(3, ["Duyuru"]), mk(4, ["Rehber"], "Işık Rehberi"), mk(5, ["Haber"])];
+
+test("sorgu döngüsü: denetimler kapalıyken eski davranış, meta yok", () => {
+  const r = resolveDynamicBlock(pool, normalizeDynamicQuery({ limit: 2 }), { q: "x" }, "blk_a");
+  assert.equal(r.meta, undefined);
+  assert.equal(r.items.length, 2);
+});
+
+test("sorgu döngüsü: kategori süzgeci, sayım, geçersiz kategori yok sayılır", () => {
+  const q = normalizeDynamicQuery({ showFilters: true, limit: 10 });
+  const key = dynamicParamKey("blk_a");
+  const r = resolveDynamicBlock(pool, q, { [`${key}_cat`]: "haber" }, "blk_a");
+  assert.equal(r.items.length, 3);
+  assert.deepEqual(r.meta!.categories.map((c) => [c.slug, c.count]), [["duyuru", 2], ["haber", 3], ["rehber", 1]]);
+  assert.equal(resolveDynamicBlock(pool, q, { [`${key}_cat`]: "yok" }, "blk_a").items.length, 5);
+});
+
+test("sorgu döngüsü: Türkçe duyarsız arama, sıralama ve sayfalama", () => {
+  const key = dynamicParamKey("blk_a");
+  const q = normalizeDynamicQuery({ showSearch: true, showSort: true, paginate: true, limit: 2 });
+  assert.equal(resolveDynamicBlock(pool, q, { [`${key}_q`]: "ISIK" }, "blk_a").items[0]!.title, "Işık Rehberi");
+  const asc = resolveDynamicBlock(pool, q, { [`${key}_sort`]: "oldest" }, "blk_a");
+  assert.equal(asc.items[0]!.id, "p1");
+  const p3 = resolveDynamicBlock(pool, q, { [`${key}_page`]: "99" }, "blk_a");
+  assert.equal(p3.meta!.page, 3);
+  assert.equal(p3.meta!.pages, 3);
+  assert.equal(p3.items.length, 1);
+  assert.equal(resolveDynamicBlock(pool, q, { [`${key}_sort`]: "DROP" }, "blk_a").meta!.sort, "newest");
+});
+
+test("sorgu döngüsü: bloklar birbirinin parametresini okumaz; diğer parametreler korunur", () => {
+  const q = normalizeDynamicQuery({ showSearch: true });
+  const r = resolveDynamicBlock(pool, q, { [`${dynamicParamKey("blk_other")}_q`]: "Rehber", utm: "x", nx_draft: "t" }, "blk_a");
+  assert.equal(r.items.length, 5);
+  assert.deepEqual(r.meta!.keep, { [`${dynamicParamKey("blk_other")}_q`]: "Rehber", utm: "x" });
+});

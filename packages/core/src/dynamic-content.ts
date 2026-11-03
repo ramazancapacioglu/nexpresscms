@@ -26,6 +26,12 @@ export interface DynamicQuery {
   showDate: boolean;
   heading: string;
   emptyText: string;
+  /** Ziyaretçi denetimleri (URL parametreleriyle çalışır, JS yok) */
+  showSearch: boolean;
+  showSort: boolean;
+  showFilters: boolean;
+  /** Sayfalama: `limit` sayfa başına öğe sayısıdır */
+  paginate: boolean;
 }
 
 export const DYNAMIC_MAX_ITEMS = 24;
@@ -66,6 +72,10 @@ export function normalizeDynamicQuery(props: Record<string, unknown> | null | un
     showDate: bool(p.showDate, true),
     heading: clip(p.heading, 100),
     emptyText: clip(p.emptyText, 160),
+    showSearch: bool(p.showSearch, false),
+    showSort: bool(p.showSort, false),
+    showFilters: bool(p.showFilters, false),
+    paginate: bool(p.paginate, false),
   };
 }
 
@@ -100,8 +110,19 @@ export function selectDynamicItems(candidates: DynamicCandidate[], q: DynamicQue
   return filterDynamicItems(candidates, q, currentId).slice(0, q.limit);
 }
 
+const stripCandidate = ({ kind: _k, categories: _c, tags: _t, ...item }: DynamicCandidate): DynamicItem => item;
+
+function sortCandidates(list: DynamicCandidate[], orderBy: DynamicOrder): DynamicCandidate[] {
+  const time = (c: DynamicCandidate) => (c.date ? new Date(c.date).getTime() || 0 : 0);
+  return [...list].sort(orderBy === "title" ? (a, b) => a.title.localeCompare(b.title, "tr") : orderBy === "oldest" ? (a, b) => time(a) - time(b) : (a, b) => time(b) - time(a));
+}
+
 /** Süzer ve sıralar, adet sınırı UYGULAMAZ (arşiv sayfalaması için). */
 export function filterDynamicItems(candidates: DynamicCandidate[], q: DynamicQuery, currentId?: string | null): DynamicItem[] {
+  return filterDynamicCandidates(candidates, q, currentId).map(stripCandidate);
+}
+
+function filterDynamicCandidates(candidates: DynamicCandidate[], q: DynamicQuery, currentId?: string | null): DynamicCandidate[] {
   const out = candidates.filter((c) => {
     if (c.kind !== q.source) return false;
     if (q.excludeCurrent && currentId && c.id === currentId) return false;
@@ -109,15 +130,7 @@ export function filterDynamicItems(candidates: DynamicCandidate[], q: DynamicQue
     if (q.tag && !c.tags.some((x) => termSlug(x) === q.tag)) return false;
     return true;
   });
-  const time = (c: DynamicCandidate) => (c.date ? new Date(c.date).getTime() || 0 : 0);
-  out.sort(
-    q.orderBy === "title"
-      ? (a, b) => a.title.localeCompare(b.title, "tr")
-      : q.orderBy === "oldest"
-        ? (a, b) => time(a) - time(b)
-        : (a, b) => time(b) - time(a)
-  );
-  return out.map(({ kind: _k, categories: _c, tags: _t, ...item }) => item);
+  return sortCandidates(out, q.orderBy);
 }
 
 /** Bloklar arasında (iç içe dahil) dinamik liste bloklarını bulur. */
@@ -129,4 +142,68 @@ export function collectDynamicBlocks(blocks: BlockNode[], into: BlockNode[] = []
   return into;
 }
 
-export type DynamicDataMap = Record<string, DynamicItem[]>;
+export type DynamicDataMap = DynamicResultMap;
+
+// ---- Ziyaretçi denetimli sorgu döngüsü (arama, kategori süzgeci, sıralama, sayfalama) ----
+
+export interface DynamicMeta {
+  /** URL parametre öneki (blok başına benzersiz) */
+  key: string;
+  total: number;
+  page: number;
+  pages: number;
+  q: string;
+  sort: DynamicOrder;
+  cat: string;
+  categories: Array<{ slug: string; name: string; count: number }>;
+  /** Bu bloğa ait olmayan mevcut parametreler (formlar korusun diye) */
+  keep: Record<string, string>;
+}
+export interface DynamicResult {
+  items: DynamicItem[];
+  meta?: DynamicMeta;
+}
+export type DynamicResultMap = Record<string, DynamicResult>;
+
+type Params = Record<string, string | string[] | undefined>;
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+
+/** Blok için URL parametre öneki: kimliğin son 6 güvenli karakteri. */
+export function dynamicParamKey(blockId: string): string {
+  return `q${blockId.replace(/[^a-zA-Z0-9]/g, "").slice(-6) || "x"}`;
+}
+
+const norm = (v: string) => v.toLowerCase().replace(/ı/g, "i").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+/**
+ * Tek bir sorgu bloğunu çözer. Denetim kapalıysa davranış eski `selectDynamicItems` ile aynıdır (meta yok).
+ * Açıkken: arama (başlık+özet), kategori süzgeci, sıralama ve sayfalama URL parametrelerinden okunur; hepsi doğrulanır.
+ */
+export function resolveDynamicBlock(candidates: DynamicCandidate[], q: DynamicQuery, params: Params, blockId: string, currentId?: string | null): DynamicResult {
+  const interactive = q.showSearch || q.showSort || q.showFilters || q.paginate;
+  if (!interactive) return { items: selectDynamicItems(candidates, q, currentId) };
+  const key = dynamicParamKey(blockId);
+  const base = filterDynamicCandidates(candidates, q, currentId);
+  const counts = new Map<string, { name: string; count: number }>();
+  for (const c of base) for (const name of c.categories) {
+    const slug = termSlug(name);
+    if (slug) counts.set(slug, { name, count: (counts.get(slug)?.count ?? 0) + 1 });
+  }
+  const categories = q.showFilters ? [...counts.entries()].map(([slug, v]) => ({ slug, ...v })).sort((a, b) => a.name.localeCompare(b.name, "tr")) : [];
+  const search = q.showSearch ? first(params[`${key}_q`]).trim().slice(0, 80) : "";
+  const catParam = q.showFilters ? termSlug(first(params[`${key}_cat`])) : "";
+  const cat = categories.some((c) => c.slug === catParam) ? catParam : "";
+  const sortParam = first(params[`${key}_sort`]);
+  const sort: DynamicOrder = q.showSort && (sortParam === "oldest" || sortParam === "title" || sortParam === "newest") ? sortParam : q.orderBy;
+  let list = base;
+  if (cat) list = list.filter((c) => c.categories.some((x) => termSlug(x) === cat));
+  if (search) {
+    const needle = norm(search);
+    list = list.filter((c) => norm(`${c.title} ${c.excerpt}`).includes(needle));
+  }
+  list = sortCandidates(list, sort);
+  const paged = q.paginate ? paginate(list, Number(first(params[`${key}_page`])), q.limit) : { items: list.slice(0, q.limit), page: 1, pages: 1, total: list.length };
+  const keep: Record<string, string> = {};
+  for (const [k, v] of Object.entries(params)) if (!k.startsWith(`${key}_`) && typeof first(v) === "string" && k !== "nx_draft" && first(v)) keep[k] = first(v).slice(0, 200);
+  return { items: paged.items.map(stripCandidate), meta: { key, total: paged.total, page: paged.page, pages: paged.pages, q: search, sort, cat, categories, keep } };
+}

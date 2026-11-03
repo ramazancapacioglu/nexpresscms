@@ -53,7 +53,7 @@ Desen merkezi (ortak tasarım kitaplığı + sayfa desenleri), Dönüşümler (a
 
 **Faz 2 — Blok zenginliği (kısmen tamam: simge, sayaç, marquee, şekil ayırıcı, düğme simgesi, sütun yığılma/sıra; kalan: referans şeması, gelişmiş tablo, vektör, arka plan video/gradyan oluşturucu)**: simge/tek simge, sayaç (countup), referans (şema ile), gelişmiş tablo, ilerleme çubuğu, marquee, vektör; düğmede hover/simge/gradyan; satırda sütun sırası ve mobil yığılma, şekil ayırıcılar; arka plan video/gradyan oluşturucu.
 
-**Faz 3 — Dinamik içerik**: sorgu döngüsü bloğu (süzgeç/sıralama/sayfalama, URL parametreli, RSC), kart şablonu seçimi, ürün atlıkarıncası.
+**Faz 3 — Dinamik içerik (sorgu döngüsü tamam: arama, kategori süzgeci, sıralama, sayfalama; kalan: kart şablonu seçimi, ürün atlıkarıncası, aralık/derecelendirme süzgeçleri, sayfalı görünümde canonical)**: sorgu döngüsü bloğu (süzgeç/sıralama/sayfalama, URL parametreli, RSC), kart şablonu seçimi, ürün atlıkarıncası.
 
 **Faz 4 — Tema özelleştirici**: üst bilgi oluşturucu (satır/öğe, yapışkan/şeffaf, mobil ayrı), tür başına yerleşim seçenekleri, düğme/kırıntı/yukarı çık ayarları, **görüntüleme koşulları** (şablon koşulları: sayfa türü, kullanıcı oturumu, dil), karanlık mod (CSS `prefers-color-scheme` + kalıcı seçim), genel palet değişkenleri.
 

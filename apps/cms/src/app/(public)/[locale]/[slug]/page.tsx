@@ -184,7 +184,7 @@ export default async function PublicDynamicContentPage({
   const pageForms = await loadPageForms(siteId, content.blocks);
   const canEdit = Boolean(await getSession());
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
-  const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId);
+  const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
   const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;

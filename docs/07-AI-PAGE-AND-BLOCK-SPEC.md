@@ -211,3 +211,6 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 
 ## Ek (2026-11-03): hareket ve süs blokları
 `single_icon` (`icon`: yerleşik 24 simgeden biri, `size`, `color`, `background`, `href`, `label`, `align`), `countup` (`value`, `prefix`, `suffix`, `label`, `duration` sn), `marquee` (`items: string[]`, `speed` sn, `direction`), `shape_divider` (`shape`: wave|tilt|curve|triangle|slant, `color`, `height`, `flip`). `button_element` artık `icon` + `iconSide`; `columns` artık `stackAt` (`mobile`|`tablet`) ve `mobileReverse` alır. Sözleşme `AI_BLOCK_CATALOG` içindedir.
+
+## Ek (2026-11-03): `dynamic_list` ziyaretçi denetimleri
+Yeni boolean özellikler (varsayılan `false`): `showSearch`, `showSort`, `showFilters`, `paginate`. Açıkken blok `id="nx-dl-{anahtar}"` taşır; parametreler `{anahtar}_q`, `_cat`, `_sort` (`newest|oldest|title`), `_page`. Anahtar = `q` + blok kimliğinin son 6 güvenli karakteri (`dynamicParamKey`). Sonuç her istekte güncel veriden üretilir, Markdown önbelleğine girmez.
