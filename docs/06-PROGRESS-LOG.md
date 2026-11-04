@@ -21,6 +21,17 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Kampanya Detay Rotası ([slug]) Düzeltmesi, Taslak Önizleme ve Otomatik 301 Yönlendirme Desteği
+- 🛠️ **Dinamik Rota Dizin Adlandırması (`apps/cms/src/app/(public)/[locale]/kampanya/[slug]/page.tsx`):**
+  - Dosya sistemi oluşturulurken oluşan `[slug/]` biçimindeki hatalı klasör ismi temizlendi ve standart Next.js App Router dinamik segmenti (`[slug]`) kuruldu.
+  - URL kodlamalı karakterler (`%C3%B6...`) için `decodeURIComponent(rawSlug)` çözümü eklendi; Türkçe karakterli slug'ların doğrudan eşleşmesi sağlandı.
+- 👁️ **Yönetici Taslak Önizleme Desteği & Taslak Uyarı Rozeti:**
+  - Yayında olmayan (`draft`) kampanyaların admin panelinden tıklandığında veya doğrudan adrese girildiğinde 404'e düşmesi engellendi; giriş yapmış kullanıcılar (`getSession()`) ve `?nx_draft=` token'lı istekler için önizleme desteği getirildi.
+  - Taslak önizleme esnasında yöneticilere bilgilendirici "Taslak Önizleme: Bu kampanya henüz yayında değil" rozeti ve panele dönüş butonu gösterildi.
+- 🔀 **SEO 301 Yönlendirme & Slug Temizleme:**
+  - Slug geçmişi değiştiğinde (`resolved.isRedirect === true`) `permanentRedirect` ile güncel adrese kalıcı 301 yönlendirmesi sağlandı.
+  - Kampanya kaydedilirken (`saveCampaignAction`) slug alanındaki baştaki ve sondaki gereksiz eğik çizgiler (`/`) otomatik temizlendi.
+
 ### [2026-11-04] — Bağımsız Kampanyalar & Fırsatlar Eklentisi (`@nexpress/plugin-campaigns`), Gelişmiş Kampanya Editörü ve 0-KB Vitrin
 - 🎁 **Eklenti Manifesti & Eklenti Merkezi Entegrasyonu (`apps/cms/src/plugins/campaigns.ts`, `register.ts`):**
   - Kampanyalar blog içeriklerinden tamamen ayrılarak bağımsız bir eklenti modülü haline getirildi: `@nexpress/plugin-campaigns` ("Kampanyalar & Fırsatlar").

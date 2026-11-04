@@ -1,10 +1,12 @@
 import React from "react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
 import { getPublicSite, resolvePublicContent } from "@/lib/public-data";
-import { getScopedRepository } from "@nexpress/database";
+import { getScopedRepository, type ContentWithTranslationDto } from "@nexpress/database";
+import { getSession } from "@/lib/auth/session";
+import { resolveDraftPreview } from "@/lib/draft-preview";
 import {
   resolveCampaignData,
   buildCampaignOfferJsonLd,
@@ -17,21 +19,40 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const sp = searchParams ? await searchParams : {};
+  const draftToken = typeof sp.nx_draft === "string" ? sp.nx_draft : undefined;
+  const draftContent = await resolveDraftPreview(siteId, locale, slug, draftToken);
+
   const [site, resolved] = await Promise.all([
     getPublicSite(siteId),
-    resolvePublicContent(siteId, slug, locale),
+    draftContent
+      ? Promise.resolve({ content: draftContent, isRedirect: false })
+      : resolvePublicContent(siteId, slug, locale),
   ]);
 
-  if (!resolved || !resolved.content) {
+  let content: ContentWithTranslationDto | undefined = resolved?.content;
+  if (!content) {
+    const session = await getSession();
+    if (session) {
+      const repo = getScopedRepository(siteId);
+      const all = await repo.listContents({ locale });
+      content = all.find((c) => c.slug === slug || c.contentId === slug);
+    }
+  }
+
+  if (!content) {
     return { title: "Kampanya Bulunamadı | NexPress CMS" };
   }
 
-  const camp = resolveCampaignData(resolved.content);
+  const camp = resolveCampaignData(content);
   const siteName = site?.name ?? "NexPress CMS";
   const title = `${camp.title} | ${siteName}`;
   const description = camp.tldr || `${camp.title} fırsat detayları, indirim oranları ve başvuru şartları.`;
@@ -50,23 +71,47 @@ export async function generateMetadata({
 
 export default async function PublicCampaignDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams?: Promise<{ nx_draft?: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const sp = searchParams ? await searchParams : {};
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
+  const draftContent = await resolveDraftPreview(siteId, locale, slug, sp?.nx_draft);
   const [site, resolved] = await Promise.all([
     getPublicSite(siteId),
-    resolvePublicContent(siteId, slug, locale),
+    draftContent
+      ? Promise.resolve({ content: draftContent, isRedirect: false })
+      : resolvePublicContent(siteId, slug, locale),
   ]);
 
-  if (!resolved || !resolved.content) {
+  if (resolved?.isRedirect && resolved.content) {
+    permanentRedirect(`/${locale}/kampanya/${resolved.content.slug}`);
+  }
+
+  let content: ContentWithTranslationDto | undefined = resolved?.content;
+  let isDraftPreview = false;
+
+  if (!content) {
+    const session = await getSession();
+    if (session) {
+      const all = await repo.listContents({ locale });
+      content = all.find((c) => c.slug === slug || c.contentId === slug);
+      if (content) {
+        isDraftPreview = content.status !== "published";
+      }
+    }
+  }
+
+  if (!content) {
     notFound();
   }
 
-  const content = resolved.content;
   const camp = resolveCampaignData(content);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -106,6 +151,22 @@ export default async function PublicCampaignDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(offerJsonLd) }}
       />
+
+      {/* Taslak Önizleme Rozeti */}
+      {isDraftPreview && (
+        <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">⚠️ Taslak Önizleme:</span>
+            <span>Bu kampanya henüz yayında değil (taslak durumunda). Yalnızca giriş yapmış yöneticiler görebilir.</span>
+          </div>
+          <Link
+            href="/admin/campaigns"
+            className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-md shrink-0"
+          >
+            Panele Dön
+          </Link>
+        </div>
+      )}
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">

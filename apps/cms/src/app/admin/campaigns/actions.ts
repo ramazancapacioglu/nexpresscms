@@ -29,7 +29,7 @@ export async function saveCampaignAction(input: {
   }
 
   // Slug kontrol ve benzersiz yapma
-  const baseSlug = input.slug.trim() || cleanTitle;
+  const baseSlug = input.slug.trim().replace(/^\/+|\/+$/g, "") || cleanTitle;
   const existingContents = await repo.listContents({ locale });
   const taken = new Set(
     existingContents
