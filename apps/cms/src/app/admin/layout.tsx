@@ -39,6 +39,7 @@ export default async function AdminLayout({
         <div className="pt-2 border-t border-[#E6E7EA] dark:border-[#23262E] space-y-0.5">
         <Link
           href="/admin/profile"
+          prefetch={false}
           className="block rounded-md px-2 py-1 text-[12px] text-[#14151A] hover:bg-black/5 dark:text-[#F3F4F6] dark:hover:bg-white/5"
         >
           <span className="block truncate font-medium">{session.name || session.email}</span>

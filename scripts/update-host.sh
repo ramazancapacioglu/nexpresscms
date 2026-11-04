@@ -39,3 +39,4 @@ else
 fi
 
 echo -e "${GREEN}=== NexPress CMS Güncellemesi Başarıyla Tamamlandı! ===${NC}"
+

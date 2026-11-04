@@ -3,11 +3,34 @@ import { eq, and } from "drizzle-orm";
 import { isValidLocaleTag, resolveSiteSettings, type DesignTokens, type SiteProfile, type SiteSettings } from "@nexpress/core";
 import { CmsRepositoryBase } from "./base";
 
+const SITE_CACHE_TTL_MS = 15_000;
+interface CachedSite {
+  site: SiteDto | null;
+  expiresAt: number;
+}
+const siteCache = new Map<string, CachedSite>();
+
+/**
+ * Site önbelleğini temizler. `siteId` verilirse yalnızca o kiracıyı, verilmezse tümünü temizler.
+ */
+export function invalidateSiteCache(siteId?: string): void {
+  if (siteId) {
+    siteCache.delete(siteId);
+  } else {
+    siteCache.clear();
+  }
+}
+
 export class CmsSiteRepository extends CmsRepositoryBase {
   /**
-   * Aktif sitenin profil, tema ve tasarım token bilgilerini getirir.
+   * Aktif sitenin profil, tema ve tasarım token bilgilerini getirir (15 sn bellek önbellekli).
    */
   public async getSite(): Promise<SiteDto | null> {
+    const cached = siteCache.get(this.siteId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.site;
+    }
+
     const { db, t } = this.backend;
     const rows = await db
       .select()
@@ -15,8 +38,11 @@ export class CmsSiteRepository extends CmsRepositoryBase {
       .where(eq(t.sites.siteId, this.siteId))
       .limit(1);
     const row = rows[0];
-    if (!row) return null;
-    return {
+    if (!row) {
+      siteCache.set(this.siteId, { site: null, expiresAt: Date.now() + SITE_CACHE_TTL_MS });
+      return null;
+    }
+    const result: SiteDto = {
       id: row.id,
       siteId: row.siteId,
       name: row.name,
@@ -31,6 +57,8 @@ export class CmsSiteRepository extends CmsRepositoryBase {
       siteDna: row.siteDna,
       settings: resolveSiteSettings(row.settings),
     };
+    siteCache.set(this.siteId, { site: result, expiresAt: Date.now() + SITE_CACHE_TTL_MS });
+    return result;
   }
 
   /**
@@ -38,6 +66,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
    * Çevirisi olan bir dili listeden çıkarmak çeviriyi silmez, yalnızca ziyaretçiye kapatır.
    */
   public async saveSupportedLocales(locales: string[]): Promise<{ ok: true; locales: string[] } | { ok: false; error: string }> {
+    siteCache.delete(this.siteId);
     const site = await this.getSite();
     if (!site) return { ok: false, error: "Site bulunamadı." };
     const clean = [...new Set(locales.map((l) => l.trim().toLowerCase()).filter(Boolean))];
@@ -47,11 +76,13 @@ export class CmsSiteRepository extends CmsRepositoryBase {
     if (clean.length > 12) return { ok: false, error: "En çok 12 dil." };
     const { db, t } = this.backend;
     await db.update(t.sites).set({ supportedLocales: clean, updatedAt: new Date() }).where(eq(t.sites.siteId, this.siteId));
+    siteCache.delete(this.siteId);
     return { ok: true, locales: clean };
   }
 
   /** Site DNA (marka kimlik özeti) metnini yazar; boş metin alanı temizler. */
   public async saveSiteDna(dna: string | null): Promise<void> {
+    siteCache.delete(this.siteId);
     const { db, t } = this.backend;
     await db
       .update(t.sites)
@@ -63,6 +94,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
    * Motor (SEO) ve Özelleştirici (Customizer) ayarlarını kısmi olarak birleştirip kaydeder (`siteId` korumalı).
    */
   public async saveSiteSettings(patch: SiteSettingsPatch): Promise<SiteSettings> {
+    siteCache.delete(this.siteId);
     const current = (await this.getSite())?.settings ?? resolveSiteSettings({});
     const next: SiteSettings = resolveSiteSettings({
       seo: { ...current.seo, ...(patch.seo ?? {}) },
@@ -85,6 +117,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
       .update(t.sites)
       .set({ settings: next as unknown as Record<string, unknown>, updatedAt: now })
       .where(eq(t.sites.siteId, this.siteId));
+    siteCache.delete(this.siteId);
     return next;
   }
 
@@ -92,6 +125,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
    * Tema Özelleştirici: tasarım tokenlarını (renk, tipografi, geometri) tema değişimi yapmadan günceller.
    */
   public async saveDesignTokens(tokens: DesignTokens): Promise<void> {
+    siteCache.delete(this.siteId);
     const now = new Date();
     const { db, t } = this.backend;
     await db
@@ -108,6 +142,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
     designTokens: DesignTokens,
     siteProfile?: SiteProfile
   ): Promise<void> {
+    siteCache.delete(this.siteId);
     const now = new Date();
     const { db, t } = this.backend;
     await db

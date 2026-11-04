@@ -35,10 +35,21 @@ export default async function AdminContentsEditorPage({
       ? (sp.type as ContentType)
       : "page";
 
+  // Performans: Sadece aktif düzenlenen belgenin blokları aktarılır; diğer belgelerin AST ve markdown yükü kesilir.
+  const targetId = sp.id ?? (contents.find((c) => c.type === requestedType)?.contentId ?? contents[0]?.contentId);
+  const optimizedContents = contents.map((c) => {
+    if (c.contentId === targetId) return c;
+    return {
+      ...c,
+      blocks: [],
+      markdownCache: "",
+    };
+  });
+
   return (
     <DualModeEditorClient
       key={`${sp.new ?? "0"}:${sp.id ?? ""}:${requestedType}:${locale}`}
-      initialContents={contents}
+      initialContents={optimizedContents}
       initialTaxonomies={taxonomies}
       initialMediaAssets={mediaAssets}
       siteId={siteId}

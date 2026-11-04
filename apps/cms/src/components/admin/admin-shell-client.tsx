@@ -21,6 +21,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { NotificationBell } from "./notification-bell";
 import { CommandPalette } from "./command-palette";
 import { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
+import { AdminProgressBar } from "./admin-progress-bar";
 
 interface AdminShellClientProps {
   children: React.ReactNode;
@@ -119,6 +120,7 @@ export function AdminShellClient({
 
   return (
     <div className="nx-admin min-h-screen flex bg-[#F5F6F8] dark:bg-[#0D0E11] text-[#14151A] dark:text-[#F3F4F6] font-sans antialiased text-[13px]">
+      <AdminProgressBar />
       <a href="#main-content" className="sr-only z-[60] rounded-md bg-[#266DF0] px-3 py-2 text-[12px] font-semibold text-white focus:not-sr-only focus:fixed focus:left-2 focus:top-2">İçeriğe geç</a>
       {/* ATTIO CRM TARZI GİZLENEBİLİR SOL SIDEBAR */}
       {sidebarOpen && !studioOpen && (
@@ -132,7 +134,7 @@ export function AdminShellClient({
         >
           <div className="flex-1 overflow-y-auto p-2 space-y-2.5">
             <div className="flex items-center justify-between px-2 py-1 rounded-md hover:bg-[#EAECED]/70 dark:hover:bg-[#1C1E24] transition">
-              <Link href="/admin" className="flex items-center gap-2 min-w-0">
+              <Link href="/admin" prefetch={false} className="flex items-center gap-2 min-w-0">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] bg-[#14151A] dark:bg-[#F3F4F6] text-[10px] font-bold text-white dark:text-[#14151A]">
                   N
                 </div>
@@ -211,6 +213,7 @@ export function AdminShellClient({
                       <Link
                         key={item.href}
                         href={item.href}
+                        prefetch={false}
                         className={`flex items-center justify-between rounded-md px-2 py-1.5 text-[12px] transition ${
                           isActive
                             ? "bg-[#EAECED] dark:bg-[#22252D] text-[#14151A] dark:text-[#F3F4F6] font-medium"
@@ -293,6 +296,7 @@ export function AdminShellClient({
             {studioOpen ? (
               <Link
                 href={studioBackHref}
+                prefetch={false}
                 className="h-6 px-1.5 inline-flex items-center gap-1 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] text-[#5C5F66] dark:text-[#9CA3AF] hover:text-[#14151A] dark:hover:text-white transition"
               >
                 <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />

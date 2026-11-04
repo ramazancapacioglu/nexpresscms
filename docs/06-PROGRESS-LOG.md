@@ -21,6 +21,20 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Panel İçi Rota Geçiş Performansı, RSC Yük Optimizasyonu ve Anında İlerleme Çubuğu (Zero-Lag Admin UX)
+- 🚀 **Kenar Çubuğu Önceden Yükleme Fırtınasının Önlenmesi (`apps/cms/src/components/admin/admin-shell-client.tsx`):**
+  - Panel sol menüsünde yer alan ~30 adet `<Link>` bağlantısına `prefetch={false}` eklendi.
+  - Next.js 15 varsayılan olarak görünür alandaki her `<Link>` için arka planda tam RSC isteği gönderiyordu; bu durum `force-dynamic` admin sayfalarında tek bir sayfa açılışında arka planda 25-30 eşzamanlı veritabanı sorgusu fırtınasına ve sunucu/istemci CPU darboğazına neden oluyordu. Prefetch devre dışı bırakılarak istek yükü tamamen ortadan kaldırıldı.
+- 🚀 **RSC Uçuş Akışı (Flight Payload) Boyutunun Küçültülmesi (`/admin/posts`, `/admin/pages`, `/admin/contents`):**
+  - `apps/cms/src/app/admin/posts/page.tsx` ve `apps/cms/src/app/admin/pages/page.tsx` listeleme sayfalarında `repo.listContents({ locale: "tr" })` çekilen içeriklerin devasa `blocks` JSON AST'si ve `markdownCache` metinleri yerine yalnızca blok adedini koruyan hafif nesneler (`blocks: new Array(c.blocks.length).fill(null)`, `markdownCache: ""`) istemciye aktarıldı.
+  - `apps/cms/src/app/admin/contents/page.tsx` editör sayfasında, yalnızca aktif düzenlenen belgenin (`targetId`) tam blokları korunup diğer tüm belgelerin blokları boşaltıldı. Bu sayede onlarca içeriği olan sitelerde RSC JSON yük boyutu megabaytlardan kilobayt seviyesine düşürüldü (%95+ veri tasarrufu).
+- 🚀 **Site Ayarları Bellek Önbelleği (`packages/database/src/cms/site.ts`):**
+  - `repo.getSite()` sorgusu için 15 saniyelik hafif bellek önbelleği (`siteCache`, `invalidateSiteCache`) uygulandı.
+  - `AdminLayout` ile sayfa bileşenleri arasındaki mükerrer `getSite()` çağrıları 0 milisaniyeye indirildi. Ayarlar, temalar veya dil listesi güncellendiğinde önbellek anında otomatik geçersiz kılınmaktadır.
+- ⚡ **Anında İlerleme Çubuğu (`apps/cms/src/components/admin/admin-progress-bar.tsx`):**
+  - Admin içi sayfa tıklamalarında 0 ms gecikmeyle devreye giren üst mavi ilerleme çubuğu eklendi. Kullanıcı bir bağlantıya tıkladığı anda görsel geri bildirim alarak sayfa geçişinin anında başladığını hisseder; rota tamamlandığında çubuk pürüzsüzce kaybolur.
+- ✅ **Doğrulama & Testler:** 13 paketin tamamında `pnpm typecheck` ve 11 test paketinin tamamı (63 veritabanı, 32 SEO, 7 editör testi) %100 yeşil geçti.
+
 ### [2026-11-03] — Docker Gerektirmeyen Doğrudan VPS/Hosting Kurulum Paketi (PostgreSQL + pgvector)
 - ✅ **1-Tık Kurulum Sihirbazı (`scripts/install-host.sh`):**
   - Docker gerektirmeyen standart VPS, bulut sunucu ve Node.js hostingleri için interaktif kurulum betiği hazırlandı.

@@ -14,9 +14,16 @@ export default async function AdminPostsListPage() {
     repo.listTaxonomies(),
   ]);
 
-  const postItems = allContents.filter(
-    (c) => c.type === "post" || c.type === "kb_tech" || c.type === "ai_prompt"
-  );
+  const postItems = allContents
+    .filter(
+      (c) => c.type === "post" || c.type === "kb_tech" || c.type === "ai_prompt"
+    )
+    .map((c) => ({
+      ...c,
+      // Performans: Liste görünümünde sadece blok adedi okunur; tam AST ve markdown aktarılmaz.
+      blocks: new Array(Array.isArray(c.blocks) ? c.blocks.length : 0).fill(null as any),
+      markdownCache: "",
+    }));
 
   return (
     <ContentListClient

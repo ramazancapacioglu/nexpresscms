@@ -2,6 +2,7 @@ import { getCmsContext } from "@nexpress/core";
 import { CmsPluginRepository } from "./cms/plugins";
 
 export * from "./cms/types";
+export { invalidateSiteCache } from "./cms/site";
 
 /**
  * Kural 2 & Kural 3: her sorgu `siteId` kapsamlıdır; tek arayüz iki motorda çalışır.

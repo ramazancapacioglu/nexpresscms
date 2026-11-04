@@ -37,3 +37,4 @@ for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"]) {
     } catch {}
   });
 }
+

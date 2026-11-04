@@ -182,3 +182,4 @@ echo -e "Yönetim Paneli: ${CYAN}${APP_URL:-http://localhost:3000}/admin${NC}"
 echo -e "Nginx Tersine Vekil Şablonu: ${YELLOW}scripts/nginx-nexpress.conf${NC}"
 echo -e "Güncelleme Betiği: ${YELLOW}bash scripts/update-host.sh${NC}"
 echo "=================================================================="
+

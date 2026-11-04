@@ -14,7 +14,14 @@ export default async function AdminPagesListPage() {
     repo.listTaxonomies(),
   ]);
 
-  const pageItems = allContents.filter((c) => c.type === "page");
+  const pageItems = allContents
+    .filter((c) => c.type === "page")
+    .map((c) => ({
+      ...c,
+      // Performans: Liste görünümünde sadece blok adedi okunur; tam AST ve markdown aktarılmaz.
+      blocks: new Array(Array.isArray(c.blocks) ? c.blocks.length : 0).fill(null as any),
+      markdownCache: "",
+    }));
 
   return (
     <ContentListClient

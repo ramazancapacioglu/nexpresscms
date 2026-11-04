@@ -28,10 +28,7 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
             onClick={(e) => {
               if (path === t.href) {
                 e.preventDefault();
-                return;
               }
-              e.preventDefault();
-              router.push(t.href);
             }}
             aria-current={active ? "page" : undefined}
             className={`shrink-0 rounded-md px-3 py-1.5 text-[13px] font-medium transition ${
