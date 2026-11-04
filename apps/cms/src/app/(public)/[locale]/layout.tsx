@@ -88,7 +88,16 @@ export default async function PublicLocaleLayout({
   const isCategory = segs.length >= 2 && (segs[1] === "kategori" || segs[1] === "etiket");
   const isShop = segs.length >= 2 && segs[1] === "magaza";
   const isSearch = segs.length >= 2 && segs[1] === "ara";
-  const isSingleContent = !isHome && !isCategory && !isShop && !isSearch && segs.length >= 2;
+  const isCampaignDetail = segs.length >= 3 && segs[1] === "kampanya";
+  const isCampaignArchive = segs.length >= 2 && segs[1] === "kampanyalar";
+  const isSingleContent =
+    !isHome &&
+    !isCategory &&
+    !isShop &&
+    !isSearch &&
+    !isCampaignDetail &&
+    !isCampaignArchive &&
+    segs.length >= 2;
 
   let targetAreaId = "primary";
   let contentSidebarPos: "none" | "left" | "right" | undefined = undefined;
@@ -96,6 +105,16 @@ export default async function PublicLocaleLayout({
   if (isHome) {
     contentSidebarPos = "none";
   } else if (isCategory) {
+    if (resolvedCustomizer.layout.sidebarOnArchive !== false) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = resolvedCustomizer.layout.archiveSidebarId || "archive";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isCampaignArchive) {
     if (resolvedCustomizer.layout.sidebarOnArchive !== false) {
       contentSidebarPos =
         resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
@@ -122,6 +141,26 @@ export default async function PublicLocaleLayout({
           ? resolvedCustomizer.layout.sidebarPosition
           : "right";
       targetAreaId = resolvedCustomizer.layout.searchSidebarId || "primary";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isCampaignDetail) {
+    const slug = decodeURIComponent(segs[2]!);
+    const resolvedCont = await resolvePublicContent(siteId, slug, locale);
+    const content = resolvedCont?.content;
+    const customSidebar = (content?.schemaAttributes as Record<string, unknown> | undefined)?._sidebar as
+      | { position?: "none" | "left" | "right"; sidebarId?: string }
+      | undefined;
+
+    if (customSidebar?.position) {
+      contentSidebarPos = customSidebar.position;
+      if (customSidebar.sidebarId) targetAreaId = customSidebar.sidebarId;
+    } else if (resolvedCustomizer.layout.sidebarOnBlog !== false) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = resolvedCustomizer.layout.blogSidebarId || "primary";
     } else {
       contentSidebarPos = "none";
     }

@@ -21,6 +21,19 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Kampanya Detay Sayfası Yeniden Yerleşimi, Aksiyon Alanı ve Kenar Çubuğu (Sidebar) Entegrasyonu
+- 🎯 **Görsel Altı Rozetler & Kalan Süre Sayacı (`apps/cms/src/app/(public)/[locale]/kampanya/[slug]/page.tsx`):**
+  - "Kampanyanın bitmesine X gün kaldı" süre sayacı rozeti sağdaki ayrı karttan alınıp doğrudan afiş görselinin altındaki indirim ve vurgu rozetlerinin (`✨ Vurgu`, `%40`) yanına taşındı.
+- 💼 **Hemen Teklif Al & Bilgi İste, WhatsApp ve Telefon Aksiyonları:**
+  - Kampanya detay tablosunun ("Kampanya Bilgileri & Avantaj Özeti") hemen altına entegre edilen şık ve geniş bir aksiyon alanı kuruldu:
+    - Birincil aksiyon: "Hemen Teklif Al & Bilgi İste" (veya özel `ctaText`).
+    - Hızlı iletişim butonları: WhatsApp destek butonu ve doğrudan aranabilir telefon butonu.
+    - Bilgilendirme notu: Kampanya şartları ve kontenjan durumları hakkında müşteri temsilcisi yönlendirmesi.
+- 📐 **Global Tema Kenar Çubuğu (Sidebar) Uyumu (`apps/cms/src/app/(public)/[locale]/layout.tsx`):**
+  - Kampanya detay (`/{locale}/kampanya/[slug]`) ve arşiv (`/{locale}/kampanyalar`) rotaları layout'un akıllı kenar çubuğu eşleştiricisine dahil edildi (`isCampaignDetail`, `isCampaignArchive`).
+  - Sayfa içi yapay 2 kolonlu grid kaldırıldı; standart sayfa genişliğine geçirilerek sitenin aktif genel kenar çubuğu (`PublicSidebarWidgetArea`) ile tam uyumlu hale getirildi.
+  - "Diğer Aktif Fırsatlar" bölümü sayfa altına 3 kolonlu modern bir grid kartı olarak yerleştirildi.
+
 ### [2026-11-04] — Kampanya Detay Rotası ([slug]) Düzeltmesi, Taslak Önizleme ve Otomatik 301 Yönlendirme Desteği
 - 🛠️ **Dinamik Rota Dizin Adlandırması (`apps/cms/src/app/(public)/[locale]/kampanya/[slug]/page.tsx`):**
   - Dosya sistemi oluşturulurken oluşan `[slug/]` biçimindeki hatalı klasör ismi temizlendi ve standart Next.js App Router dinamik segmenti (`[slug]`) kuruldu.
