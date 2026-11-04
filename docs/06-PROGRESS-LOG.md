@@ -715,6 +715,19 @@
 - ✅ **SEO/GEO/hız:** güvenlik başlıkları, `/og` sosyal görsel rotası, gerçek IndexNow bildirimi + `/indexnow-key.txt`, istek başına veri tekilleştirme, `image_figure` boyut/öncelik öznitelikleri. Ayrıntı: `docs/04` §6.
 - 📋 **Açık:** istekler arası önbellek, gerçek bot günlüğü, medya hattı, gerçek RAG, parçalı sitemap, migration, kalan büyük dosyalar. Bkz. `docs/12-ROADMAP.md`.
 
+### [2026-11-04] — Etkileşimli Sütun Genişletme/Daraltma & Yüzdelik Boyutlandırma Motoru
+- ✅ **Kanvas Üzerinde Canlı Sütun Ayırıcı Tutamaç (`ColumnSplitterHandle`):**
+  - Satır (`columns`) içindeki bitişik sütunların arasına fare ile sürüklenebilir `ColumnSplitterHandle` dikey ayırıcı tutamacı eklendi.
+  - Sola veya sağa sürüklendiğinde, fare hareketine göre iki sütunun genişlik yüzdeleri gerçek zamanlı olarak ayarlanır (minimum %10 sınırı korunur).
+  - Sürükleme esnasında tutamaç üzerinde anlık canlı yüzde rozeti (`📐 %42 | %58`) gösterilir; bırakıldığında kalıcı olarak kaydedilir.
+- ✅ **Yüzen Araç Çubuğu (`FloatingToolbar`):**
+  - Bir sütun (`column`) seçildiğinde, yüzen çubukta hızlı yüzde butonları (`%20, %25, %33, %50, %66, %75, %100`) sunuldu.
+- ✅ **Sağ Denetçi Paneli (`BlockGeneralTab`):**
+  - Sütun seçildiğinde: Yüzdelik genişlik slider'ı (%10 - %100) ve hızlı preset butonları eklendi.
+  - Satır (`columns`) seçildiğinde: Sütun oranı preset'lerinin yanı sıra, o satırdaki tüm sütunların anlık genişlik dağılım çubukları ve "Eşit Dağıt" butonu entegre edildi.
+- ✅ **Ön Yüz ve RSC Render Senkronizasyonu (`blocks-layout.tsx`):**
+  - Ziyaretçi sayfalarında sütunların `col.props.widthPct` özniteliği doğrudan `flexBasis` genişliği olarak uygulanarak 0-KB RSC mimarisiyle pürüzsüzce sergilenmesi sağlandı.
+
 ### [2026-11-04] — Kadence Tarzı Görsel Ölçeklendirme ve Boyutlandırma Motoru
 - ✅ **Kanvas Üzerinde Canlı Tutamaçlar & Hızlı Ölçek (`CanvasImageScaler`):**
   - Editör kanvasında seçilen `image_figure` görseline sağ kenar ve sağ-alt köşe tutamaçları (`cursor-ew-resize`, `cursor-nwse-resize`) eklendi.

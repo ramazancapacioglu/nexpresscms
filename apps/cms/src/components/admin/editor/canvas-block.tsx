@@ -103,6 +103,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
   const [showRowPicker, setShowRowPicker] = useState(false);
   const [dropSide, setDropSide] = useState<"before" | "after" | null>(null);
   const [overColId, setOverColId] = useState<string | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [colWidthOverrides, setColWidthOverrides] = useState<Record<string, number> | null>(null);
   const { begin, drop } = useEditorDnd();
   const pageSchema = usePageSchema();
 
@@ -267,7 +269,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
             />
           ) : (
             <div
-              className="flex flex-col md:flex-row"
+              ref={rowRef}
+              className="flex flex-col md:flex-row relative items-stretch"
               style={{
                 gap: String(block.props.gap ?? "24px"),
                 alignItems:
@@ -280,103 +283,137 @@ export function CanvasBlock(props: CanvasBlockProps) {
               }}
             >
               {(block.children ?? []).map((col, colIdx) => {
-                const widthPct = Number(
-                  col.props?.widthPct ?? Math.round(100 / (block.children?.length || 1))
-                );
+                const widthPct =
+                  colWidthOverrides?.[col.id] ??
+                  Number(
+                    col.props?.widthPct ?? Math.round(100 / (block.children?.length || 1))
+                  );
                 const colSelected = selectedId === col.id;
                 const colChildren = col.children ?? [];
                 return (
-                  <div
-                    key={col.id}
-                    data-nx-b={safeBlockDomId(col.id)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelect(col.id);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      e.dataTransfer.dropEffect = "move";
-                      if (overColId !== col.id) setOverColId(col.id);
-                    }}
-                    onDragLeave={(e) => {
-                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                        setOverColId((prev) => (prev === col.id ? null : prev));
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setOverColId(null);
-                      const payload = readPayload(e);
-                      if (payload) drop(payload, col.id, colChildren.length);
-                    }}
-                    style={{
-                      flexBasis: `${widthPct}%`,
-                      flexGrow: 1,
-                    }}
-                    className={`group/col relative flex min-h-[72px] flex-col rounded-lg transition-all ${
-                      overColId === col.id
-                        ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
-                        : colSelected
-                          ? "outline-2 outline-blue-600"
-                          : "hover:outline-1 hover:outline-dashed hover:outline-slate-300"
-                    }`}
-                  >
-                    {/* Sütun Seçiliyse Yüzen Araç Çubuğu */}
-                    {colSelected && (
-                      <FloatingToolbar
-                        block={col}
-                        index={colIdx}
-                        total={(block.children ?? []).length}
-                        parentId={block.id}
-                        onSelectParent={() => onSelect(block.id)}
-                        onMove={onMove}
-                        onDuplicate={onDuplicate}
-                        onRemove={onRemove}
-                        onUpdateProp={(id, key, val) => onUpdateProp(id, key, val, true)}
-                        onUpdateStyle={onUpdateStyle}
-                        onOpenStyle={onOpenStyleInspector}
+                  <React.Fragment key={col.id}>
+                    <div
+                      data-nx-b={safeBlockDomId(col.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect(col.id);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.dataTransfer.dropEffect = "move";
+                        if (overColId !== col.id) setOverColId(col.id);
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                          setOverColId((prev) => (prev === col.id ? null : prev));
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOverColId(null);
+                        const payload = readPayload(e);
+                        if (payload) drop(payload, col.id, colChildren.length);
+                      }}
+                      style={{
+                        flexBasis: `${widthPct}%`,
+                        flexGrow: 1,
+                      }}
+                      className={`group/col relative flex min-h-[72px] flex-col rounded-lg transition-all ${
+                        overColId === col.id
+                          ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
+                          : colSelected
+                            ? "outline-2 outline-blue-600"
+                            : "hover:outline-1 hover:outline-dashed hover:outline-slate-300"
+                      }`}
+                    >
+                      {/* Sütun Seçiliyse Yüzen Araç Çubuğu */}
+                      {colSelected && (
+                        <FloatingToolbar
+                          block={col}
+                          index={colIdx}
+                          total={(block.children ?? []).length}
+                          parentId={block.id}
+                          onSelectParent={() => onSelect(block.id)}
+                          onMove={onMove}
+                          onDuplicate={onDuplicate}
+                          onRemove={onRemove}
+                          onUpdateProp={(id, key, val) => onUpdateProp(id, key, val, true)}
+                          onUpdateStyle={onUpdateStyle}
+                          onOpenStyle={onOpenStyleInspector}
+                        />
+                      )}
+
+                      {/* Sütun Üzerine Gelindiğinde Küçük Sütun Seçim Rozeti */}
+                      {!colSelected && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect(col.id);
+                          }}
+                          className="absolute right-1.5 top-1.5 z-10 hidden h-5 items-center rounded bg-slate-900/75 px-1.5 text-[9px] font-semibold text-white opacity-0 transition group-hover/col:inline-flex group-hover/col:opacity-100 hover:bg-blue-600"
+                        >
+                          {colIdx + 1}. Sütun (%{Math.round(widthPct)})
+                        </button>
+                      )}
+
+                      <div className="flex flex-1 flex-col gap-2">
+                        <DropZone parentId={col.id} index={0} />
+                        {colChildren.length === 0 ? (
+                          <div className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300/90 bg-slate-50/50 py-6">
+                            <span className="text-[11px] font-medium text-slate-400">
+                              {colIdx + 1}. Sütun (%{Math.round(widthPct)})
+                            </span>
+                            <div className="[&_.invisible]:!visible [&_.invisible]:!inline-flex">
+                              <InsertPoint
+                                onInsert={(b) => onInsertIntoContainer(b, col.id)}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          colChildren.map((child, cIdx) => (
+                            <React.Fragment key={child.id}>
+                              {renderChild(child, cIdx, colChildren.length, col.id)}
+                              <DropZone parentId={col.id} index={cIdx + 1} />
+                            </React.Fragment>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sütunlar Arası Mouse ile Tutup Genişletip-Daraltma Tutamacı */}
+                    {colIdx < (block.children?.length ?? 0) - 1 && (
+                      <ColumnSplitterHandle
+                        leftColId={col.id}
+                        rightColId={block.children![colIdx + 1]!.id}
+                        leftPct={widthPct}
+                        rightPct={
+                          colWidthOverrides?.[block.children![colIdx + 1]!.id] ??
+                          Number(
+                            block.children![colIdx + 1]!.props?.widthPct ??
+                              Math.round(100 / (block.children?.length || 1))
+                          )
+                        }
+                        rowRef={rowRef}
+                        onResizeMove={(lId, lPct, rId, rPct) => {
+                          setColWidthOverrides((prev) => ({
+                            ...prev,
+                            [lId]: lPct,
+                            [rId]: rPct,
+                          }));
+                        }}
+                        onResizeEnd={(lId, lPct, rId, rPct) => {
+                          setColWidthOverrides(null);
+                          onUpdateProp(lId, "widthPct", lPct, true);
+                          onUpdateProp(rId, "widthPct", rPct, true);
+                          onUpdateProp(block.id, "layout", "custom", true);
+                          onCommitHistory();
+                        }}
                       />
                     )}
-
-                    {/* Sütun Üzerine Gelindiğinde Küçük Sütun Seçim Rozeti */}
-                    {!colSelected && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelect(col.id);
-                        }}
-                        className="absolute right-1.5 top-1.5 z-10 hidden h-5 items-center rounded bg-slate-900/75 px-1.5 text-[9px] font-semibold text-white opacity-0 transition group-hover/col:inline-flex group-hover/col:opacity-100 hover:bg-blue-600"
-                      >
-                        {colIdx + 1}. Sütun ({Math.round(widthPct)}%)
-                      </button>
-                    )}
-
-                    <div className="flex flex-1 flex-col gap-2">
-                      <DropZone parentId={col.id} index={0} />
-                      {colChildren.length === 0 ? (
-                        <div className="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300/90 bg-slate-50/50 py-6">
-                          <span className="text-[11px] font-medium text-slate-400">
-                            {colIdx + 1}. Sütun ({Math.round(widthPct)}%)
-                          </span>
-                          <div className="[&_.invisible]:!visible [&_.invisible]:!inline-flex">
-                            <InsertPoint
-                              onInsert={(b) => onInsertIntoContainer(b, col.id)}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        colChildren.map((child, cIdx) => (
-                          <React.Fragment key={child.id}>
-                            {renderChild(child, cIdx, colChildren.length, col.id)}
-                            <DropZone parentId={col.id} index={cIdx + 1} />
-                          </React.Fragment>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -851,6 +888,115 @@ function CanvasImageScaler({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+interface ColumnSplitterHandleProps {
+  leftColId: string;
+  rightColId: string;
+  leftPct: number;
+  rightPct: number;
+  rowRef: React.RefObject<HTMLDivElement | null>;
+  onResizeMove: (leftId: string, leftPct: number, rightId: string, rightPct: number) => void;
+  onResizeEnd: (leftId: string, leftPct: number, rightId: string, rightPct: number) => void;
+}
+
+/**
+ * İki sütun arasındaki etkileşimli genişletme/daraltma tutamacı:
+ * - Mouse ile tutulup sağa/sola sürüklendiğinde sol ve sağ sütunların genişlik yüzdelerini canlı ayarlar.
+ * - Sürükleme esnasında üstte canlı `📐 %40 | %60` rozeti gösterir.
+ * - Bırakıldığında yeni yüzdeleri kalıcı olarak kaydeder.
+ */
+function ColumnSplitterHandle({
+  leftColId,
+  rightColId,
+  leftPct,
+  rightPct,
+  rowRef,
+  onResizeMove,
+  onResizeEnd,
+}: ColumnSplitterHandleProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [currentLeft, setCurrentLeft] = useState(leftPct);
+  const [currentRight, setCurrentRight] = useState(rightPct);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+
+    const startX = e.clientX;
+    const rowEl = rowRef.current;
+    const rowWidth = rowEl ? rowEl.getBoundingClientRect().width : 800;
+    const sumPct = leftPct + rightPct;
+
+    let finalLeft = leftPct;
+    let finalRight = rightPct;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaPct = (deltaX / rowWidth) * 100;
+      const proposedLeft = Math.round(leftPct + deltaPct);
+      const minPct = 10;
+      const maxPct = sumPct - 10;
+      const clampedLeft = Math.max(minPct, Math.min(maxPct, proposedLeft));
+      const clampedRight = Math.round(sumPct - clampedLeft);
+
+      finalLeft = clampedLeft;
+      finalRight = clampedRight;
+      setCurrentLeft(clampedLeft);
+      setCurrentRight(clampedRight);
+      onResizeMove(leftColId, clampedLeft, rightColId, clampedRight);
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      setIsDragging(false);
+      onResizeEnd(leftColId, finalLeft, rightColId, finalRight);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  return (
+    <div
+      onMouseDown={startResize}
+      title="Sütun genişliğini ayarlamak için sağa/sola sürükleyin"
+      className="group/resizer relative z-20 flex w-4 -mx-2 cursor-col-resize items-center justify-center select-none shrink-0"
+    >
+      {/* İnce Dikey Hat */}
+      <div
+        className={`h-full min-h-[64px] w-0.5 rounded-full transition-colors ${
+          isDragging
+            ? "bg-blue-600"
+            : "bg-slate-200 dark:bg-slate-700 group-hover/resizer:bg-blue-500"
+        }`}
+      />
+
+      {/* Orta Tutamaç Hapı */}
+      <div
+        className={`absolute flex h-7 w-3.5 items-center justify-center rounded-full border-2 border-white bg-blue-600 shadow-md transition-all ${
+          isDragging
+            ? "scale-110 shadow-lg ring-2 ring-blue-300"
+            : "opacity-40 group-hover/resizer:opacity-100 group-hover/resizer:scale-105"
+        }`}
+      >
+        <div className="flex flex-col gap-0.5">
+          <div className="h-2 w-0.5 rounded-full bg-white/80" />
+        </div>
+      </div>
+
+      {/* Sürükleme Sırasında Canlı Yüzde Bilgisi Tooltip */}
+      {isDragging && (
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center gap-1.5 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-xl animate-in fade-in">
+          <span>%{currentLeft}</span>
+          <span className="text-slate-500">|</span>
+          <span>%{currentRight}</span>
+        </div>
+      )}
     </div>
   );
 }

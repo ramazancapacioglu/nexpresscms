@@ -135,27 +135,33 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
           style={{ gap: themeId === INK_GRID_ID ? "0px" : gap }}
           className={`flex ${p.mobileReverse ? "flex-col-reverse" : "flex-col"} ${p.stackAt === "tablet" ? "lg:flex-row" : "md:flex-row"} ${alignItems} ${themeId === INK_GRID_ID ? "border-b border-white/15" : ""}`}
         >
-          {children.map((col, idx) => (
-            <div
-              key={col.id}
-              style={{
-                flexBasis: widths[idx] ?? "50%",
-              }}
-              className={
-                themeId === INK_GRID_ID
-                  ? "min-w-0 flex-1 border-white/15 px-6 py-12 sm:px-10 md:border-r"
-                  : "flex-1 min-w-0"
-              }
-            >
-              <RenderChild
-                block={col}
-                themeId={themeId}
-                tokens={tokens}
-                isEditorial={isEditorial}
-                isCommerce={isCommerce}
-              />
-            </div>
-          ))}
+          {children.map((col, idx) => {
+            const widthPct =
+              col.props?.widthPct !== undefined
+                ? `${col.props.widthPct}%`
+                : (widths[idx] ?? `${(100 / Math.max(1, children.length)).toFixed(2)}%`);
+            return (
+              <div
+                key={col.id}
+                style={{
+                  flexBasis: widthPct,
+                }}
+                className={
+                  themeId === INK_GRID_ID
+                    ? "min-w-0 flex-1 border-white/15 px-6 py-12 sm:px-10 md:border-r"
+                    : "flex-1 min-w-0"
+                }
+              >
+                <RenderChild
+                  block={col}
+                  themeId={themeId}
+                  tokens={tokens}
+                  isEditorial={isEditorial}
+                  isCommerce={isCommerce}
+                />
+              </div>
+            );
+          })}
         </div>
       );
     }

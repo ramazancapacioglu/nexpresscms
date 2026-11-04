@@ -44,6 +44,64 @@ export function BlockGeneralTab() {
                             selectedBlock.type !== "anchor_nav" &&
                             selectedBlock.type !== "divider_spacer" && <QuickAnchorIdField />}
 
+                          {selectedBlock.type === "column" && (
+                            <div className="space-y-4">
+                              <div className="rounded-xl border border-border bg-muted/20 p-3 space-y-3">
+                                <div className="text-[11px] font-bold text-foreground">
+                                  Sütun Genişliği (Yüzdelik)
+                                </div>
+
+                                {/* Hızlı Yüzde Butonları */}
+                                <div>
+                                  <label className="mb-1 block text-[10px] text-muted-foreground">
+                                    Hızlı Genişlik Seçimi
+                                  </label>
+                                  <div className="grid grid-cols-4 gap-1">
+                                    {([20, 25, 33, 50, 66, 75, 80, 100] as const).map((pct) => {
+                                      const currentPct = Number(selectedBlock.props.widthPct ?? 50);
+                                      const isActive = Math.round(currentPct) === pct;
+                                      return (
+                                        <button
+                                          key={pct}
+                                          type="button"
+                                          onClick={() => updateSelectedBlockProps({ widthPct: pct })}
+                                          className={`rounded py-1 text-xs font-bold transition ${
+                                            isActive
+                                              ? "bg-blue-600 text-white shadow-xs"
+                                              : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                                          }`}
+                                        >
+                                          %{pct}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                {/* Genişlik Slider'ı */}
+                                <div>
+                                  <div className="mb-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                                    <span>Genişlik Oranı</span>
+                                    <span className="font-mono font-bold text-blue-600 text-xs">
+                                      %{Number(selectedBlock.props.widthPct ?? 50)}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="10"
+                                    max="100"
+                                    step="1"
+                                    value={Number(selectedBlock.props.widthPct ?? 50)}
+                                    onChange={(e) =>
+                                      updateSelectedBlockProps({ widthPct: Number(e.target.value) })
+                                    }
+                                    className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-border accent-blue-600"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {selectedBlock.type === "columns" && (
                             <div className="space-y-3">
                               <div>
@@ -75,6 +133,54 @@ export function BlockGeneralTab() {
                                   ))}
                                 </div>
                               </div>
+
+                              {/* Sütunların Genişlik Dağılımı */}
+                              {(selectedBlock.children ?? []).length > 1 && (
+                                <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="text-[11px] font-bold text-foreground">
+                                      Sütun Genişlikleri Dağılımı
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const count = selectedBlock.children!.length;
+                                        handleChangeColumnLayout(
+                                          selectedBlock.id,
+                                          count === 2 ? "6+6" : count === 3 ? "4+4+4" : "3+3+3+3"
+                                        );
+                                      }}
+                                      className="text-[10px] text-blue-600 hover:underline font-semibold"
+                                    >
+                                      Eşit Dağıt
+                                    </button>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {selectedBlock.children!.map((col, idx) => {
+                                      const pct = Number(
+                                        col.props?.widthPct ??
+                                          Math.round(100 / selectedBlock.children!.length)
+                                      );
+                                      return (
+                                        <div key={col.id} className="space-y-1">
+                                          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                                            <span>{idx + 1}. Sütun</span>
+                                            <span className="font-mono font-bold text-foreground">
+                                              %{pct}
+                                            </span>
+                                          </div>
+                                          <div className="h-2 w-full rounded-full bg-border overflow-hidden">
+                                            <div
+                                              className="h-full bg-blue-600 rounded-full transition-all"
+                                              style={{ width: `${pct}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                               <div>
                                 <label className="block text-[11px] font-semibold mb-1">
                                   Sütunlar Arası Boşluk (Gap)

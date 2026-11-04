@@ -189,6 +189,36 @@ export function FloatingToolbar({
         </>
       )}
 
+      {/* SÜTUN (column): Hızlı Yüzdelik Genişlik Seçici */}
+      {block.type === "column" && (
+        <>
+          <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
+          <span className="text-[10px] text-slate-400 font-medium">Genişlik:</span>
+          <div className="flex items-center gap-0.5 rounded bg-slate-800/80 p-0.5">
+            {([20, 25, 33, 50, 66, 75, 100] as const).map((pct) => {
+              const currentPct = Number(block.props.widthPct ?? 50);
+              const isActive = Math.round(currentPct) === pct;
+              return (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => onUpdateProp(block.id, "widthPct", pct)}
+                  aria-label={`Sütun genişliği %${pct}`}
+                  title={`Sütun genişliğini %${pct} yap`}
+                  className={`h-5 rounded px-1.5 text-[10px] font-bold transition ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
+                >
+                  %{pct}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       {/* BÖLÜM (section): Kapsayıcı Genişliği Seçici */}
       {block.type === "section" && (
         <>
