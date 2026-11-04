@@ -280,30 +280,121 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
       const altText = String(p.altText ?? "");
       const titleText = typeof p.titleText === "string" ? p.titleText : undefined;
       const caption = typeof p.caption === "string" ? p.caption : undefined;
+      const link = typeof p.link === "string" && p.link.trim() ? p.link.trim() : undefined;
+      const linkTarget = p.linkTarget === "_blank" ? "_blank" : undefined;
+
+      const align = String(p.align ?? "left");
+      const widthVal = p.width
+        ? typeof p.width === "number"
+          ? `${p.width}px`
+          : String(p.width)
+        : "100%";
+      const maxWidthVal = typeof p.maxWidth === "string" && p.maxWidth ? p.maxWidth : "100%";
+      const heightVal = p.height
+        ? typeof p.height === "number"
+          ? `${p.height}px`
+          : String(p.height)
+        : "auto";
+
+      const aspectMap: Record<string, string> = {
+        "1:1": "1 / 1",
+        "16:9": "16 / 9",
+        "4:3": "4 / 3",
+        "3:2": "3 / 2",
+        "21:9": "21 / 9",
+        "9:16": "9 / 16",
+      };
+      const aspectStyle =
+        p.aspectRatio && aspectMap[String(p.aspectRatio)]
+          ? aspectMap[String(p.aspectRatio)]
+          : undefined;
+      const objectFit =
+        (p.objectFit as React.CSSProperties["objectFit"]) ?? "cover";
+
+      const radiusMap: Record<string, string> = {
+        none: "0px",
+        sm: "4px",
+        md: "8px",
+        lg: "16px",
+        xl: "24px",
+        full: "9999px",
+      };
+      const radius =
+        p.borderRadius && radiusMap[String(p.borderRadius)]
+          ? radiusMap[String(p.borderRadius)]
+          : typeof p.borderRadius === "string" && p.borderRadius
+            ? p.borderRadius
+            : tokens.geometry.borderRadius;
+
+      const shadowClass =
+        p.shadow === "sm"
+          ? "shadow-xs"
+          : p.shadow === "md"
+            ? "shadow-md"
+            : p.shadow === "lg"
+              ? "shadow-lg"
+              : p.shadow === "xl"
+                ? "shadow-2xl"
+                : "";
+
+      const alignClass =
+        align === "center"
+          ? "mx-auto text-center"
+          : align === "right"
+            ? "ml-auto text-right"
+            : align === "full"
+              ? "w-full text-left"
+              : "mr-auto text-left";
+
+      const imgElement = url ? (
+        <ResponsiveImage
+          src={url}
+          alt={altText}
+          title={titleText}
+          width={typeof p.width === "number" ? p.width : undefined}
+          height={typeof p.height === "number" ? p.height : undefined}
+          priority={block.id === lcpBlockId}
+          focal={mediaFocal}
+          className="w-full h-full"
+          style={{
+            objectFit,
+            aspectRatio: aspectStyle,
+          }}
+        />
+      ) : null;
+
       return (
-        <figure className="space-y-2.5">
+        <figure
+          className={`space-y-2.5 ${alignClass}`}
+          style={{
+            width: widthVal,
+            maxWidth: maxWidthVal,
+          }}
+        >
           <div
             style={{
-              borderRadius: tokens.geometry.borderRadius,
+              borderRadius: radius,
               borderColor: tokens.colors.border,
+              height: heightVal !== "auto" ? heightVal : undefined,
+              aspectRatio: aspectStyle,
             }}
-            className="overflow-hidden border bg-nx-subtle"
+            className={`overflow-hidden border bg-nx-subtle ${shadowClass}`}
           >
-            {url ? (
-              <ResponsiveImage
-                src={url}
-                alt={altText}
-                title={titleText}
-                width={typeof p.width === "number" ? p.width : undefined}
-                height={typeof p.height === "number" ? p.height : undefined}
-                priority={block.id === lcpBlockId}
-                focal={mediaFocal}
-                className="w-full h-auto object-cover"
-              />
-            ) : null}
+            {link ? (
+              <a
+                href={link}
+                target={linkTarget}
+                rel={linkTarget === "_blank" ? "noopener noreferrer" : undefined}
+                className="block w-full h-full"
+              >
+                {imgElement}
+              </a>
+            ) : (
+              imgElement
+            )}
           </div>
           {caption && (
-            <figcaption className="text-xs text-nx-muted text-center italic">
+            <figcaption className="text-xs text-nx-muted italic">
               {caption}
             </figcaption>
           )}

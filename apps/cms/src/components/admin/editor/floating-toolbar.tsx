@@ -22,6 +22,7 @@ import {
   Plus,
   Columns3,
   Sparkles,
+  Maximize2,
 } from "lucide-react";
 
 export interface FloatingToolbarProps {
@@ -330,6 +331,71 @@ export function FloatingToolbar({
             <option value="h3">→ H3 Alt Başlık</option>
             <option value="div">→ Div</option>
           </select>
+        </>
+      )}
+
+      {/* GÖRSEL ÖLÇEKLENDİRME & BOYUT (Kadence Tarzı Hızlı Genişlik & Hizalama) */}
+      {block.type === "image_figure" && (
+        <>
+          <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
+          {/* Hızlı Yüzde Ölçekleme */}
+          <div className="flex items-center gap-0.5 rounded bg-slate-800/80 p-0.5">
+            {(["25%", "50%", "75%", "100%"] as const).map((pct) => {
+              const currentWidth = String(block.props.width ?? "100%");
+              const isActive = currentWidth === pct;
+              return (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => onUpdateProp(block.id, "width", pct)}
+                  aria-label={`Görsel genişliği ${pct}`}
+                  title={`Görsel genişliğini ${pct} yap`}
+                  className={`h-5 rounded px-1.5 text-[10px] font-bold transition ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                  }`}
+                >
+                  {pct}
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
+          {/* Hizalama */}
+          <div className="flex items-center gap-0.5">
+            {(
+              [
+                ["left", "Sola hizala", AlignLeft],
+                ["center", "Ortala", AlignCenter],
+                ["right", "Sağa hizala", AlignRight],
+                ["full", "Tam genişlik", Maximize2],
+              ] as const
+            ).map(([a, label, Icon]) => {
+              const currentAlign = String(block.props.align ?? "left");
+              const isAlignActive = currentAlign === a;
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => {
+                    onUpdateProp(block.id, "align", a);
+                    if (a === "full") onUpdateProp(block.id, "width", "100%");
+                  }}
+                  aria-label={label}
+                  title={label}
+                  className={`inline-flex h-6 w-6 items-center justify-center rounded transition ${
+                    isAlignActive
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" />
+                </button>
+              );
+            })}
+          </div>
         </>
       )}
 

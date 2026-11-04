@@ -715,6 +715,24 @@
 - ✅ **SEO/GEO/hız:** güvenlik başlıkları, `/og` sosyal görsel rotası, gerçek IndexNow bildirimi + `/indexnow-key.txt`, istek başına veri tekilleştirme, `image_figure` boyut/öncelik öznitelikleri. Ayrıntı: `docs/04` §6.
 - 📋 **Açık:** istekler arası önbellek, gerçek bot günlüğü, medya hattı, gerçek RAG, parçalı sitemap, migration, kalan büyük dosyalar. Bkz. `docs/12-ROADMAP.md`.
 
+### [2026-11-04] — Kadence Tarzı Görsel Ölçeklendirme ve Boyutlandırma Motoru
+- ✅ **Kanvas Üzerinde Canlı Tutamaçlar & Hızlı Ölçek (`CanvasImageScaler`):**
+  - Editör kanvasında seçilen `image_figure` görseline sağ kenar ve sağ-alt köşe tutamaçları (`cursor-ew-resize`, `cursor-nwse-resize`) eklendi.
+  - Sürükleme anında dinamik canlı yüzde rozeti (`Genişlik: %65`) ve ebeveyn sütun/bölüm genişliğine duyarlı serbest ölçekleme getirildi.
+  - Görselin hemen altında hızlı tek tıkla ölçekleme (`%25`, `%50`, `%75`, `%100`) ve hizalama (`Sol`, `Orta`, `Sağ`, `Tam`) hap butonları konumlandırıldı.
+- ✅ **Yüzen Kontrol Çubuğu Entegrasyonu (`FloatingToolbar`):**
+  - Görsel seçildiğinde yüzen araç çubuğunda anında `%25, %50, %75, %100` genişlik butonları ile sol/orta/sağ/tam genişlik hizalama butonları aktif hale getirildi.
+- ✅ **Sağ Denetçi Paneli (`BlockGeneralTab`):**
+  - Görsel bloğu için Kadence standardında tam denetim seti eklendi:
+    - Hızlı ölçek butonları ve sürekli aralık slider'ı (%10 - %100).
+    - Dörtlü hizalama grubu (Sol, Orta, Sağ, Tam Genişlik).
+    - En-boy oranı (Aspect Ratio: `Orijinal (Auto)`, `1:1`, `4:3`, `16:9`, `3:2`, `21:9`, `9:16`).
+    - Nesne sığdırma modu (Object Fit: `cover`, `contain`, `fill`, `scale-down`, `none`).
+    - Köşe yuvarlama (`none, sm, md, lg, xl, full`) ve gölge preset'leri.
+    - Tıklama bağlantısı (Link URL & Yeni sekmede aç seçeneği).
+- ✅ **Ön Yüz ve RSC Render Senkronizasyonu (`blocks-layout.tsx`):**
+  - Ziyaretçi sayfalarında 0-KB RSC hızını koruyarak, görselin genişliği, azami genişliği, en-boy oranı, nesne sığdırma davranışı ve hizalaması piksel hassasiyetinde CSS stillerine dönüştürüldü.
+
 ### [2026-11-04] — Tasarım Stüdyosu, Temalar & Özelleştirici Sayfa Ayrımı, Menü Sürükle-Bırak & Mega Menü Modal
 - ✅ **Menülerde Sürükle-Bırak Ağaç Sıralaması (`/admin/appearance/menus`):**
   - `MenuTree` bileşenine HTML5 drag-and-drop (`draggable`, visual outline drop indicator, `GripVertical` tutamacı) eklendi.

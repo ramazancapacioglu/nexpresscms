@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   canAppendRepeaterItem,
   safeBlockDomId,
@@ -598,6 +598,16 @@ export function CanvasBlock(props: CanvasBlockProps) {
                 Tıklayarak medya seçiciyi açın
               </span>
             </div>
+          ) : block.type === "image_figure" ? (
+            <CanvasImageScaler
+              block={block}
+              tokens={tokens}
+              pageSchema={pageSchema}
+              isSelected={isSelected}
+              onUpdateProp={onUpdateProp}
+              onCommitHistory={onCommitHistory}
+              onOpenMediaPicker={onOpenMediaPicker}
+            />
           ) : (
             <InlineEditable
               block={block}
@@ -634,6 +644,213 @@ export function CanvasBlock(props: CanvasBlockProps) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+interface CanvasImageScalerProps {
+  block: BlockNode;
+  tokens: DesignTokens;
+  pageSchema?: ReturnType<typeof usePageSchema>;
+  isSelected: boolean;
+  onUpdateProp: (id: string, key: string, value: unknown, commit: boolean) => void;
+  onCommitHistory: () => void;
+  onOpenMediaPicker?: (id: string) => void;
+}
+
+/**
+ * Kadence / WordPress tarzı etkileşimli görsel ölçeklendirme kanvas bileşeni:
+ * - Seçildiğinde kenar ve köşe tutamaçları ile serbest sürükle-bırak ölçekleme
+ * - Canlı yüzde rozeti (örn. "Genişlik: %50")
+ * - Görselin altında hızlı ölçekleme (%25, %50, %75, %100) ve hizalama hapları
+ */
+function CanvasImageScaler({
+  block,
+  tokens,
+  pageSchema,
+  isSelected,
+  onUpdateProp,
+  onCommitHistory,
+  onOpenMediaPicker,
+}: CanvasImageScalerProps) {
+  const [dragWidth, setDragWidth] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const currentWidth = dragWidth ?? String(block.props.width ?? "100%");
+  const currentAlign = String(block.props.align ?? "left");
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+
+    const startX = e.clientX;
+    const parent = containerRef.current?.parentElement;
+    const parentWidth = parent ? parent.getBoundingClientRect().width : 800;
+    const initialWidthPx = containerRef.current
+      ? containerRef.current.getBoundingClientRect().width
+      : parentWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const newPx = Math.max(80, Math.min(parentWidth, initialWidthPx + deltaX));
+      const pct = Math.round((newPx / parentWidth) * 100);
+      const clampedPct = Math.max(15, Math.min(100, pct));
+      setDragWidth(`${clampedPct}%`);
+    };
+
+    const onMouseUp = (upEvent: MouseEvent) => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      setIsDragging(false);
+
+      const deltaX = upEvent.clientX - startX;
+      const newPx = Math.max(80, Math.min(parentWidth, initialWidthPx + deltaX));
+      const pct = Math.round((newPx / parentWidth) * 100);
+      const finalPct = `${Math.max(15, Math.min(100, pct))}%`;
+      setDragWidth(null);
+      onUpdateProp(block.id, "width", finalPct, true);
+      onCommitHistory();
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const previewBlock = dragWidth
+    ? { ...block, props: { ...block.props, width: dragWidth } }
+    : block;
+
+  const alignClass =
+    currentAlign === "center"
+      ? "mx-auto"
+      : currentAlign === "right"
+        ? "ml-auto"
+        : currentAlign === "full"
+          ? "w-full"
+          : "mr-auto";
+
+  return (
+    <div className="relative my-2 select-none">
+      <div
+        ref={containerRef}
+        className={`relative transition-all ${alignClass} ${
+          isSelected ? "ring-2 ring-blue-500 rounded-xl" : ""
+        }`}
+        style={{
+          width: currentWidth,
+          maxWidth: "100%",
+        }}
+      >
+        <RscSingleBlock
+          block={previewBlock}
+          themeId="corporate-clean"
+          tokens={toCssVarTokens(tokens)}
+          isEditorial={false}
+          isCommerce={false}
+          pageSchema={pageSchema}
+          preview
+        />
+
+        {isSelected && (
+          <>
+            {/* Sağ Kenar Sürükle-Ölçekle Tutamacı */}
+            <div
+              onMouseDown={handleMouseDown}
+              title="Görseli ölçeklendirmek için sürükleyin"
+              className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 flex h-8 w-3 cursor-ew-resize items-center justify-center rounded-full border-2 border-white bg-blue-600 shadow-md hover:scale-110 active:scale-125 transition"
+            >
+              <div className="h-3 w-0.5 rounded bg-white/80" />
+            </div>
+
+            {/* Sağ Alt Köşe Tutamacı */}
+            <div
+              onMouseDown={handleMouseDown}
+              title="Görseli ölçeklendirmek için sürükleyin"
+              className="absolute -right-2 -bottom-2 z-20 h-4 w-4 cursor-nwse-resize rounded-full border-2 border-white bg-blue-600 shadow-md hover:scale-125 active:scale-125 transition"
+            />
+
+            {/* Canlı Yüzde Rozeti */}
+            {isDragging && dragWidth && (
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-md bg-blue-600 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-lg animate-in fade-in">
+                Genişlik: {dragWidth}
+              </div>
+            )}
+
+            {/* Kadence Tarzı Hızlı Butonlar */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2.5 flex flex-wrap items-center justify-center gap-1 rounded-xl border border-border bg-card/95 backdrop-blur-xs p-1.5 shadow-md text-[11px]"
+            >
+              <span className="text-[10px] font-bold text-muted-foreground px-1">
+                Ölçek:
+              </span>
+              {(["25%", "50%", "75%", "100%"] as const).map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => {
+                    onUpdateProp(block.id, "width", pct, true);
+                    onCommitHistory();
+                  }}
+                  className={`rounded px-2 py-0.5 text-[10px] font-bold transition ${
+                    currentWidth === pct
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {pct}
+                </button>
+              ))}
+
+              <span className="mx-1 h-3.5 w-px bg-border" />
+
+              <span className="text-[10px] font-bold text-muted-foreground px-1">
+                Hizala:
+              </span>
+              {(
+                [
+                  ["left", "Sol"],
+                  ["center", "Orta"],
+                  ["right", "Sağ"],
+                  ["full", "Tam"],
+                ] as const
+              ).map(([a, label]) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => {
+                    onUpdateProp(block.id, "align", a, true);
+                    if (a === "full") onUpdateProp(block.id, "width", "100%", true);
+                    onCommitHistory();
+                  }}
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition ${
+                    currentAlign === a
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+
+              {onOpenMediaPicker && (
+                <>
+                  <span className="mx-1 h-3.5 w-px bg-border" />
+                  <button
+                    type="button"
+                    onClick={() => onOpenMediaPicker(block.id)}
+                    className="rounded px-2 py-0.5 text-[10px] font-bold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                  >
+                    Görsel Değiştir 📷
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
