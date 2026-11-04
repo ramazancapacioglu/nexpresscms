@@ -7,6 +7,7 @@ import { registerIndexNow } from "@/lib/indexnow";
 import { pluginRegistry } from "@nexpress/core";
 import { installPluginGate } from "@/lib/plugin-state";
 import { SEO_BASIC_MANIFEST } from "./seo-basic";
+import { CAMPAIGNS_PLUGIN_MANIFEST } from "./campaigns";
 
 /**
  * Açık çekirdeğin tek kompozisyon kökü (çekirdek IndexNow dahil).
@@ -15,6 +16,7 @@ import { SEO_BASIC_MANIFEST } from "./seo-basic";
  */
 export function registerWorkspacePlugins(): void {
   pluginRegistry.register(SEO_BASIC_MANIFEST);
+  pluginRegistry.register(CAMPAIGNS_PLUGIN_MANIFEST);
   installPluginGate();
   registerIndexNow();
   // Yayında içeriği dizinler; gömme çağrısı yanıttan sonra çalışır (kayıt akışını bekletmez)

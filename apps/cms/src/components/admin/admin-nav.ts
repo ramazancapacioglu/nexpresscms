@@ -34,6 +34,7 @@ import {
   Plug,
   LifeBuoy,
   Archive,
+  Megaphone,
 } from "lucide-react";
 
 export interface NavItem {
@@ -158,6 +159,13 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: Store,
         count: "Kanal",
         shortcut: "G P",
+      },
+      {
+        href: "/admin/campaigns",
+        label: "Kampanyalar",
+        icon: Megaphone,
+        count: "Fırsatlar",
+        shortcut: "G K",
       },
     ],
   },
@@ -301,7 +309,7 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
   { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "Yeni içerik (Stüdyo)", count: undefined } }) },
-  { label: "Etkileşim & Satış", items: pick(["/admin/forms", "/admin/requests", "/admin/commerce", "/admin/commerce/marketplaces"]) },
+  { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/commerce/marketplaces"]) },
   {
     label: "Görünüm",
     items: [
@@ -329,6 +337,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/taxonomies": "admin.nav.taxonomies",
   "/admin/media": "admin.nav.media",
   "/admin/comments": "admin.nav.comments",
+  "/admin/campaigns": "admin.nav.campaigns",
   "/admin/translations": "admin.nav.translations",
   "/admin/schedule": "admin.nav.schedule",
   "/admin/trash": "admin.nav.trash",

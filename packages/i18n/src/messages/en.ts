@@ -46,6 +46,7 @@ export const en: Messages = {
       notifications: "Notifications",
       system: "System status",
       translations: "Translations",
+      campaigns: "Campaigns",
       forms: "Forms",
       requests: "Requests",
       commerce: "E-Commerce",

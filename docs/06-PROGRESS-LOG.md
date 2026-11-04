@@ -21,6 +21,32 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Bağımsız Kampanyalar & Fırsatlar Eklentisi (`@nexpress/plugin-campaigns`), Gelişmiş Kampanya Editörü ve 0-KB Vitrin
+- 🎁 **Eklenti Manifesti & Eklenti Merkezi Entegrasyonu (`apps/cms/src/plugins/campaigns.ts`, `register.ts`):**
+  - Kampanyalar blog içeriklerinden tamamen ayrılarak bağımsız bir eklenti modülü haline getirildi: `@nexpress/plugin-campaigns` ("Kampanyalar & Fırsatlar").
+  - Modüller: `manager` (yönetim), `schema` (Google Offer/ItemList JSON-LD), `countdown` (süre sayacı), `showcase` (`/kampanyalar` vitrini), `detail` (`/kampanya/[slug]` tekil sayfa), `widgets` (kampanya kartı ve duyuru blokları).
+  - `/admin/plugins` ekranında tek tıkla açılıp kapatılabilir, kiracı bazlı (`site_plugins`) çalışır.
+- 📣 **Sol Menü Navigasyonu (`apps/cms/src/components/admin/admin-nav.ts`, `@nexpress/i18n`):**
+  - Panel sol menüsünde "Etkileşim & Satış" grubuna doğrudan **Kampanyalar** (`/admin/campaigns`, `Megaphone` simgesi, kısayol `G K`) öğesi eklendi.
+  - Türkçe ve İngilizce i18n kataloglarına `admin.nav.campaigns` anahtarı eklendi.
+- 🎛️ **Gelişmiş Kampanya Yönetim Merkezi (`/admin/campaigns` & `/admin/campaigns/edit`):**
+  - **Liste Görünümü (`apps/cms/src/app/admin/campaigns/campaigns-client.tsx`):** Toplam, Aktif, Süresi Dolan ve Taslak metrik kartları; canlı arama; durum sekmeleri; afiş önizlemesi; indirim ve hediye rozetleri; kalan gün sayacı ("Son 5 Gün!"); tek tıkla çoğaltma, canlı sayfaya gitme ve silme aksiyonları.
+  - **5 Sekmeli Gelişmiş Editör (`apps/cms/src/app/admin/campaigns/edit/campaign-editor-client.tsx`):**
+    1. *Genel & Başlık:* Kampanya Adı, URL slug, Vurgu rozeti ("Yıl Sonu Fırsatı", "Sınırlı Kontenjan"), Kısa özet (TL;DR), Yayın durumu.
+    2. *Fırsat & Avantajlar:* İndirim oranı/tutarı (`%35`, `5.000 TL`), Hediye ürün/modül (`1 Yıllık QR Menü Hediyesi`), Hedef ürün adı ve URL'si (`Wolvox Restoran Programı` → `/wolvox-restoran`).
+    3. *Zamanlama & Şartlar:* Başlangıç ve bitiş tarihleri, süresiz kampanya seçeneği, hedef kitle, madde madde katılım şartları.
+    4. *Medya & CTA:* Afiş görseli, görsel alt metni, Eylem butonu metni ve URL'si (`/demo-talebi`), telefon arama bağlantısı, doğrudan WhatsApp destek butonu.
+    5. *Google SERP & Şema Önizlemesi:* Canlı Google zengin arama sonucu önizlemesi ve üretilen Schema.org Offer JSON-LD kod görünümü.
+  - **Server Actions (`apps/cms/src/app/admin/campaigns/actions.ts`):** `saveCampaignAction`, `deleteCampaignAction`, `duplicateCampaignAction`, `toggleCampaignStatusAction` — `requireUser({ audit })` ve `revalidatePath` güvencesiyle.
+- 🌐 **0-KB RSC Vitrin ve Detay Sayfaları (`/kampanyalar` ve `/kampanya/[slug]`):**
+  - **Arşiv Vitrini (`apps/cms/src/app/(public)/[locale]/kampanyalar/page.tsx`):** Hero başlık, aktif kampanyalar grid kartları, afiş, indirim rozeti, kalan gün sayacı, Google Schema.org `ItemList` JSON-LD şeması ve geçmiş kampanyalar arşivi.
+  - **Tekil Detay Sayfası (`apps/cms/src/app/(public)/[locale]/kampanya/[slug]/page.tsx`):** 2 kolonlu şık yerleşim; sol alanda afiş, başlık, rozetler, hediye kutusu, ACO/WordPress uyumlu şartlar tablosu (`aco-campaign-table`), madde madde kurallar ve zengin bloklar; sağ yapışkan (sticky) alanda indirim kutusu, kalan süre sayacı, "Hemen Teklif Al & Başvur" CTA butonu, WhatsApp ve telefon bağlantıları, diğer aktif kampanyalar listesi; Google Schema.org `Offer` JSON-LD şeması.
+- 🧩 **Çekirdek Veri & Şema Motoru (`packages/core/src/campaigns.ts`, `test/campaigns.test.ts`):**
+  - Hem modern alanları hem de WordPress/ACO uyumlu `camp_*` (`camp_discount`, `camp_gift`, `camp_product_name`, `camp_start`, `camp_end`, `camp_terms`) meta alanlarını otomatik birleştiren `resolveCampaignData`.
+  - `buildCampaignOfferJsonLd` (Offer şeması; geçerlilik sonu, hedef ürün `itemOffered`, organizasyon `seller`, süre dolunca otomatik `Discontinued` durumu).
+  - `buildCampaignsItemListJsonLd` (arşiv sayfası için ItemList şeması).
+- ✅ **Doğrulama:** 13 paketin tümünde `pnpm typecheck` ve 11 paketin tümünde `pnpm test` (201 core, 63 database testi) %100 başarılı.
+
 ### [2026-11-04] — Panel İçi Rota Geçiş Performansı, RSC Yük Optimizasyonu ve Anında İlerleme Çubuğu (Zero-Lag Admin UX)
 - 🚀 **Kenar Çubuğu Önceden Yükleme Fırtınasının Önlenmesi (`apps/cms/src/components/admin/admin-shell-client.tsx`):**
   - Panel sol menüsünde yer alan ~30 adet `<Link>` bağlantısına `prefetch={false}` eklendi.

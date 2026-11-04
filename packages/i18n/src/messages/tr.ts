@@ -49,6 +49,7 @@ export const tr = {
       notifications: "Bildirimler",
       system: "Sistem durumu",
       translations: "Çeviriler",
+      campaigns: "Kampanyalar",
       forms: "Formlar",
       requests: "Talepler",
       commerce: "E-Ticaret",
