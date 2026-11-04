@@ -715,6 +715,21 @@
 - ✅ **SEO/GEO/hız:** güvenlik başlıkları, `/og` sosyal görsel rotası, gerçek IndexNow bildirimi + `/indexnow-key.txt`, istek başına veri tekilleştirme, `image_figure` boyut/öncelik öznitelikleri. Ayrıntı: `docs/04` §6.
 - 📋 **Açık:** istekler arası önbellek, gerçek bot günlüğü, medya hattı, gerçek RAG, parçalı sitemap, migration, kalan büyük dosyalar. Bkz. `docs/12-ROADMAP.md`.
 
+### [2026-11-04] — Tasarım Stüdyosu, Temalar & Özelleştirici Sayfa Ayrımı, Menü Sürükle-Bırak & Mega Menü Modal
+- ✅ **Menülerde Sürükle-Bırak Ağaç Sıralaması (`/admin/appearance/menus`):**
+  - `MenuTree` bileşenine HTML5 drag-and-drop (`draggable`, visual outline drop indicator, `GripVertical` tutamacı) eklendi.
+  - Döngü korumalı (kendi altına taşınamaz) ve anında yerel/veritabanı hiyerarşisi güncellenen sıralama mantığı sağlandı.
+- ✅ **Mega Menü Kompakt Dialog Modal:**
+  - `MenuItemSettings` içindeki uzun dikey mega menü formu, yan çekmeceden bağımsız modern bir Dialog Modal'a (`isMegaModalOpen`) taşındı.
+  - Hazır şablonlar (3 Sütun Vitrin, 4 Sütun Mağaza), genişlik & sütun seçimi, promosyon afişi ve kart listesi modal içinde düzenlenip tek tıkla kaydedilebilir hale getirildi.
+- ✅ **Temalar & Tema Özelleştirici Kesin Sayfa Ayrımı:**
+  - `/admin/themes`: Temiz, ferah tema galerisi ve yönetim merkezi oluşturuldu (`ThemeGalleryView`). Aktif tema hero kartı ("✓ ETKİN TEMA", hızlı özelleştir butonu, sitede gör, .nxtheme indir), kullanılabilir temalar grid'i (Resmi + Yüklenen paketler), anında etkinleştirme, önizleme, dışa aktarma, silme ve `.nxtheme` sürükle-bırak yükleme alanı eklendi.
+  - `/admin/themes/customize`: Aktif temaya odaklanmış bağımsız canlı özelleştirici sayfası ayrıldı. Sol panelde renk paletleri, tipografi, sidebar ve yerleşim ayarları, header/footer; sağ panelde responsive canlı önizleme kanvası sunuldu.
+  - `APPEARANCE_TABS` ve `admin-nav.ts` güncellenerek "✨ Tasarım Stüdyosu", "Temalar", "Tema Özelleştirici", "Şablonlar", "Menüler", "Kenar Çubuğu" net bir navigasyon hiyerarşisine oturtuldu.
+  - `/admin/themes/packages` ve `/admin/design-library` rotaları sırasıyla `/admin/themes` ve `/admin/studio` rotalarına yönlendirildi.
+- ✅ **Kampanya Detay Sayfası İyileştirmesi:**
+  - Kampanya aksiyonları (`Hemen Teklif Al / WhatsApp / Telefon`) doğrudan bilgi tablosunun altına alındı; bitmesine kalan gün süresi görsel altındaki etiketlerin yanına taşındı ve global sidebar entegrasyonu tamamlandı.
+
 ### [2026-10-23] — Faz 6: WordPress → NexPress 1-Dakika Göç Aracı (`@nexpress/wp-importer`)
 - ✅ **`@nexpress/wp-importer` (`packages/wp-importer/src/index.ts`) oluşturuldu:**
   - `convertWpHtmlToNexPressBlocks`: Elementor (`[elementor-template]`), WPBakery (`[vc_row]`), Divi (`[et_pb_*]`) ve Gutenberg (`<!-- wp:* -->`) kısa kodlarını temizleyip saf 0-KB RSC `BlockNode[]` AST'ye, otomatik Answer-First `tldr` özetine ve `markdownCache` çıktısına dönüştürür.

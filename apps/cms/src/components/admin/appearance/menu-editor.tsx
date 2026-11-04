@@ -47,6 +47,33 @@ export function MenuEditor({ initial, lists, locale, locales, defaultLocale, has
     if (lastId) setSelectedId(lastId);
   };
 
+  const handleReorder = (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    const dHit = findMenuNode(items, draggedId);
+    const tHit = findMenuNode(items, targetId);
+    if (!dHit || !tHit) return;
+    if (findMenuNode([dHit.node], targetId)) return;
+
+    const without = removeMenuNode(items, draggedId);
+    const newTHit = findMenuNode(without, targetId);
+    if (!newTHit) {
+      edit(without);
+      return;
+    }
+
+    const parentId = newTHit.parent?.id ?? null;
+    let next: NavigationMenuItem[];
+    if (parentId === null) {
+      const idx = without.findIndex((n) => n.id === targetId);
+      const copy = [...without];
+      copy.splice(idx, 0, dHit.node as NavigationMenuItem);
+      next = copy;
+    } else {
+      next = addMenuNode(without, dHit.node, parentId);
+    }
+    edit(next);
+  };
+
   const save = () =>
     start(async () => {
       await saveChromeAction({ menuItems: items, locale });
@@ -189,6 +216,7 @@ export function MenuEditor({ initial, lists, locale, locales, defaultLocale, has
             selectedId={selectedId}
             lookup={lookup}
             onSelect={setSelectedId}
+            onReorder={handleReorder}
             onMove={(id, dir) => edit(moveMenuNode(items, id, dir))}
             onIndent={(id) => edit(indentMenuNode(items, id))}
             onOutdent={(id) => edit(outdentMenuNode(items, id))}

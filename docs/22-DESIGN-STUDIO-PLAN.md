@@ -80,3 +80,4 @@ flowchart TD
 - **0-KB RSC Kuralı:** Ziyaretçi tarafında React client bileşeni olmadan 100/100 performans.
 - **Sanitize Edilmiş CSS:** `@import "http..."`, `javascript:` ve zararlı fonksiyonlar sunucuda temizlenir.
 - **Audit Logging:** Kod ekleme/güncelleme işlemleri `requireAdmin("studio.saveCustomCode")` ve denetim günlüğü (`recordAudit`) ile korunur.
+

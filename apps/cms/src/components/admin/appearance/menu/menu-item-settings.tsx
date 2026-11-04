@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { MegaMenuConfig, MenuLookup, NavigationMenuItem } from "@nexpress/core";
 import { resolveMenuHref } from "@nexpress/core";
-import { Plus, Sparkles, Trash2 } from "lucide-react";
+import { Plus, Sparkles, Trash2, X, Sliders } from "lucide-react";
 import { IconPickerField } from "@/components/admin/editor/icon-picker-modal";
 
 const box = "w-full rounded border border-[#D5D8DE] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:ring-2 focus:ring-[#266DF0]/40 dark:border-[#2E333D] dark:bg-[#121317]";
@@ -68,8 +68,9 @@ const MEGA_PRESETS: Array<{ id: string; label: string; config: MegaMenuConfig }>
   },
 ];
 
-/** Seçili menü öğesinin ayarları + (yalnızca kök öğede) zengin mega menü yapılandırması. */
+/** Seçili menü öğesinin ayarları + (yalnızca kök öğede) açılır dialog modal ile zengin mega menü yapılandırması. */
 export function MenuItemSettings({ item, isRoot, hasChildren, lookup, onChange }: Props) {
+  const [isMegaModalOpen, setIsMegaModalOpen] = useState(false);
   const mega = item.megaMenu;
   const resolved = resolveMenuHref(item.source, item.href, lookup);
   const isCustom = !item.source || item.source.kind === "custom";
@@ -103,85 +104,319 @@ export function MenuItemSettings({ item, isRoot, hasChildren, lookup, onChange }
         <label className="block"><span className={cap}>Rozet</span><input value={item.badge ?? ""} onChange={(e) => onChange({ badge: e.target.value })} placeholder="Yeni / Pro" maxLength={20} className={box} /></label>
         <label className="flex items-end gap-2 pb-1.5"><input type="checkbox" checked={item.target === "_blank"} onChange={(e) => onChange({ target: e.target.checked ? "_blank" : "_self" })} /> Yeni sekmede aç</label>
       </div>
-      <label className="block"><span className={cap}>Kısa açıklama (mega menüde gösterilir)</span><input value={item.description ?? ""} onChange={(e) => onChange({ description: e.target.value })} maxLength={120} className={box} /></label>
+      <label className="block"><span className={cap}>Kısa açıklama</span><input value={item.description ?? ""} onChange={(e) => onChange({ description: e.target.value })} maxLength={120} className={box} /></label>
 
+      {/* Mega Menü Ayarları (Dialog Modal ile Açılır — Sayfayı ve Yan Paneli Uzatmaz) */}
       {isRoot && (
-        <fieldset className="space-y-3 rounded-lg border border-[#D5D8DE] p-3 dark:border-[#2E333D]">
-          <legend className="px-1 text-[13px] font-semibold">Mega menü</legend>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={Boolean(mega?.enabled)} onChange={(e) => (e.target.checked ? setMega({ enabled: true }) : onChange({ megaMenu: undefined }))} /> Bu öğe için mega menü kullan</label>
+        <div className="pt-3 border-t border-[#D5D8DE] dark:border-[#2E333D] space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-foreground">Mega Menü Düzeni</span>
+            {mega?.enabled ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">
+                AKTİF
+              </span>
+            ) : (
+              <span className="text-[11px] text-muted-foreground">Kapalı</span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsMegaModalOpen(true)}
+            className="w-full py-2 px-3 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition shadow-2xs"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Mega Menüyü Yapılandır (Modal)</span>
+          </button>
+        </div>
+      )}
 
-          {/* Hazır Mega Menü Şablonları */}
-          <div className="space-y-1.5 rounded-md bg-[#F8FAFC] p-2.5 dark:bg-[#181B22]">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
-              <Sparkles className="h-3.5 w-3.5" /> Hazır Mega Menü Düzeni Yükle
+      {/* MEGA MENÜ DIALOG MODAL */}
+      {isMegaModalOpen && isRoot && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[88vh] flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/40">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-blue-600" />
+                <h3 className="text-base font-bold text-foreground">
+                  {item.label} — Mega Menü Yapılandırması
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMegaModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              {MEGA_PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => onChange({ megaMenu: structuredClone(preset.config) })}
-                  className="rounded border border-[#D5D8DE] bg-white px-2.5 py-1.5 text-left text-[11px] font-medium hover:border-blue-500 dark:border-[#2E333D] dark:bg-[#121317]"
-                >
-                  {preset.label}
-                </button>
-              ))}
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+              <label className="flex items-center gap-2.5 font-semibold text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  checked={Boolean(mega?.enabled)}
+                  onChange={(e) =>
+                    e.target.checked
+                      ? setMega({ enabled: true })
+                      : onChange({ megaMenu: undefined })
+                  }
+                />
+                <span>Bu öğe için mega menüyü etkinleştir</span>
+              </label>
+
+              {mega?.enabled && (
+                <>
+                  {/* Hazır Mega Menü Şablonları */}
+                  <div className="space-y-2 rounded-xl bg-muted/40 p-3.5 border border-border">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+                      <Sparkles className="h-4 w-4" /> Hazır Düzen Şablonu Yükle
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {MEGA_PRESETS.map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => onChange({ megaMenu: structuredClone(preset.config) })}
+                          className="rounded-lg border border-border bg-card p-2.5 text-left text-xs font-semibold hover:border-blue-500 hover:shadow-2xs transition"
+                        >
+                          <div className="font-bold text-foreground">{preset.label}</div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
+                            {preset.config.columns} sütun • {preset.config.items.length} kart
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sütun & Genişlik */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <span className={cap}>İçerik Kaynağı</span>
+                      <select
+                        value={mega.mode ?? (mega.items.length > 0 ? "custom" : "children")}
+                        onChange={(e) => setMega({ mode: e.target.value as "children" | "custom" })}
+                        className={box}
+                      >
+                        <option value="children">Alt öğelerden (otomatik sütun)</option>
+                        <option value="custom">Özel İkonlu Kartlar</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <span className={cap}>Sütun Sayısı</span>
+                      <select
+                        value={mega.columns}
+                        onChange={(e) => setMega({ columns: Number(e.target.value) })}
+                        className={box}
+                      >
+                        {[1, 2, 3, 4].map((n) => (
+                          <option key={n} value={n}>
+                            {n} Sütun
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <span className={cap}>Genişlik</span>
+                      <select
+                        value={mega.width ?? "wide"}
+                        onChange={(e) => setMega({ width: e.target.value as "narrow" | "wide" | "full" })}
+                        className={box}
+                      >
+                        <option value="narrow">Dar (440 px)</option>
+                        <option value="wide">Geniş (760 px)</option>
+                        <option value="full">Tam Genişlik (1120 px)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Mod İçeriği */}
+                  {(mega.mode ?? (mega.items.length > 0 ? "custom" : "children")) === "children" ? (
+                    <div className="rounded-xl bg-muted/30 p-4 text-xs text-muted-foreground leading-relaxed border border-border">
+                      {hasChildren
+                        ? "Bu öğenin alt öğeleri sütun başlığı olur; onların alt öğeleri sütundaki bağlantılardır. Her alt öğeye simge ve açıklama ekleyebilirsiniz."
+                        : "Önce bu öğeye alt öğe ekleyin (öğeyi seçip bir sonrakini girintileyin) veya yukarıdan 'Özel İkonlu Kartlar' moduna geçin."}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-foreground">
+                          Özel Kartlar ({mega.items.length}/24)
+                        </span>
+                        <button
+                          type="button"
+                          disabled={mega.items.length >= 24}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline disabled:opacity-50"
+                          onClick={() =>
+                            setMega({
+                              items: [
+                                ...mega.items,
+                                {
+                                  id: `mc_${Date.now()}`,
+                                  label: "Yeni Kart",
+                                  href: "/tr",
+                                  icon: "sparkles",
+                                },
+                              ],
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4" /> Kart Ekle
+                        </button>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-[40vh] overflow-y-auto pr-1">
+                        {mega.items.map((c, i) => (
+                          <div
+                            key={c.id}
+                            className="space-y-2 rounded-xl border border-border bg-card p-3 shadow-2xs"
+                          >
+                            <div className="flex gap-2">
+                              <input
+                                placeholder="Kart başlığı"
+                                value={c.label}
+                                onChange={(e) =>
+                                  setMega({
+                                    items: mega.items.map((x, j) =>
+                                      j === i ? { ...x, label: e.target.value } : x
+                                    ),
+                                  })
+                                }
+                                className={box}
+                              />
+                              <button
+                                type="button"
+                                title="Kartı sil"
+                                className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 p-1.5 rounded-lg"
+                                onClick={() =>
+                                  setMega({
+                                    items: mega.items.filter((_, j) => j !== i),
+                                  })
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                placeholder="Adres (/tr/sayfa)"
+                                value={c.href}
+                                onChange={(e) =>
+                                  setMega({
+                                    items: mega.items.map((x, j) =>
+                                      j === i ? { ...x, href: e.target.value } : x
+                                    ),
+                                  })
+                                }
+                                className={`${box} font-mono text-xs`}
+                              />
+                              <input
+                                placeholder="Rozet (YENİ / PRO)"
+                                value={c.badge ?? ""}
+                                onChange={(e) =>
+                                  setMega({
+                                    items: mega.items.map((x, j) =>
+                                      j === i ? { ...x, badge: e.target.value || undefined } : x
+                                    ),
+                                  })
+                                }
+                                className={box}
+                              />
+                            </div>
+
+                            <IconPickerField
+                              value={c.icon ?? ""}
+                              onChange={(icon) =>
+                                setMega({
+                                  items: mega.items.map((x, j) =>
+                                    j === i ? { ...x, icon: icon || undefined } : x
+                                  ),
+                                })
+                              }
+                              placeholder="Simge seçin…"
+                            />
+
+                            <input
+                              placeholder="Kısa açıklama metni"
+                              value={c.description ?? ""}
+                              onChange={(e) =>
+                                setMega({
+                                  items: mega.items.map((x, j) =>
+                                    j === i ? { ...x, description: e.target.value } : x
+                                  ),
+                                })
+                              }
+                              className={box}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Alt Tanıtım Şeridi */}
+                  <div className="space-y-2 border-t border-border pt-3">
+                    <div className="text-xs font-bold text-foreground">
+                      Alt Tanıtım Şeridi (İsteğe Bağlı)
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        placeholder="Tanıtım Başlığı"
+                        value={promo.title}
+                        onChange={(e) =>
+                          setMega({ promoBanner: { ...promo, title: e.target.value } })
+                        }
+                        className={box}
+                      />
+                      <input
+                        placeholder="Alt Metin"
+                        value={promo.subtitle}
+                        onChange={(e) =>
+                          setMega({ promoBanner: { ...promo, subtitle: e.target.value } })
+                        }
+                        className={box}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        placeholder="Buton Metni"
+                        value={promo.ctaText}
+                        onChange={(e) =>
+                          setMega({ promoBanner: { ...promo, ctaText: e.target.value } })
+                        }
+                        className={box}
+                      />
+                      <input
+                        placeholder="Buton Adresi (/tr/kampanya)"
+                        value={promo.ctaHref}
+                        onChange={(e) =>
+                          setMega({ promoBanner: { ...promo, ctaHref: e.target.value } })
+                        }
+                        className={`${box} font-mono`}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-2.5 px-6 py-3 border-t border-border bg-muted/40">
+              <button
+                type="button"
+                onClick={() => setIsMegaModalOpen(false)}
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-2xs transition"
+              >
+                Tamamla ve Kapat
+              </button>
             </div>
           </div>
-
-          {mega?.enabled && (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="block"><span className={cap}>İçerik kaynağı</span>
-                  <select value={mega.mode ?? (mega.items.length > 0 ? "custom" : "children")} onChange={(e) => setMega({ mode: e.target.value as "children" | "custom" })} className={box}>
-                    <option value="children">Alt öğelerden (sütun = alt öğe)</option>
-                    <option value="custom">Özel İkonlu Kartlar</option>
-                  </select></label>
-                <label className="block"><span className={cap}>Sütun sayısı</span>
-                  <select value={mega.columns} onChange={(e) => setMega({ columns: Number(e.target.value) })} className={box}>{[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}</select></label>
-                <label className="col-span-2 block"><span className={cap}>Genişlik</span>
-                  <select value={mega.width ?? "wide"} onChange={(e) => setMega({ width: e.target.value as "narrow" | "wide" | "full" })} className={box}>
-                    <option value="narrow">Dar (440 px)</option><option value="wide">Geniş (760 px)</option><option value="full">Tam genişlik (1120 px)</option>
-                  </select></label>
-              </div>
-              {(mega.mode ?? (mega.items.length > 0 ? "custom" : "children")) === "children" ? (
-                <p className="rounded bg-[#F1F3F6] p-2 text-[12px] dark:bg-[#1C1F26]">{hasChildren ? "Bu öğenin alt öğeleri sütun başlığı olur; onların alt öğeleri sütundaki bağlantılardır. Her alt öğeye simge ve açıklama ekleyebilirsiniz." : "Önce bu öğeye alt öğe ekleyin (öğeyi seçip bir sonrakini girintileyin) veya yukarıdan 'Özel İkonlu Kartlar' moduna geçin."}</p>
-              ) : (
-                <div className="space-y-2">
-                  {mega.items.map((c, i) => (
-                    <div key={c.id} className="space-y-1.5 rounded border border-[#D5D8DE] p-2.5 dark:border-[#2E333D]">
-                      <div className="flex gap-2">
-                        <input aria-label="Kart başlığı" placeholder="Kart başlığı" value={c.label} onChange={(e) => setMega({ items: mega.items.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} className={box} />
-                        <button type="button" aria-label="Kartı sil" className="text-red-600" onClick={() => setMega({ items: mega.items.filter((_, j) => j !== i) })}><Trash2 className="h-4 w-4" /></button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input aria-label="Kart adresi" placeholder="/tr/sayfa" value={c.href} onChange={(e) => setMega({ items: mega.items.map((x, j) => (j === i ? { ...x, href: e.target.value } : x)) })} className={`${box} font-mono`} />
-                        <input aria-label="Kart rozeti" placeholder="Rozet (YENİ / PRO)" value={c.badge ?? ""} onChange={(e) => setMega({ items: mega.items.map((x, j) => (j === i ? { ...x, badge: e.target.value || undefined } : x)) })} className={box} />
-                      </div>
-                      <IconPickerField
-                        value={c.icon ?? ""}
-                        onChange={(icon) => setMega({ items: mega.items.map((x, j) => (j === i ? { ...x, icon: icon || undefined } : x)) })}
-                        placeholder="Kart simgesi seçin…"
-                      />
-                      <input aria-label="Kart açıklaması" placeholder="Kısa açıklama" value={c.description ?? ""} onChange={(e) => setMega({ items: mega.items.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })} className={box} />
-                    </div>
-                  ))}
-                  <button type="button" disabled={mega.items.length >= 24} className="inline-flex items-center gap-1 text-[12px] font-medium underline disabled:opacity-50" onClick={() => setMega({ items: [...mega.items, { id: `mc_${Date.now()}`, label: "Yeni Kart", href: "/tr", icon: "sparkles" }] })}><Plus className="h-3.5 w-3.5" /> Mega menüye kart ekle</button>
-                </div>
-              )}
-              <div className="space-y-1.5 border-t border-[#D5D8DE] pt-2 dark:border-[#2E333D]">
-                <div className="text-[12px] font-semibold">Alt tanıtım şeridi (isteğe bağlı)</div>
-                <input aria-label="Tanıtım başlığı" placeholder="Başlık" value={promo.title} onChange={(e) => setMega({ promoBanner: { ...promo, title: e.target.value } })} className={box} />
-                <input aria-label="Tanıtım alt metni" placeholder="Alt metin" value={promo.subtitle} onChange={(e) => setMega({ promoBanner: { ...promo, subtitle: e.target.value } })} className={box} />
-                <div className="grid grid-cols-2 gap-2">
-                  <input aria-label="Düğme metni" placeholder="Düğme metni" value={promo.ctaText} onChange={(e) => setMega({ promoBanner: { ...promo, ctaText: e.target.value } })} className={box} />
-                  <input aria-label="Düğme adresi" placeholder="/tr/kampanya" value={promo.ctaHref} onChange={(e) => setMega({ promoBanner: { ...promo, ctaHref: e.target.value } })} className={`${box} font-mono`} />
-                </div>
-                {promo.title ? <button type="button" className="text-[12px] underline" onClick={() => setMega({ promoBanner: undefined })}>Tanıtım şeridini kaldır</button> : null}
-              </div>
-            </>
-          )}
-        </fieldset>
+        </div>
       )}
     </div>
   );

@@ -52,14 +52,13 @@ export const SEO_TABS: SectionTab[] = [
 
 export const APPEARANCE_TABS: SectionTab[] = [
   { href: "/admin/studio", label: "✨ Tasarım Stüdyosu", match: [] },
-  { href: "/admin/themes", label: "Temalar & Özelleştirici", match: [] },
+  { href: "/admin/themes", label: "Temalar", match: [] },
+  { href: "/admin/themes/customize", label: "Tema Özelleştirici", match: [] },
   { href: "/admin/appearance/templates", label: "Şablonlar & Modeller" },
-  { href: "/admin/design-library", label: "AI & Tasarım Kütüphanesi" },
-  { href: "/admin/themes/packages", label: "Tema Paketleri" },
   { href: "/admin/appearance/menus", label: "Menüler" },
+  { href: "/admin/appearance/sidebar", label: "Kenar Çubuğu" },
   { href: "/admin/appearance/header", label: "Header" },
   { href: "/admin/appearance/footer", label: "Footer" },
-  { href: "/admin/appearance/sidebar", label: "Kenar Çubuğu" },
 ];
 
 export const SeoTabs = () => <SectionTabs tabs={SEO_TABS} label="SEO bölümleri" />;

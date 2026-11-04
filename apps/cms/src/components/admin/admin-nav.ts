@@ -195,10 +195,17 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
       },
       {
         href: "/admin/themes",
-        label: "Tema & Özelleştirici",
+        label: "Temalar",
+        icon: Sparkles,
+        count: "Galeri",
+        shortcut: "G T",
+      },
+      {
+        href: "/admin/themes/customize",
+        label: "Tema Özelleştirici",
         icon: Palette,
         count: "Canlı",
-        shortcut: "G T",
+        shortcut: "G O",
       },
       {
         href: "/admin/seo/audit",
@@ -327,7 +334,11 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Görünüm",
     items: [
-      ...pick(["/admin/studio", "/admin/themes"], { "/admin/studio": { label: "Tasarım Stüdyosu", count: undefined }, "/admin/themes": { label: "Tema & Görünüm", count: undefined } }),
+      ...pick(["/admin/studio", "/admin/themes", "/admin/themes/customize"], {
+        "/admin/studio": { label: "Tasarım Stüdyosu", count: undefined },
+        "/admin/themes": { label: "Temalar", count: undefined },
+        "/admin/themes/customize": { label: "Tema Özelleştirici", count: undefined },
+      }),
       ...pick(["/admin/themes/packages", "/admin/appearance/templates", "/admin/appearance/menus", "/admin/appearance/header", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"].filter((h) => ITEM_BY_HREF.has(h)), {}).map((i) => ({ ...i, sidebar: false })),
     ],
   },
