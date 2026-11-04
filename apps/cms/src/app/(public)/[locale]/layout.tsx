@@ -242,6 +242,12 @@ export default async function PublicLocaleLayout({
     >
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
       {skin?.css ? <style dangerouslySetInnerHTML={{ __html: skin.css }} /> : null}
+      {resolvedCustomizer.customCss ? (
+        <style id="nx-custom-css" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.customCss }} />
+      ) : null}
+      {resolvedCustomizer.headerScripts ? (
+        <div id="nx-header-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.headerScripts }} />
+      ) : null}
       {preview ? (
         <div role="status" className="bg-amber-100 px-3 py-1 text-center text-xs font-medium text-amber-900">
           {t("site.themePreview", { id: preview.themeId })}
@@ -335,6 +341,9 @@ export default async function PublicLocaleLayout({
       ) : (
         <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} />
       )}
+      {resolvedCustomizer.footerScripts ? (
+        <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
+      ) : null}
     </div>
   );
 }

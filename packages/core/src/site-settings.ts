@@ -150,6 +150,8 @@ export interface SiteCustomizerSettings {
     showImage: boolean;
   };
   customCss: string;
+  headerScripts?: string;
+  footerScripts?: string;
 }
 
 /** Genel site ayarları (`/admin/settings`). Kurum kimliği/sameAs SEO ayarlarındadır. */
@@ -295,6 +297,8 @@ export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
     showImage: true,
   },
   customCss: "",
+  headerScripts: "",
+  footerScripts: "",
 };
 
 function mergeSection<T extends object>(base: T, override: unknown): T {
@@ -329,6 +333,8 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       pageTitle: mergeSection(d.pageTitle, c.pageTitle),
       archive: mergeSection(d.archive, c.archive),
       customCss: typeof c.customCss === "string" ? c.customCss : d.customCss,
+      headerScripts: typeof c.headerScripts === "string" ? c.headerScripts : "",
+      footerScripts: typeof c.footerScripts === "string" ? c.footerScripts : "",
     },
   };
 }

@@ -55,6 +55,8 @@ export const tr = {
       commerce: "E-Ticaret",
       marketplaces: "Pazar yerleri",
       themes: "Tema & Özelleştirici",
+      designStudio: "Tasarım Stüdyosu",
+      templates: "Şablonlar & Modeller",
       seo: "SEO",
       header: "Header",
       menus: "Menü",

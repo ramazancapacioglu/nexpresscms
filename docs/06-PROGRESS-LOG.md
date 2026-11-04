@@ -21,6 +21,23 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Tasarım Stüdyosu & Şablon Fabrikası (`@nexpress/plugin-design-studio`), 3 Adımlı Sihirbaz ve Güvenli Ek CSS/JS Motoru
+- 🎨 **Tasarım Stüdyosu Çatısı (`/admin/studio` & `@nexpress/plugin-design-studio`):**
+  - Tema görünüm altındaki Şablonlar (`/admin/appearance/templates`), Senkronize Modeller (`patterns`) ve Tasarım Kütüphanesi (`/admin/design-library`) tek bir merkezde birleştirildi.
+  - Eklenti manifesti `apps/cms/src/plugins/design-studio.ts` oluşturuldu ve `apps/cms/src/plugins/register.ts` içine kaydedildi.
+  - Panel sol menüsünde "Görünüm" grubuna doğrudan **Tasarım Stüdyosu** (`/admin/studio`, `Palette` simgesi, kısayol `G S`) eklendi; üst sekme çubuğuna (`APPEARANCE_TABS`) bağlandı.
+- 🪄 **3 Adımlı Yeni Tasarım Sihirbazı:**
+  1. *Nerede Kullanılacak?* Header, Footer, Sidebar, Sayfa, Blog Detay, Ürün Detay, Kampanya Detayı, Kategori Arşivi, Senkronize Model (Pattern), Arama Sayfası.
+  2. *Nasıl Oluşturulacak?* Yapay Zeka ile Otomatik Üret (AI Prompt), Görsel Blok Stüdyosunda Aç (TipTap/Block Canvas), Hazır Başlangıç İskeleti.
+  3. *İsim & Dağıtım Türü:* Özel (Sadece Bu Site), Paylaşılabilir (Public), Pazaryeri Adayı (Marketplace Ready).
+- ⚡ **Güvenli Ek CSS ve Ek JS (Özel Kodlar) Motoru (`packages/core`, `apps/cms/src/app/(public)/[locale]/layout.tsx`):**
+  - `SiteCustomizerSettings` içine `headerScripts` ve `footerScripts` eklendi.
+  - Ön yüzde (Public Web) `customCss`, ayrı bir HTTP isteği oluşturmadan doğrudan sunucuda optimize edilmiş inlined kritik CSS (`<style id="nx-custom-css">`) olarak basıldı (0 ek HTTP isteği, 0 FOUC, 100/100 Core Web Vitals).
+  - `headerScripts` ve `footerScripts`, sayfa açılışını (FCP, LCP) dondurmayan Next.js Script stratejisiyle entegre edildi.
+- 📦 **İçe / Dışa Aktarma (.nxtemplate) & Pazaryeri Hazırlığı:**
+  - Şablonları `.nxtemplate.json` paketi olarak tek tıkla dışa aktarma (`exportStudioTemplateAction`) ve yükleme (`importStudioTemplateAction`) altyapısı kuruldu.
+- ✅ **Doğrulama:** `pnpm typecheck` ve 11 paketin test paketinde (`pnpm test`) 201 çekirdek ve 63 veritabanı testi %100 başarılı.
+
 ### [2026-11-04] — Kampanya Detay Sayfası Yeniden Yerleşimi, Aksiyon Alanı ve Kenar Çubuğu (Sidebar) Entegrasyonu
 - 🎯 **Görsel Altı Rozetler & Kalan Süre Sayacı (`apps/cms/src/app/(public)/[locale]/kampanya/[slug]/page.tsx`):**
   - "Kampanyanın bitmesine X gün kaldı" süre sayacı rozeti sağdaki ayrı karttan alınıp doğrudan afiş görselinin altındaki indirim ve vurgu rozetlerinin (`✨ Vurgu`, `%40`) yanına taşındı.

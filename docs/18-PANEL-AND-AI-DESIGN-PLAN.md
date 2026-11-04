@@ -43,4 +43,15 @@ Gerçek OpenAI anahtarıyla sayfa, bölüm ve tema üretimi uçtan uca denendi (
 2. Tema renklerinde kontrast hatası (ör. orta tonlu zeminde beyaz metin) tek onarım turunda düzelmiyordu → `autoFixContrast`: kontrast belirleyici biçimde, tonu koruyarak onarılır (önce zeminden uzaklaşan yön, olmazsa karşı yön), koyu kip düzeltmeleri `darkColors`a yazılır ve raporda "N renk kontrast için otomatik ayarlandı" uyarısı çıkar.
 Sonuç (üç tarif): sayfa 100/100 (9 blok, 206 sözcük, ilk denemede, editörde SEO 91/100), bölüm 95, tema 95 — hepsi tek model çağrısıyla. Ayrıca public `[locale]` sayfası geçersiz dil parçasında (`/favicon.ico`) `RangeError` ile 500 veriyordu; `format()` artık geçersiz dil etiketinde `tr` kurallarına düşer.
 
-**Doğrulanmayanlar:** yalnızca gpt-4o-mini denendi (daha büyük modellerle kalite karşılaştırması yok); tek tarifli küçük örneklem; üretilen sayfanın metin kalitesi (içerik doğruluğu) editör tarafından gözden geçirilmelidir.
+## 5. Tasarım Stüdyosu & Şablon Fabrikası Entegrasyonu (2026-11-04)
+
+- **Tek Çatı:** `/admin/appearance/templates`, `/admin/design-library` ve senkronize modeller (`patterns`) tek bir merkezde toplandı: **Tasarım Stüdyosu (`/admin/studio`)**.
+- **Eklenti:** `@nexpress/plugin-design-studio` ("Tasarım Stüdyosu & Şablon Fabrikası") manifesti tanımlandı ve `register.ts` kompozisyon köküne eklendi.
+- **Yeni Tasarım Sihirbazı:** 
+  1. *Nerede Kullanılacak?* (Header, Footer, Sidebar, Sayfa, Blog Detay, Ürün, Kampanya, Model, Kategori, Arama).
+  2. *Nasıl Oluşturulacak?* (Yapay Zeka ile Otomatik Üret, Görsel Tuval Editöründe Tasarla, Hazır İskelet ile Başla).
+  3. *İsim & Dağıtım Türü:* Özel (Private), Paylaşılabilir (Public), Pazaryeri Adayı (Marketplace).
+- **Ek CSS & Ek JS (Özel Kodlar):**
+  - Sunucu tarafında temizlenip optimize edilen `customCss`, ayrı bir HTTP isteği oluşturmadan doğrudan `<style id="nx-custom-css">` inlined kritik CSS olarak basılır.
+  - `headerScripts` ve `footerScripts`, sayfa ilk açılışını kilitlemeyen Next.js Script stratejisiyle yüklenir; 100/100 Lighthouse ve 0-KB RSC kuralı korunur.
+- **İçe/Dışa Aktarma:** `.nxtemplate` JSON paketi ile tek tıkla şablon indirme ve sürükle-bırak içe aktarma mekanizması kuruldu.

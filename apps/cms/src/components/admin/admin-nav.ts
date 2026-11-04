@@ -173,6 +173,20 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "Tasarım & Motorlar",
     items: [
       {
+        href: "/admin/studio",
+        label: "Tasarım Stüdyosu",
+        icon: Palette,
+        count: "Merkez",
+        shortcut: "G S",
+      },
+      {
+        href: "/admin/appearance/templates",
+        label: "Şablonlar & Modeller",
+        icon: Sparkles,
+        count: "Fabrika",
+        shortcut: "G T",
+      },
+      {
         href: "/admin/design-library",
         label: "Tasarım Kütüphanesi",
         icon: Wand2,
@@ -313,8 +327,8 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Görünüm",
     items: [
-      ...pick(["/admin/themes"], { "/admin/themes": { label: "Tema & Görünüm", count: undefined } }),
-      ...pick(["/admin/themes/packages", "/admin/appearance/menus", "/admin/appearance/header", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"].filter((h) => ITEM_BY_HREF.has(h)), {}).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/studio", "/admin/themes"], { "/admin/studio": { label: "Tasarım Stüdyosu", count: undefined }, "/admin/themes": { label: "Tema & Görünüm", count: undefined } }),
+      ...pick(["/admin/themes/packages", "/admin/appearance/templates", "/admin/appearance/menus", "/admin/appearance/header", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"].filter((h) => ITEM_BY_HREF.has(h)), {}).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   {
@@ -344,6 +358,8 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/redirects": "admin.nav.redirects",
   "/admin/system": "admin.nav.system",
   "/admin/notifications": "admin.nav.notifications",
+  "/admin/studio": "admin.nav.designStudio",
+  "/admin/appearance/templates": "admin.nav.templates",
   "/admin/design-library": "admin.nav.designLibrary",
   "/admin/seo/audit": "admin.nav.seoAudit",
   "/admin/integrations": "admin.nav.integrations",

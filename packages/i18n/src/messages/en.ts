@@ -52,6 +52,8 @@ export const en: Messages = {
       commerce: "E-Commerce",
       marketplaces: "Marketplaces",
       themes: "Theme & Customizer",
+      designStudio: "Design Studio",
+      templates: "Templates & Models",
       seo: "SEO",
       header: "Header",
       menus: "Menus",
