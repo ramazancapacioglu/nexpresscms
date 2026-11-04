@@ -184,6 +184,7 @@ export const BLOCK_TYPES = [
   "shape_divider",
   "anchor_nav",
   "synced_pattern",
+  "campaign_showcase",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 

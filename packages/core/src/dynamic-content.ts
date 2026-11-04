@@ -5,10 +5,26 @@ import type { BlockNode } from "./types";
  * Veri okuma uygulamada (`lib/dynamic-content.ts`); burada veritabanı yoktur. Sonuç her istekte güncel veriden üretilir
  * (Markdown önbelleğine girmez).
  */
-export type DynamicSource = "posts" | "pages" | "products";
+export type DynamicSource = "posts" | "pages" | "products" | "campaigns";
 export type DynamicOrder = "newest" | "oldest" | "title";
 export type DynamicLayout = "cards" | "list" | "carousel";
 export type DynamicCardStyle = "default" | "minimal" | "overlay" | "featured";
+
+export interface CampaignShowcaseProps {
+  heading?: string;
+  subheading?: string;
+  layout?: "carousel" | "grid" | "spotlight" | "ticker";
+  limit?: number;
+  columns?: number;
+  filter?: "active" | "all";
+  showDiscountBadge?: boolean;
+  showCountdown?: boolean;
+  showGift?: boolean;
+  showCta?: boolean;
+  showWhatsapp?: boolean;
+  showPhone?: boolean;
+  emptyText?: string;
+}
 
 export interface DynamicQuery {
   source: DynamicSource;
@@ -60,7 +76,7 @@ export function termSlug(input: string): string {
 /** Blok özelliklerinden güvenli sorgu: bilinmeyen/bozuk değerler varsayılana düşer, sınırlar uygulanır. */
 export function normalizeDynamicQuery(props: Record<string, unknown> | null | undefined): DynamicQuery {
   const p = props ?? {};
-  const source: DynamicSource = p.source === "pages" || p.source === "products" ? p.source : "posts";
+  const source: DynamicSource = p.source === "pages" || p.source === "products" || p.source === "campaigns" ? p.source : "posts";
   const n = Math.round(Number(p.limit));
   const limit = n >= 1 ? Math.min(DYNAMIC_MAX_ITEMS, n) : 6; // geçersiz/olumsuz sayı varsayılana düşer
   return {
@@ -103,6 +119,16 @@ export interface DynamicCandidate {
   price?: string;
   /** Ürünler için kuruş cinsinden fiyat (süzgeç için; öğeye taşınmaz) */
   priceCents?: number;
+  /** Kampanyalar için indirim, hediye, süre ve iletişim alanları */
+  badge?: string;
+  discount?: string;
+  gift?: string;
+  daysRemaining?: number | null;
+  isExpired?: boolean;
+  ctaText?: string;
+  ctaUrl?: string;
+  contactWhatsapp?: string;
+  contactPhone?: string;
 }
 
 export type DynamicItem = Omit<DynamicCandidate, "categories" | "tags" | "kind" | "priceCents">;
@@ -142,10 +168,10 @@ function filterDynamicCandidates(candidates: DynamicCandidate[], q: DynamicQuery
   return sortCandidates(out, q.orderBy);
 }
 
-/** Bloklar arasında (iç içe dahil) dinamik liste bloklarını bulur. */
+/** Bloklar arasında (iç içe dahil) dinamik liste ve kampanya vitrini bloklarını bulur. */
 export function collectDynamicBlocks(blocks: BlockNode[], into: BlockNode[] = []): BlockNode[] {
   for (const b of blocks) {
-    if (b.type === "dynamic_list") into.push(b);
+    if (b.type === "dynamic_list" || b.type === "campaign_showcase") into.push(b);
     if (Array.isArray(b.children)) collectDynamicBlocks(b.children as BlockNode[], into);
   }
   return into;

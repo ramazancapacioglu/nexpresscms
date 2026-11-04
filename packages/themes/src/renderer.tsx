@@ -21,6 +21,7 @@ import { INK_GRID_ID } from "./ink-grid";
 import { DynamicListView } from "./dynamic-list";
 import { renderTemplateBlock } from "./blocks-template";
 import { SchemaCardView } from "./schema-card";
+import { CampaignShowcaseView } from "./campaign-showcase";
 import type { TemplateRenderContext } from "./block-template-context";
 
 export interface RscBlockRendererProps {
@@ -149,6 +150,17 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
   if (input.block.type === "dynamic_list") {
     return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id]?.items ?? []} meta={input.dynamic?.[input.block.id]?.meta} tokens={input.tokens} locale={input.locale} />;
+  }
+  if (input.block.type === "campaign_showcase") {
+    return (
+      <CampaignShowcaseView
+        props={input.block.props}
+        items={input.dynamic?.[input.block.id]?.items}
+        tokens={input.tokens}
+        locale={input.locale}
+        preview={input.preview}
+      />
+    );
   }
   const ctx: BlockRenderContext = {
     ...input,

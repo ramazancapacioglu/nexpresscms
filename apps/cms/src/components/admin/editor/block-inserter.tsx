@@ -76,6 +76,7 @@ const BLOCK_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   dynamic_list: Grid,
   product_row: ShoppingBag,
   product_embed: ShoppingBag,
+  campaign_showcase: Megaphone,
 };
 
 export interface BlockInserterProps {

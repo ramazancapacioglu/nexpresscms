@@ -8,9 +8,10 @@ import { IconPickerField } from "./icon-picker-modal";
 import { SchemaFields } from "./schema-fields";
 import { QuickAnchorIdField, SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
+import { CampaignShowcaseFields } from "./campaign-showcase-fields";
 
 /** Kendi özel alan arayüzü olan (veya düzenlenecek alanı olmayan) bloklar; kalan her blok şema tabanlı alanlarla düzenlenir. */
-const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element", "anchor_nav"]);
+const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element", "anchor_nav", "campaign_showcase"]);
 import { COLUMN_LAYOUT_PRESETS } from "./studio-model";
 import { useStudioInspector } from "./studio-inspector-context";
 import {
@@ -36,6 +37,7 @@ export function BlockGeneralTab() {
                         <div className="space-y-3">
                           {(selectedBlock.type === "paragraph" || selectedBlock.type === "heading" || selectedBlock.type === "paragraph_element" || selectedBlock.type === "heading_element") && <AiComposePanel />}
                           {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
+                          {selectedBlock.type === "campaign_showcase" && <CampaignShowcaseFields />}
                           {selectedBlock.type === "schema_card" && <SchemaCardFields />}
                           {selectedBlock.type === "section" && <SectionFields />}
                           {selectedBlock.type === "anchor_nav" && <AnchorNavFields />}

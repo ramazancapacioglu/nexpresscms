@@ -88,6 +88,8 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   marquee: "Kayan yazı şeridi",
   shape_divider: "Şekil ayırıcı",
   anchor_nav: "Yapışkan çapa menüsü",
+  synced_pattern: "Senkronize model",
+  campaign_showcase: "Kampanya Vitrini",
 };
 
 export interface ColumnLayoutPreset {

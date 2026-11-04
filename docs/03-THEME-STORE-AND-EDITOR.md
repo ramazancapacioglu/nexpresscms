@@ -138,6 +138,7 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 ## Editör: kitaplık, sürükle-bırak, önizleme (2026-11-03)
 - **Üst çubuk:** *Önizle* son kaydedilmiş taslağı imzalı, 1 günlük bağlantıyla yeni sekmede açar (`createDraftPreviewLinkAction`); *Göster* gerçek yayın adresini (`/{locale}/{slug}`) açar ve yalnızca yayındayken etkindir.
 - **Kitaplık (`+ Blok & Satır`):** `packages/editor/src/block-catalog.ts` — `BLOCK_CATALOG` (kategorili bloklar), `ROW_TEMPLATES` + `buildRow` (satır düzenleri), `searchCatalog`. Yeni blok eklemek için buraya bir giriş yazılır; props, ilgili blok oluşturucusunun okuduğu alanlarla uyumlu olmalıdır.
+- **Kampanya Vitrini Bloğu (`campaign_showcase` — 2026-11-04):** İstediğimiz sayfada (Ana Sayfa, Açılış Sayfası, Ürün, vb.) kampanyaları listelemek için 4 farklı yerleşim modu sunar: `carousel` (saf CSS snap-scroll atlıkarınca, 0-KB istemci JS), `grid` (2–4 sütun), `spotlight` (büyük öne çıkan kart, sayaç ve doğrudan WhatsApp/Telefon butonları), `ticker` (indirim şeridi). `CampaignShowcaseFields` denetçisi ile tüm detaylar görsel olarak yönetilir.
 - **Sürükle-bırak:** `apps/cms/src/components/admin/editor/dnd.tsx` (`EditorDnd`, `DropZone`); kitaplık parçası (`block-inserter.tsx`), tuval başlık çubukları (`canvas-block.tsx`) ve gezgin (`block-outline.tsx`) kaynaktır. Bırakma `handleDropBlock` → çekirdekte `moveBlockTo` / `placeNewBlock`. Yerel HTML5 DnD; bağımlılık eklenmedi.
 
 ## Stil motoru v2 (2026-11-03)

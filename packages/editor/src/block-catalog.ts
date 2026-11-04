@@ -216,6 +216,21 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
 
   item("product_row", "Ürün şeridi", "commerce", "3'lü ürün kartları", node("product_row", { title: "Öne çıkanlar", items: items3("Ürün").map((s) => ({ title: s.title, excerpt: s.text, price: "0 TL", image: "", href: "" })) })),
   item("product_embed", "Ürün kartı", "commerce", "Product şeması bağlı", node("product_embed", { productName: "Ürün adı", sku: "", price: "", summary: "Kısa açıklama." })),
+  item("campaign_showcase", "Kampanya Vitrini", "commerce", "Slide, karosel, ızgara veya banner biçiminde aktif kampanyalar", node("campaign_showcase", {
+    heading: "Özel Kampanyalar & Fırsatlar",
+    subheading: "Sınırlı süre geçerli indirim ve avantajları kaçırmayın",
+    layout: "carousel",
+    limit: 6,
+    columns: 3,
+    filter: "active",
+    showDiscountBadge: true,
+    showCountdown: true,
+    showGift: true,
+    showCta: true,
+    showWhatsapp: false,
+    showPhone: false,
+    emptyText: "Şu anda yayında aktif bir kampanya bulunmamaktadır.",
+  })),
 ];
 
 /** Ada, ipucuna ve kategoriye göre süzer (büyük/küçük harf ve Türkçe i/ı duyarsız, tam/önek eşleşmeler öncelikli). */

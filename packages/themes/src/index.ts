@@ -8,3 +8,4 @@ export * from "./responsive-image";
 export * from "./dynamic-list";
 export * from "./block-template-context";
 export * from "./schema-card";
+export * from "./campaign-showcase";

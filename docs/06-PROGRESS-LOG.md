@@ -21,6 +21,24 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-04] — Çok Modlu Kampanya Vitrini Bloğu (`campaign_showcase`: Karosel/Slide, Izgara, Vitrin Kartı, İndirim Şeridi)
+- 🎁 **Dinamik Kampanya Vitrini Bloğu (`campaign_showcase`):**
+  - Kullanıcının "istediğimiz sayfada, slide, karosel gibi çeşitli gösterimler için blok" talebi doğrultusunda hem Görsel Editör stüdyosuna hem de 0-KB RSC ön yüz motoruna eklendi.
+  - Desteklenen 4 Farklı Gösterim Modu:
+    1. **Karosel / Slide (`carousel`):** %100 saf CSS scroll-snap tabanlı (`snap-x snap-mandatory overflow-x-auto scrollbar-none`), 0-KB istemci JS yüküyle tarayıcıda akıcı yatay kaydırma, 2–4 sütun oranları, touch/trackpad/swipe desteği.
+    2. **Izgara (`grid`):** 2, 3 veya 4 sütunlu duyarlı kart ızgarası.
+    3. **Öne Çıkan Vitrin Kartı (`spotlight`):** Büyük afiş görseli, indirim rozeti, geri sayım kutusu, hediye avantaj kutusu, teklif alma ve doğrudan WhatsApp/Telefon butonları ile yüksek dönüşümlü hero banner.
+    4. **İndirim Şeridi (`ticker`):** Sayfa üstü veya bölümler arasına konulabilen kayan/sabit indirim bandı ve hızlı teklif yakalama hapı.
+- ⚙️ **Gelişmiş Stüdyo Denetçisi (`CampaignShowcaseFields`):**
+  - `apps/cms/src/components/admin/editor/campaign-showcase-fields.tsx` oluşturuldu.
+  - Başlık, alt başlık, yerleşim modu hapları, sütun sayısı, limit slider (1–12), filtre kuralı (Yalnızca Aktif / Tümü), indirim rozeti, kalan gün sayacı, hediye bilgisi, CTA butonu, WhatsApp butonu, telefon butonu ve boş durum metni anahtarları eklendi.
+- ⚡ **Otomatik Dinamik Çözümleme (`apps/cms/src/lib/dynamic-content.ts`):**
+  - `loadDynamicData` ve `getDynamicCandidates` fonksiyonları `c.type === "campaign"` ve kampanya meta alanlarını içeren içerikleri `resolveCampaignData` ile çözümleyerek `DynamicCandidate` havuzuna (`kind: "campaigns"`) aldı.
+  - Ziyaretçi sayfalarında veritabanındaki aktif kampanyalar otomatik filtrelenip blok içine teslim edilir; editör kanvasında ise zengin `SAMPLE_CAMPAIGNS` ile anında canlı önizleme sunulur.
+- 🧪 **Doğrulama & Testler:**
+  - `packages/themes/test/campaign-showcase.test.tsx` eklenerek carousel, spotlight, ticker, preview modları ve `RscSingleBlock` entegrasyonu test edildi.
+  - Monorepo genelinde 11 paketin tüm testleri (`pnpm test`) ve tip denetimleri (`pnpm typecheck`) 0 hata ile geçti.
+
 ### [2026-11-04] — Tasarım Stüdyosu & Şablon Fabrikası (`@nexpress/plugin-design-studio`), 3 Adımlı Sihirbaz ve Güvenli Ek CSS/JS Motoru
 - 🎨 **Tasarım Stüdyosu Çatısı (`/admin/studio` & `@nexpress/plugin-design-studio`):**
   - Tema görünüm altındaki Şablonlar (`/admin/appearance/templates`), Senkronize Modeller (`patterns`) ve Tasarım Kütüphanesi (`/admin/design-library`) tek bir merkezde birleştirildi.
