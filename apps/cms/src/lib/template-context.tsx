@@ -1,6 +1,7 @@
 import "server-only";
 import React from "react";
 import type { DesignTokens, NavigationMenuItem } from "@nexpress/core";
+import { createTranslator } from "@nexpress/i18n";
 import type { TemplateRenderContext } from "@nexpress/themes";
 import { DesktopNav, MenuList, MobileNav } from "@/components/public/site-nav";
 
@@ -27,7 +28,7 @@ export function buildTemplateContext(i: Input): TemplateRenderContext {
           horizontal: (
             <>
               <DesktopNav menu={i.menu} tokens={i.tokens} ink={false} align="left" />
-              <MobileNav menu={i.menu} label={i.menuLabel} />
+              <MobileNav menu={i.menu} label={i.menuLabel} allLabel={createTranslator(i.locale)("site.menuAll")} />
             </>
           ),
           list: <MenuList links={i.menu} />,
