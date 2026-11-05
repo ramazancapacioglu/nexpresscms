@@ -78,6 +78,21 @@ export const FORM_TEMPLATES: FormTemplate[] = [
     f("deneyim", "Deneyim yılı", "number", false, { min: 0, max: 50 }),
     f("yazi", "Ön yazı", "textarea", true, { max: 4000 }),
   ], { submitLabel: "Başvur", successMessage: "Başvurunuz alındı.", subject: "Yeni başvuru: {form}" }),
+  tpl("demo-request", "Ücretsiz tanıtım talebi", "Program, ad, telefon, e-posta, şehir ve aydınlatma onayı.", "satis", [
+    f("program", "Program adı", "text", true, half), f("ad", "Ad soyad", "text", true, half),
+    f("telefon", "Telefon", "tel", true, half), f("eposta", "E-posta", "email", true, half),
+    f("sehir", "Şehir", "text", true),
+    f("onay", "Aydınlatma metnini okudum ve anladım.", "checkbox", true),
+  ], { submitLabel: "Formu gönder", successMessage: "Talebiniz alındı. Uzmanımız sizi arayacak.", subject: "Tanıtım talebi: {form}", autoReply: true }),
+  tpl("call-me", "Sizi arayalım", "Kısa geri arama formu: ad, telefon ve onay.", "satis", [
+    f("ad", "Ad soyad", "text", true), f("telefon", "Telefon", "tel", true),
+    f("onay", "Aydınlatma metnini okudum ve anladım.", "checkbox", true),
+  ], { submitLabel: "Gönder", successMessage: "Talebiniz alındı.", appearance: { columns: 1, labels: "top", density: "compact", buttonAlign: "full", surface: "inline" } }),
+  tpl("partner-application", "Çözüm ortağı başvurusu", "Firma, yetkili, şehir ve kısa tanıtım.", "satis", [
+    f("firma", "Firma adı", "text", true, half), f("ad", "Yetkili ad soyad", "text", true, half),
+    f("telefon", "Telefon", "tel", true, half), f("eposta", "E-posta", "email", true, half),
+    f("sehir", "Şehir", "text", true), f("not", "Kısaca kendinizden bahsedin", "textarea", false, { max: 2000 }),
+  ], { submitLabel: "Başvur", successMessage: "Başvurunuz alındı.", subject: "Çözüm ortağı başvurusu: {form}" }),
 ];
 
 export function getFormTemplate(id: string): FormTemplate | null {

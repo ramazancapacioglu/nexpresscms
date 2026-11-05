@@ -21,6 +21,23 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-05] — Yazılım Firması Teması: kampanya eklentisi, blog, formlar, mobil
+- 🐞 Footer alt bağlantıları aynı `href` ile çiftlenince React anahtar uyarısı veriyordu: anahtar `href|etiket` oldu, gizlilik ve kullanım koşulları ayrı demo sayfası.
+- **Kampanyalar eklentiden gelir:** demo artık 6 `campaign` kaydı yazar (indirim, hediye, rozet, bitişe kalan gün); ana sayfa karosel, ürün sayfaları ızgara `campaign_showcase` bloğu kullanır. Kampanya sayfası `/kampanyalar` eklenti rotasıdır (demo sayfası kaldırıldı).
+- **Blog:** yazılar yerleşik makale düzeninde (`canvas: false`): öne çıkan görsel, kategori, blog kenarı (arama, son yazılar, kategoriler, hızlı bağlantılar, iletişim). Blog sayfası görselli, aramalı, kategori süzgeçli, sayfalı liste.
+- **Formlar:** yapışkan "Sizi arayalım" sağ alta pill + panel olarak yeniden yazıldı; gönderim bulunduğu sayfaya döner (önceden ana sayfaya düşüyordu), onay kutusu zorunlu; form tanımı yeniden aktarımda güncellenir. Sayfa formları (iletişim, tanıtım) gönderimi tarayıcıda doğrulandı.
+- **Mobil:** bant, hero ve sayaç boşlukları, ikili sayaç/kart dizilimi, iki sütunlu footer, yatay kayan tablo, dar ekranda sığan form paneli. 390px iframe ile ana sayfa, ürün ve iletişim sayfaları denendi; yatay kayma yok.
+- Tema açıkken şablon kenar çubuğu sızmaz (kenar yalnızca temanın alanlarından).
+- **Doğrulama:** `pnpm typecheck` 13/13, `pnpm test` 11/11; yeni test: kampanya kayıtları, showcase bloğu, yazı meta alanları.
+
+### [2026-11-05] — Yazılım Firması Teması: tam site yeniden çizimi
+- **Yeniden adlandırma:** `akinsoft-merkez` → `yazilim-firmasi` ("Yazılım Firması Teması"). Eski kimlik `getThemeManifest` içinde yeni temaya yönlenir; sabitler `YF_*`, skin sınıfları `nx-yf-*`. Marka adı örnektir (MerkezSoft, iki renkli yazı logosu); üçüncü taraf ürün/marka adı kodda kalmadı.
+- **Referans incelemesi:** referans sitenin ana sayfası, menü/mega menü, footer dizini, ürün, grup, e-dönüşüm, kampanya, kurumsal, iletişim, form, blog sayfaları ve CSS paleti çıkarıldı. Metinler ve görseller kopyalanmadı; benzer yapıda özgün demo içeriği yazıldı.
+- **Demo paketi:** 50 sayfa + 9 yazı, tamamı düzenlenebilir blok. Veri tabloları (`yazilim-firmasi-products.ts`) ve kurucular (`yazilim-firmasi-kit.ts`) sayesinde sayfa başına kod yok. 22 temsili SVG `apps/cms/public/demo/yazilim-firmasi/`. Kampanya sayfası `guncel-kampanyalar` (Kampanyalar eklentisinin `/kampanyalar` rotasıyla çakışmaması için).
+- **Kütüphane/şablon/form:** 12 tasarım kütüphanesi bölümü, 1 header + 1 footer kütüphane kaydı, 3 blok şablonu, 3 form şablonu. Tema etkinleşince tam genişlik, kenar çubuğu kapalı; header'da e-posta yok, yalnız telefon + Demo Talebi.
+- **Doğrulama:** izole SQLite + `next dev` (3100) üzerinde tema etkinleştirildi, demo aktarıldı; ana sayfa, ürün sayfası, mega menü, form sayfası, iletişim ve footer tarayıcıda incelendi (yatay kayma yok). `pnpm typecheck` 13/13, `pnpm test` 11/11. Yeni testler: demo bağlantı ve görsel bütünlüğü, tek hero, eski kimlik yönlendirmesi.
+- **Açık:** mobil görünümün ayrıntılı gözden geçirmesi, ürün sayfalarındaki kampanya kartlarının Kampanyalar eklentisinden beslenmesi, sektör kaydırıcısı (gerçek sitedeki scroll animasyonu istemci JS gerektirir; bilerek yok).
+
 ### [2026-11-05] — Tema demo verisi
 - Resmi temaya demo paket bağlanır (`getThemeDemoPack`). Etkinleştirme sayfa yazmaz. Mağazadaki **Demo veriyi aktar** aynı adresi atlar, yenileri yayında ve düzenlenebilir içerik olarak ekler.
 - AKINSOFT paketi vitrin, çözüm sayfaları ve üç yazı içerir. Ana sayfa `akinsoft-vitrin` adresindedir; eski `ana-sayfa` durur. Tema açıkken vitrin `/{dil}` olur.

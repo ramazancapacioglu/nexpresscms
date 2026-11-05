@@ -15,12 +15,12 @@ import { getPublicNavigation, getPublicSite, getPublicWidgetFeed, resolvePublicC
 import {
   compileDesignTokensToCssVars,
   getThemeManifest,
-  AKINSOFT_CSS,
-  AKINSOFT_THEME_ID,
+  YF_CSS,
+  YF_THEME_ID,
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
-import { AkinsoftReach } from "@/components/public/akinsoft-reach";
+import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
 import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
@@ -77,7 +77,7 @@ export default async function PublicLocaleLayout({
   const tokens =
     isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens);
   const preview = await getPreviewTheme(siteId);
-  const isAkinsoft = (preview?.themeId ?? activeTheme.id) === AKINSOFT_THEME_ID;
+  const isYf = (preview?.themeId ?? activeTheme.id) === YF_THEME_ID;
   const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
   const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, resolveSiteSettings(site?.settings).customizer);
   // Düzen bileşenleri renkleri CSS değişkeninden okur (palet/karanlık mod değişince bileşen kodu aynı kalır)
@@ -87,7 +87,9 @@ export default async function PublicLocaleLayout({
   // Koşullar yalnızca dil ve sayfa adresiyle eşleşebilir (içerik türü/kategori bilgisi bu katmanda yoktur)
   const segs = (reqHeaders.get("x-nexpress-pathname") ?? "").split("/").filter(Boolean);
   const chromeCtx = { locale, slug: segs.length >= 2 ? decodeURIComponent(segs[1]!) : "ana-sayfa" };
-  const [headerTpl, footerTpl, sidebarTpl] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
+  const [headerTpl, footerTpl, sidebarTplRaw] = await Promise.all([templateFor(siteId, "header", null, chromeCtx), templateFor(siteId, "footer", null, chromeCtx), templateFor(siteId, "sidebar", null, chromeCtx)]);
+  // Yazılım Firması Teması kenar çubuğunu kendi alanlarından çizer; şablon kenarı eski sitelerden sızmasın
+  const sidebarTpl = isYf ? null : sidebarTplRaw;
   const resolvedSettings = resolveSiteSettings(site?.settings);
   const resolvedCustomizer = resolvedSettings.customizer;
   const ga4Settings = resolvedSettings.seo?.integrations?.ga4;
@@ -245,7 +247,7 @@ export default async function PublicLocaleLayout({
 
   return (
     <div
-      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : isAkinsoft ? AKINSOFT_THEME_ID : undefined)}
+      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : isYf ? YF_THEME_ID : undefined)}
       style={{
         backgroundColor: vt.colors.background,
         color: vt.colors.foreground,
@@ -268,7 +270,7 @@ export default async function PublicLocaleLayout({
         </div>
       ) : null}
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
-      {isAkinsoft ? <style dangerouslySetInnerHTML={{ __html: AKINSOFT_CSS }} /> : null}
+      {isYf ? <style dangerouslySetInnerHTML={{ __html: YF_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
       {ga4MeasurementId ? (
         <>
@@ -284,7 +286,7 @@ export default async function PublicLocaleLayout({
         </>
       ) : null}
 
-      {headerTpl && tplCtx && !isAkinsoft ? (
+      {headerTpl && tplCtx && !isYf ? (
         <header
           style={
             headerBehavior.transparent
@@ -318,7 +320,7 @@ export default async function PublicLocaleLayout({
         className={hasSidebar ? "mx-auto flex w-full flex-1 gap-6" : "contents"}
       >
         {hasSidebar && effectiveSidebarPos === "left" ? (
-          sidebarTpl && tplCtx && !isAkinsoft ? (
+          sidebarTpl && tplCtx && !isYf ? (
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
@@ -339,7 +341,7 @@ export default async function PublicLocaleLayout({
           {children}
         </main>
         {hasSidebar && effectiveSidebarPos === "right" ? (
-          sidebarTpl && tplCtx && !isAkinsoft ? (
+          sidebarTpl && tplCtx && !isYf ? (
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
@@ -349,7 +351,7 @@ export default async function PublicLocaleLayout({
         ) : null}
       </div>
 
-      {footerTpl && tplCtx && !isAkinsoft ? (
+      {footerTpl && tplCtx && !isYf ? (
         <footer style={{ borderColor: vt.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto">
             <RscBlockRenderer blocks={footerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
@@ -361,7 +363,7 @@ export default async function PublicLocaleLayout({
       {resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}
-      {isAkinsoft ? <AkinsoftReach locale={locale} /> : null}
+      {isYf ? <YazilimFirmasiReach locale={locale} /> : null}
       <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />
     </div>
   );

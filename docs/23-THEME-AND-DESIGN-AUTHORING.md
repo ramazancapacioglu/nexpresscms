@@ -79,7 +79,7 @@ Sınırlar: zip 8 MB, en çok 200 dosya, açılmış toplam 30 MB, her JSON/CSS 
 }
 ```
 
-- `id`: `^[a-z0-9][a-z0-9-]{1,38}$` (2–39 karakter). Resmi kimlikleri kullanma: `corporate-aurora`, `commerce-velocity`, `editorial-pulse`, `ink-grid`, `crimson-erp`, `akinsoft-merkez`.
+- `id`: `^[a-z0-9][a-z0-9-]{1,38}$` (2–39 karakter). Resmi kimlikleri kullanma: `corporate-aurora`, `commerce-velocity`, `editorial-pulse`, `ink-grid`, `crimson-erp`, `yazilim-firmasi` (eski `akinsoft-merkez` kimliği buna yönlenir).
 - `version`: `1.2.3`.
 - `recommendedProfile`: `corporate` | `ecommerce` | `news`.
 - `features`: en çok 12, her biri en çok 60 karakter.
@@ -260,7 +260,9 @@ Kapsam sonrası seçici `[data-nx-skin="liman-kurumsal"] .nx-hero` olur. `theme.
 
 Yüklenebilir paketin `pages/` klasörü taslak sayfa ekler. Resmi temaların vitrin demosu ayrıdır: `packages/themes/src/demo-pack.ts` içindeki `getThemeDemoPack`. Tema etkinleşince sayfa yazılmaz. Yönetici `/admin/themes` üzerinde **Demo veriyi aktar** der. Aynı slug varsa kayıt atlanır, mevcut içerik değişmez. Yeni kayıtlar `published` olur ve içerik ekranından düzenlenir. `schemaAttributes._demo.themeId` kaydın hangi temadan geldiğini tutar; kilitlemez.
 
-Demo ana sayfa `ana-sayfa` slug'ını ezmez. AKINSOFT paketi `akinsoft-vitrin` kullanır. Tema açıkken ve bu sayfa yayındayken `/{dil}` onu gösterir. Tema değişince eski ana sayfa geri gelir.
+Demo ana sayfa `ana-sayfa` slug'ını ezmez. Yazılım Firması paketi `yazilim-vitrin` kullanır.
+
+**Yazılım Firması Teması (`yazilim-firmasi`)** tam site demosudur (örnek marka MerkezSoft): ana sayfa, 5 grup sayfası, 25 ürün/sektör sayfası, 6 e-dönüşüm sayfası, 6 kampanya kaydı (`type: "campaign"`, Kampanyalar eklentisi içeriği; bitiş tarihi aktarım gününe göre `endsInDays` ile yazılır), kurumsal, çözüm ortakları, medya, blog, SSS, destek, iletişim, formlu tanıtım/istek sayfaları ve 9 yazı (`canvas: false`: yerleşik makale düzeni, öne çıkan görsel, kategori ve blog kenar çubuğu). Kampanya vitrinleri statik kart değil `campaign_showcase` bloğudur ve `/kampanyalar` eklenti rotasından beslenir. `ThemeDemoEntry` alanları: `type` (`page|post|campaign`), `canvas`, `image`, `categories`, `campaign`. Kaynak: `packages/themes/src/yazilim-firmasi.ts` (menü, header, footer, jeton, CSS), `yazilim-firmasi-kit.ts` (blok kurucuları), `yazilim-firmasi-products.ts` (veri tabloları), `yazilim-firmasi-demo.ts` (sayfalar). Sayfalar yalnızca katalog blokları ve `section`/`columns`/`column` ile yazılır; bantlar `style.fullWidth` + `style.cssClass` (`yf-dark|soft|navy`, `yf-center`, `yf-card`, `yf-stat`, `yf-tag`) kullanır, bu sınıflar tema CSS'inde tanımlıdır. Görseller `apps/cms/public/demo/yazilim-firmasi/*.svg` temsili çizimlerdir (`apps/cms/scripts/gen-yazilim-firmasi-art.mjs` üretir). Tekrarlanan tasarımlar `packages/editor/src/library-yazilim.ts` (12 bölüm), header/footer `chrome-library.ts` (`header-yazilim-vitrin`, `footer-yazilim-dizin`), blok şablonları `core/templates.ts` (`header-yazilim`, `footer-yazilim-dizin`, `post-yazilim-blog`), formlar `core/form-templates.ts` (`demo-request`, `call-me`, `partner-application`) içindedir. Tema etkinleşince sayfa genişliği tam, kenar çubuğu kapalıdır; sağ altta yapışkan "Sizi arayalım" kutusu (`<details>`, JS'siz) bulunduğu sayfadan `frm_yf_reach` formuna yazar ve aynı sayfaya döner. Mobilde (≤767px) bantlar daralır, sayaç ve dörtlü kart satırları (`yf-rowwrap`) ikişerli dizilir, footer iki sütundur, tablo yatay kayar. Tema açıkken ve bu sayfa yayındayken `/{dil}` onu gösterir. Tema değişince eski ana sayfa geri gelir.
 
 ---
 

@@ -14,7 +14,7 @@ flowchart LR
         T3["Editorial Pulse (Haber / Bilgi Bankası)"]
         T4["Ink Grid (Siyah ürün vitrini)"]
         T5["Crimson ERP & Muhasebe (Kurumsal ERP & Yazılım)"]
-        T6["AKINSOFT Merkez (cam şerit, siyah vitrin, sağ form)"]
+        T6["Yazılım Firması Teması (cam şerit, siyah vitrin, mega menü, dizin footer, sağ form)"]
     end
 
     subgraph ThemeContract [Tema Paketi Yapısı (theme.json)]

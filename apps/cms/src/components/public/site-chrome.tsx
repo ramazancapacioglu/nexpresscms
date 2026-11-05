@@ -75,8 +75,8 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
-          ) : logoText === "AKINSOFT" ? (
-            <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>AKIN</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
+          ) : /^[A-ZÇĞİÖŞÜ]{3,}SOFT$/.test(logoText) ? (
+            <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>{logoText.slice(0, -4)}</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
           ) : (
             <span style={{ fontFamily: tokens.typography.headingFont, color: ink ? tokens.colors.foreground : undefined }} className="truncate text-lg font-bold tracking-tight">{logoText}</span>
           )}
@@ -292,7 +292,7 @@ export function SiteFooter({
         <span>{footer?.copyrightText}</span>
         <div className="flex gap-3">
           {(footer?.bottomLinks ?? []).map((link) => (
-            <a key={link.href} href={link.href}>
+            <a key={`${link.href}|${link.label}`} href={link.href}>
               {link.label}
             </a>
           ))}

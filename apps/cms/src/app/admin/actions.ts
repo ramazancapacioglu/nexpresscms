@@ -7,8 +7,8 @@ import "@/plugins/register";
 import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
-import { AKINSOFT_THEME_ID, getThemeManifest } from "@nexpress/themes";
-import { applyAkinsoftChrome } from "@/lib/apply-akinsoft-theme";
+import { YF_THEME_ID, getThemeManifest } from "@nexpress/themes";
+import { applyYazilimFirmasiChrome } from "@/lib/apply-yazilim-firmasi-theme";
 import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
@@ -54,7 +54,7 @@ export async function activateThemeAction(input: {
     mergedTokens,
     input.siteProfile ?? manifest.recommendedProfile
   );
-  if (manifest.id === AKINSOFT_THEME_ID) await applyAkinsoftChrome(siteId);
+  if (manifest.id === YF_THEME_ID) await applyYazilimFirmasiChrome(siteId);
 
   await revalidatePath("/admin");
   await revalidatePath("/admin/themes");

@@ -2,7 +2,7 @@ import React from "react";
 import { createTranslator } from "@nexpress/i18n";
 import { ICON_PATHS } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
-import { AKINSOFT_THEME_ID } from "./akinsoft-merkez";
+import { YF_THEME_ID } from "./yazilim-firmasi";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
@@ -15,9 +15,9 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
   switch (block.type) {
     case "hero": {
       if (themeId === INK_GRID_ID) return renderInkHero(p, tokens);
-      if (themeId === AKINSOFT_THEME_ID) {
+      if (themeId === YF_THEME_ID) {
         return (
-          <section className="nx-as-hero">
+          <section className="nx-yf-hero">
             <div className="mx-auto max-w-[1200px]">
               {typeof p.badge === "string" && p.badge ? <p className="mb-4 text-xs font-semibold uppercase tracking-[.2em] text-[#00ac48]">{p.badge}</p> : null}
               <h1 className="max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">{String(p.title ?? "")}</h1>
@@ -123,10 +123,10 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
     case "stats_strip": {
       if (themeId === INK_GRID_ID) return renderInkNames(p);
-      if (themeId === AKINSOFT_THEME_ID) {
+      if (themeId === YF_THEME_ID) {
         const stats = Array.isArray(p.stats) ? p.stats : [];
         return (
-          <section className="nx-as-band bg-black px-4 py-10 text-white">
+          <section className="nx-yf-band bg-black px-4 py-10 text-white">
             <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-6 md:grid-cols-4">
               {stats.map((st: { value?: string; label?: string }, idx: number) => (
                 <div key={idx}>
@@ -166,10 +166,10 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
     case "bento_features": {
       if (themeId === INK_GRID_ID) return renderInkBento(p, tokens);
-      if (themeId === AKINSOFT_THEME_ID) {
+      if (themeId === YF_THEME_ID) {
         const items = Array.isArray(p.items) ? p.items : [];
         return (
-          <section className="nx-as-band bg-black px-4 py-14 text-white">
+          <section className="nx-yf-band bg-black px-4 py-14 text-white">
             <div className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[1fr_2fr]">
               <div>
                 {typeof p.title === "string" ? <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{p.title}</h2> : null}
@@ -177,7 +177,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {items.map((item: { title?: string; description?: string; href?: string }, idx: number) => (
-                  <article key={idx} className="nx-as-card p-6">
+                  <article key={idx} className="nx-yf-card p-6">
                     <h3 className="text-lg font-semibold">{String(item?.title ?? "")}</h3>
                     {item?.description ? <p className="mt-2 line-clamp-4 text-sm font-light leading-relaxed text-slate-400">{item.description}</p> : null}
                     {item?.href ? <a href={item.href} className="mt-4 inline-block text-sm text-[#4da3ff]">Detaylı bilgi</a> : null}

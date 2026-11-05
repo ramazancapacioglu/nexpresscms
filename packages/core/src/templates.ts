@@ -274,10 +274,19 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   { id: "header-search", kind: "header", name: "Header — arama kutulu", description: "Logo, menü ve site içi arama kutusu.", blocks: [cols("h", "3+6+3", [25, 50, 25], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })], [b("search", "search_box", { placeholder: "Sitede ara…" })]], "24px")] },
   { id: "header-commerce", kind: "header", name: "Header — e-ticaret & mağaza", description: "Logo, menü, ürün arama kutusu ve sepet bağlantısı.", blocks: [cols("h", "3+5+4", [22, 46, 32], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "left" })], [cols("hc", "8+4", [65, 35], [[b("search", "search_box", { placeholder: "Ürün ara…" })], [b("cart", "tpl_cart_link", { align: "right" })]], "12px")]], "20px")] },
 
+  { id: "header-yazilim", kind: "header", name: "Header — yazılım firması (menü + demo talebi)", description: "Solda logo, ortada menü, sağda telefon ve Demo Talebi düğmesi.", blocks: [cols("h", "3+6+3", [22, 54, 24], [[b("logo", "tpl_site_logo")], [b("menu", "tpl_menu", { align: "center" })], [b("cta", "button_element", { label: "Demo Talebi", href: "/tr/ucretsiz-tanitim", styleVariant: "primary", align: "right" })]], "24px")] },
+
   // 2. FOOTER ŞABLONLARI
   { id: "footer-columns", kind: "footer", name: "Üç kolonlu footer", description: "Logo/açıklama, hızlı menü, iletişim bilgileri ve telif satırı.", blocks: [cols("f", "6+3+3", [50, 25, 25], [[b("logo", "tpl_site_logo"), b("about", "paragraph", { text: "Modern, hızlı ve arama motoru dostu dijital yayın platformu.", html: "<p>Modern, hızlı ve arama motoru dostu dijital yayın platformu.</p>" })], [b("fm", "tpl_menu", { layout: "list" })], [b("fh", "heading", { text: "İletişim", level: 3, html: "İletişim" }), b("fp", "paragraph", { text: "bilgi@ornek.com • +90 (212) 555 00 00", html: "<p>bilgi@ornek.com • +90 (212) 555 00 00</p>" })]]), b("copy", "tpl_copyright")] },
   { id: "footer-four-col", kind: "footer", name: "Dört kolonlu kurumsal footer", description: "Marka özeti, kurumsal bağlantılar, çözümler, destek ve telif.", blocks: [cols("f4", "3+3+3+3", [25, 25, 25, 25], [[b("logo", "tpl_site_logo"), b("about", "paragraph", { text: "Kurumsal ölçekte yüksek performanslı web altyapısı.", html: "<p>Kurumsal ölçekte yüksek performanslı web altyapısı.</p>" })], [b("h1", "heading", { text: "Hızlı Erişim", level: 4, html: "Hızlı Erişim" }), b("fm1", "tpl_menu", { layout: "list" })], [b("h2", "heading", { text: "Çözümler", level: 4, html: "Çözümler" }), b("l2", "list_element", { style: "bullet", items: ["Kurumsal Web", "E-Ticaret Altyapısı", "Teknik SEO & GEO", "Bulut Barındırma"] })], [b("h3", "heading", { text: "Merkez Ofis", level: 4, html: "Merkez Ofis" }), b("fp", "paragraph", { text: "Levent, İstanbul\nbilgi@ornek.com", html: "<p>Levent, İstanbul<br/>bilgi@ornek.com</p>" })]]), b("copy", "tpl_copyright")] },
   { id: "footer-minimal", kind: "footer", name: "Minimal footer", description: "Yalnızca ortalı menü ve telif satırı.", blocks: [b("fm", "tpl_menu", { align: "center" }), b("copy", "tpl_copyright", { align: "center" })] },
+
+  { id: "footer-yazilim-dizin", kind: "footer", name: "Footer — yazılım firması dizini", description: "Çözümler, e-dönüşüm, kurumsal ve destek bağlantı sütunları ile telif satırı.", blocks: [cols("fy", "3+3+3+3", [25, 25, 25, 25], [
+    [b("h1", "heading", { text: "Çözümler", level: 4, html: "Çözümler" }), b("l1", "list_element", { style: "bullet", items: ["Merkez ERP", "Üretim (MRP)", "CRM", "Muhasebe", "Bulut ERP"] })],
+    [b("h2", "heading", { text: "e-Dönüşüm", level: 4, html: "e-Dönüşüm" }), b("l2", "list_element", { style: "bullet", items: ["e-Fatura", "e-Arşiv", "e-İrsaliye", "e-Defter", "e-Mutabakat"] })],
+    [b("h3", "heading", { text: "Kurumsal", level: 4, html: "Kurumsal" }), b("l3", "list_element", { style: "bullet", items: ["Hakkımızda", "Çözüm ortağı", "Medya merkezi", "Blog"] })],
+    [b("h4", "heading", { text: "Destek", level: 4, html: "Destek" }), b("l4", "list_element", { style: "bullet", items: ["Destek asistanı", "Sıkça sorulan sorular", "Ücretsiz tanıtım", "İletişim"] })],
+  ]), b("copy", "tpl_copyright")] },
 
   // 3. KENAR ÇUBUĞU (SIDEBAR) ŞABLONLARI
   { id: "sidebar-recent", kind: "sidebar", name: "Blog kenar çubuğu (Arama + Son yazılar)", description: "Arama kutusu, son yazılar ve kategori/sayfa menüsü.", blocks: SIDEBAR_SEARCH_AND_POSTS },
@@ -294,6 +303,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   { id: "post-sidebar", kind: "post", name: "Yazı — sağ kenar çubuklu", description: "Yazı solda (8 birim), arama ve son yazılar sağ kenar çubuğunda (4 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")], SIDEBAR_SEARCH_AND_POSTS])] },
   { id: "post-sidebar-left", kind: "post", name: "Yazı — sol kenar çubuklu", description: "İçindekiler ve son yazılar solda (4 birim), makale sağda (8 birim).", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "4+8", [33.33, 66.66], [[b("toc", "toc", { title: "İçindekiler" }), { ...RELATED, id: "sr_l" }], [b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content")]])] },
   { id: "post-magazine", kind: "post", name: "Yazı — dergi & benzer yazılarla", description: "Kapak görseli üstte, makale gövdesi ve altında 3 sütun benzer yazılar.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("i", "tpl_featured_image"), b("c", "tpl_post_content"), b("rel_cards", "dynamic_list", { source: "posts", limit: 3, layout: "cards", columns: 3, showImage: true, showExcerpt: true, showDate: true, excludeCurrent: true, heading: "İlgili Yazılar" })] },
+
+  { id: "post-yazilim-blog", kind: "post", name: "Yazı — blog (içerik solda, hızlı bağlantı sağda)", description: "Makale solda, ücretsiz tanıtım kutusu ve son yazılar sağda.", blocks: [b("bc", "tpl_breadcrumb"), cols("l", "8+4", [66.66, 33.33], [[b("t", "tpl_post_title"), b("m", "tpl_post_meta"), b("c", "tpl_post_content")], [b("demo", "info_box", { icon: "headphones", title: "Ücretsiz tanıtım", text: "Programı birlikte inceleyelim.", linkLabel: "Talep et", href: "/tr/ucretsiz-tanitim" }), { ...RELATED, id: "sr_yz" }]])] },
 
   // 6. KATEGORİ ARŞİVİ ŞABLONLARI (`category`)
   { id: "category-grid", kind: "category", name: "Kategori — 3 sütun kart ızgarası", description: "Kategori başlığı ve 3 sütunlu yayın kartları.", blocks: [b("bc", "tpl_breadcrumb"), b("t", "tpl_archive_title"), b("l", "tpl_archive_list", { layout: "cards", columns: 3 })] },
@@ -344,7 +355,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
             title: "Ücretsiz Canlı Demo Talebi",
             text: "Uzmanlarımız işletmenizi ziyaret etsin veya online ortamda ekran paylaşımıyla tüm modülleri tanıtsın.",
             linkText: "Demo Formunu Doldurun",
-            linkHref: "/tr/akinsoft-demo-talebi",
+            linkHref: "/tr/ucretsiz-tanitim",
             tone: "primary",
           }),
         ],
@@ -409,7 +420,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
             title: "Teknik Destek Masası",
             text: "Kurulum veya veri aktarımında takıldığınız her an uzak masaüstü desteğimizle yanınızdayız.",
             linkText: "Destek Talebi Aç",
-            linkHref: "/tr/akinsoft-destek",
+            linkHref: "/tr/destek-asistani",
             tone: "primary",
           }),
         ],
@@ -512,7 +523,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
         [
           b("pat_h", "heading", { level: 2, text: "İşletmenizi Dijital Çağa Taşıyın" }),
           b("pat_p", "paragraph", { text: "Wolvox ERP ve e-Dönüşüm çözümleriyle fatura, stok ve finans süreçlerinizi tek ekrandan yönetin." }),
-          b("pat_btn", "button_element", { label: "Hemen Teklif Alın", href: "/tr/akinsoft-demo-talebi", styleVariant: "primary" }),
+          b("pat_btn", "button_element", { label: "Hemen Teklif Alın", href: "/tr/ucretsiz-tanitim", styleVariant: "primary" }),
         ],
         [
           b("pat_box", "info_box", {

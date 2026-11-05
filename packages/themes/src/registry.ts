@@ -1,5 +1,5 @@
 import { darkModeCss, type DesignTokens, type SiteCustomizerSettings, type SiteProfile } from "@nexpress/core";
-import { AKINSOFT_THEME_ID, AKINSOFT_TOKENS } from "./akinsoft-merkez";
+import { YF_LEGACY_THEME_ID, YF_THEME_ID, YF_TOKENS } from "./yazilim-firmasi";
 import { INK_GRID_ID, INK_GRID_TOKENS } from "./ink-grid";
 
 export interface ThemeManifest {
@@ -9,7 +9,7 @@ export interface ThemeManifest {
     | "editorial-pulse"
     | "crimson-erp"
     | typeof INK_GRID_ID
-    | typeof AKINSOFT_THEME_ID;
+    | typeof YF_THEME_ID;
   name: string;
   tagline: string;
   description: string;
@@ -382,11 +382,11 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
     },
   },
   {
-    id: AKINSOFT_THEME_ID,
-    name: "AKINSOFT Merkez",
-    tagline: "İnce cam menü, lacivert-yeşil marka, siyah vitrin",
+    id: YF_THEME_ID,
+    name: "Yazılım Firması Teması",
+    tagline: "Siyah vitrin, mega menü, dizin footer — kurumsal yazılım sitesi",
     description:
-      "Merkez yazılım vitrini: 52px buzlu şerit, 12px menü, siyah kahraman alanı, açık gri footer, sağdan açılan demo formu ve yazı kenarı.",
+      "Yazılım üreticileri için tam site: buzlu şerit, dört sütunlu mega menü, siyah kahraman alanı, ürün/sektör/e-dönüşüm sayfaları, dizin footer ve sağdan açılan arama formu. Demo veriyi aktarınca tüm sayfalar düzenlenebilir olarak gelir.",
     version: "1.0.0",
     author: "NexPress Design Lab",
     recommendedProfile: "corporate",
@@ -397,13 +397,14 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
       "Açık gri footer",
       "Yazı kenar çubuğu",
     ],
-    tokens: AKINSOFT_TOKENS,
+    tokens: YF_TOKENS,
   },
 ];
 
 export function getThemeManifest(themeId: string): ThemeManifest {
+  const id = themeId === YF_LEGACY_THEME_ID ? YF_THEME_ID : themeId;
   return (
-    OFFICIAL_THEME_STORE.find((t) => t.id === themeId) ?? OFFICIAL_THEME_STORE[0]!
+    OFFICIAL_THEME_STORE.find((t) => t.id === id) ?? OFFICIAL_THEME_STORE[0]!
   );
 }
 

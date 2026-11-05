@@ -3,7 +3,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
-import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, AKINSOFT_DEMO_HOME_SLUG, AKINSOFT_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
+import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
 import { getSyncedPatternsMap } from "@/lib/templates";
 import type { Metadata } from "next";
@@ -18,9 +18,9 @@ import { LanguageSwitcher } from "@/components/public/language-switcher";
 /** Tema demosu varsa onu, yoksa klasik ana sayfa adresini kullanır. */
 async function resolveHomeSlug(siteId: string, themeId: string, locale: string) {
   if (themeId === INK_GRID_ID) return INK_GRID_HOME_SLUG;
-  if (themeId === AKINSOFT_THEME_ID) {
-    const demo = await getPublicContentBySlug(siteId, AKINSOFT_DEMO_HOME_SLUG, locale);
-    if (demo) return AKINSOFT_DEMO_HOME_SLUG;
+  if (themeId === YF_THEME_ID) {
+    const demo = await getPublicContentBySlug(siteId, YF_DEMO_HOME_SLUG, locale);
+    if (demo) return YF_DEMO_HOME_SLUG;
   }
   return "ana-sayfa";
 }
@@ -61,12 +61,12 @@ export default async function PublicHomePage({
   const site = await getPublicSite(siteId);
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const isInk = activeTheme.id === INK_GRID_ID;
-  const isAkinsoft = activeTheme.id === AKINSOFT_THEME_ID;
+  const isYf = activeTheme.id === YF_THEME_ID;
   const preview = await getPreviewTheme(siteId);
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale), locale);
   const mediaFocal = await getPublicMediaFocal(siteId);
-  const allContents = isInk || isAkinsoft ? [] : await listPublishedContents(siteId, locale);
+  const allContents = isInk || isYf ? [] : await listPublishedContents(siteId, locale);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const switcher = homeContent ? <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, homeContent.contentId, locale)} /> : null;
 
@@ -88,7 +88,7 @@ export default async function PublicHomePage({
   });
 
   return (
-    <div className={isInk || isAkinsoft ? "" : "space-y-14"}>
+    <div className={isInk || isYf ? "" : "space-y-14"}>
       {/* Bağlantılı Schema.org JSON-LD Grafiği */}
       <script
         type="application/ld+json"
@@ -117,7 +117,7 @@ export default async function PublicHomePage({
         </div>
       )}
 
-      {isInk || isAkinsoft ? null : (
+      {isInk || isYf ? null : (
       <section className="space-y-6 pt-4">
         <div className="flex items-center justify-between border-b pb-4">
           <div>
