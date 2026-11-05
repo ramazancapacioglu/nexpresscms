@@ -53,3 +53,4 @@ export * from "./template-package";
 export * from "./editor-draft";
 export * from "./widgets";
 export * from "./campaigns";
+export * from "./header-layout";

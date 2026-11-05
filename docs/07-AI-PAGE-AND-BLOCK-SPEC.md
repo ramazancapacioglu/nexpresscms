@@ -2,6 +2,8 @@
 
 Bu doküman; bir modele sıfırdan tam bir sayfa (`Page AST`) veya görsel bölüm (`BlockNode`) tasarlatıp **NexPress Görsel Editörüne (`/admin/contents`)** aktarmak içindir. Header ve footer için sözleşme `docs/08-AI-CHROME-SPEC.md` dosyasındadır.
 
+Tema paketi, kütüphane ve şablon birlikte üretilecekse modele `docs/23-THEME-AND-DESIGN-AUTHORING.md` verilir. Blok alanları değişince 23 de aynı turda güncellenir. Bu dosyadaki örnekler kısaltılmış referanstır.
+
 ---
 
 ## 1. Nasıl Kullanılır? (3 Adımda AI'dan Kanvasa Aktarım)

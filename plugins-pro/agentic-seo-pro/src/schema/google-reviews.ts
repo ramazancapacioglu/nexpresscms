@@ -17,48 +17,36 @@ export interface GoogleReviewsSettings {
   reviews?: GoogleReview[];
 }
 
-export const DEFAULT_GOOGLE_REVIEWS: GoogleReview[] = [
-  {
-    author: "Ahmet Yılmaz",
-    rating: 5,
-    date: "2026-09-14",
-    text: "ERP ve muhasebe geçiş sürecimizde inanılmaz hızlı ve profesyonel destek sağladılar. Kesinlikle tavsiye ederim.",
-  },
-  {
-    author: "Burcu Kara",
-    rating: 5,
-    date: "2026-10-02",
-    text: "e-Dönüşüm ve fatura entegrasyonu tam bir günde sorunsuz devreye alındı. Teknik servis ekibine teşekkürler.",
-  },
-  {
-    author: "Mehmet Demir",
-    rating: 5,
-    date: "2026-10-21",
-    text: "Restoran ve perakende satış modülleri işletmemizin hızını iki katına çıkardı. Çok memnunuz.",
-  },
-];
+function asNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) return Number(value);
+  return null;
+}
 
 /**
- * LocalBusiness veya ana sayfa JSON-LD düğümüne Google Haritalar AggregateRating ve Review dizisi enjekte eder.
+ * LocalBusiness düğümüne yalnız girilmiş puan ve yorumları ekler. Boş ayarda örnek isim basılmaz.
  */
 export function enrichWithGoogleReviews(
   node: SchemaGraphNode,
   settings?: GoogleReviewsSettings
 ): SchemaGraphNode {
-  const ratingValue = Number(settings?.googleRating ?? 4.9);
-  const reviewCount = Number(settings?.googleReviewCount ?? 48);
-  const rawReviews = settings?.reviews && settings.reviews.length > 0 ? settings.reviews : DEFAULT_GOOGLE_REVIEWS;
-  const minFilter = Number(settings?.minRatingFilter ?? 4);
+  const ratingValue = asNumber(settings?.googleRating);
+  const reviewCount = asNumber(settings?.googleReviewCount);
+  const rawReviews = Array.isArray(settings?.reviews) ? settings.reviews : [];
+  if (ratingValue === null && rawReviews.length === 0) return node;
+  const minFilter = asNumber(settings?.minRatingFilter) ?? 1;
 
   const filteredReviews = rawReviews.filter((r) => r.rating >= minFilter);
 
-  const aggregateRating = {
-    "@type": "AggregateRating",
-    ratingValue,
-    reviewCount,
-    bestRating: 5,
-    worstRating: 1,
-  };
+  const aggregateRating = ratingValue === null
+    ? undefined
+    : {
+        "@type": "AggregateRating",
+        ratingValue,
+        reviewCount: reviewCount ?? filteredReviews.length,
+        bestRating: 5,
+        worstRating: 1,
+      };
 
   const reviewNodes = filteredReviews.map((r) => ({
     "@type": "Review",
@@ -78,8 +66,8 @@ export function enrichWithGoogleReviews(
 
   return {
     ...node,
-    aggregateRating,
-    review: reviewNodes,
+    ...(aggregateRating ? { aggregateRating } : {}),
+    ...(reviewNodes.length > 0 ? { review: reviewNodes } : {}),
   };
 }
 

@@ -999,3 +999,66 @@ export const sqliteMcpRequestLog = sqliteTable(
   },
   (t) => [index("mcp_request_log_site_at_idx").on(t.siteId, t.at)]
 );
+
+/**
+ * Kelime ve rakip havuzu. Yalnızca canlı sorgular yazılır; örnek/tohum satır buraya girmez.
+ * ctr100: yüzde × 100 (5,92 → 592). position10: sıra × 10 (4,2 → 42).
+ */
+export const sqliteSeoIntelSignals = sqliteTable(
+  "seo_intel_signals",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    /** gsc | bing | yandex | serper */
+    source: text("source").notNull(),
+    keyword: text("keyword").notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    impressions: integer("impressions").default(0).notNull(),
+    ctr100: integer("ctr100").default(0).notNull(),
+    position10: integer("position10").default(0).notNull(),
+    /** Önceki sıra × 10. 0 ise henüz bir değişim yok. */
+    prevPosition10: integer("prev_position10").default(0).notNull(),
+    detail: text("detail").default("").notNull(),
+    capturedAt: integer("captured_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    index("seo_intel_signals_site_id_idx").on(t.siteId),
+    uniqueIndex("seo_intel_signals_site_source_kw_uidx").on(t.siteId, t.source, t.keyword),
+  ]
+);
+
+/** Küme → taslak bağı. Üyeler yeniden hesaplanır; contentId onay kuyruğundaki taslağı tutar. */
+export const sqliteSeoIntelClusters = sqliteTable(
+  "seo_intel_clusters",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    label: text("label").notNull(),
+    members: text("members", { mode: "json" }).$type<string[]>().default([]).notNull(),
+    /** open | draft */
+    status: text("status").default("open").notNull(),
+    contentId: text("content_id").default("").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("seo_intel_clusters_site_id_idx").on(t.siteId)]
+);
+
+/** Dış adresten veya yapıştırılan metinden açılan taslaklar. Yayın, içerik editöründeki onaydır. */
+export const sqliteContentImports = sqliteTable(
+  "content_imports",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    /** url | paste */
+    kind: text("kind").notNull(),
+    source: text("source").default("").notNull(),
+    title: text("title").default("").notNull(),
+    /** draft | failed */
+    status: text("status").default("draft").notNull(),
+    contentId: text("content_id").default("").notNull(),
+    bodyHash: text("body_hash").default("").notNull(),
+    error: text("error").default("").notNull(),
+    fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("content_imports_site_id_idx").on(t.siteId, t.fetchedAt)]
+);

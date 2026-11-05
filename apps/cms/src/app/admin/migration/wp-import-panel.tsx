@@ -31,6 +31,20 @@ interface Report {
   warnings: string[];
 }
 type Opts = { post: boolean; page: boolean; product: boolean; includeDrafts: boolean; createRedirects: boolean; downloadImages: boolean; update: boolean };
+interface ShellSummary {
+  title: string;
+  description: string;
+  phone: string;
+  email: string;
+  primary: string;
+  accent: string;
+  menu: string[];
+  footerColumns: number;
+  blocks: Record<string, number>;
+  blockCount: number;
+  warnings: string[];
+  locale: string;
+}
 
 export function WpImportPanel() {
   const input = useRef<HTMLInputElement>(null);
@@ -40,6 +54,10 @@ export function WpImportPanel() {
   const [report, setReport] = useState<Report | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState<"" | "analyze" | "run">("");
+  const [shellUrl, setShellUrl] = useState("https://www.akinsoftizmir.com.tr/");
+  const [shell, setShell] = useState<ShellSummary | null>(null);
+  const [shellError, setShellError] = useState("");
+  const [shellBusy, setShellBusy] = useState(false);
 
   const send = async (mode: "analyze" | "run") => {
     const body = new FormData();
@@ -79,6 +97,22 @@ export function WpImportPanel() {
       setErrors(["İçe aktarma tamamlanamadı; sonucu içerik listesinden kontrol edin."]);
     } finally {
       setBusy("");
+    }
+  };
+
+  const readShell = async () => {
+    setShellBusy(true);
+    setShellError("");
+    setShell(null);
+    try {
+      const res = await fetch("/api/admin/wp-shell", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url: shellUrl }) });
+      const data = (await res.json()) as { ok: true; summary: ShellSummary } | { ok: false; error: string };
+      if (data.ok) setShell(data.summary);
+      else setShellError(data.error);
+    } catch {
+      setShellError("Sayfa okunamadı.");
+    } finally {
+      setShellBusy(false);
     }
   };
 
@@ -149,6 +183,31 @@ export function WpImportPanel() {
         </button>
         <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Aynı dosyayı tekrar yüklemek güvenlidir: içerikler WordPress kimliğiyle eşleşir.</p>
       </aside>
+
+      <section className={`${card} lg:col-span-2 space-y-3 text-[12px]`}>
+        <h2 className="text-[13px] font-semibold">Görünüm taslağı</h2>
+        <p className="text-[#5F6570] dark:text-[#8C9099]">Yayımlanmış bir sayfanın rengini, menüsünü ve bloklarını okur. CSS ve JavaScript kopyalanmaz. Bu adım hiçbir kayıt yazmaz.</p>
+        <div className="flex flex-wrap gap-2">
+          <input value={shellUrl} onChange={(e) => setShellUrl(e.target.value)} className={`h-8 min-w-[16rem] flex-1 rounded-md border ${border} bg-transparent px-2`} placeholder="https://" />
+          <button type="button" onClick={() => void readShell()} disabled={shellBusy || !shellUrl.trim()} className="h-8 rounded-md border border-[#E6E7EA] px-3 text-[12px] font-medium disabled:opacity-50 dark:border-[#23262E]">
+            {shellBusy ? "Okunuyor…" : "Sayfayı oku"}
+          </button>
+        </div>
+        {shellError && <p role="alert" className="text-red-600">{shellError}</p>}
+        {shell && (
+          <div className="space-y-2">
+            <p><strong>{shell.title}</strong></p>
+            <p className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border" style={{ background: shell.primary }} /> {shell.primary}</span>
+              <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border" style={{ background: shell.accent }} /> {shell.accent}</span>
+              <span>{shell.blockCount} blok · menü {shell.menu.length} · alt şerit {shell.footerColumns}</span>
+            </p>
+            {shell.menu.length > 0 && <p>{shell.menu.join(" · ")}</p>}
+            <p>{Object.entries(shell.blocks).map(([k, v]) => `${k} ${v}`).join(" · ")}</p>
+            {shell.warnings.map((w, i) => <p key={i} className="text-amber-800 dark:text-amber-300">{w}</p>)}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

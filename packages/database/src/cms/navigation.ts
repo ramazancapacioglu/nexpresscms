@@ -1,6 +1,6 @@
 import type { NavigationLayoutDto } from "./types";
 import { eq, and } from "drizzle-orm";
-import { type FooterConfig, type HeaderConfig, emptySidebarConfig, type NavigationMenuItem, type SidebarConfig } from "@nexpress/core";
+import { type FooterConfig, type HeaderConfig, emptySidebarConfig, type NavigationMenuItem, type SidebarConfig, type SiteMenuRecord } from "@nexpress/core";
 import { CmsSiteRepository } from "./site";
 
 export class CmsNavigationRepository extends CmsSiteRepository {
@@ -41,6 +41,8 @@ export class CmsNavigationRepository extends CmsSiteRepository {
     menuItems?: NavigationMenuItem[];
     footerConfig?: FooterConfig;
     sidebarConfig?: SidebarConfig;
+    /** Kayıtlı menüler footer JSON'unun `menus` alanına yazılır. Header kaydı ayrıca `menuItems` olur. */
+    menus?: SiteMenuRecord[];
   }): Promise<void> {
     const locale = input.locale ?? "tr";
     const existing = await this.getNavigationLayout(locale);
@@ -48,7 +50,7 @@ export class CmsNavigationRepository extends CmsSiteRepository {
     const id = existing?.id ?? `nav_${this.siteId}_${locale}`;
     const headerConfig = input.headerConfig ?? existing?.headerConfig;
     const menuItems = input.menuItems ?? existing?.menuItems ?? [];
-    const footerConfig: FooterConfig = input.footerConfig ??
+    let footerConfig: FooterConfig = input.footerConfig ??
       existing?.footerConfig ?? {
         columns: [],
         showNewsletter: true,
@@ -56,6 +58,8 @@ export class CmsNavigationRepository extends CmsSiteRepository {
         copyrightText: "© 2026 NexPress CMS",
         bottomLinks: [],
       };
+    if (input.menus) footerConfig = { ...footerConfig, menus: input.menus };
+    else if (footerConfig.menus === undefined && existing?.footerConfig.menus) footerConfig = { ...footerConfig, menus: existing.footerConfig.menus };
     const sidebarConfig = input.sidebarConfig ?? existing?.sidebarConfig ?? emptySidebarConfig();
     if (!headerConfig) {
       throw new Error("Header kaydı yok.");

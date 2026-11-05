@@ -1,4 +1,5 @@
 import { darkModeCss, type DesignTokens, type SiteCustomizerSettings, type SiteProfile } from "@nexpress/core";
+import { AKINSOFT_THEME_ID, AKINSOFT_TOKENS } from "./akinsoft-merkez";
 import { INK_GRID_ID, INK_GRID_TOKENS } from "./ink-grid";
 
 export interface ThemeManifest {
@@ -7,7 +8,8 @@ export interface ThemeManifest {
     | "commerce-velocity"
     | "editorial-pulse"
     | "crimson-erp"
-    | typeof INK_GRID_ID;
+    | typeof INK_GRID_ID
+    | typeof AKINSOFT_THEME_ID;
   name: string;
   tagline: string;
   description: string;
@@ -378,6 +380,24 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
         cardShadow: "md",
       },
     },
+  },
+  {
+    id: AKINSOFT_THEME_ID,
+    name: "AKINSOFT Merkez",
+    tagline: "İnce cam menü, lacivert-yeşil marka, siyah vitrin",
+    description:
+      "Merkez yazılım vitrini: 52px buzlu şerit, 12px menü, siyah kahraman alanı, açık gri footer, sağdan açılan demo formu ve yazı kenarı.",
+    version: "1.0.0",
+    author: "NexPress Design Lab",
+    recommendedProfile: "corporate",
+    features: [
+      "52px buzlu şerit",
+      "Mega menü sütunları",
+      "Sağ demo formu",
+      "Açık gri footer",
+      "Yazı kenar çubuğu",
+    ],
+    tokens: AKINSOFT_TOKENS,
   },
 ];
 

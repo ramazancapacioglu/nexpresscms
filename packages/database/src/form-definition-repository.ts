@@ -23,6 +23,8 @@ export interface FormDefinitionInput {
   templateId?: string | null;
   spec: unknown;
   notify?: unknown;
+  /** Tema kabuğu gibi kalıcı kimlik. Boşsa üretilir. */
+  id?: string;
 }
 
 /** Sürükle-bırak kurucunun form tanımları; her sorgu `siteId` kapsamlıdır, okuma/yazma `core` normalleştiricisinden geçer. */
@@ -68,7 +70,9 @@ export class FormDefinitionRepository {
   }
 
   public async create(input: FormDefinitionInput): Promise<FormDefinitionDto> {
-    const id = `frm_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+    const wanted = input.id && /^frm_[a-z0-9_]{1,40}$/.test(input.id) ? input.id : "";
+    if (wanted && (await this.get(wanted))) return (await this.get(wanted))!;
+    const id = wanted || `frm_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
     const now = new Date();
     const spec = normalizeFormSpec(input.spec);
     const { db, t } = this.backend;

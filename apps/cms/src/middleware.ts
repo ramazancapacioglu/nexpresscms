@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-nexpress-site-id", siteId);
   // AI yönlendirme izleme girdileri: istemciden gelen değerler her zaman ezilir
   requestHeaders.set("x-nexpress-path", pathname);
+  requestHeaders.set("x-nexpress-search", searchParams.toString().slice(0, 180));
   // Tema önizleme: yalnızca geçerli oturumlu kullanıcı için (`?nx_preview=<tema>`); istemciden gelen başlık her zaman ezilir
   requestHeaders.delete("x-nexpress-preview-theme");
   const previewId = searchParams.get("nx_preview");

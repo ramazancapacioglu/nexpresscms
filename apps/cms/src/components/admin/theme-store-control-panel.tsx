@@ -1,4 +1,5 @@
-import { Columns, Layout, LayoutTemplate, Palette, PanelTop, Sparkles, Type } from "lucide-react";
+import Link from "next/link";
+import { Columns, Palette, PanelTop, Type } from "lucide-react";
 import type { ThemeStoreState } from "./use-theme-store";
 import { ThemeStoreTabThemes } from "./theme-store-tab-themes";
 import { ThemeStoreTabPalettes } from "./theme-store-tab-palettes";
@@ -11,15 +12,13 @@ export function ThemeStoreControlPanel({ s }: { s: ThemeStoreState }) {
   return (
     <div className="lg:col-span-5 flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xs">
       {/* Sekme Başlıkları (WordPress Customizer Tarzı 6 Modül) */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 border-b border-border bg-muted/40 p-1 text-[11px] font-semibold">
+      <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-border bg-muted/40 p-1 text-[11px] font-semibold">
         {(
           [
-            { id: "themes", label: "Temalar", icon: Sparkles },
             { id: "colors", label: "Renkler", icon: Palette },
             { id: "typography", label: "Yazı Tipi", icon: Type },
             { id: "layout", label: "Sidebar & En", icon: Columns },
-            { id: "chrome", label: "Header/Footer", icon: PanelTop },
-            { id: "templates", label: "Şablonlar", icon: LayoutTemplate },
+            { id: "chrome", label: "Logo & ölçü", icon: PanelTop },
           ] as const
         ).map((tab) => {
           const Icon = tab.icon;
@@ -53,6 +52,11 @@ export function ThemeStoreControlPanel({ s }: { s: ThemeStoreState }) {
         <ThemeStoreTabTypography s={s} />
         <ThemeStoreTabLayout s={s} />
       </div>
+      <p className="border-t border-border px-3 py-2 text-[10px] text-muted-foreground">
+        Tema seçimi <Link href="/admin/themes" className="font-semibold text-blue-700 underline dark:text-blue-300">galeride</Link>.
+        Header düzeni <Link href="/admin/appearance/header" className="font-semibold text-blue-700 underline dark:text-blue-300">yerleşimde</Link>.
+        Şablon ataması <Link href="/admin/appearance/templates" className="font-semibold text-blue-700 underline dark:text-blue-300">şablonlarda</Link>.
+      </p>
     </div>
   );
 }

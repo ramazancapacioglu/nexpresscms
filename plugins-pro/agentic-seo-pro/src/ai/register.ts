@@ -49,7 +49,7 @@ export function registerAiWriter(): void {
 }
 
 /** Marka kuralları (ton, yasak kalıplar, Site DNA) — öneri ve yazım eylemleri ortak kullanır. */
-async function loadBrandRules(siteId: string): Promise<{ rules: BrandRules; model?: string }> {
+export async function loadBrandRules(siteId: string): Promise<{ rules: BrandRules; model?: string }> {
   const s = await getPluginSettings(siteId, PLUGIN_ID);
   const rules: BrandRules = {
     tone: typeof s.aiTone === "string" ? s.aiTone : undefined,

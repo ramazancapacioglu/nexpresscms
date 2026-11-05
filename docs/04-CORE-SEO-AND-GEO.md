@@ -129,7 +129,8 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **JSON-LD doğrulayıcı:** `validateSchemaGraph` (`seo-core/src/schema-validate.ts`, testli) Article/BlogPosting, FAQPage, HowTo, Product(+Offer), Review, BreadcrumbList, VideoObject, Organization, WebSite için gerekli (hata) ve önerilen (uyarı) alanları denetler. Editörün SEO sekmesinde otomatik düğümlerin altında canlı gösterilir. Tam Schema.org doğrulayıcısı değildir.
 - **Hibrit arama:** `searchCorpus` (`packages/rag`) vektör sonuçlarını BM25 (`packages/core/src/search.ts`, Türkçe aksan katlamalı, başlık ×3) ile **RRF** (k=60) kullanarak birleştirir; `hybrid:false` yalnızca vektör. MCP `nexpress_search_corpus` bunu kullanır (`ranking: "hybrid"`). Anahtar kelime tarafı her sorguda yayındaki içerikleri okur (önbellek yok: yayından kaldırma/noindex anında yansımalı).
 - **Site içi arama:** `/{locale}/ara?q=` — sunucuda BM25, düz GET formu, istemci JS'i yok, `noindex`. Ücretli gömme çağrısı **yapmaz** (anonim ziyaretçi maliyet saldırısı olmasın). Menüye eklemek için bağlantı `/{locale}/ara` olarak verilir.
-- **İç bağlantı denetimi:** `auditLinks` (`core/src/link-audit.ts`, testli) yayındaki içeriklerin Markdown'ındaki iç bağlantıları çözer; kırık ve `slugHistory` ile taşınmış (301) olanları `/admin/seo` kartında listeler. Dış bağlantılar yalnızca sayılır.
+- **İç bağlantı denetimi:** `auditLinks` (`core/src/link-audit.ts`, testli) yayındaki içeriklerin Markdown'ındaki iç bağlantıları çözer; kırık ve `slugHistory` ile taşınmış (301) olanları `/admin/seo` kartında listeler. Benzersiz dış adresler (en çok 40) sonuçta durur ama sayfa açılışında yoklanmaz.
+- **Dış bağlantı denetimi:** yönetici `/admin/seo` içinde "Dış bağlantıları denetle" der. `probeExternalLinks` en çok 30 adresi, dört eşzamanlı, 4 saniyelik zaman aşımıyla yoklar. Yalnızca 80/443 kapılı http(s); kimlik bilgili adres, localhost, `.local`, meta veri adı ve genel olmayan IP (DNS sonucu dahil) istek almaz. Her yönlendirme aynı kapıdan geçer. 401/403 erişim engeli sayılır, kırık sayılmaz.
 - **`Link` başlığı:** içerik sayfaları `Link: <…?format=md>; rel="alternate"; type="text/markdown"` ile Markdown karşılığını bildirir (middleware).
 
 
@@ -176,4 +177,4 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 4. **Yandex Webmaster / Metrika:**
    - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
 
-Tüm entegrasyonlar `/admin/seo/integrations` ve `/admin/seo` içerisindeki `<SeoIntegrationsStudio>` bileşeni üzerinden canlı test edilebilir, ayarları kaydedilebilir ve API anahtarı girilmeden önce gerçekçi demo verileriyle görüntülenebilir.
+Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.

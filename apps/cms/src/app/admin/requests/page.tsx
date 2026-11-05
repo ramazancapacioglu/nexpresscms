@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Inbox } from "lucide-react";
 import { getAgentRequestRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
-import { StatusButton } from "./status-button";
+import { PurgeButton, StatusButton } from "./status-button";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,9 @@ export default async function AdminRequestsPage({ searchParams }: { searchParams
           <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Talepler</h1>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Yapay zeka ajanlarının MCP üzerinden bıraktığı teklif, destek ve demo talepleri. Kişisel veri içerir; yalnızca yöneticiler görür.</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <a href="/admin/requests/export" className="h-7 rounded-md border border-[#E6E7EA] px-2.5 text-[12px] leading-7 dark:border-[#23262E]">CSV</a>
+          <PurgeButton />
         <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-0.5 text-[12px] font-medium">
           {[
             ["new", `Yeni (${newCount})`],
@@ -33,6 +36,7 @@ export default async function AdminRequestsPage({ searchParams }: { searchParams
               {label}
             </Link>
           ))}
+        </div>
         </div>
       </div>
 

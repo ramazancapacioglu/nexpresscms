@@ -7,8 +7,9 @@ import "@/plugins/register";
 import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
-import { getThemeManifest } from "@nexpress/themes";
-import { resolvePublishing, resolveSiteSettings, sanitizeMenu, zonedLocalToUtc } from "@nexpress/core";
+import { AKINSOFT_THEME_ID, getThemeManifest } from "@nexpress/themes";
+import { applyAkinsoftChrome } from "@/lib/apply-akinsoft-theme";
+import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -18,6 +19,7 @@ import type {
   HeaderConfig,
   NavigationMenuItem,
   SidebarConfig,
+  SiteMenuRecord,
   SeoEngineSettings,
   SiteCustomizerSettings,
   SiteProfile,
@@ -52,6 +54,7 @@ export async function activateThemeAction(input: {
     mergedTokens,
     input.siteProfile ?? manifest.recommendedProfile
   );
+  if (manifest.id === AKINSOFT_THEME_ID) await applyAkinsoftChrome(siteId);
 
   await revalidatePath("/admin");
   await revalidatePath("/admin/themes");
@@ -384,6 +387,7 @@ export async function saveChromeAction(input: {
   menuItems?: NavigationMenuItem[];
   footerConfig?: FooterConfig;
   sidebarConfig?: SidebarConfig;
+  menus?: SiteMenuRecord[];
 }) {
   await requireUser({ audit: "cms.saveChrome" });
   const reqHeaders = await headers();
@@ -393,7 +397,8 @@ export async function saveChromeAction(input: {
   const site = await repo.getSite();
   const defaultLocale = site?.defaultLocale ?? "tr";
   const locale = input.locale && site?.supportedLocales.includes(input.locale) ? input.locale : defaultLocale;
-  const { locale: _l, ...rest } = input;
+  const { locale: _l, menus: rawMenus, menuItems: rawItems, ...rest } = input;
+  const menus = rawMenus ? sanitizeMenus(rawMenus) : undefined;
   // Yeni bir dil için ilk kayıtta header/footer varsayılan dilden devralınır (menü o dile özgü olur)
   const base = locale !== defaultLocale && !(await repo.getNavigationLayout(locale)) ? await repo.getNavigationLayout(defaultLocale) : null;
   // Menü sunucuda temizlenir: sınırlar, güvenli adresler (javascript: yok), en çok 3 düzey
@@ -402,7 +407,8 @@ export async function saveChromeAction(input: {
     headerConfig: base?.headerConfig,
     footerConfig: base?.footerConfig,
     ...rest,
-    ...(input.menuItems ? { menuItems: sanitizeMenu(input.menuItems) } : {}),
+    ...(rawItems ? { menuItems: sanitizeMenu(rawItems) } : {}),
+    ...(menus ? { menus, menuItems: menus.find((m) => m.header)?.items ?? [] } : {}),
   });
 
   await revalidatePath("/admin/appearance/navigation");

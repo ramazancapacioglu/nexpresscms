@@ -28,7 +28,7 @@ export function Toggle({ checked, onChange, children }: { checked: boolean; onCh
 }
 
 /** Seçili alanın özellikleri. Tür, etiket, ad (makine adı), zorunluluk, genişlik, seçenekler ve sınırlar. */
-export function FieldInspector({ f, all, onChange }: { f: FormField; all: FormField[]; onChange: (patch: Partial<FormField>) => void }) {
+export function FieldInspector({ f, all, stepped, onChange }: { f: FormField; all: FormField[]; stepped: boolean; onChange: (patch: Partial<FormField>) => void }) {
   const content = isContent(f.type);
   const otherNames = new Set(all.filter((x) => x.id !== f.id).map((x) => x.name));
   const types = convertibleTypes(f.type);
@@ -44,9 +44,11 @@ export function FieldInspector({ f, all, onChange }: { f: FormField; all: FormFi
           </select>
         </Row>
       )}
-      <Row label={content ? "Metin" : "Etiket"}>
-        {f.type === "paragraph" ? <textarea className={`${inputCls} h-20 py-1.5`} value={f.label} maxLength={120} onChange={(e) => relabel(e.target.value)} /> : <input className={inputCls} value={f.label} maxLength={120} onChange={(e) => relabel(e.target.value)} />}
-      </Row>
+      {f.type !== "divider" && (
+        <Row label={content ? "Metin" : "Etiket"}>
+          {f.type === "paragraph" ? <textarea className={`${inputCls} h-20 py-1.5`} value={f.label} maxLength={120} onChange={(e) => relabel(e.target.value)} /> : <input className={inputCls} value={f.label} maxLength={120} onChange={(e) => relabel(e.target.value)} />}
+        </Row>
+      )}
       {!content && (
         <>
           <Row label="Alan adı" hint="Dışa aktarma ve analizde kullanılır. Harfle başlar; küçük harf, rakam, alt çizgi.">
@@ -81,11 +83,42 @@ export function FieldInspector({ f, all, onChange }: { f: FormField; all: FormFi
       )}
       {f.type === "rating" && <Row label="Yıldız sayısı"><input type="number" min={3} max={10} className={inputCls} value={f.max ?? 5} onChange={(e) => onChange({ max: Math.min(10, Math.max(3, Number(e.target.value) || 5)) })} /></Row>}
       <Row label="Genişlik">
-        <select className={inputCls} value={f.width} onChange={(e) => onChange({ width: e.target.value as "full" | "half" })}>
+        <select className={inputCls} value={f.width} onChange={(e) => onChange({ width: e.target.value as FormField["width"] })}>
           <option value="full">Tam satır</option>
-          <option value="half">Yarım (yan yana iki alan)</option>
+          <option value="half">Yarım — 2'li satır</option>
+          <option value="quarter">Çeyrek — 4'lü satır</option>
         </select>
       </Row>
+      {stepped && (
+        <Row label="Adım" hint="1–6. Aynı numaradaki alanlar aynı adımda durur.">
+          <input type="number" min={1} max={6} className={inputCls} value={f.step ?? 1} onChange={(e) => onChange({ step: Math.min(6, Math.max(1, Number(e.target.value) || 1)) })} />
+        </Row>
+      )}
+      <ShowWhenRow f={f} all={all} onChange={onChange} />
     </div>
+  );
+}
+
+/** Önceki bir seçimin cevabına bağlar. Ziyaretçi sayfasında kod çalışmaz; alan o cevap seçilince görünür. */
+function ShowWhenRow({ f, all, onChange }: { f: FormField; all: FormField[]; onChange: (patch: Partial<FormField>) => void }) {
+  const idx = all.findIndex((x) => x.id === f.id);
+  const gates = all.slice(0, Math.max(0, idx)).filter((x) => x.type === "select" || x.type === "radio" || x.type === "checkboxes" || x.type === "checkbox");
+  if (gates.length === 0) return null;
+  const current = f.showWhen ? JSON.stringify(f.showWhen) : "";
+  const options = gates.flatMap((g) => (g.type === "checkbox" ? [{ field: g.name, equals: "Evet", label: `${g.label} işaretliyken` }] : g.options.map((o) => ({ field: g.name, equals: o, label: `${g.label} = ${o}` }))));
+  return (
+    <Row label="Ne zaman görünsün" hint="Boşsa her zaman görünür. Seçilen cevap verilmezse alan zorunlu olsa da istenmez.">
+      <select
+        className={inputCls}
+        value={options.some((o) => JSON.stringify({ field: o.field, equals: o.equals }) === current) ? current : ""}
+        onChange={(e) => onChange({ showWhen: e.target.value ? JSON.parse(e.target.value) as FormField["showWhen"] : undefined })}
+      >
+        <option value="">Her zaman</option>
+        {options.map((o) => {
+          const value = JSON.stringify({ field: o.field, equals: o.equals });
+          return <option key={value} value={value}>{o.label}</option>;
+        })}
+      </select>
+    </Row>
   );
 }

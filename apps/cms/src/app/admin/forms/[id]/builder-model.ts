@@ -1,5 +1,5 @@
 import { CHOICE_FIELD_TYPES, CONTENT_FIELD_TYPES, field, type FormField, type FormFieldType } from "@nexpress/core";
-import { AlignLeft, AtSign, Calendar, CheckSquare, CircleDot, Gauge, Heading, Hash, Link2, List, ListChecks, Minus, Phone, Star, Text, Type, type LucideIcon } from "lucide-react";
+import { AlignLeft, AtSign, Calendar, CheckSquare, CircleDot, Clock, Gauge, Heading, Hash, Link2, List, ListChecks, Minus, Phone, Star, Text, Type, type LucideIcon } from "lucide-react";
 
 export interface FieldKind {
   type: FormFieldType;
@@ -17,6 +17,7 @@ export const FIELD_KINDS: FieldKind[] = [
   { type: "url", label: "Web adresi", group: "Temel", icon: Link2 },
   { type: "number", label: "Sayı", group: "Temel", icon: Hash },
   { type: "date", label: "Tarih", group: "Temel", icon: Calendar },
+  { type: "time", label: "Saat", group: "Temel", icon: Clock },
   { type: "select", label: "Açılır liste", group: "Seçim", icon: List },
   { type: "radio", label: "Tek seçim", group: "Seçim", icon: CircleDot },
   { type: "checkboxes", label: "Çoklu seçim", group: "Seçim", icon: ListChecks },
@@ -25,6 +26,7 @@ export const FIELD_KINDS: FieldKind[] = [
   { type: "scale", label: "0–10 ölçeği (NPS)", group: "Değerlendirme", icon: Gauge },
   { type: "heading", label: "Başlık", group: "Düzen", icon: Heading },
   { type: "paragraph", label: "Açıklama metni", group: "Düzen", icon: Text },
+  { type: "divider", label: "Ayırıcı çizgi", group: "Düzen", icon: Minus },
 ];
 
 export const kindOf = (type: FormFieldType): FieldKind => FIELD_KINDS.find((k) => k.type === type) ?? FIELD_KINDS[0]!;
@@ -63,7 +65,8 @@ export const isContent = (t: FormFieldType) => CONTENT_FIELD_TYPES.has(t);
 export const hasOptions = (t: FormFieldType) => CHOICE_FIELD_TYPES.has(t);
 /** Alan türü değiştirilebilir gruplar (içerik ve seçmeli türler kendi içinde) */
 export function convertibleTypes(t: FormFieldType): FormFieldType[] {
+  if (t === "divider") return ["divider"];
   if (isContent(t)) return ["heading", "paragraph"];
   if (hasOptions(t)) return ["select", "radio", "checkboxes"];
-  return ["text", "textarea", "email", "tel", "url", "number", "date"].includes(t) ? ["text", "textarea", "email", "tel", "url", "number", "date"] as FormFieldType[] : [t];
+  return ["text", "textarea", "email", "tel", "url", "number", "date", "time"].includes(t) ? ["text", "textarea", "email", "tel", "url", "number", "date", "time"] as FormFieldType[] : [t];
 }

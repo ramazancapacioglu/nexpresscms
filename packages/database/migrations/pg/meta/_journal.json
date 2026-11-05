@@ -127,6 +127,20 @@
       "when": 1793629991534,
       "tag": "0017_taxonomy_template",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793809836379,
+      "tag": "0018_hesitant_wallflower",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793811434265,
+      "tag": "0019_secret_grandmaster",
+      "breakpoints": true
     }
   ]
 }

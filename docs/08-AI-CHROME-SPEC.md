@@ -1,6 +1,6 @@
 # 08 — AI İle Header ve Footer Tasarlatma Rehberi
 
-Bu doküman, bir modele **header** veya **footer** tasarlatıp sonucu yönetim kütüphanesine aktarmak içindir. Sayfa blokları için sözleşme `docs/07-AI-PAGE-AND-BLOCK-SPEC.md` dosyasındadır. Header ve footer sayfa bloğu değildir; menü ağacı da bu JSON’a girmez.
+Bu doküman, bir modele **header** veya **footer** tasarlatıp sonucu yönetim kütüphanesine aktarmak içindir. Sayfa blokları için sözleşme `docs/07-AI-PAGE-AND-BLOCK-SPEC.md` dosyasındadır. Tema paketi, kütüphane ve şablon birlikte üretilecekse modele `docs/23-THEME-AND-DESIGN-AUTHORING.md` verilir. Header ve footer sayfa bloğu değildir; menü ağacı da bu JSON’a girmez.
 
 Kütüphane: `/admin/appearance/header` ve `/admin/appearance/footer` içinde **Tasarım kütüphanesi**. JSON sekmesi bu sözleşmeyi kabul eder. Prompt, aynı penceredeki **AI promptunu kopyala** düğmesindedir.
 
@@ -69,7 +69,7 @@ Kolon sayısı 0 ile 4 arasında kalsın.
 }
 ```
 
-`sticky` yapışkan şerit, `glassmorphism` cam yüzeydir. Menü etiketleri `/admin/appearance/menus` kaydından gelir.
+`sticky` yapışkan şerit, `glassmorphism` cam yüzeydir. `leftWidgets` / `centerWidgets` / `rightWidgets` ön yüzde basılır. Kanonik öğeler: `announcement`, `contact`, `logo`, `menu`, `search`, `cta`, `links`. Eski adlar (`contact_info`, `mega_menu`, `search_bar`, `cta_button`, `campaign_links`, `category_drawer`) kayda dokunulmadan aynı öğeye çözülür. Üç dizi de boşsa veya yalnızca bilinmeyen kimlik (`geo_selector` gibi) varsa şeridin varsayılanı kullanılır. Her şeritte isteğe bağlı `mobileLeftWidgets`, `mobileCenterWidgets`, `mobileRightWidgets` küçük ekranı ayrıca dizer. Ana şeritte yoksa logo solda, kalan öğeler sağda türetilir. Üst ve alt şeritte yoksa masaüstü dizisi küçük ekranda da kalır; yazılırsa o dizi basılır. Alt şeridin mobil dizisinde `links` yoksa telefon satırı çizilmez. Hazır kütüphane kayıtlarının mobil dizisi doludur (örneğin sade şerit mobilde çağrıyı bırakır, doküman şeridi aramayı ortaya alır). Menü etiketleri `/admin/appearance/menus` kaydından gelir. `/admin` ile başlayan çağrı adresi ziyaretçiye basılmaz.
 
 ---
 
@@ -107,4 +107,4 @@ Kolon sayısı 0 ile 4 arasında kalsın.
 Header: Sade, Duyuru, Vitrin, Katalog.  
 Footer: Sade, Kolon, Bülten, Vitrin.
 
-Hazır kayıtlar `HEADER_LIBRARY` ve `FOOTER_LIBRARY` içindedir. Seçilen tasarım forma kopyalanır; kaynak şablon değişmez.
+Hazır kayıtlar `HEADER_LIBRARY` ve `FOOTER_LIBRARY` içindedir. Header kartı masaüstü ve mobil özeti gösterir; mobil dizi pencerede düzenlenip forma kopyalanır. Footer seçilince doğrudan forma alınır. Kaynak şablon değişmez.

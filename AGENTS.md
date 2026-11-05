@@ -9,6 +9,7 @@ Projede kod yazan veya mimari değişiklik yapan her geliştirici ve AI ajanı a
 ## 1. Eş Zamanlı Dokümantasyon Kuralı (`docs/` Senkronizasyonu)
 - Kod tabanında yapılan her yeni modül, veritabanı tablosu, kanca (hook), tema özelliği veya API değişikliği **aynı görev (turn) içerisinde** ilgili `docs/*.md` dosyasına ve `docs/06-PROGRESS-LOG.md` ilerleme günlüğüne işlenmelidir.
 - Dokümanı güncellenmemiş hiçbir özellik "tamamlandı" sayılamaz.
+- Tema paketi (`.nxtheme`), blok kataloğu (`AI_BLOCK_CATALOG`, `BLOCK_TYPES`), header/footer öğeleri, şablon türleri veya yuva alanları değişirse aynı turda `docs/23-THEME-AND-DESIGN-AUTHORING.md` güncellenir. `docs/07` ve `docs/08` kısa özettir; modele verilecek sözleşme `docs/23` dosyasıdır.
 
 ## 2. Örtük Çoklu-Kiracı (Implicit Tenancy) Kuralı (`siteId`)
 - Sistem varsayılan olarak **Single-Tenant** (`CMS_MODE=single`, `siteId = 'default'`) çalışır; ancak kullanıcıların subdomain (`firma.demo.nexpress.com`) ile kayıt olup sistemi deneyimleyebilmesi için **Multi-Tenant** (`CMS_MODE=multi_subdomain`) altyapısına sahiptir.
@@ -72,6 +73,7 @@ Geliştirme yaparken her zaman aşağıdaki dokümanları referans alın:
 - Canlı İlerleme Günlüğü: `./docs/06-PROGRESS-LOG.md`
 - AI sayfa ve blok sözleşmesi: `./docs/07-AI-PAGE-AND-BLOCK-SPEC.md`
 - AI header ve footer sözleşmesi: `./docs/08-AI-CHROME-SPEC.md`
+- Tema, tasarım kütüphanesi ve şablon yazarlığı (modele verilecek sözleşme): `./docs/23-THEME-AND-DESIGN-AUTHORING.md`
 - E-Ticaret modülü: `./docs/09-COMMERCE.md`
 - Pazar yeri entegrasyonu: `./docs/10-MARKETPLACES.md`
 - Güvenlik, kimlik doğrulama ve işletim: `./docs/11-SECURITY-AND-OPERATIONS.md`

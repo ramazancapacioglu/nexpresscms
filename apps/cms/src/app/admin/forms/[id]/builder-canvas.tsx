@@ -5,7 +5,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Copy, GripVertical, Trash2 } from "lucide-react";
-import { ratingMax, type FormField } from "@nexpress/core";
+import { fieldSpan, ratingMax, type FormAppearance, type FormField } from "@nexpress/core";
 import { kindOf } from "./builder-model";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
@@ -14,6 +14,8 @@ const mock = `h-8 w-full rounded-md border ${border} bg-[#F9FAFB] dark:bg-[#1C1E
 /** Alanın kanvastaki (etkileşimsiz) görünümü; genişlik ve düzen ziyaretçi formuyla aynıdır. */
 export function FieldPreview({ f }: { f: FormField }) {
   switch (f.type) {
+    case "divider": return <hr className={`border-t ${border}`} />;
+    case "time": return <div className={mock}>{f.placeholder || "09:30"}</div>;
     case "heading": return <p className="text-[15px] font-bold text-[#14151A] dark:text-[#F3F4F6]">{f.label}</p>;
     case "paragraph": return <p className="text-[12px] text-[#5C5F66] dark:text-[#9CA3AF]">{f.label}</p>;
     case "textarea": return <div className={`${mock} h-16`}>{f.placeholder}</div>;
@@ -26,15 +28,15 @@ export function FieldPreview({ f }: { f: FormField }) {
   }
 }
 
-function SortableField({ f, selected, onSelect, onRemove, onDuplicate }: { f: FormField; selected: boolean; onSelect: () => void; onRemove: () => void; onDuplicate: () => void }) {
+function SortableField({ f, columns, selected, onSelect, onRemove, onDuplicate }: { f: FormField; columns: 1 | 2 | 4; selected: boolean; onSelect: () => void; onRemove: () => void; onDuplicate: () => void }) {
   const s = useSortable({ id: f.id });
   const Icon = kindOf(f.type).icon;
-  const content = f.type === "heading" || f.type === "paragraph" || f.type === "checkbox";
+  const content = f.type === "heading" || f.type === "paragraph" || f.type === "divider" || f.type === "checkbox";
   return (
     <li
       ref={s.setNodeRef}
-      style={{ transform: CSS.Transform.toString(s.transform), transition: s.transition, opacity: s.isDragging ? 0.4 : 1 }}
-      className={f.width === "half" ? "col-span-1" : "sm:col-span-2"}
+      className="min-w-0"
+      style={{ transform: CSS.Transform.toString(s.transform), transition: s.transition, opacity: s.isDragging ? 0.4 : 1, gridColumn: `span ${fieldSpan(f.width, columns)}` }}
     >
       <div className={`group flex gap-2 rounded-lg border bg-white p-3 dark:bg-[#15171C] ${selected ? "border-[#266DF0] ring-2 ring-[#266DF0]/20" : border}`}>
         <button type="button" aria-label="Sürükle" {...s.attributes} {...s.listeners} className="mt-0.5 h-6 w-5 shrink-0 cursor-grab touch-none text-[#5F6570] dark:text-[#8C9099] hover:text-[#5C5F66]"><GripVertical className="h-4 w-4" /></button>
@@ -46,6 +48,7 @@ function SortableField({ f, selected, onSelect, onRemove, onDuplicate }: { f: Fo
             </span>
           )}
           <FieldPreview f={f} />
+          {f.showWhen && <span className="block text-[10px] text-[#1D5ED8] dark:text-[#7AA7FF]">Görünür: {f.showWhen.equals}</span>}
           {f.help && !content && <span className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">{f.help}</span>}
         </button>
         <div className={`flex shrink-0 flex-col gap-1 ${selected ? "" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"}`}>
@@ -57,14 +60,14 @@ function SortableField({ f, selected, onSelect, onRemove, onDuplicate }: { f: Fo
   );
 }
 
-export function Canvas({ fields, selectedId, onSelect, onRemove, onDuplicate, submitLabel, dragging }: { fields: FormField[]; selectedId: string | null; onSelect: (id: string) => void; onRemove: (id: string) => void; onDuplicate: (id: string) => void; submitLabel: string; dragging: boolean }) {
+export function Canvas({ fields, appearance, selectedId, onSelect, onRemove, onDuplicate, submitLabel, dragging }: { fields: FormField[]; appearance: FormAppearance; selectedId: string | null; onSelect: (id: string) => void; onRemove: (id: string) => void; onDuplicate: (id: string) => void; submitLabel: string; dragging: boolean }) {
   const end = useDroppable({ id: "canvas-end" });
   return (
     <div className={`rounded-lg border ${border} bg-[#F9FAFB] p-4 dark:bg-[#101216]`}>
       <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3" style={{ gridTemplateColumns: `repeat(${appearance.columns}, minmax(0, 1fr))` }}>
           {fields.map((f) => (
-            <SortableField key={f.id} f={f} selected={f.id === selectedId} onSelect={() => onSelect(f.id)} onRemove={() => onRemove(f.id)} onDuplicate={() => onDuplicate(f.id)} />
+            <SortableField key={f.id} f={f} columns={appearance.columns} selected={f.id === selectedId} onSelect={() => onSelect(f.id)} onRemove={() => onRemove(f.id)} onDuplicate={() => onDuplicate(f.id)} />
           ))}
         </ul>
       </SortableContext>

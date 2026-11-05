@@ -364,6 +364,9 @@ importers:
       '@nexpress/rag':
         specifier: workspace:*
         version: link:../../packages/rag
+      '@nexpress/wp-importer':
+        specifier: workspace:*
+        version: link:../../packages/wp-importer
       react:
         specifier: ^19.0.0
         version: 19.3.1

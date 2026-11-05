@@ -160,12 +160,13 @@ export function MenuItemSettings({ item, isRoot, hasChildren, lookup, onChange }
                   checked={Boolean(mega?.enabled)}
                   onChange={(e) =>
                     e.target.checked
-                      ? setMega({ enabled: true })
+                      ? setMega({ enabled: true, mode: hasChildren ? "children" : mega?.mode })
                       : onChange({ megaMenu: undefined })
                   }
                 />
                 <span>Bu öğe için mega menüyü etkinleştir</span>
               </label>
+              {hasChildren ? <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Alt menüler panelin altında listelenir. Torun varsa her alt öğe bir sütun başlığı olur.</p> : null}
 
               {mega?.enabled && (
                 <>
@@ -200,7 +201,7 @@ export function MenuItemSettings({ item, isRoot, hasChildren, lookup, onChange }
                         onChange={(e) => setMega({ mode: e.target.value as "children" | "custom" })}
                         className={box}
                       >
-                        <option value="children">Alt öğelerden (otomatik sütun)</option>
+                        <option value="children">Alt menüler (otomatik alta)</option>
                         <option value="custom">Özel İkonlu Kartlar</option>
                       </select>
                     </div>

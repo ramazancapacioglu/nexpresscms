@@ -10,6 +10,7 @@ import {
   syncGa4Action,
   type SaveIntegrationsInput,
 } from "@/app/admin/seo/actions";
+import { runPluginAction } from "@/app/admin/plugin-actions";
 import type {
   GscQueryRow,
   BingQueryRow,
@@ -92,6 +93,16 @@ export function SeoIntegrationsStudio({
         return;
       }
       setGscData(res.data ?? []);
+      if (!res.sample) {
+        void runPluginAction({
+          name: "intel.import",
+          payload: {
+            live: true,
+            source: "gsc",
+            rows: (res.data ?? []).map((row) => ({ keyword: row.query, clicks: row.clicks, impressions: row.impressions, ctr: row.ctr, position: row.position })),
+          },
+        });
+      }
       showFlash("ok", res.message || "GSC verileri başarıyla çekildi.");
     });
   };
@@ -122,6 +133,16 @@ export function SeoIntegrationsStudio({
         return;
       }
       setBingData(res.data ?? []);
+      if (!res.sample) {
+        void runPluginAction({
+          name: "intel.import",
+          payload: {
+            live: true,
+            source: "bing",
+            rows: (res.data ?? []).map((row) => ({ keyword: row.query, clicks: row.clicks, impressions: row.impressions, position: row.position })),
+          },
+        });
+      }
       showFlash("ok", res.message || "Bing Webmaster verileri çekildi.");
     });
   };
@@ -137,6 +158,16 @@ export function SeoIntegrationsStudio({
         return;
       }
       setYandexData(res.data ?? []);
+      if (!res.sample) {
+        void runPluginAction({
+          name: "intel.import",
+          payload: {
+            live: true,
+            source: "yandex",
+            rows: (res.data ?? []).map((row) => ({ keyword: row.path, impressions: row.visits })),
+          },
+        });
+      }
       showFlash("ok", res.message || "Yandex Metrika verileri çekildi.");
     });
   };

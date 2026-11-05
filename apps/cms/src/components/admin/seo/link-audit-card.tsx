@@ -24,7 +24,7 @@ export function LinkAuditCard({ contents, locales }: { contents: ContentDto[]; l
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">İç bağlantı denetimi</h2>
         <span className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-          {result.internalChecked} iç, {result.externalCount} dış bağlantı · dış bağlantılar denetlenmez
+          {result.internalChecked} iç, {result.externalCount} dış bağlantı
         </span>
       </div>
       {result.issues.length === 0 ? (

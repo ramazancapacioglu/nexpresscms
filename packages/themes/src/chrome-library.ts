@@ -28,6 +28,55 @@ const off = {
   rightWidgets: [] as string[],
 };
 
+/** Hazır header'ın küçük ekran dizisi. Yazılınca masaüstünden türetme devreye girmez. */
+function mobile(left: string[], center: string[] = [], right: string[] = []) {
+  return {
+    mobileLeftWidgets: left,
+    mobileCenterWidgets: center,
+    mobileRightWidgets: right,
+  };
+}
+
+interface HeaderMobilePreset {
+  top?: ReturnType<typeof mobile>;
+  main: ReturnType<typeof mobile>;
+  bottom?: ReturnType<typeof mobile>;
+}
+
+/** Her kütüphane header'ının tasarlanmış mobil hali. Ana şerit zorunlu; üst ve alt yalnızca o şerit açıksa. */
+const HEADER_MOBILE: Record<string, HeaderMobilePreset> = {
+  "header-plain": { main: mobile(["logo"], [], ["menu"]) },
+  "header-announce": {
+    top: mobile(["announcement"], [], ["contact"]),
+    main: mobile(["logo"], [], ["menu"]),
+  },
+  "header-vitrin": { main: mobile(["logo"], [], ["menu", "cta"]) },
+  "header-catalog": {
+    main: mobile(["logo"], [], ["menu", "cta"]),
+    bottom: mobile(["links"]),
+  },
+  "header-center": { main: mobile(["logo"], [], ["menu", "cta"]) },
+  "header-glass": {
+    top: mobile(["announcement"]),
+    main: mobile(["logo"], [], ["menu"]),
+  },
+  "header-docs": {
+    main: mobile(["logo"], ["search"], ["menu"]),
+    bottom: mobile(["links"]),
+  },
+};
+
+function withHeaderMobile(id: string, value: HeaderConfig): HeaderConfig {
+  const preset = HEADER_MOBILE[id];
+  if (!preset) return value;
+  return {
+    ...value,
+    topBar: { ...value.topBar, ...preset.top },
+    mainBar: { ...value.mainBar, ...preset.main },
+    bottomBar: { ...value.bottomBar, ...preset.bottom },
+  };
+}
+
 function header(
   id: string,
   name: string,
@@ -36,7 +85,7 @@ function header(
   preview: ChromePreview,
   value: HeaderConfig
 ): ChromeLibraryItem<HeaderConfig> {
-  return { id, name, description, category, preview, value };
+  return { id, name, description, category, preview, value: withHeaderMobile(id, value) };
 }
 
 function footer(
@@ -232,7 +281,7 @@ Header istenirse:
   "kind": "header",
   "header": {
     "topBar": { "enabled": false, "announcementText": "", "contactPhone": "", "leftWidgets": [], "centerWidgets": [], "rightWidgets": [] },
-    "mainBar": { "enabled": true, "sticky": true, "glassmorphism": false, "leftWidgets": ["logo"], "centerWidgets": ["menu"], "rightWidgets": ["cta"], "ctaLabel": "Demo", "ctaHref": "/tr/kurumsal" },
+    "mainBar": { "enabled": true, "sticky": true, "glassmorphism": false, "leftWidgets": ["logo"], "centerWidgets": ["menu"], "rightWidgets": ["cta"], "mobileLeftWidgets": ["logo"], "mobileCenterWidgets": [], "mobileRightWidgets": ["menu", "cta"], "ctaLabel": "Demo", "ctaHref": "/tr/kurumsal" },
     "bottomBar": { "enabled": false, "leftWidgets": [], "centerWidgets": [], "rightWidgets": [], "links": [{ "id": "b1", "label": "Doküman", "href": "/tr/dokuman" }] }
   }
 }
@@ -254,4 +303,6 @@ Kurallar:
 - id alanları benzersiz olsun. Adresler /tr veya /admin ile başlasın.
 - topBar.enabled true ise announcementText dolu olsun.
 - bottomBar.enabled true ise links en az iki öğe içersin.
+- Ana şeritte mobil dizi yaz: mobileLeftWidgets, mobileCenterWidgets, mobileRightWidgets. Küçük ekranda logo solda, menü sağda kalsın. Çağrı sığmıyorsa mobil sağ diziden çıkar.
+- Üst veya alt şerit mobilde farklıysa aynı üç alanı o şeride de yaz.
 - Kolon sayısı 0 ile 4 arasında kalsın.`;

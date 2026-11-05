@@ -10,21 +10,29 @@ import { SiteFooter, SiteHeader } from "@/components/public/site-chrome";
 import { PublicSidebarWidgetArea } from "@/components/public/public-widgets";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
-import { getResolvedMenu } from "@/lib/menu-data";
+import { getResolvedMenu, getResolvedMenuLibrary } from "@/lib/menu-data";
 import { getPublicNavigation, getPublicSite, getPublicWidgetFeed, resolvePublicContent } from "@/lib/public-data";
 import {
   compileDesignTokensToCssVars,
   getThemeManifest,
+  AKINSOFT_CSS,
+  AKINSOFT_THEME_ID,
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
+import { AkinsoftReach } from "@/components/public/akinsoft-reach";
 import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
+import { getSession } from "@/lib/auth/session";
+import { MaintenanceView } from "@/components/public/maintenance";
+import { BackToTop } from "@/components/public/back-to-top";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const site = await getPublicSite(siteId);
+  const closed = resolveSiteSettings(site?.settings).general.maintenanceEnabled;
   return {
+    robots: closed ? { index: false, follow: false } : undefined,
     alternates: {
       types: {
         "application/rss+xml": [{ url: "/feed.xml", title: `${site?.name ?? "NexPress"} — RSS` }],
@@ -48,8 +56,12 @@ export default async function PublicLocaleLayout({
   // Zamanlanmış yayın tetikleyicisi: yanıttan sonra, dakikada en çok bir kez (bkz. lib/scheduler.ts)
   after(() => runScheduler(siteId).then(() => undefined));
 
-  const [site, nav, widgetFeed] = await Promise.all([
-    getPublicSite(siteId),
+  const site = await getPublicSite(siteId);
+  const maintenance = resolveSiteSettings(site?.settings).general;
+  if (maintenance.maintenanceEnabled && !(await getSession())) {
+    return <MaintenanceView locale={locale} message={maintenance.maintenanceMessage} />;
+  }
+  const [nav, widgetFeed] = await Promise.all([
     getPublicNavigation(siteId, locale),
     getPublicWidgetFeed(siteId, locale),
   ]);
@@ -65,11 +77,12 @@ export default async function PublicLocaleLayout({
   const tokens =
     isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens);
   const preview = await getPreviewTheme(siteId);
+  const isAkinsoft = (preview?.themeId ?? activeTheme.id) === AKINSOFT_THEME_ID;
   const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
   const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, resolveSiteSettings(site?.settings).customizer);
   // Düzen bileşenleri renkleri CSS değişkeninden okur (palet/karanlık mod değişince bileşen kodu aynı kalır)
   const vt = toCssVarTokens(preview?.tokens ?? tokens);
-  const menu = await getResolvedMenu(siteId, locale);
+  const [menu, menuLibrary] = await Promise.all([getResolvedMenu(siteId, locale), getResolvedMenuLibrary(siteId, locale)]);
   // Tema oluşturucu şablonları: varsayılan header/footer/kenar çubuğu şablonu varsa yerleşik olanın yerine geçer
   // Koşullar yalnızca dil ve sayfa adresiyle eşleşebilir (içerik türü/kategori bilgisi bu katmanda yoktur)
   const segs = (reqHeaders.get("x-nexpress-pathname") ?? "").split("/").filter(Boolean);
@@ -232,12 +245,13 @@ export default async function PublicLocaleLayout({
 
   return (
     <div
-      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : undefined)}
+      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : isAkinsoft ? AKINSOFT_THEME_ID : undefined)}
       style={{
         backgroundColor: vt.colors.background,
         color: vt.colors.foreground,
         fontFamily: (preview?.tokens ?? tokens).typography.bodyFont,
       }}
+      id="nx-top"
       className="relative min-h-screen flex flex-col"
     >
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
@@ -254,6 +268,7 @@ export default async function PublicLocaleLayout({
         </div>
       ) : null}
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
+      {isAkinsoft ? <style dangerouslySetInnerHTML={{ __html: AKINSOFT_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
       {ga4MeasurementId ? (
         <>
@@ -269,7 +284,7 @@ export default async function PublicLocaleLayout({
         </>
       ) : null}
 
-      {headerTpl && tplCtx ? (
+      {headerTpl && tplCtx && !isAkinsoft ? (
         <header
           style={
             headerBehavior.transparent
@@ -293,6 +308,8 @@ export default async function PublicLocaleLayout({
         header={nav?.headerConfig}
         custom={resolveSiteSettings(site?.settings).customizer.header}
         menuLabel={t("site.menu")}
+        menuAllLabel={t("site.menuAll")}
+        searchLabel={t("site.search")}
       />
       )}
 
@@ -301,12 +318,12 @@ export default async function PublicLocaleLayout({
         className={hasSidebar ? "mx-auto flex w-full flex-1 gap-6" : "contents"}
       >
         {hasSidebar && effectiveSidebarPos === "left" ? (
-          sidebarTpl && tplCtx ? (
+          sidebarTpl && tplCtx && !isAkinsoft ? (
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
           ) : activeSidebarArea ? (
-            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
           ) : null
         ) : null}
         <main
@@ -322,28 +339,30 @@ export default async function PublicLocaleLayout({
           {children}
         </main>
         {hasSidebar && effectiveSidebarPos === "right" ? (
-          sidebarTpl && tplCtx ? (
+          sidebarTpl && tplCtx && !isAkinsoft ? (
             <aside aria-label="Kenar çubuğu" style={{ width: sidebarWidth }} className="hidden shrink-0 px-4 py-10 md:block">
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
           ) : activeSidebarArea ? (
-            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} />
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
           ) : null
         ) : null}
       </div>
 
-      {footerTpl && tplCtx ? (
+      {footerTpl && tplCtx && !isAkinsoft ? (
         <footer style={{ borderColor: vt.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto">
             <RscBlockRenderer blocks={footerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
           </div>
         </footer>
       ) : (
-        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} />
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
       {resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}
+      {isAkinsoft ? <AkinsoftReach locale={locale} /> : null}
+      <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />
     </div>
   );
 }

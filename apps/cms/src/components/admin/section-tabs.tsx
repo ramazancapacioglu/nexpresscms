@@ -44,22 +44,43 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
 }
 
 export const SEO_TABS: SectionTab[] = [
-  { href: "/admin/seo", label: "SEO motoru & dizin" },
-  { href: "/admin/seo/integrations", label: "Webmaster & Analitik (GSC, GA4, Bing, Yandex)" },
+  { href: "/admin/seo", label: "Gösterge" },
+  { href: "/admin/seo/engine", label: "Motor & dizin" },
+  { href: "/admin/seo/reports", label: "Raporlar" },
+  { href: "/admin/seo/integrations", label: "Webmaster & Analitik" },
   { href: "/admin/seo/audit", label: "Site denetimi" },
   { href: "/admin/redirects", label: "Yönlendirmeler & 404" },
+  { href: "/admin/seo/settings", label: "Ayarlar" },
 ];
 
-export const APPEARANCE_TABS: SectionTab[] = [
-  { href: "/admin/studio", label: "✨ Tasarım Stüdyosu", match: [] },
-  { href: "/admin/themes", label: "Temalar", match: [] },
-  { href: "/admin/themes/customize", label: "Tema Özelleştirici", match: [] },
-  { href: "/admin/appearance/templates", label: "Şablonlar & Modeller" },
-  { href: "/admin/appearance/menus", label: "Menüler" },
-  { href: "/admin/appearance/sidebar", label: "Kenar Çubuğu" },
+/** Tema derisi: galeri ve jetonlar. Yerleşim ve şablon burada yok. */
+const THEME_TABS: SectionTab[] = [
+  { href: "/admin/themes", label: "Tema galerisi", match: ["/admin/themes/packages"] },
+  { href: "/admin/themes/customize", label: "Özelleştirici" },
+];
+
+/** İçerik tasarımı: üretim, kütüphane ve şablon ataması. Tema rengi burada yok. */
+const STUDIO_TABS: SectionTab[] = [
+  { href: "/admin/studio", label: "Tasarım stüdyosu", match: ["/admin/design-library"] },
+  { href: "/admin/appearance/templates", label: "Şablonlar" },
+];
+
+/** Site iskeleti: header, menü, footer, kenar çubuğu. */
+const CHROME_TABS: SectionTab[] = [
   { href: "/admin/appearance/header", label: "Header" },
+  { href: "/admin/appearance/menus", label: "Menüler", match: ["/admin/appearance/navigation"] },
   { href: "/admin/appearance/footer", label: "Footer" },
+  { href: "/admin/appearance/sidebar", label: "Kenar çubuğu" },
 ];
 
 export const SeoTabs = () => <SectionTabs tabs={SEO_TABS} label="SEO bölümleri" />;
-export const AppearanceNav = () => <SectionTabs tabs={APPEARANCE_TABS} label="Görünüm bölümleri" />;
+
+/** Bulunulan adresin ailesini gösterir. Tema, stüdyo ve yerleşim aynı çubukta durmaz. */
+export function AppearanceNav() {
+  const path = usePathname() ?? "";
+  const studio = path.startsWith("/admin/studio") || path.startsWith("/admin/design-library") || path.startsWith("/admin/appearance/templates");
+  const theme = path.startsWith("/admin/themes");
+  const tabs = studio ? STUDIO_TABS : theme ? THEME_TABS : CHROME_TABS;
+  const label = studio ? "Tasarım bölümleri" : theme ? "Tema bölümleri" : "Yerleşim bölümleri";
+  return <SectionTabs tabs={tabs} label={label} />;
+}

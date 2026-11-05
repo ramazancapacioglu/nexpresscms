@@ -48,6 +48,13 @@ export interface HookPayloads {
     groupLines: string[];
     botPolicy: Record<string, "allow" | "block">;
   };
+  "agent:request.created": {
+    siteId: string;
+    requestId: string;
+    kind: string;
+    name: string;
+    email: string;
+  };
   "mcp:handleRequest": {
     siteId: string;
     requestBody: Record<string, unknown>;

@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { getCmsContext, type DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
@@ -82,6 +82,16 @@ export class AgentRequestRepository {
     await db.update(t.agentRequests).set({ status, updatedAt: new Date() }).where(and(eq(t.agentRequests.id, id), eq(t.agentRequests.siteId, this.siteId)));
     const rows = await db.select({ status: t.agentRequests.status }).from(t.agentRequests).where(and(eq(t.agentRequests.id, id), eq(t.agentRequests.siteId, this.siteId))).limit(1);
     return rows[0]?.status === status;
+  }
+
+  public async purgeOlderThan(days: number): Promise<number> {
+    const { db, t } = this.backend;
+    const cutoff = new Date(Date.now() - days * 86_400_000);
+    const where = and(eq(t.agentRequests.siteId, this.siteId), lt(t.agentRequests.createdAt, cutoff));
+    const rows = await db.select({ id: t.agentRequests.id }).from(t.agentRequests).where(where);
+    if (rows.length === 0) return 0;
+    await db.delete(t.agentRequests).where(where);
+    return rows.length;
   }
 
   public async countNew(): Promise<number> {

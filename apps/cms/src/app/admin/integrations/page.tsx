@@ -68,7 +68,7 @@ export default async function IntegrationsPage() {
     <div className="space-y-5">
       <div className={`border-b ${border} pb-3.5`}>
         <h1 className="text-[18px] font-semibold tracking-tight">Entegrasyonlar</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Harici hizmetlerin ve anahtarların durumu. Değerler güvenlik gereği burada gösterilmez ve değiştirilmez; sunucu ortam dosyasından ayarlanır. Ayrıntılı sağlık denetimi için <Link href="/admin/system" className="underline">Sistem durumu</Link>.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Ortam anahtarlarının durumu (yapay zeka, e-posta, IndexNow). Değerler burada gösterilmez ve değiştirilmez. Search Console ve Analytics formları <Link href="/admin/seo/integrations" className="underline">Webmaster ve analitik</Link> sayfasındadır. Sağlık denetimi için <Link href="/admin/system" className="underline">Sistem durumu</Link>.</p>
       </div>
       {groups.map((g) => (
         <section key={g.title} aria-labelledby={`g-${g.title}`}>

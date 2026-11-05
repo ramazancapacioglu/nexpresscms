@@ -1,5 +1,5 @@
 import { NextResponse, after, type NextRequest } from "next/server";
-import { resolveFormFields, safeInternalPath, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
+import { normalizeFormSpec, resolveFormFields, safeInternalPath, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
 import { getFormDefinitionRepository, getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { ipDigest, verifyFormToken } from "@/lib/form-token";
@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
   const get = (k: string) => (typeof form?.get(k) === "string" ? (form!.get(k) as string) : "");
   const path = get("_path");
   const pathMatch = path.match(PATH_RE);
-  const back = (status: "sent" | "error", blockId = "") =>
+  const back = (status: "sent" | "error", blockId = "", hash = "") =>
     NextResponse.redirect(
-      new URL(pathMatch ? `${path}?form=${status}${blockId ? `&fb=${encodeURIComponent(blockId)}#${safeBlockDomId(blockId)}` : ""}` : "/", request.url),
+      new URL(pathMatch ? `${path}?form=${status}${blockId ? `&fb=${encodeURIComponent(blockId)}#${hash || safeBlockDomId(blockId)}` : ""}` : "/", request.url),
       303
     );
 
@@ -57,7 +57,9 @@ export async function POST(request: NextRequest) {
   const slug = pathMatch[2] ?? "ana-sayfa";
   const content = await repo.getContentBySlug(slug, locale, { publicOnly: true });
   const block = content ? findBlock(content.blocks, blockId) : null;
-  if (!content || !block) return back("error");
+  const formKey = get("_form");
+  const chromeForm = !block && /^frm_[a-z0-9_]{1,40}$/.test(formKey) ? await getFormDefinitionRepository(siteId).get(formKey) : null;
+  if ((!content || !block) && (!chromeForm || chromeForm.status !== "active")) return back("error");
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "";
   const ipHash = ipDigest(ip);
@@ -65,20 +67,23 @@ export async function POST(request: NextRequest) {
   if ((await inbox.recentFromIp(ipHash, RATE_WINDOW_MS)) >= RATE_MAX) return back("error", blockId);
 
   // Kurucu formu (props.formId) ya da eski satır içi alanlar. Tanım her zaman sunucudan okunur.
-  const props = (block.props ?? {}) as Record<string, unknown>;
-  const bound = typeof props.formId === "string" && props.formId ? await getFormDefinitionRepository(siteId).get(props.formId) : null;
+  const props = (block?.props ?? {}) as Record<string, unknown>;
+  const bound = chromeForm ?? (typeof props.formId === "string" && props.formId ? await getFormDefinitionRepository(siteId).get(props.formId) : null);
   if (typeof props.formId === "string" && props.formId && (!bound || bound.status !== "active")) return back("error", blockId);
   const defs = bound ? bound.spec.fields : resolveFormFields(props.fields);
+  const look = bound?.spec.appearance ?? normalizeFormSpec({ appearance: props.appearance, fields: [] }).appearance;
+  const dialogHash = look.surface === "dialog" ? `nxf-${safeBlockDomId(blockId)}` : "";
   const raw: Record<string, string | string[]> = {};
   for (const d of defs) raw[d.name] = d.type === "checkboxes" ? form.getAll(d.name).filter((x): x is string => typeof x === "string") : get(d.name);
   const result = validateSubmission(defs, raw);
-  if (!result.ok) return back("error", blockId);
+  if (!result.ok) return back("error", blockId, dialogHash);
 
   const status = spamReasons(result.values).length > 0 ? "spam" : "new";
   const title = bound?.name ?? (typeof props.title === "string" ? props.title : "");
-  const id = await inbox.create({ pagePath: path, locale, formId: bound?.id ?? block.id, formTitle: title, fields: result.values, status, ipHash });
-  if (status === "new") after(() => notify(siteId, { kind: "form.new", severity: "info", title: `«${title || "Form"}»: yeni gönderim`, href: `/admin/forms/inbox${bound ? `?form=${bound.id}` : ""}`, dedupeKey: `form-new:${bound?.id ?? block.id}`, audience: "all" }));
+  const refId = bound?.id ?? block?.id ?? blockId;
+  const id = await inbox.create({ pagePath: path, locale, formId: refId, formTitle: title, fields: result.values, status, ipHash });
+  if (status === "new") after(() => notify(siteId, { kind: "form.new", severity: "info", title: `«${title || "Form"}»: yeni gönderim`, href: `/admin/forms/inbox${bound ? `?form=${bound.id}` : ""}`, dedupeKey: `form-new:${refId}`, audience: "all" }));
   if (bound) after(() => notifySubmission({ siteId, form: bound, submissionId: id, values: result.values, pagePath: path, status }).catch(() => undefined));
   const target = bound ? safeInternalPath(bound.spec.redirectUrl) : "";
-  return target ? NextResponse.redirect(new URL(target, request.url), 303) : back("sent", blockId);
+  return target ? NextResponse.redirect(new URL(target, request.url), 303) : back("sent", blockId, dialogHash);
 }

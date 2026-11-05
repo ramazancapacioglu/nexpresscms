@@ -12,8 +12,8 @@ export interface FormTemplate {
 const half = { width: "half" as const };
 const f = (name: string, label: string, type: FormField["type"], required = false, extra: Partial<FormField> = {}) => field(`f_${name}`, name, label, type, required, extra);
 
-function tpl(id: string, name: string, description: string, category: FormTemplate["category"], fields: FormField[], over: { submitLabel?: string; successMessage?: string; subject?: string; autoReply?: boolean } = {}): FormTemplate {
-  const spec = normalizeFormSpec({ fields, submitLabel: over.submitLabel ?? "Gönder", successMessage: over.successMessage ?? "" });
+function tpl(id: string, name: string, description: string, category: FormTemplate["category"], fields: FormField[], over: { submitLabel?: string; successMessage?: string; subject?: string; autoReply?: boolean; appearance?: Record<string, unknown> } = {}): FormTemplate {
+  const spec = normalizeFormSpec({ fields, submitLabel: over.submitLabel ?? "Gönder", successMessage: over.successMessage ?? "", appearance: over.appearance });
   const notify = normalizeNotify({ enabled: false, subject: over.subject ?? `${name}: {form}`, autoReply: { enabled: over.autoReply === true } }, spec.fields);
   return { id, name, description, category, spec, notify };
 }
@@ -40,6 +40,13 @@ export const FORM_TEMPLATES: FormTemplate[] = [
     f("ad", "Ad soyad", "text", true, half), f("telefon", "Telefon", "tel", true, half),
     f("saat", "Uygun zaman", "select", false, { options: ["Sabah (09–12)", "Öğleden sonra (12–17)", "Akşam (17–20)"] }),
   ], { submitLabel: "Beni arayın", successMessage: "Talebiniz alındı, sizi arayacağız." }),
+  tpl("appointment", "Randevu talebi", "İki adım: kişi, sonra tarih ve saat. Telefon yalnız seçilince açılır.", "satis", [
+    f("ad", "Ad soyad", "text", true, { ...half, step: 1 }), f("eposta", "E-posta", "email", true, { ...half, step: 1 }),
+    f("tarih", "Tarih", "date", true, { ...half, step: 2 }), f("saat", "Saat", "time", true, { ...half, step: 2 }),
+    f("kanal", "Sizinle nasıl görüşelim?", "radio", true, { options: ["E-posta", "Telefon"], step: 2 }),
+    f("telefon", "Telefon", "tel", true, { showWhen: { field: "kanal", equals: "Telefon" }, placeholder: "05xx", step: 2 }),
+    f("not", "Not", "textarea", false, { step: 2 }),
+  ], { submitLabel: "Randevu iste", successMessage: "Randevu talebiniz alındı.", autoReply: true, appearance: { columns: 2, stepped: true, buttonAlign: "full" } }),
   tpl("support", "Destek talebi", "Öncelik ve kategori ile destek bildirimi.", "destek", [
     f("ad", "Ad soyad", "text", true, half), f("eposta", "E-posta", "email", true, half),
     f("kategori", "Kategori", "select", true, { options: ["Teknik sorun", "Fatura / ödeme", "Hesap", "Öneri"] }),

@@ -8,6 +8,7 @@ import { Link } from "@/components/public/link";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { getPublicSite, listPublishedContents } from "@/lib/public-data";
 import { buildTemplateContext } from "@/lib/template-context";
+import { recordSupportMiss } from "@/lib/support-miss";
 import { templateFor } from "@/lib/templates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -41,6 +42,13 @@ export default async function SearchPage({
       const c = byId.get(h.id);
       return c ? [{ id: c.contentId, slug: c.slug, title: c.title, snippet: c.tldr || makeSnippet(c.markdownCache, q) }] : [];
     });
+    if (results.length === 0) {
+      try {
+        await recordSupportMiss(siteId, q);
+      } catch {
+        // Arama sayfası kayıt hatasıyla düşmez.
+      }
+    }
   }
 
   const tpl = await templateFor(siteId, "search", null, { locale, slug: "ara" });

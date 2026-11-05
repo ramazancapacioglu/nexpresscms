@@ -12,7 +12,7 @@ export default async function FooterAppearancePage() {
           Kolonlar ve telif satırı. Şablon seçince kayıt değişmez; Kaydet deyince yayınlanır.
         </p>
       </header>
-      <FooterEditor initial={chrome.footer} />
+      <FooterEditor initial={chrome.footer} menus={chrome.menus.map((m) => ({ id: m.id, name: m.name }))} />
     </div>
   );
 }

@@ -201,7 +201,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-mcp-log-card",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 30,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="mcp-log">
@@ -225,7 +225,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-ai-referrals",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 12,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="ai-referrals">
@@ -236,7 +236,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-freshness",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.content",
     priority: 15,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="content-freshness">
@@ -245,11 +245,11 @@ export function registerAgenticSeoProPlugin(): void {
     ),
   });
 
-  // 4. SLOT: dashboard.overview.cards -> gerçek bot tarama günlüğü (bot_daily_stats)
+  // Bot taraması: SEO raporları / görünürlük
   slotRegistry.register({
     id: "agentic-seo-bot-heatmap",
     pluginId: "@nexpress-pro/agentic-seo",
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 10,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="bot-analytics">
@@ -262,7 +262,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-citations",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 13,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="citations">
@@ -275,7 +275,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-google-reviews",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 14,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="google-reviews">
@@ -288,7 +288,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-serper",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.queries",
     priority: 16,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="serper-intel">
@@ -301,7 +301,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-decay",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.content",
     priority: 17,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="decay">
@@ -314,7 +314,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-kb-transform",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.content",
     priority: 18,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="kb-transform">
@@ -327,7 +327,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-catalog-ai",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.content",
     priority: 19,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="catalog-ai">
@@ -340,7 +340,7 @@ export function registerAgenticSeoProPlugin(): void {
   slotRegistry.register({
     id: "agentic-seo-support-hub",
     pluginId: PLUGIN_ID,
-    slot: "dashboard.overview.cards",
+    slot: "seo.reports.visibility",
     priority: 20,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="support-hub">

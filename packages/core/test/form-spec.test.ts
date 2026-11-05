@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { analyzeSubmissions, FORM_TEMPLATES, field, normalizeFormSpec, normalizeNotify, safeInternalPath, validateSubmission } from "../src";
+import { analyzeSubmissions, FORM_TEMPLATES, field, fieldSpan, normalizeAppearance, normalizeFormSpec, normalizeNotify, safeInternalPath, safeWebhookUrl, validateSubmission } from "../src";
 
 test("zengin alan doğrulaması: seçenek, çoklu seçim, onay kutusu, puan, tarih, url, sayı sınırı", () => {
   const defs = normalizeFormSpec({
@@ -47,6 +47,62 @@ test("yönlendirme yalnızca site içi yol; bildirim ayarı temizlenir", () => {
   assert.deepEqual(n.to, ["a@x.co", "b@x.co", "A@x.co"]);
   assert.equal(n.autoReply.emailField, "eposta"); // e-posta türü olmayan alan seçilemez
   assert.equal(normalizeNotify({ autoReply: { enabled: true } }, [field("2", "ad", "A", "text")]).autoReply.enabled, false);
+});
+
+test("saat, ayırıcı ve koşullu alan: gizli zorunlu alan hata vermez, yanlış bağ düşer", () => {
+  const defs = normalizeFormSpec({
+    fields: [
+      { name: "once", type: "text", showWhen: { field: "kanal", equals: "E-posta" } },
+      { name: "kanal", type: "radio", options: ["E-posta", "Telefon"], required: true },
+      { name: "telefon", type: "tel", required: true, showWhen: { field: "kanal", equals: "Telefon" } },
+      { name: "saat", type: "time", required: true },
+      { name: "cizgi", type: "divider" },
+      { name: "sonra", type: "text", showWhen: { field: "yok", equals: "A" } },
+    ],
+  }).fields;
+  assert.equal(defs.find((f) => f.name === "sonra")?.showWhen, undefined);
+  assert.ok(defs.find((f) => f.name === "telefon")?.showWhen);
+  assert.equal(defs.find((f) => f.name === "once")?.showWhen, undefined);
+  const mail = validateSubmission(defs, { kanal: "E-posta", saat: "09:30:00" });
+  assert.ok(mail.ok);
+  if (mail.ok) {
+    assert.equal(mail.values.find((v) => v.name === "saat")?.value, "09:30");
+    assert.ok(!mail.values.some((v) => v.name === "telefon" || v.name === "cizgi"));
+  }
+  const phone = validateSubmission(defs, { kanal: "Telefon", saat: "25:00" });
+  assert.ok(!phone.ok);
+  if (!phone.ok) assert.deepEqual(Object.keys(phone.errors).sort(), ["saat", "telefon"]);
+});
+
+test("görünüm: sütun, çeyrek genişlik ve adım sınırı", () => {
+  assert.equal(fieldSpan("quarter", 4), 1);
+  assert.equal(fieldSpan("half", 4), 2);
+  assert.equal(fieldSpan("full", 2), 2);
+  assert.equal(fieldSpan("quarter", 1), 1);
+  const spec = normalizeFormSpec({
+    appearance: { columns: 4, surface: "dialog", triggerLabel: "Hızlı iletişim", stepped: true, buttonAlign: "beside" },
+    fields: [{ name: "a", type: "text", width: "quarter", step: 1 }, { name: "b", type: "text", step: 9 }, { name: "c", type: "text", width: "nope" }],
+  });
+  assert.equal(spec.appearance.columns, 4);
+  assert.equal(spec.appearance.surface, "dialog");
+  assert.equal(spec.appearance.triggerLabel, "Hızlı iletişim");
+  assert.equal(spec.fields[0]!.width, "quarter");
+  assert.equal(spec.fields[0]!.step, 1);
+  assert.equal(spec.fields[1]!.step, undefined);
+  assert.equal(spec.fields[2]!.width, "full");
+  assert.equal(normalizeAppearance({ columns: 3 }).columns, 1);
+  assert.equal(FORM_TEMPLATES.find((t) => t.id === "appointment")?.spec.appearance.stepped, true);
+});
+
+test("webhook yalnızca https ve kimliksiz adres tutar", () => {
+  assert.equal(safeWebhookUrl("https://hooks.ornek.com/form"), "https://hooks.ornek.com/form");
+  assert.equal(safeWebhookUrl("https://hooks.ornek.com:8443/form"), "");
+  for (const bad of ["http://hooks.ornek.com/a", "https://user:pw@hooks.ornek.com/a", "https://127.0.0.1/a", "https://localhost/a", "javascript:alert(1)"]) {
+    assert.equal(safeWebhookUrl(bad), "");
+  }
+  const n = normalizeNotify({ webhook: { enabled: true, url: "https://hooks.ornek.com/a" } });
+  assert.equal(n.webhook.enabled, true);
+  assert.equal(normalizeNotify({ webhook: { enabled: true, url: "http://hooks.ornek.com/a" } }).webhook.enabled, false);
 });
 
 test("şablonlar geçerli: ad benzersiz, doğrulamadan geçen örnek veri, otomatik yanıt alanı e-posta", () => {

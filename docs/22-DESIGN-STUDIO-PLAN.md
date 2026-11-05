@@ -1,6 +1,6 @@
 # 22 — NexPress CMS Tasarım Stüdyosu (Design Studio) & Şablon Fabrikası Planı
 
-> **Amaç:** Tema görünüm altındaki şablonlar, senkronize modeller (patterns), tasarım kütüphanesi ve AI tasarım asistanını tek bir stüdyo çatısı (`/admin/studio`) altında toplamak; nerede kullanılacağını önceden belirleyerek şablon üretimi yaptırmak; içe/dışa aktarma (`.nxtemplate`), pazar yeri hazır veri yapısı, canlı tema özelleştirici ve 100/100 Lighthouse hızını koruyan güvenli **Ek CSS & Ek JS (Özel Kod)** motorunu kurmak.
+> **Amaç:** Tasarım stüdyosu (`/admin/studio`) bölüm ve sayfa üretir, kütüphaneye kaydeder ve `.nxtemplate` alır. Tema galerisi ve özelleştirici (`/admin/themes`) ayrıdır; header, menü ve footer yerleşim sayfalarındadır. Şablonun varsayılan ataması `/admin/appearance/templates` sayfasındadır.
 
 ---
 

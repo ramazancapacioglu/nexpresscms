@@ -113,6 +113,8 @@ export interface SiteWidgetSettings {
   };
   badges?: Array<{ icon: string; title: string; subtitle: string }>;
   links?: Array<{ id: string; label: string; href: string; icon?: string; badge?: string }>;
+  /** Menüler sayfasındaki kaydın kimliği. Doluysa elle yazılan `links` yerine o menü basılır. */
+  menuId?: string;
 }
 
 export interface SiteWidget {

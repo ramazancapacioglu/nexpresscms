@@ -2,12 +2,15 @@
 
 import React, { useState } from "react";
 import { transformRawKbToArticle, type KbTransformResult } from "./kb-transform";
+import { runOps } from "./ops-client";
 
 export function KbTransformCard() {
   const [rawText, setRawText] = useState("");
   const [suggestedTitle, setSuggestedTitle] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [result, setResult] = useState<KbTransformResult | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const handleTransform = () => {
     if (!rawText.trim()) return;
@@ -15,15 +18,36 @@ export function KbTransformCard() {
     setResult(transformed);
   };
 
-  const handleSaveDraft = () => {
-    if (!result) return;
-    setSavedNotice(`"${result.title}" başlıklı taslak makale başarıyla oluşturuldu! İçerikler listesinden inceleyebilirsiniz.`);
-    setTimeout(() => {
-      setSavedNotice(null);
-      setResult(null);
-      setRawText("");
-      setSuggestedTitle("");
-    }, 4000);
+  const handleRecheck = async () => {
+    setBusy(true);
+    const res = await runOps("source.recheck", {});
+    setBusy(false);
+    const checked = Number(res.data?.checked ?? 0);
+    const changed = Number(res.data?.changed ?? 0);
+    setSavedNotice(res.ok ? `${checked} kaynak denetlendi, ${changed} tanesi değişmiş.` : (res.error ?? "Denetim tamamlanamadı."));
+  };
+
+  const handleImportUrl = async () => {
+    if (!sourceUrl.trim()) return;
+    setBusy(true);
+    const res = await runOps("source.import", { url: sourceUrl });
+    setBusy(false);
+    setSavedNotice(res.ok ? `Taslak açıldı: ${String(res.data?.href ?? "")}` : (res.error ?? "Adres çekilemedi."));
+  };
+
+  const handleSaveDraft = async () => {
+    if (!rawText.trim()) return;
+    setBusy(true);
+    const res = await runOps("source.paste", { title: suggestedTitle, text: rawText });
+    setBusy(false);
+    if (!res.ok) {
+      setSavedNotice(res.error ?? "Taslak kaydedilemedi.");
+      return;
+    }
+    setSavedNotice(`Taslak kaydedildi: ${String(res.data?.href ?? "")}`);
+    setResult(null);
+    setRawText("");
+    setSuggestedTitle("");
   };
 
   return (
@@ -33,11 +57,11 @@ export function KbTransformCard() {
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-nx-fg">Bilgi Bankası Dönüşümü (KB Transform)</h4>
             <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-600 dark:text-purple-400">
-              AI İçerik Fabrikası
+              Taslak kuyruğu
             </span>
           </div>
           <p className="mt-0.5 text-xs text-nx-soft">
-            Destek notlarını, mevzuat maddelerini veya ham teknik metinleri anında SEO uyumlu Soru-Cevap veya rehber taslağına dönüştürün.
+            Dış adresten metin çekilir veya yapıştırılır. Kayıt taslaktır; yayın içerik editöründe onaylanır.
           </p>
         </div>
       </div>
@@ -49,6 +73,24 @@ export function KbTransformCard() {
       )}
 
       <div className="space-y-3">
+        <div>
+          <label className="block text-[11px] font-semibold text-nx-soft mb-1">Kaynak adresi</label>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={sourceUrl}
+              onChange={(e) => setSourceUrl(e.target.value)}
+              placeholder="https://..."
+              className="w-full rounded-lg border border-nx-line bg-nx-subtle px-3 py-1.5 text-xs text-nx-fg focus:outline-none focus:ring-1 focus:ring-nx-primary"
+            />
+            <button type="button" onClick={() => void handleImportUrl()} disabled={busy || !sourceUrl.trim()} className="shrink-0 rounded-lg border border-nx-line px-3 py-1.5 text-xs font-semibold text-nx-fg disabled:opacity-50">
+              Çek
+            </button>
+            <button type="button" onClick={() => void handleRecheck()} disabled={busy} className="shrink-0 rounded-lg border border-nx-line px-3 py-1.5 text-xs font-semibold text-nx-fg disabled:opacity-50">
+              Denetle
+            </button>
+          </div>
+        </div>
         <div>
           <label className="block text-[11px] font-semibold text-nx-soft mb-1">Önerilen Başlık (İsteğe Bağlı)</label>
           <input
@@ -110,10 +152,11 @@ export function KbTransformCard() {
             </button>
             <button
               type="button"
-              onClick={handleSaveDraft}
-              className="rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow hover:bg-emerald-700 transition"
+              onClick={() => void handleSaveDraft()}
+              disabled={busy}
+              className="rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              💾 Taslak Olarak Kaydet
+              Taslak olarak kaydet
             </button>
           </div>
         </div>

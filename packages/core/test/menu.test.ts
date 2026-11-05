@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addMenuNode, brokenMenuIds, countMenuNodes, findMenuNode, indentMenuNode, isSafeMenuHref, moveMenuNode, outdentMenuNode, removeMenuNode, resolveMenuHref, resolveMenuTree, sanitizeMenu, updateMenuNode, type MenuLookup } from "../src/menu";
+import { addMenuNode, brokenMenuIds, countMenuNodes, findMenuNode, indentMenuNode, indentMenuNodes, isSafeMenuHref, megaChildLayout, menuLibraryFrom, moveMenuNode, outdentMenuNode, outdentMenuNodes, removeMenuNode, removeMenuNodes, resolveMenuHref, resolveMenuTree, sanitizeMenu, sanitizeMenus, updateMenuNode, type MenuLookup } from "../src/menu";
 import type { NavigationMenuItem } from "../src/types";
 
 const lookup: MenuLookup = {
@@ -97,4 +97,34 @@ test("ağaç işlemleri: ekle, sil, taşı, girinti, girinti azalt, güncelle", 
   t = removeMenuNode(t, "d");
   assert.equal(countMenuNodes(t), countMenuNodes(t));
   assert.equal(findMenuNode(removeMenuNode(t, "a"), "a"), null);
+});
+
+test("çoklu seçim: kardeşler aynı üstün altına iner, silme altları da götürür", () => {
+  const tree = [L("a"), L("b"), L("c", { children: [L("c1")] })];
+  const indented = indentMenuNodes(tree, ["b", "c"]);
+  assert.deepEqual(indented.map((x) => x.id), ["a"]);
+  assert.deepEqual(indented[0]!.children!.map((x) => x.id), ["b", "c"]);
+  const back = outdentMenuNodes(indented, ["b", "c"]);
+  assert.deepEqual(back.map((x) => x.id), ["a", "b", "c"]);
+  const gone = removeMenuNodes(tree, ["c"]);
+  assert.equal(findMenuNode(gone, "c1"), null);
+});
+
+test("menü kitaplığı ve mega alt liste", () => {
+  const lib = sanitizeMenus([
+    { id: "m1", name: "Ana", header: true, items: [L("a", { icon: "rocket" })] },
+    { id: "m1", name: "Footer", header: true, items: [L("b")] },
+  ]);
+  assert.equal(lib.length, 2);
+  assert.equal(lib[0]!.header, true);
+  assert.equal(lib[1]!.header, false);
+  assert.equal(lib[1]!.id, "m1_");
+  assert.equal(lib[0]!.items[0]!.icon, "rocket");
+  assert.equal(menuLibraryFrom([L("z")], undefined)[0]!.id, "menu_header");
+  const parent = L("p", { megaMenu: { enabled: true, mode: "children", columns: 3, items: [] }, children: [L("k1"), L("k2")] });
+  assert.equal(megaChildLayout(parent), "list");
+  const columns = L("p", { megaMenu: { enabled: true, mode: "children", columns: 3, items: [] }, children: [L("k1", { children: [L("g")] })] });
+  assert.equal(megaChildLayout(columns), "columns");
+  const cards = L("p", { megaMenu: { enabled: true, mode: "custom", columns: 2, items: [{ id: "c", label: "Kart", href: "/tr" }] }, children: [L("k1")] });
+  assert.equal(megaChildLayout(cards), "cards-and-list");
 });

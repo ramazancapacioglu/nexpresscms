@@ -1,6 +1,6 @@
 "use server";
 
-import { DEFAULT_FORM_FIELDS, getFormTemplate } from "@nexpress/core";
+import { DEFAULT_FORM_FIELDS, getFormTemplate, normalizeFormSpec, normalizeNotify } from "@nexpress/core";
 import { encryptSecret } from "@nexpress/core/secret-box";
 import { FORM_DEFINITION_STATUSES, getFormDefinitionRepository, getFormSubmissionRepository, getScopedRepository, type FormDefinitionStatus, type FormStatus } from "@nexpress/database";
 import { sendMail } from "@/lib/mailer";
@@ -57,6 +57,9 @@ export async function saveFormAction(input: { id: string; name: string; status: 
   if (!input.name.trim()) return { ok: false, error: "Form adı boş olamaz." };
   if (!FORM_DEFINITION_STATUSES.includes(input.status)) return { ok: false, error: "Geçersiz durum." };
   if (JSON.stringify(input.spec).length > 200_000) return { ok: false, error: "Form çok büyük." };
+  const askedHook = (input.notify && typeof input.notify === "object" && (input.notify as { webhook?: { enabled?: boolean } }).webhook?.enabled) === true;
+  const cleanNotify = normalizeNotify(input.notify, normalizeFormSpec(input.spec).fields);
+  if (askedHook && !cleanNotify.webhook.enabled) return { ok: false, error: "Webhook adresi https olmalı; kullanıcı adı, özel ağ ve ham IP kabul edilmez." };
   const saved = await getFormDefinitionRepository(me.siteId).update(input.id, { name: input.name, status: input.status, spec: input.spec, notify: input.notify });
   if (!saved) return { ok: false, error: "Form bulunamadı." };
   if (saved.notify.enabled && saved.notify.to.length === 0 && !(await getScopedRepository(me.siteId).getSite())?.settings.general.contactEmail) {

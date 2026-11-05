@@ -1,4 +1,4 @@
-import { isPluginModuleEnabled, pickLocale, resolvePublishing, type ContentType } from "@nexpress/core";
+import { cmsHooks, isPluginModuleEnabled, pickLocale, resolvePublishing, type ContentType } from "@nexpress/core";
 import { safeEqual } from "@nexpress/core/password";
 import { providerFromEnv, searchCorpus } from "@nexpress/rag";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
@@ -146,6 +146,13 @@ export async function handleWebMcpJsonRpc(
       if (!checked.ok) return fail(-32602, checked.error);
       if (!requestLimiter.take(siteId)) return fail(-32005, "Çok fazla talep: saatte en çok 30.");
       const id = await getAgentRequestRepository(siteId).create(checked.value);
+      await cmsHooks.runAction("agent:request.created", {
+        siteId,
+        requestId: id,
+        kind: checked.value.kind,
+        name: checked.value.name,
+        email: checked.value.email,
+      }).catch(() => undefined);
       return { jsonrpc: "2.0", id: rpc.id ?? 1, result: { content: [{ type: "text", text: JSON.stringify({ status: "received", requestId: id, kind: KIND_LABEL[checked.value.kind] }) }] } };
     }
 

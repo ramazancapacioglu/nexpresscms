@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { AppearanceNav } from "@/components/admin/section-tabs";
 
 const LINKS = [
   { href: "/admin/appearance/header", title: "Header", text: "Duyuru, ana şerit, çağrı ve hazır şablonlar." },
@@ -11,6 +12,7 @@ const LINKS = [
 export default function AppearanceHubPage() {
   return (
     <div className="space-y-4">
+      <AppearanceNav />
       <header className="border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <h1 className="text-[18px] font-semibold">Yerleşim</h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">

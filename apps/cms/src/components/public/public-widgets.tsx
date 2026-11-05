@@ -6,9 +6,11 @@ import {
   type DesignTokens,
   type SidebarAreaConfig,
   type SidebarConfig,
+  type NavigationLink,
   type SiteWidget,
 } from "@nexpress/core";
 import type { PublicWidgetFeed } from "@/lib/public-data";
+import { MenuList } from "./site-nav";
 
 function PublicSvgIcon({ name, className = "h-4 w-4 shrink-0" }: { name?: string; className?: string }) {
   if (!name) return null;
@@ -38,12 +40,15 @@ export function RenderPublicWidget({
   tokens,
   feed,
   cardStyle = "cards",
+  menuLibrary,
 }: {
   widget: SiteWidget;
   locale: string;
   tokens: DesignTokens;
   feed?: PublicWidgetFeed;
   cardStyle?: "cards" | "minimal" | "bordered" | "footer";
+  /** Menü kimliği → çözülmüş ağaç. Footer ve kenar çubuğu aynı kaydı basar. */
+  menuLibrary?: Record<string, NavigationLink[]>;
 }) {
   if (!widget.enabled) return null;
   const s = widget.settings;
@@ -433,7 +438,10 @@ export function RenderPublicWidget({
       )}
 
       {/* MENÜ & HIZLI BAĞLANTI GRUBU */}
-      {widget.type === "nav_menu" && (
+      {widget.type === "nav_menu" && s.menuId && menuLibrary?.[s.menuId] ? (
+        <MenuList links={menuLibrary[s.menuId]!} />
+      ) : null}
+      {widget.type === "nav_menu" && !(s.menuId && menuLibrary?.[s.menuId]) && (
         <ul className="space-y-2 text-xs">
           {(s.links ?? []).map((lnk, idx) => (
             <li key={lnk.id || idx}>
@@ -474,12 +482,14 @@ export function PublicSidebarWidgetArea({
   tokens,
   feed,
   width = "300px",
+  menuLibrary,
 }: {
   sidebar: SidebarConfig | SidebarAreaConfig;
   locale: string;
   tokens: DesignTokens;
   feed?: PublicWidgetFeed;
   width?: string;
+  menuLibrary?: Record<string, NavigationLink[]>;
 }) {
   const widgets = (
     "widgets" in sidebar && Array.isArray(sidebar.widgets) && sidebar.widgets.length > 0
@@ -503,6 +513,7 @@ export function PublicSidebarWidgetArea({
             tokens={tokens}
             feed={feed}
             cardStyle={sidebar.styleVariant ?? "cards"}
+            menuLibrary={menuLibrary}
           />
         ))}
       </div>

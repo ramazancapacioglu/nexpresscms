@@ -69,6 +69,9 @@ const bar = z.object({
   leftWidgets: z.array(z.string().max(40)).max(8),
   centerWidgets: z.array(z.string().max(40)).max(8),
   rightWidgets: z.array(z.string().max(40)).max(8),
+  mobileLeftWidgets: z.array(z.string().max(40)).max(8).optional(),
+  mobileCenterWidgets: z.array(z.string().max(40)).max(8).optional(),
+  mobileRightWidgets: z.array(z.string().max(40)).max(8).optional(),
 });
 
 export const HeaderSchema = z.object({

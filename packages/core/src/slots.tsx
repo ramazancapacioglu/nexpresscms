@@ -9,7 +9,10 @@ export type PluginSlotName =
   | "editor.sidebar.tabs"       // Editör sağ çekmecesine Canlı SEO & RAG Co-Pilot ekler
   | "editor.toolbar.actions"    // Editör üst barına "2-Pass AI Üret" butonu ekler
   | "themes.customizer.panels"  // Tema özelleştiriciye ek paneller ekler
-  | "public.head.meta";         // Ön yüz <head> içerisine ek doğrulama/sinyal etiketleri ekler
+  | "public.head.meta"          // Ön yüz <head> içerisine ek doğrulama/sinyal etiketleri ekler
+  | "seo.reports.queries"       // SEO raporları: kelime havuzu ve rakip
+  | "seo.reports.content"       // SEO raporları: erime, açık, kaynak, katalog
+  | "seo.reports.visibility";   // SEO raporları: yönlendirme, bot, yorum, destek
 
 export interface SlotComponentProps<TContext = Record<string, unknown>> {
   siteId: string;
@@ -47,6 +50,9 @@ class PluginSlotRegistry {
       "editor.toolbar.actions": [],
       "themes.customizer.panels": [],
       "public.head.meta": [],
+      "seo.reports.queries": [],
+      "seo.reports.content": [],
+      "seo.reports.visibility": [],
     };
     for (const [slotName, entries] of this.slots.entries()) {
       result[slotName] = entries.map((e) => `${e.pluginId}:${e.id}`);

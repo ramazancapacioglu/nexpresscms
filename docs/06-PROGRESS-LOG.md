@@ -21,6 +21,79 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-05] — Tema demo verisi
+- Resmi temaya demo paket bağlanır (`getThemeDemoPack`). Etkinleştirme sayfa yazmaz. Mağazadaki **Demo veriyi aktar** aynı adresi atlar, yenileri yayında ve düzenlenebilir içerik olarak ekler.
+- AKINSOFT paketi vitrin, çözüm sayfaları ve üç yazı içerir. Ana sayfa `akinsoft-vitrin` adresindedir; eski `ana-sayfa` durur. Tema açıkken vitrin `/{dil}` olur.
+- Mega panel sütun başlıkları ve mobil menü katlanır liste olarak düzenlendi. Ziyaretçi sayfasına istemci kodu eklenmedi.
+
+### [2026-11-05] — AKINSOFT Merkez teması
+- Tema mağazasına `akinsoft-merkez` eklendi. Seçilince jetonlar, 52px şerit, menü ağacı, açık gri footer, yazı kenarı ve sağdaki demo formu yayına yazılır. Sayfa içerikleri silinmez.
+- Kahraman, istatistik ve kart blokları bu temada siyah vitrin düzenine geçer. Ziyaretçi sayfasına istemci kodu eklenmez.
+- Footer dört menü sütunudur; yer tutucu marka kartı basılmaz. Bu tema açıkken header, footer ve kenar şablonları yerine temanın kendi şeridi kullanılır. Ana sayfada kenar yoktur; yazı ve sayfalarda sağ kenar açıktır.
+
+### [2026-11-05] — Birden çok menü, çoklu seçim, mega alt liste
+- Menü sayfası birden çok kayıt tutar. Biri header’da basılır; diğerleri footer sütunu ve kenar çubuğundaki menü bileşenine bağlanır.
+- Ağaç satırları küçüldü. Onay kutusuyla birden çok öğe silinir veya girintilenir.
+- Mega menüde alt öğe varsa panelin altında listelenir. Torun varsa her alt öğe bir sütun olur.
+
+### [2026-11-05] — Form yerleşimi, kütüphane formları, başa dön
+- Form görünümü 1, 2 ve 4 sütun; etiket, sıklık, düğme hizası, açılır pencere ve adım. Dar ekranda tek sütun. Ziyaretçi sayfasına istemci kodu eklenmez.
+- Tasarım kütüphanesine dikey, yatay, dörtlü, randevu adımları ve hızlı iletişim penceresi eklendi.
+- Özelleştiricide başa dön düğmesi: sağ/sol, ikon, renk, boyut. Bağlantı `#nx-top` hedefine gider.
+
+### [2026-11-05] — Form kurucusu: saat, ayırıcı, koşullu alan, webhook
+- Palete saat ve ayırıcı çizgi eklendi. Randevu şablonu tarih, saat ve cevaba göre açılan telefon alanı taşır.
+- `showWhen` önceki bir seçim veya onay kutusuna bağlanır. Ziyaretçi sayfası istemci kodu kullanmaz; alan `:has()` ile açılır. Eşleşmeyen zorunlu alan istenmez.
+- Bildirime https webhook eklendi. Özel ağ, ham IP ve kimlikli adres reddedilir. Hata gönderim kaydını silmez.
+
+### [2026-11-04] — Canlı siteden yerinde yeniden çizim
+- `readPublicShell` / `blocksFromPublicHtml`: yayımlanmış Kadence sayfası jeton, menü, üst şerit ve bloğa çevrilir. CSS ve JavaScript alınmaz. Paneldeki tek sayfa önizlemesi (`/api/admin/wp-shell`) kayıt yazmaz.
+- Akınsoft İzmir sayfa ve yazıları bu okuyucuyla yeniden yazıldı (68 sayfa, 52 yazı). Palet yeşili `#0c644e`. Ürün ve şablon kayıtları durdu.
+
+### [2026-11-04] — Tema ve şablon yazarlık sözleşmesi
+- `docs/23-THEME-AND-DESIGN-AUTHORING.md`: modele verilecek tema paketi, tasarım kütüphanesi ve şablon sözleşmesi. Blok alanları, kontrast çiftleri, üst/alt şerit öğeleri ve zorunlu yuva blokları kodla hizalandı.
+- `AGENTS.md`: tema, blok kataloğu, header/footer veya şablon değişince 23 aynı turda güncellenir. `docs/07` ve `docs/08` kısa özet olarak bağlandı.
+
+### [2026-11-04] — Bakım modu ve seçenekli sıfırlama
+- Ayarlara bakım anahtarı eklendi. Açıkken ziyaretçi bakım metnini görür; panel ve oturumlu önizleme durur. Besleme ve site haritası 503 döner.
+- İçerik sıfırlama üç kapılıdır: sayfalar, medya, tüm içerik. Şablon, tema, kütüphane, kullanıcı ve ayar bu kapıda silinmez. Onay sözcüğü `SIFIRLA` değilse hiçbir kayıt silinmez.
+- Tasarım sıfırlama ayrıdır: şablon, tasarım kütüphanesi ve yüklenen temalar. Onay sözcüğü `TASARIM`. Etkin tema yüklenen bir pakitse resmi temaya döner.
+
+### [2026-11-04] — SEO gösterge, raporlar ve kalan fabrika
+- `/admin/seo` artık göstergedir (skor, dizin, sorgu, kaynak). Motor `/admin/seo/engine` altına alındı. Rapor kartları sorgular, içerik ve görünürlük olarak `/admin/seo/reports` içindedir; ana panele yığılmaz. Ayarlar `/admin/seo/settings` altındadır, eklenti sayfası yalnızca modül anahtarını tutar.
+- Anlam kümesi yalnızca gömme sağlayıcısı gerçekten anlamsalsa ve sorgu sayısı 24'ü geçmiyorsa çalışır. Aksi halde sözcük örtüşmesi kalır. Göç `0019`: `seo_intel_signals.prev_position10`, `content_imports.body_hash`.
+- Erime kartı sıra düşüşünü de listeler. Kaynak kartındaki "Denetle" değişen adresi yeniden yayınlamaz. Sonuçsuz site araması destek kartına yazılır. Places anahtarı varsa yorum çekilir; yoksa örnek isim yok.
+- `CRON_SECRET` ile `/api/cron/seo` canlı konsolu ve kaynak denetimini çalıştırır. Örnek satır yazılmaz. Talep oluşunca site iletişim adresine mektup gider (SMTP yoksa talep yine durur). Talepler sayfasında CSV ve 180 gün saklama vardır.
+
+### [2026-11-04] — İçerik operasyonu: havuz, link taslağı, katalog yazımı
+- Sahte alıntı, Google yorumu ve destek araması kartları kapatıldı. Boş ayar şemaya örnek isim yazmaz. Search Console paneli açılış listesini "Demo verisi" diye gösterir.
+- Kelime havuzu `seo_intel_signals` / `seo_intel_clusters` (göç `0018`). Canlı GSC, Bing, Yandex ve Serper yazılır; tohum reddedilir. Küme sözcük örtüşmesidir. Taslak `ai_prompt` olarak editörde açılır.
+- Link ve yapıştırma `content_imports` kuyruğuna taslak düşer. Adres iç ağa gitmez. Yayın editördeki onaydır.
+- Katalog kartı başlık ve kısa yanıt önerir; "Ürüne uygula" kaydı yazar. Anahtar yoksa kural, varsa model.
+
+### [2026-11-04] — Panelde tema, stüdyo ve SEO sorumlulukları ayrıldı
+- 🧭 **Üç aile.** Görünüm: tema galerisi, özelleştirici, header, menü, footer, kenar çubuğu. Tasarım: stüdyo ve şablon ataması. SEO: gösterge, motor, rapor, webmaster, denetim, yönlendirme, ayar. Aynı sekme çubuğu artık hepsini birden göstermez.
+- Özelleştirici yalnız renk, yazı, genişlik ve logo ölçüsüdür. Tema listesi, header düzeni ve şablon ataması kendi sayfalarına link verir.
+- `/admin/seo` üzerindeki Search Console / GA4 / Bing / Yandex formu ve CSV performans paneli webmaster sayfasına taşındı. Sistem entegrasyonları ortam anahtarı olarak kaldı.
+- Mağaza sekmesi `Kupon ve indirim` oldu. İçerik editörü menüde tasarım stüdyosundan ayrı adlandırıldı.
+
+### [2026-11-04] — Header kütüphanesine hazır mobil diziler
+- 📚 **Her hazır header'ın mobil hali yazıldı.** `HEADER_LIBRARY` kayıtları `mobileLeftWidgets` / `mobileCenterWidgets` / `mobileRightWidgets` taşır. Sade ve cam şerit mobilde çağrıyı bırakır; vitrin ve orta menü menüyle çağrıyı sağda tutar; doküman şeridi aramayı ortaya alır; katalog ve doküman alt bağlantıları solda kalır.
+- Kütüphane kartı masaüstü ve mobil özeti gösterir. Header seçilince dizi forma alınmadan düzenlenir. Üst ve alt şeritte dizi yazılıysa ön yüz onu basar; alt şeritten `links` kalkarsa telefon satırı çizilmez. Yazılmamış eski kayıtlarda üst ve alt şerit masaüstü dizisinde kalır.
+- Test: `packages/themes/test/header-library-mobile.test.ts`.
+
+### [2026-11-04] — Mobil header dizisi ve SSRF kapılı dış bağlantı denetimi
+- 📱 **Ayrı mobil header.** Ana şeritte `mobileLeftWidgets` / `mobileCenterWidgets` / `mobileRightWidgets`. Yazılmazsa logo ve duyuru solda, diğer öğeler sağda türetilir (`deriveMobileZones`). Küçük ekranda menü öğesi masaüstü gezinmesi yerine `<details>` düğmesidir; iki düzen ayrı basılır, istemci JavaScript'i eklenmez. Editörde ikinci yerleşim tahtası vardır.
+- 🔗 **Dış bağlantı denetimi.** `auditLinks` benzersiz dış adresleri (en çok 40) döndürür. `/admin/seo` düğmesi `auditExternalLinksAction` ile en çok 30 adresi yoklar. Kapı: yalnız http(s) 80/443, kimlik bilgisi yok, localhost / `.local` / meta veri adı yok, çözümlenen IP `isPublicIp` değilse istek atılmaz, her yönlendirme yeniden denetlenir. 401/403 kırık sayılmaz.
+- Test: `header-layout` mobil türetme, `link-audit` dış adres listesi, `apps/cms/test/external-link-check.test.ts` (iç IP, DNS sapması, yönlendirme).
+
+### [2026-11-04] — Header öğe dizisi (sol / orta / sağ) ön yüze bağlandı
+- 🧭 **Yol haritasındaki açık üst bilgi işinin ilk dilimi.** `leftWidgets` / `centerWidgets` / `rightWidgets` şablonlarda ve veritabanında duruyordu; ziyaretçi header'ı bunları yok sayıp duyuruyu sola, menüyü logonun yanına sabitliyordu.
+- `packages/core/src/header-layout.ts`: `resolveHeaderZones` boş dizide varsayılana düşer, `mega_menu` / `cta_button` / `contact_info` / `search_bar` gibi eski kimlikleri kanonik öğeye çevirir, aynı öğenin ikinci kopyasını atar. Bilinmeyen kimlik (`geo_selector`) tek başına duruyorsa varsayılan düzen korunur.
+- Ön yüz (`SiteHeader`) ve `/admin/appearance/header` önizlemesi bu diziyi basar. Editörde öğe, bölge kutusuna sürüklenir veya oklarla sıralanır. Arama öğesi `/{locale}/ara` bağlantısıdır (0 KB). Mobil menü, menü öğesi duruyorsa ana şeridin sağında açılır; ayrı mobil header düzeni henüz yok.
+- Katalog: `site.search` (`Ara` / `Search`). Mobil düzen aynı günün sonraki kaydında ayrı diziye alındı.
+- Test: `packages/core/test/header-layout.test.ts`.
+
 ### [2026-11-04] — Çok Modlu Kampanya Vitrini Bloğu (`campaign_showcase`: Karosel/Slide, Izgara, Vitrin Kartı, İndirim Şeridi)
 - 🎁 **Dinamik Kampanya Vitrini Bloğu (`campaign_showcase`):**
   - Kullanıcının "istediğimiz sayfada, slide, karosel gibi çeşitli gösterimler için blok" talebi doğrultusunda hem Görsel Editör stüdyosuna hem de 0-KB RSC ön yüz motoruna eklendi.

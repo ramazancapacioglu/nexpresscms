@@ -998,3 +998,58 @@ export const pgMcpRequestLog = pgTable(
   },
   (t) => [index("mcp_request_log_site_at_idx").on(t.siteId, t.at)]
 );
+
+/** Kelime ve rakip havuzu. ctr100 yüzde × 100, position10 sıra × 10. Tohum veri yazılmaz. */
+export const pgSeoIntelSignals = pgTable(
+  "seo_intel_signals",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    source: text("source").notNull(),
+    keyword: text("keyword").notNull(),
+    clicks: integer("clicks").default(0).notNull(),
+    impressions: integer("impressions").default(0).notNull(),
+    ctr100: integer("ctr100").default(0).notNull(),
+    position10: integer("position10").default(0).notNull(),
+    prevPosition10: integer("prev_position10").default(0).notNull(),
+    detail: text("detail").default("").notNull(),
+    capturedAt: timestamp("captured_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("seo_intel_signals_site_id_idx").on(t.siteId),
+    uniqueIndex("seo_intel_signals_site_source_kw_uidx").on(t.siteId, t.source, t.keyword),
+  ]
+);
+
+/** Küme → taslak bağı. */
+export const pgSeoIntelClusters = pgTable(
+  "seo_intel_clusters",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    label: text("label").notNull(),
+    members: jsonb("members").$type<string[]>().default([]).notNull(),
+    status: text("status").default("open").notNull(),
+    contentId: text("content_id").default("").notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("seo_intel_clusters_site_id_idx").on(t.siteId)]
+);
+
+/** Dış adres veya yapıştırılan metinden açılan taslaklar. */
+export const pgContentImports = pgTable(
+  "content_imports",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    kind: text("kind").notNull(),
+    source: text("source").default("").notNull(),
+    title: text("title").default("").notNull(),
+    status: text("status").default("draft").notNull(),
+    contentId: text("content_id").default("").notNull(),
+    bodyHash: text("body_hash").default("").notNull(),
+    error: text("error").default("").notNull(),
+    fetchedAt: timestamp("fetched_at").defaultNow().notNull(),
+  },
+  (t) => [index("content_imports_site_id_idx").on(t.siteId, t.fetchedAt)]
+);

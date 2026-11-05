@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { SeoTabs } from "@/components/admin/section-tabs";
+import { SearchConsolePanel } from "@/components/admin/seo/search-console-panel";
 import { SeoIntegrationsStudio } from "@/components/admin/seo/seo-integrations-studio";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function AdminSeoIntegrationsPage() {
         initialIntegrations={seo.integrations}
         siteUrl={site?.domain ? `https://${site.domain}` : "http://localhost:3000"}
       />
+      <SearchConsolePanel verification={seo.verification} />
     </div>
   );
 }

@@ -30,8 +30,8 @@ export function CampaignBoard({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-[18px] font-semibold">Kampanyalar</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Herkese, bir gruba veya tek müşteriye kupon bağlanabilir.</p>
+        <h1 className="text-[18px] font-semibold">Kupon ve indirim</h1>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Mağaza indirimi ve kupon. Vitrin fırsatları Kampanyalar sayfasındadır.</p>
       </header>
       <form
         className="grid max-w-xl gap-2"

@@ -63,7 +63,7 @@ const FOOTER_WIDGET_PRESETS: Array<{
   },
 ];
 
-export function FooterEditor({ initial }: { initial: FooterConfig }) {
+export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; menus?: Array<{ id: string; name: string }> }) {
   const [footer, setFooter] = useState<FooterConfig>(() => ({
     ...initial,
     layoutPreset: initial.layoutPreset ?? "brand-wide-4",
@@ -465,6 +465,7 @@ export function FooterEditor({ initial }: { initial: FooterConfig }) {
                   onMoveUp={() => moveWidgetInColumn(w.id, activeColTab, -1)}
                   onMoveDown={() => moveWidgetInColumn(w.id, activeColTab, 1)}
                   onDelete={() => updateWidgets(allWidgets.filter((item) => item.id !== w.id))}
+                  menus={menus}
                 />
               ))}
             </div>

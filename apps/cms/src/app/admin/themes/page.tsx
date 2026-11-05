@@ -1,7 +1,7 @@
 import React from "react";
 import { headers } from "next/headers";
 import { getScopedRepository } from "@nexpress/database";
-import { OFFICIAL_THEME_STORE, getThemeManifest } from "@nexpress/themes";
+import { OFFICIAL_THEME_STORE, getThemeDemoPack, getThemeManifest } from "@nexpress/themes";
 import { AppearanceNav } from "@/components/admin/section-tabs";
 import { requireAdminPage } from "@/lib/auth/session";
 import {
@@ -44,6 +44,7 @@ export default async function AdminThemesPage() {
         m.tokens.colors.muted,
       ],
       tokens: m.tokens,
+      demoCount: getThemeDemoPack(m.id)?.entries.length ?? 0,
     };
   });
 

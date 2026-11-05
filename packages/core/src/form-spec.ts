@@ -1,13 +1,24 @@
 /** Form tanımı (saf mantık): alan türleri, normalleştirme ve gönderim doğrulaması. Sunucu tanımı kaynaktır; istemciye güvenilmez. */
 export type FormFieldType =
-  | "text" | "email" | "tel" | "url" | "number" | "textarea" | "date"
+  | "text" | "email" | "tel" | "url" | "number" | "textarea" | "date" | "time"
   | "select" | "radio" | "checkbox" | "checkboxes" | "rating" | "scale"
-  | "heading" | "paragraph";
+  | "heading" | "paragraph" | "divider";
 
-/** Değer toplayan türler; `heading`/`paragraph` yalnızca içeriktir. */
-export const CONTENT_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set(["heading", "paragraph"]);
+/** Değer toplayan türler; başlık, açıklama ve ayırıcı yalnızca içeriktir. */
+export const CONTENT_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set(["heading", "paragraph", "divider"]);
 export const CHOICE_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set(["select", "radio", "checkboxes"]);
-const ALL_TYPES = new Set<FormFieldType>(["text", "email", "tel", "url", "number", "textarea", "date", "select", "radio", "checkbox", "checkboxes", "rating", "scale", "heading", "paragraph"]);
+/** Koşul bağlanabilen türler: seçim ve tek onay kutusu. */
+export const GATE_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set(["select", "radio", "checkboxes", "checkbox"]);
+const ALL_TYPES = new Set<FormFieldType>(["text", "email", "tel", "url", "number", "textarea", "date", "time", "select", "radio", "checkbox", "checkboxes", "rating", "scale", "heading", "paragraph", "divider"]);
+
+/** Alanın ızgaradaki payı: tam satır, yarım (2'li), çeyrek (4'lü). */
+export type FormFieldWidth = "full" | "half" | "quarter";
+
+/** Bir önceki seçim alanının belirli cevabında görünsün. Ziyaretçi sayfasında istemci kodu yoktur. */
+export interface FormShowWhen {
+  field: string;
+  equals: string;
+}
 
 export interface FormField {
   /** Kurucuda kararlı kimlik (sürükle-bırak anahtarı); gönderimde `name` kullanılır. */
@@ -18,14 +29,42 @@ export interface FormField {
   required: boolean;
   placeholder: string;
   help: string;
-  width: "full" | "half";
+  width: FormFieldWidth;
+  /** Adımlı görünümde 1–6. Boşsa ilk adım. */
+  step?: number;
   /** select / radio / checkboxes seçenekleri (değer = etiket) */
   options: string[];
   /** number: alt sınır; rating: yıldız sayısı yok (bkz. max); metin: en az karakter */
   min?: number;
   /** number: üst sınır; metin: en çok karakter; rating: yıldız sayısı (3–10, varsayılan 5) */
   max?: number;
+  /** Doluysa alan, bu cevaba kadar gizlidir. Denetçi alan listede daha önce durmalıdır. */
+  showWhen?: FormShowWhen;
 }
+
+export interface FormAppearance {
+  /** Masaüstünde sütun sayısı. Dar ekranda hep tek sütun. */
+  columns: 1 | 2 | 4;
+  labels: "top" | "side";
+  density: "compact" | "comfortable";
+  /** `full`: düğme satırı kaplar. `beside`: son alanın yanında durur. */
+  buttonAlign: "left" | "center" | "full" | "beside";
+  /** `dialog`: tetik bağlantısı, hedef kimliğiyle açılan pencere (istemci kodu yok). */
+  surface: "inline" | "dialog";
+  triggerLabel: string;
+  /** Alanların `step` değerine göre adımlar. Gönder düğmesi son adımdadır. */
+  stepped: boolean;
+}
+
+export const DEFAULT_FORM_APPEARANCE: FormAppearance = {
+  columns: 1,
+  labels: "top",
+  density: "comfortable",
+  buttonAlign: "left",
+  surface: "inline",
+  triggerLabel: "",
+  stepped: false,
+};
 
 export interface FormSpec {
   fields: FormField[];
@@ -33,6 +72,7 @@ export interface FormSpec {
   successMessage: string;
   /** Başarıdan sonra gidilecek site içi yol (`/...`); boşsa aynı sayfada mesaj gösterilir */
   redirectUrl: string;
+  appearance: FormAppearance;
 }
 
 export interface FormNotifySettings {
@@ -40,6 +80,8 @@ export interface FormNotifySettings {
   to: string[];
   subject: string;
   autoReply: { enabled: boolean; emailField: string; subject: string; body: string };
+  /** Gönderim kaydından sonra JSON POST. Yalnızca https; özel ağ adresi çalışma anında reddedilir. */
+  webhook: { enabled: boolean; url: string };
 }
 
 export const FORM_LIMITS = { maxFields: 60, maxOptions: 50, text: 500, textarea: 5000, totalBytes: 40_000, label: 120, help: 240, placeholder: 80, option: 80 } as const;
@@ -49,6 +91,7 @@ const RESERVED_NAMES = new Set(["website"]);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const TEL_RE = /^[+\d][\d\s().-]{5,24}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^(\d{2}):(\d{2})(?::\d{2})?$/;
 
 export const DEFAULT_FORM_FIELDS: FormField[] = [
   field("f_ad", "ad", "Ad soyad", "text", true),
@@ -68,6 +111,7 @@ export function normalizeFields(raw: unknown, fallback: FormField[] | null = DEF
   if (!Array.isArray(raw)) return fallback ?? [];
   const names = new Set<string>();
   const ids = new Set<string>();
+  const gates = new Map<string, { type: FormFieldType; options: string[] }>();
   const out: FormField[] = [];
   raw.slice(0, FORM_LIMITS.maxFields).forEach((r, i) => {
     const o = (r && typeof r === "object" ? r : {}) as Record<string, unknown>;
@@ -92,19 +136,76 @@ export function normalizeFields(raw: unknown, fallback: FormField[] | null = DEF
       required: !content && o.required === true,
       placeholder: str(o.placeholder, FORM_LIMITS.placeholder),
       help: str(o.help, FORM_LIMITS.help),
-      width: o.width === "half" ? "half" : "full",
+      width: o.width === "quarter" ? "quarter" : o.width === "half" ? "half" : "full",
+      ...(stepOf(o.step) !== undefined ? { step: stepOf(o.step) } : {}),
       options: type === "select" || type === "radio" || type === "checkboxes" ? (options.length ? options : ["Seçenek 1", "Seçenek 2"]) : [],
       ...(num(o.min) !== undefined ? { min: num(o.min) } : {}),
       ...(num(o.max) !== undefined ? { max: num(o.max) } : {}),
+      ...showWhenOf(o.showWhen, name, gates),
     });
+    if (GATE_FIELD_TYPES.has(type)) gates.set(name, { type, options });
   });
   return out.length > 0 || fallback === null ? out : fallback;
+}
+
+/** Koşul yalnızca daha önce tanımlanmış bir seçim alanının gerçek seçeneğine bağlanır. */
+function showWhenOf(raw: unknown, self: string, gates: Map<string, { type: FormFieldType; options: string[] }>): { showWhen?: FormShowWhen } {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const fieldName = typeof o.field === "string" ? o.field : "";
+  const equals = str(o.equals, FORM_LIMITS.option);
+  const gate = gates.get(fieldName);
+  if (!gate || fieldName === self || !equals) return {};
+  if (gate.type === "checkbox") return equals === "Evet" ? { showWhen: { field: fieldName, equals } } : {};
+  return gate.options.includes(equals) ? { showWhen: { field: fieldName, equals } } : {};
+}
+
+/** Webhook adresi: https, kimlik bilgisi yok, varsayılan kapı, ham IP yok. */
+export function safeWebhookUrl(v: unknown): string {
+  const s = typeof v === "string" ? v.trim() : "";
+  let u: URL;
+  try { u = new URL(s); } catch { return ""; }
+  if (u.protocol !== "https:") return "";
+  if (u.username || u.password || u.hash) return "";
+  if (u.port && u.port !== "443") return "";
+  const host = u.hostname.toLowerCase();
+  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal") || !host.includes(".")) return "";
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":")) return "";
+  if (!/^[a-z0-9.-]+$/.test(host)) return "";
+  return `${u.origin}${u.pathname}${u.search}`;
 }
 
 /** Sitenin kendi yolu mu (`/yol`)? Açık yönlendirmeyi (`//x`, şema) engeller. */
 export function safeInternalPath(v: unknown): string {
   const s = typeof v === "string" ? v.trim() : "";
   return /^\/(?!\/)[A-Za-z0-9\-._~/%]{0,200}$/.test(s) ? s : "";
+}
+
+function stepOf(v: unknown): number | undefined {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
+  if (!Number.isInteger(n) || n < 1 || n > 6) return undefined;
+  return n;
+}
+
+/** Görünüm seçenekleri. Bilinmeyen değer varsayılana döner. */
+export function normalizeAppearance(raw: unknown): FormAppearance {
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const columns = o.columns === 2 || o.columns === 4 ? o.columns : 1;
+  return {
+    columns,
+    labels: o.labels === "side" ? "side" : "top",
+    density: o.density === "compact" ? "compact" : "comfortable",
+    buttonAlign: o.buttonAlign === "center" || o.buttonAlign === "full" || o.buttonAlign === "beside" ? o.buttonAlign : "left",
+    surface: o.surface === "dialog" ? "dialog" : "inline",
+    triggerLabel: str(o.triggerLabel, 60),
+    stepped: o.stepped === true,
+  };
+}
+
+/** Sütun sayısına göre alanın kapladığı hücre. Tek sütunda her alan bir satırdır. */
+export function fieldSpan(width: FormFieldWidth, columns: 1 | 2 | 4): number {
+  if (columns === 1) return 1;
+  if (columns === 2) return width === "full" ? 2 : 1;
+  return width === "full" ? 4 : width === "half" ? 2 : 1;
 }
 
 export function normalizeFormSpec(raw: unknown): FormSpec {
@@ -114,19 +215,23 @@ export function normalizeFormSpec(raw: unknown): FormSpec {
     submitLabel: str(o.submitLabel, 60) || "Gönder",
     successMessage: str(o.successMessage, 300),
     redirectUrl: safeInternalPath(o.redirectUrl),
+    appearance: normalizeAppearance(o.appearance),
   };
 }
 
 export function normalizeNotify(raw: unknown, fields: FormField[] = []): FormNotifySettings {
   const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const a = (o.autoReply && typeof o.autoReply === "object" ? o.autoReply : {}) as Record<string, unknown>;
+  const w = (o.webhook && typeof o.webhook === "object" ? o.webhook : {}) as Record<string, unknown>;
   const to = (Array.isArray(o.to) ? o.to : typeof o.to === "string" ? o.to.split(/[,\n;]/) : []).map((x) => str(x, 120)).filter((x) => EMAIL_RE.test(x));
   const emailField = typeof a.emailField === "string" && fields.some((f) => f.name === a.emailField && f.type === "email") ? (a.emailField as string) : fields.find((f) => f.type === "email")?.name ?? "";
+  const webhookUrl = safeWebhookUrl(w.url);
   return {
     enabled: o.enabled === true,
     to: [...new Set(to)].slice(0, 10),
     subject: str(o.subject, 150) || "Yeni form gönderimi: {form}",
     autoReply: { enabled: a.enabled === true && emailField !== "", emailField, subject: str(a.subject, 150) || "Mesajınızı aldık", body: str(a.body, 2000) || "Merhaba, mesajınız bize ulaştı. En kısa sürede dönüş yapacağız." },
+    webhook: { enabled: w.enabled === true && webhookUrl !== "", url: webhookUrl },
   };
 }
 
@@ -151,6 +256,7 @@ export function validateSubmission(defs: FormField[], raw: Record<string, RawVal
   let bytes = 0;
   for (const d of defs) {
     if (CONTENT_FIELD_TYPES.has(d.type)) continue;
+    if (!fieldIsShown(d, defs, raw)) continue;
     const got = raw[d.name];
     const list = (Array.isArray(got) ? got : got == null ? [] : [got]).filter((x): x is string => typeof x === "string").map(clean).filter(Boolean);
     const required = () => {
@@ -188,6 +294,14 @@ export function validateSubmission(defs: FormField[], raw: Record<string, RawVal
         break;
       }
       case "date": if (!DATE_RE.test(v) || Number.isNaN(Date.parse(`${v}T00:00:00Z`))) { errors[d.name] = "Geçerli bir tarih girin."; continue; } break;
+      case "time": {
+        const m = TIME_RE.exec(v);
+        const hh = Number(m?.[1]);
+        const mm = Number(m?.[2]);
+        if (!m || hh > 23 || mm > 59) { errors[d.name] = "Geçerli bir saat girin."; continue; }
+        keep(`${m[1]}:${m[2]}`);
+        continue;
+      }
       case "select": case "radio": if (!d.options.includes(v)) { errors[d.name] = "Geçersiz seçenek."; continue; } break;
       case "rating": { const n = Number(v); if (!Number.isInteger(n) || n < 1 || n > ratingMax(d)) { errors[d.name] = "Geçersiz puan."; continue; } break; }
       case "scale": { const n = Number(v); if (!Number.isInteger(n) || n < 0 || n > 10) { errors[d.name] = "Geçersiz puan."; continue; } break; }
@@ -202,4 +316,21 @@ export function validateSubmission(defs: FormField[], raw: Record<string, RawVal
 
 export function ratingMax(d: Pick<FormField, "max">): number {
   return Math.min(10, Math.max(3, Math.trunc(d.max ?? 5)));
+}
+
+function rawFirst(got: RawValue): string {
+  const list = (Array.isArray(got) ? got : got == null ? [] : [got]).filter((x): x is string => typeof x === "string").map(clean).filter(Boolean);
+  return list[0] ?? "";
+}
+
+/** Koşulu tutmayan alan gönderilmemiş sayılır. Denetçi alan da gizliyse bu alan da gizlidir. */
+function fieldIsShown(d: FormField, defs: FormField[], raw: Record<string, RawValue>, stack = new Set<string>()): boolean {
+  if (!d.showWhen) return true;
+  if (stack.has(d.name)) return false;
+  const ctrl = defs.find((x) => x.name === d.showWhen!.field);
+  if (!ctrl) return false;
+  stack.add(d.name);
+  if (!fieldIsShown(ctrl, defs, raw, stack)) return false;
+  if (ctrl.type === "checkbox") return rawFirst(raw[ctrl.name]) !== "" && d.showWhen.equals === "Evet";
+  return rawFirst(raw[ctrl.name]) === d.showWhen.equals;
 }

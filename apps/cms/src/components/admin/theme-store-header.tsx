@@ -74,7 +74,7 @@ export function ThemeStoreHeader({ s }: { s: ThemeStoreState }) {
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Renk, yazı tipi, sağ/sol sidebar, header/footer ve şablonları canlı önizlemeyle yönetin.
+            Aktif temanın rengi, yazı tipi, genişliği ve logo ölçüsü. Tema galerisi, header düzeni ve şablonlar ayrı sayfalardadır.
           </p>
         </div>
 

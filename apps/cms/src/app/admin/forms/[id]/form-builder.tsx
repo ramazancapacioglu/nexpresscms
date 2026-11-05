@@ -5,18 +5,18 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { BarChart3, Inbox, Save } from "lucide-react";
-import type { FormField, FormFieldType, FormNotifySettings, FormSpec } from "@nexpress/core";
+import { DEFAULT_FORM_APPEARANCE, type FormField, type FormFieldType, type FormNotifySettings, type FormSpec } from "@nexpress/core";
 import type { FormDefinitionStatus } from "@nexpress/database";
 import { saveFormAction } from "../actions";
 import { Canvas } from "./builder-canvas";
 import { FieldInspector } from "./builder-inspector";
 import { createField, kindOf, newId, slugName } from "./builder-model";
 import { Palette } from "./builder-palette";
-import { EmbedTab, NotifyTab, SettingsTab } from "./builder-settings";
+import { DesignTab, EmbedTab, NotifyTab, SettingsTab } from "./builder-settings";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
-type Tab = "fields" | "settings" | "notify" | "embed";
-const TABS: Array<[Tab, string]> = [["fields", "Alanlar"], ["settings", "Ayarlar"], ["notify", "E-posta bildirimi"], ["embed", "Yerleştirme"]];
+type Tab = "fields" | "design" | "settings" | "notify" | "embed";
+const TABS: Array<[Tab, string]> = [["fields", "Alanlar"], ["design", "Görünüm"], ["settings", "Ayarlar"], ["notify", "Bildirim"], ["embed", "Yerleştirme"]];
 
 interface Props {
   id: string;
@@ -135,14 +135,15 @@ export function FormBuilder({ id, initial, smtpReady, contactEmail, isAdmin }: P
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={(e: DragStartEvent) => setActiveDrag(String(e.active.id))} onDragCancel={() => setActiveDrag(null)} onDragEnd={onDragEnd}>
           <div className="grid gap-4 lg:grid-cols-[200px_minmax(0,1fr)_280px]">
             <aside aria-label="Alan paleti" className="order-2 lg:order-1"><Palette onAdd={(t) => insert(t, -1)} /></aside>
-            <div className="order-1 min-w-0 lg:order-2"><Canvas fields={fields} selectedId={selectedId} onSelect={setSelectedId} onRemove={remove} onDuplicate={duplicate} submitLabel={spec.submitLabel} dragging={activeDrag !== null} /></div>
+            <div className="order-1 min-w-0 lg:order-2"><Canvas fields={fields} appearance={spec.appearance ?? DEFAULT_FORM_APPEARANCE} selectedId={selectedId} onSelect={setSelectedId} onRemove={remove} onDuplicate={duplicate} submitLabel={spec.submitLabel} dragging={activeDrag !== null} /></div>
             <aside aria-label="Alan özellikleri" className={`order-3 h-fit rounded-lg border ${border} bg-white p-3 dark:bg-[#15171C]`}>
-              {selected ? <FieldInspector f={selected} all={fields} onChange={patchField} /> : <p className="py-6 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">Düzenlemek için kanvastan bir alan seçin.</p>}
+              {selected ? <FieldInspector f={selected} all={fields} stepped={spec.appearance?.stepped === true} onChange={patchField} /> : <p className="py-6 text-center text-[12px] text-[#5F6570] dark:text-[#8C9099]">Düzenlemek için kanvastan bir alan seçin.</p>}
             </aside>
           </div>
           <DragOverlay>{dragLabel ? <div className="rounded-md border border-[#266DF0] bg-white px-3 py-1.5 text-[12px] shadow-lg dark:bg-[#15171C]">{dragLabel}</div> : null}</DragOverlay>
         </DndContext>
       )}
+      {tab === "design" && <DesignTab spec={spec} patchSpec={(p) => setSpec((s) => ({ ...s, ...p }))} />}
       {tab === "settings" && <SettingsTab name={name} setName={setName} status={status} setStatus={setStatus} spec={spec} patchSpec={(p) => setSpec((s) => ({ ...s, ...p }))} />}
       {tab === "notify" && <NotifyTab notify={notify} patch={(p) => setNotify((n) => ({ ...n, ...p }))} fields={fields} smtpReady={smtpReady} contactEmail={contactEmail} isAdmin={isAdmin} />}
       {tab === "embed" && <EmbedTab id={id} />}

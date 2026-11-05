@@ -1,7 +1,7 @@
 import { ResponsiveImage, type MediaFocalMap } from "./responsive-image";
 import React from "react";
 import { createTranslator } from "@nexpress/i18n";
-import { ICON_PATHS, resolveFormFields, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
+import { ICON_PATHS, normalizeFormSpec, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
 import type { FormRenderContext } from "./block-context";
 import { RscForm } from "./rsc-form";
 import { renderMotionBlock } from "./blocks-motion";
@@ -529,36 +529,8 @@ export function renderStudioCatalogBlock(
           </form>
         );
       }
-      const mine = form.blockId === block.id ? form.status : null;
-      return (
-        <form action="/api/forms/submit" method="post" style={box} className="space-y-3 border bg-nx-card p-5">
-          {title}
-          {mine === "sent" ? <p role="status" className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{t("blocks.formSent")}</p> : null}
-          {mine === "error" ? <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{t("blocks.formError")}</p> : null}
-          <input type="hidden" name="_path" value={form.path} />
-          <input type="hidden" name="_block" value={block.id} />
-          <input type="hidden" name="_t" value={form.token} />
-          <div style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }} aria-hidden="true">
-            <label>
-              Website <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
-            </label>
-          </div>
-          {resolveFormFields(p.fields).map((field) => (
-            <label key={field.name} className="block text-sm">
-              <span className="mb-1 block font-medium text-nx-soft">
-                {field.label}
-                {field.required ? " *" : ""}
-              </span>
-              {field.type === "textarea" ? (
-                <textarea name={field.name} required={field.required} maxLength={5000} rows={5} className="w-full rounded-md border border-nx-line px-3 py-2" />
-              ) : (
-                <input name={field.name} type={field.type === "number" ? "number" : field.type} required={field.required} maxLength={500} className="w-full rounded-md border border-nx-line px-3 py-2" />
-              )}
-            </label>
-          ))}
-          <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white">{text(p.submitLabel, t("blocks.submit"))}</button>
-        </form>
-      );
+      const spec = normalizeFormSpec({ fields: p.fields, submitLabel: text(p.submitLabel, t("blocks.submit")), successMessage: text(p.successMessage), appearance: p.appearance });
+      return <RscForm form={{ id: block.id, name: text(p.title), status: "active", spec }} blockId={block.id} ctx={form} frame={box} title={text(p.title)} t={t} />;
     }
 
     case "data_table": {

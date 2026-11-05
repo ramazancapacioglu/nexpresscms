@@ -74,7 +74,7 @@ export function StudioClient({
 }: StudioClientProps) {
   const [activeTab, setActiveTab] = useState<
     "templates" | "patterns" | "ai" | "library" | "code" | "marketplace"
-  >("templates");
+  >("ai");
 
   const [templates, setTemplates] = useState(initialTemplates);
   const [library, setLibrary] = useState(initialLibrary);
@@ -259,7 +259,7 @@ export function StudioClient({
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Tüm şablonlar, modeller, AI tasarımları, canlı tema ayarları ve özel kodlar tek çatı altında.
+            Bölüm ve sayfa üretir, kütüphaneye kaydeder, şablon paketi alır. Tema rengi ve header düzeni burada değildir.
           </p>
         </div>
 
@@ -318,7 +318,7 @@ export function StudioClient({
           }`}
         >
           <LayoutTemplate className="w-4 h-4" />
-          <span>Şablonlar & Modeller ({templates.length})</span>
+          <span>Şablon paketleri ({templates.length})</span>
         </button>
 
         <button
@@ -370,13 +370,24 @@ export function StudioClient({
           }`}
         >
           <Store className="w-4 h-4" />
-          <span>Şablon & Tema Pazaryeri</span>
+          <span>Şablon paketi</span>
         </button>
       </div>
 
       {/* SEKME 1: ŞABLONLAR & MODELLER */}
       {activeTab === "templates" && (
         <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Bu liste paketi dışa aktarmak ve stüdyoda açmak içindir. Varsayılan atama{" "}
+            <Link href="/admin/appearance/templates" className="font-semibold text-blue-700 underline">
+              Şablonlar
+            </Link>{" "}
+            sayfasındadır. Tema dosyası{" "}
+            <Link href="/admin/themes" className="font-semibold text-blue-700 underline">
+              tema galerisinden
+            </Link>{" "}
+            yüklenir.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((tpl) => (
               <div
@@ -663,10 +674,10 @@ export function StudioClient({
         <div className="p-8 rounded-2xl border border-border bg-card text-center space-y-4 max-w-2xl mx-auto shadow-xs">
           <Store className="w-12 h-12 mx-auto text-blue-600" />
           <h2 className="text-lg font-bold text-foreground">
-            NexPress Şablon & Tema Pazaryeri (Marketplace)
+            Şablon paketi
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Tasarladığınız şablonları <code>.nxtemplate</code> paketi olarak dışa aktarabilir, başka sitelere yükleyebilir ya da yakında açılacak resmi NexPress Marketplace üzerinden satıp dağıtabilirsiniz.
+            Şablonlar <code>.nxtemplate</code> olarak dışa aktarılır. Tema paketi (<code>.nxtheme</code>) tema galerisinden yüklenir.
           </p>
           <div className="pt-2 flex justify-center gap-3">
             <button

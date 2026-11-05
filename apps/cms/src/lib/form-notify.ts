@@ -4,6 +4,7 @@ import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/data
 import type { SubmittedValue } from "@nexpress/core";
 import { sendMail } from "./mailer";
 import { notify } from "./notify";
+import { postPublicJson } from "./safe-fetch";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const fill = (tpl: string, vars: Record<string, string>) => tpl.replace(/\{(form|site)\}/g, (_, k: string) => vars[k] ?? "");
@@ -16,7 +17,7 @@ export async function notifySubmission(input: { siteId: string; form: FormDefini
   const { siteId, form, submissionId, values } = input;
   const repo = getFormSubmissionRepository(siteId);
   const n = form.notify;
-  if (input.status === "spam" || (!n.enabled && !n.autoReply.enabled)) return void (await repo.setNotify(submissionId, "skipped"));
+  if (input.status === "spam" || (!n.enabled && !n.autoReply.enabled && !n.webhook.enabled)) return void (await repo.setNotify(submissionId, "skipped"));
   const site = await getScopedRepository(siteId).getSite();
   const vars = { form: form.name, site: site?.name ?? "" };
   const submitterEmail = values.find((v) => v.name === n.autoReply.emailField && v.type === "email")?.value;
@@ -32,6 +33,21 @@ export async function notifySubmission(input: { siteId: string; form: FormDefini
     const r = await sendMail(siteId, { to, subject: fill(n.subject, vars), text, html, replyTo: submitterEmail });
     if (r.ok) sent++;
     else errors.push(r.error);
+  }
+  if (n.webhook.enabled && n.webhook.url) {
+    const payload = JSON.stringify({
+      form: form.name,
+      formId: form.id,
+      page: input.pagePath,
+      submissionId,
+      values: values.map((v) => ({ name: v.name, label: v.label, value: v.value })),
+    });
+    try {
+      await postPublicJson(n.webhook.url, payload);
+      sent++;
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : "Webhook gönderilemedi.");
+    }
   }
   if (n.autoReply.enabled && submitterEmail) {
     const body = n.autoReply.body;

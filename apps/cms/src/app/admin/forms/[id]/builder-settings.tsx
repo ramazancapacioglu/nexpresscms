@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import type { FormField, FormNotifySettings, FormSpec } from "@nexpress/core";
+import { DEFAULT_FORM_APPEARANCE, type FormAppearance, type FormField, type FormNotifySettings, type FormSpec } from "@nexpress/core";
 import type { FormDefinitionStatus } from "@nexpress/database";
 import { inputCls, Row, Toggle } from "./builder-inspector";
 
@@ -26,6 +26,55 @@ export function SettingsTab({ name, setName, status, setStatus, spec, patchSpec 
       <Row label="Başarıdan sonra yönlendir (isteğe bağlı)" hint="Yalnızca site içi yol: /tesekkurler. Boşsa aynı sayfada mesaj gösterilir.">
         <input className={`${inputCls} font-mono`} value={spec.redirectUrl} placeholder="/tesekkurler" maxLength={200} onChange={(e) => patchSpec({ redirectUrl: e.target.value })} />
       </Row>
+    </div>
+  );
+}
+
+export function DesignTab({ spec, patchSpec }: { spec: FormSpec; patchSpec: (p: Partial<FormSpec>) => void }) {
+  const look = spec.appearance ?? DEFAULT_FORM_APPEARANCE;
+  const set = (p: Partial<FormAppearance>) => patchSpec({ appearance: { ...look, ...p } });
+  return (
+    <div className="max-w-xl space-y-3">
+      <Row label="Sütun" hint="Dar ekranda alanlar alt alta iner. Çeyrek genişlik 4 sütunda bir hücre tutar.">
+        <select className={inputCls} value={look.columns} onChange={(e) => set({ columns: Number(e.target.value) as 1 | 2 | 4 })}>
+          <option value={1}>Tek sütun — alt alta</option>
+          <option value={2}>2'li — yan yana</option>
+          <option value={4}>4'lü — sık ızgara</option>
+        </select>
+      </Row>
+      <Row label="Etiket">
+        <select className={inputCls} value={look.labels} onChange={(e) => set({ labels: e.target.value as FormAppearance["labels"] })}>
+          <option value="top">Üstte</option>
+          <option value="side">Solda</option>
+        </select>
+      </Row>
+      <Row label="Sıklık">
+        <select className={inputCls} value={look.density} onChange={(e) => set({ density: e.target.value as FormAppearance["density"] })}>
+          <option value="comfortable">Ferah</option>
+          <option value="compact">Sıkı</option>
+        </select>
+      </Row>
+      <Row label="Gönder düğmesi">
+        <select className={inputCls} value={look.buttonAlign} onChange={(e) => set({ buttonAlign: e.target.value as FormAppearance["buttonAlign"] })}>
+          <option value="left">Satırın solunda</option>
+          <option value="center">Ortada</option>
+          <option value="full">Satırı kaplasın</option>
+          <option value="beside">Son alanın yanında</option>
+        </select>
+      </Row>
+      <Row label="Yüzey">
+        <select className={inputCls} value={look.surface} onChange={(e) => set({ surface: e.target.value as FormAppearance["surface"] })}>
+          <option value="inline">Sayfanın içinde</option>
+          <option value="dialog">Açılır pencere</option>
+        </select>
+      </Row>
+      {look.surface === "dialog" && (
+        <Row label="Tetik metni" hint="Ziyaretçi bu bağlantıya basınca form açılır. Sayfaya istemci kodu eklenmez.">
+          <input className={inputCls} value={look.triggerLabel} maxLength={60} placeholder="Hızlı iletişim" onChange={(e) => set({ triggerLabel: e.target.value })} />
+        </Row>
+      )}
+      <Toggle checked={look.stepped} onChange={(v) => set({ stepped: v })}>Adımlı form</Toggle>
+      {look.stepped && <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Alanlara adım numarası verin. Ziyaretçi adımı sayfa yenilenmeden değiştirir. Gönder düğmesi son adımdadır; sunucu yine bütün zorunlu alanları denetler.</p>}
     </div>
   );
 }
@@ -67,6 +116,14 @@ export function NotifyTab({ notify, patch, fields, smtpReady, contactEmail, isAd
               <textarea className={`${inputCls} h-24 py-1.5`} value={notify.autoReply.body} maxLength={2000} onChange={(e) => setReply({ body: e.target.value })} />
             </Row>
           </>
+        )}
+      </section>
+      <section className="space-y-3 border-t border-[#E6E7EA] pt-4 dark:border-[#23262E]">
+        <Toggle checked={notify.webhook.enabled} onChange={(v) => patch({ webhook: { ...notify.webhook, enabled: v } })}>Gönderimi bir webhook adresine ilet</Toggle>
+        {notify.webhook.enabled && (
+          <Row label="Adres" hint="Yalnızca https. Kullanıcı adı, özel ağ ve ham IP kabul edilmez. Gönderim kaydı adrese bağlı değildir.">
+            <input className={`${inputCls} font-mono`} value={notify.webhook.url} placeholder="https://hooks.ornek.com/form" maxLength={300} onChange={(e) => patch({ webhook: { ...notify.webhook, url: e.target.value } })} />
+          </Row>
         )}
       </section>
     </div>

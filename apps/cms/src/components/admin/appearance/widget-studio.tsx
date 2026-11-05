@@ -182,6 +182,7 @@ export function WidgetItemCard({
   onMoveUp,
   onMoveDown,
   onDelete,
+  menus = [],
 }: {
   widget: SiteWidget;
   isFirst: boolean;
@@ -191,6 +192,7 @@ export function WidgetItemCard({
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
+  menus?: Array<{ id: string; name: string }>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const meta = WIDGET_CATALOG.find((w) => w.type === widget.type) ?? WIDGET_CATALOG[0]!;
@@ -740,7 +742,23 @@ export function WidgetItemCard({
           {/* MENÜ & HIZLI BAĞLANTI GRUBU */}
           {widget.type === "nav_menu" && (
             <div className="space-y-2">
-              {(s.links ?? []).map((lnk, idx) => (
+              <label className="block text-[11px] font-medium">
+                Kayıtlı menü
+                <select
+                  className={`${fieldClass} mt-1`}
+                  value={s.menuId ?? ""}
+                  onChange={(e) => patchSettings({ menuId: e.target.value || undefined })}
+                >
+                  <option value="">Elle yazılan bağlantılar</option>
+                  {menus.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              </label>
+              {s.menuId ? (
+                <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Bu sütun, Menüler sayfasındaki kaydı basar. Alt bağlantılar da gelir.</p>
+              ) : null}
+              {!s.menuId ? (s.links ?? []).map((lnk, idx) => (
                 <div key={lnk.id || idx} className="grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr_1fr_90px_auto]">
                   <IconPickerField
                     value={lnk.icon ?? ""}
@@ -788,21 +806,23 @@ export function WidgetItemCard({
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={() =>
-                  patchSettings({
-                    links: [
-                      ...(s.links ?? []),
-                      { id: `wl_${Date.now()}`, label: "Yeni Sayfa", href: "/tr", icon: "arrow-right" },
-                    ],
-                  })
-                }
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline"
-              >
-                <Plus className="h-3 w-3" /> Menü öğesi ekle
-              </button>
+              )) : null}
+              {!s.menuId ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    patchSettings({
+                      links: [
+                        ...(s.links ?? []),
+                        { id: `wl_${Date.now()}`, label: "Yeni Sayfa", href: "/tr", icon: "arrow-right" },
+                      ],
+                    })
+                  }
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline"
+                >
+                  <Plus className="h-3 w-3" /> Menü öğesi ekle
+                </button>
+              ) : null}
             </div>
           )}
         </div>

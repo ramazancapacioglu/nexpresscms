@@ -70,10 +70,16 @@ const SEED_SERP_DATA: Record<string, SerperIntelReport> = {
   },
 };
 
+export interface SerperQuery {
+  report: SerperIntelReport;
+  /** false ise tohum listedir; havuza yazılmaz. */
+  live: boolean;
+}
+
 /**
- * Serper API'den canlı SERP ve PAA sorgular. Anahtar tanımlı değilse tohum veriye döner.
+ * Serper API'den canlı SERP ve PAA sorgular. Anahtar yoksa veya çağrı düşerse tohum döner (`live: false`).
  */
-export async function querySerperIntel(keyword: string, apiKey?: string): Promise<SerperIntelReport> {
+export async function querySerperIntel(keyword: string, apiKey?: string): Promise<SerperQuery> {
   const cleanKeyword = keyword.trim().toLowerCase();
   const key = apiKey || process.env.SERPER_API_KEY;
 
@@ -123,10 +129,13 @@ export async function querySerperIntel(keyword: string, apiKey?: string): Promis
         });
 
         return {
-          keyword: cleanKeyword,
-          organic,
-          peopleAlsoAsk,
-          relatedSearches,
+          live: true,
+          report: {
+            keyword: cleanKeyword,
+            organic,
+            peopleAlsoAsk,
+            relatedSearches,
+          },
         };
       }
     } catch (e) {
@@ -134,9 +143,11 @@ export async function querySerperIntel(keyword: string, apiKey?: string): Promis
     }
   }
 
-  // Fallback to intelligent seed matching
   return {
-    ...SEED_SERP_DATA.default!,
-    keyword: cleanKeyword || SEED_SERP_DATA.default!.keyword,
+    live: false,
+    report: {
+      ...SEED_SERP_DATA.default!,
+      keyword: cleanKeyword || SEED_SERP_DATA.default!.keyword,
+    },
   };
 }

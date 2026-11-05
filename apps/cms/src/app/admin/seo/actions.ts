@@ -48,7 +48,7 @@ export interface SaveIntegrationsInput {
 }
 
 export type ActionResponse<T = unknown> =
-  | { ok: true; data?: T; message?: string }
+  | { ok: true; data?: T; message?: string; sample?: boolean }
   | { ok: false; error: string };
 
 /**
@@ -124,6 +124,7 @@ export async function syncGscAction(credentials: {
         { query: "wolvox erp fiyat", clicks: 92, impressions: 1650, ctr: 5.57, position: 4.2 },
         { query: "e-fatura entegrasyonu", clicks: 68, impressions: 1980, ctr: 3.43, position: 6.5 },
       ],
+      sample: true,
       message: "GSC API anahtarı boş olduğundan tohum performans verisi yüklendi.",
     };
   }
@@ -152,6 +153,7 @@ export async function syncBingAction(credentials: {
         { query: "ticari muhasebe yazılımı", clicks: 28, impressions: 510, position: 2.8 },
         { query: "barkodlu satış programı", clicks: 15, impressions: 390, position: 4.1 },
       ],
+      sample: true,
       message: "Bing API anahtarı girilmediğinden örnek Bing verisi yüklendi.",
     };
   }
@@ -180,6 +182,7 @@ export async function syncYandexAction(credentials: {
         { path: "/tr/on-muhasebe-programi", visits: 85 },
         { path: "/tr/iletisim", visits: 42 },
       ],
+      sample: true,
       message: "Yandex OAuth token boş olduğundan örnek organik trafik verisi yüklendi.",
     };
   }

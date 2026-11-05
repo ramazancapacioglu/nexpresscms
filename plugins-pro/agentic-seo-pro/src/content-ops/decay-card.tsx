@@ -1,5 +1,6 @@
 import React from "react";
-import { getScopedRepository } from "@nexpress/database";
+import { getIntelRepository, getScopedRepository } from "@nexpress/database";
+import { rankingDrops } from "./intel";
 
 export interface DecayingContent {
   id: string;
@@ -44,6 +45,7 @@ export async function DecayCard({ siteId }: { siteId: string }) {
     .slice(0, 6);
 
   const criticalCount = decaying.filter((d) => d.decayLevel === "critical").length;
+  const drops = rankingDrops(await getIntelRepository(siteId).listSignals()).slice(0, 6);
 
   return (
     <div className="rounded-xl border border-nx-line bg-nx-card p-5 space-y-4">
@@ -66,6 +68,18 @@ export async function DecayCard({ siteId }: { siteId: string }) {
           Toplam İncelenen: <strong className="text-nx-fg">{published.length}</strong> Sayfa
         </div>
       </div>
+
+      {drops.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold text-nx-soft">Sırası düşen sorgular</p>
+          {drops.map((row) => (
+            <div key={row.keyword} className="flex items-center justify-between rounded-lg border border-nx-line bg-nx-subtle px-3 py-2 text-xs">
+              <span className="truncate font-medium text-nx-fg">{row.keyword}</span>
+              <span className="shrink-0 text-red-600 dark:text-red-400">{((row.prevPosition10 ?? 0) / 10).toFixed(1)} → {(row.position10 / 10).toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {decaying.length === 0 ? (
         <div className="rounded-lg border border-nx-line bg-nx-subtle p-4 text-center text-xs text-nx-soft">

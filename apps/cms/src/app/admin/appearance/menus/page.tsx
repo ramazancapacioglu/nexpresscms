@@ -32,10 +32,10 @@ export default async function MenuAppearancePage({ searchParams }: { searchParam
       <header className="border-b border-[#D5D8DE] pb-3 dark:border-[#2E333D]">
         <h1 className="text-[18px] font-semibold">Menüler</h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-          Sayfa, yazı, kategori, etiket ve ürünleri listeden seçerek ekleyin; ağaçta sıralayın ve girintileyin (en çok 3 düzey). Kök öğelere mega menü tanımlayabilirsiniz.
+          Birden çok menü kaydı açın. Header’da birini seçin; diğerlerini footer sütununda ve kenar çubuğunda “Menü” bileşenine bağlayın. Onay kutusuyla çoklu seçim yapılır.
         </p>
       </header>
-      <MenuEditor key={chrome.locale} initial={chrome.menu} lists={lists} locale={chrome.locale} locales={chrome.locales} defaultLocale={chrome.defaultLocale} hasOwn={chrome.hasOwn} />
+      <MenuEditor key={chrome.locale} menus={chrome.menus} lists={lists} locale={chrome.locale} locales={chrome.locales} defaultLocale={chrome.defaultLocale} hasOwn={chrome.hasOwn} />
     </div>
   );
 }

@@ -197,7 +197,7 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
           </p>
         )}
 
-        {plugin.settingFields.length > 0 && (
+        {plugin.settingFields.length > 0 && (!plugin.settingsHref || plugin.settingsHref === "/admin/plugins") && (
           <div role="tablist" aria-label="Eklenti bölümü" className="flex gap-4 border-b border-[#E6E7EA] dark:border-[#23262E] px-4">
             {([["modules", "Modüller"], ["settings", "Ayarlar"]] as const).map(([id, label]) => (
               <button
@@ -213,7 +213,7 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
           </div>
         )}
 
-        {view === "settings" && plugin.settingFields.length > 0 ? (
+        {view === "settings" && plugin.settingFields.length > 0 && (!plugin.settingsHref || plugin.settingsHref === "/admin/plugins") ? (
           <PluginSettingsForm
             key={plugin.id}
             pluginId={plugin.id}

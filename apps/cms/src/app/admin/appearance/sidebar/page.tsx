@@ -12,7 +12,7 @@ export default async function SidebarAppearancePage() {
           Sayfa gövdesinin solu ya da sağı. Blok yerleşiminden ayrı bir site parçasıdır.
         </p>
       </header>
-      <SidebarEditor initial={chrome.sidebar} />
+      <SidebarEditor initial={chrome.sidebar} menus={chrome.menus.map((m) => ({ id: m.id, name: m.name }))} />
     </div>
   );
 }

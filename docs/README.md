@@ -16,6 +16,7 @@
 | **06** | [06-PROGRESS-LOG.md](./06-PROGRESS-LOG.md) | Faz bazlı canlı geliştirme takibi, tamamlanan adımlar ve sıradaki görevler | 🔄 Canlı |
 | **07** | [07-AI-PAGE-AND-BLOCK-SPEC.md](./07-AI-PAGE-AND-BLOCK-SPEC.md) | **AI İle Sayfa & Blok Tasarlatma Rehberi (`JSON AST Kontratı`)** — Claude / ChatGPT / Gemini ile sayfa üretip kanvasa aktarma şeması | ✅ Güncel |
 | **08** | [08-AI-CHROME-SPEC.md](./08-AI-CHROME-SPEC.md) | AI ile header ve footer tasarlatma. Kütüphane JSON aktarımı | ✅ Güncel |
+| **23** | [23-THEME-AND-DESIGN-AUTHORING.md](./23-THEME-AND-DESIGN-AUTHORING.md) | Tema paketi, tasarım kütüphanesi ve şablon yazarlığı. Modele verilecek sözleşme | ✅ Güncel |
 | **09** | [09-COMMERCE.md](./09-COMMERCE.md) | Çekirdek e-ticaret: katalog, sepet, sipariş, `/admin/commerce` | ✅ Güncel |
 | **10** | [10-MARKETPLACES.md](./10-MARKETPLACES.md) | Modüler pazar yeri sürücüleri ve kanal yönetimi | ✅ Güncel |
 | **11** | [11-SECURITY-AND-OPERATIONS.md](./11-SECURITY-AND-OPERATIONS.md) | Kimlik doğrulama, roller, sır şifreleme, MCP anahtarı, HTTP başlıkları, testler | ✅ Güncel |

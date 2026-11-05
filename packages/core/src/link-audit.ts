@@ -22,10 +22,18 @@ export interface LinkIssue {
   target?: string;
 }
 
+export interface ExternalLinkRef {
+  fromId: string;
+  fromTitle: string;
+  url: string;
+}
+
 export interface LinkAuditResult {
   issues: LinkIssue[];
   internalChecked: number;
   externalCount: number;
+  /** Benzersiz dış adresler, en çok 40. Ağ çağrısı burada yapılmaz. */
+  external: ExternalLinkRef[];
 }
 
 /** Sitenin kendi ürettiği, içerik olmayan adres önekleri; kırık sayılmaz. */
@@ -50,6 +58,8 @@ export function auditLinks(contents: AuditContent[], opts: { baseUrl: string; lo
     for (const old of c.slugHistory ?? []) history.set(`${c.locale}/${old}`, c.slug);
   }
   const issues: LinkIssue[] = [];
+  const external: ExternalLinkRef[] = [];
+  const externalSeen = new Set<string>();
   let internalChecked = 0;
   let externalCount = 0;
   for (const c of contents) {
@@ -62,11 +72,20 @@ export function auditLinks(contents: AuditContent[], opts: { baseUrl: string; lo
       if (/^https?:\/\//i.test(raw)) {
         if (!raw.startsWith(origin)) {
           externalCount++;
+          if (!externalSeen.has(raw) && external.length < 40) {
+            externalSeen.add(raw);
+            external.push({ fromId: c.id, fromTitle: c.title, url: raw });
+          }
           continue;
         }
         path = raw.slice(origin.length) || "/";
       } else if (raw.startsWith("//")) {
         externalCount++;
+        const absolute = `https:${raw}`;
+        if (!externalSeen.has(absolute) && external.length < 40) {
+          externalSeen.add(absolute);
+          external.push({ fromId: c.id, fromTitle: c.title, url: absolute });
+        }
         continue;
       }
       if (!path.startsWith("/")) continue; // göreli bağlantılar belirsiz; denetlenmez
@@ -91,5 +110,5 @@ export function auditLinks(contents: AuditContent[], opts: { baseUrl: string; lo
       else issues.push({ fromId: c.id, fromTitle: c.title, url: raw, kind: "broken" });
     }
   }
-  return { issues, internalChecked, externalCount };
+  return { issues, internalChecked, externalCount, external };
 }

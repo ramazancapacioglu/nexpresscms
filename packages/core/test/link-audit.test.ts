@@ -25,6 +25,7 @@ test("dış, mailto, sistem yolları ve çapa sayılmaz/atlanır", () => {
   const r = auditLinks([page("ana-sayfa", "[d](https://baska.test/x) [m](mailto:a@b.c) [c](#top) [i](/media/1/a.png) [f](/feed.xml) [s](/tr/ara?q=1)")], opts);
   assert.equal(r.issues.length, 0);
   assert.equal(r.externalCount, 1);
+  assert.deepEqual(r.external, [{ fromId: "ana-sayfa", fromTitle: "ana-sayfa", url: "https://baska.test/x" }]);
 });
 
 test("iç içe yol kırık sayılır", () => {

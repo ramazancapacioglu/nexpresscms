@@ -93,7 +93,7 @@ const SIDEBAR_WIDGET_PRESETS: Array<{
   },
 ];
 
-export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
+export function SidebarEditor({ initial, menus = [] }: { initial: SidebarConfig; menus?: Array<{ id: string; name: string }> }) {
   const [areas, setAreas] = useState<SidebarAreaConfig[]>(() => resolveAllSidebarAreas(initial));
   const [activeAreaId, setActiveAreaId] = useState<string>("blog");
   const [newAreaModalOpen, setNewAreaModalOpen] = useState(false);
@@ -456,6 +456,7 @@ export function SidebarEditor({ initial }: { initial: SidebarConfig }) {
                     onMoveUp={() => moveWidget(idx, -1)}
                     onMoveDown={() => moveWidget(idx, 1)}
                     onDelete={() => updateWidgets(widgets.filter((_, i) => i !== idx))}
+                    menus={menus}
                   />
                 ))}
               </div>

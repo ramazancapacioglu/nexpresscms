@@ -14,3 +14,12 @@ export async function setRequestStatusAction(input: { id: string; status: AgentR
   await revalidatePath("/admin/requests");
   return { ok };
 }
+
+/** 180 günden eski talepleri siler. */
+export async function purgeOldRequestsAction(): Promise<{ ok: boolean; removed: number }> {
+  const admin = await requireAdmin("requests.purge");
+  const removed = await getAgentRequestRepository(admin.siteId).purgeOlderThan(180);
+  await recordAudit({ id: admin.sub, email: admin.email }, "requests.purge", { target: "agent_requests", detail: String(removed) });
+  await revalidatePath("/admin/requests");
+  return { ok: true, removed };
+}

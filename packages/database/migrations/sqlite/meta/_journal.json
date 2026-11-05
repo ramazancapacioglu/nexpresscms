@@ -127,6 +127,20 @@
       "when": 1793629991063,
       "tag": "0017_taxonomy_template",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1793809835939,
+      "tag": "0018_majestic_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1793811433068,
+      "tag": "0019_superb_leech",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 # 17 — WordPress İçe Aktarma
 
-Yönetim: `/admin/migration` (yalnızca admin). API: `POST /api/admin/wp-import` (`mode=analyze|run`). Paket: `packages/wp-importer` (saf mantık); yazma: `apps/cms/src/lib/wp-import.ts`.
+Yönetim: `/admin/migration` (yalnızca admin). API: `POST /api/admin/wp-import` (`mode=analyze|run`), `POST /api/admin/wp-shell` (tek sayfa, yazmaz). Paket: `packages/wp-importer` (saf mantık); yazma: `apps/cms/src/lib/wp-import.ts`.
 
 ## Akış
 1. WordPress'te **Araçlar → Dışa Aktar → Tüm içerik** ile `.xml` (WXR 1.x) alınır.
@@ -20,6 +20,12 @@ Başlık (h1–h2→h2, h3, h4–h6→h4), paragraf (satır içi biçim `props.h
 
 ## Görseller
 Varsayılan: görsel adresleri eski sitede kalır. Seçenek açıksa en çok 400 görsel indirilip medya kitaplığına alınır (bloklarda ve öne çıkan görselde adresler yeniden yazılır); indirilemeyen görselin adresi olduğu gibi kalır. Güvenlik için bkz. `docs/11` §8a.
+
+## Görünüm (canlı sayfadan yeniden çizim)
+
+WXR dosyası renk, menü ve sayfa düzenini taşımaz. Yayımlanmış HTML'den kabuk okunur (`readPublicShell`, `blocksFromPublicHtml`): Kadence paleti tasarım jetonuna, ilk başlık vitrine, bilgi kutuları kart ızgarasına, akordeon SSS'ye çevrilir. Uzak CSS ve JavaScript kopyalanmaz. Görseller eski adreste kalır. Paneldeki **Sayfayı oku** (`/api/admin/wp-shell`) aynı okuyucuyu tek adres için çalıştırır ve veritabanına dokunmaz. Adres, görsel indirmedeki genel internet kuralından geçer.
+
+Toplu deneme: `apps/cms/scripts/redraw-public-site.ts`. Klasördeki her `*.txt` iki satırdır (tür ve adres); aynı adlı `*.html` gövdedir. Ana sayfa ve en az 40 başarılı dönüşüm yoksa hiçbir kayıt silinmez. Yeterliyse yalnızca `page` ve `post` silinir, jetonlar ve üst/alt şerit yazılır. Ürün, şablon, medya ve kullanıcı durur.
 
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.

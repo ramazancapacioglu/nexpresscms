@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { emptySidebarConfig, type FooterConfig, type HeaderConfig } from "@nexpress/core";
+import { emptySidebarConfig, menuLibraryFrom, type FooterConfig, type HeaderConfig } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 
 export const fallbackHeader: HeaderConfig = {
@@ -47,6 +47,7 @@ export async function loadChrome(locale?: string) {
     hasOwn: Boolean(own),
     header: nav?.headerConfig ?? fallbackHeader,
     menu: nav?.menuItems ?? [],
+    menus: menuLibraryFrom(nav?.menuItems ?? [], nav?.footerConfig?.menus),
     footer: nav?.footerConfig ?? fallbackFooter,
     sidebar: nav?.sidebarConfig ?? emptySidebarConfig(),
   };

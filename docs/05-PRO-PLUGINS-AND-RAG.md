@@ -36,8 +36,7 @@ Editörün sağ çekmecesine (`editor.sidebar.tabs`) ve ana panele (`dashboard.o
 1. **Site DNA & Guardrail Kalkanı (`src/guardrails.ts`):**
    - `DEFAULT_FORBIDDEN_PHRASES` (*"bu makalede"*, *"sonuç olarak"*, *"özetlemek gerekirse"*, *"günümüzde"* vb.) ile yapay AI klişelerini tespit eder.
    - `content:beforeSave` kancasına bağlanarak Answer-First `tldr` uzunluğunu, kelime derinliğini ve klişe bulunmama durumunu denetleyip dinamik `seoScore` hesaplar (`auditContentGuardrails`).
-2. **8 Kaynaklı Hibrit Soru Madenciliği (`src/question-mining.ts`):**
-   - Google Search Console (`gsc_pos_4_20`), Serper API (`serper_paa`), Bing Webmaster ve WebMCP sorgu loglarından (`mcp_query_log`) gelen soruları `Cosine > 0.92` eşiğiyle kümeler (`SAMPLE_MINED_QUESTIONS`).
+2. **Kelime havuzu:** canlı GSC, Bing, Yandex ve Serper kayıtları `seo_intel_signals` tablosundadır. Küme sözcük örtüşmesidir (Jaccard). Örnek dizi artık kartta basılmaz.
 3. **Canlı Editör Co-Pilot (`src/index.tsx` -> `editor.sidebar.tabs`):**
    - Vektör kanibalizasyon denetimi, AI klişe kalkanı ve semantik `@id` iç link önerilerini editör sağ çekmecesinde sunar.
 
@@ -53,7 +52,7 @@ Editörün sağ çekmecesine (`editor.sidebar.tabs`) ve ana panele (`dashboard.o
 | `nexpress_create_lead` | Anahtar korumalı (`MCP_AGENT_KEY`, bkz. doc 11); kayıt henüz kalıcı değil |
 | AI bot paneli (Bot Tarama Günlüğü) | **Gerçek veri** (`bot_daily_stats`, son 30 gün; bkz. `docs/04` §7) |
 | Kanibalizasyon / benzer içerik / iç bağlantı (Co-Pilot) | **Gerçek veri** (`@nexpress/rag` dizini, bkz. `docs/04` §9) |
-| Soru madenciliği (GSC/Serper/WebMCP kümeleme) | **Demo verisi** (etiketli); gerçek kaynak entegrasyonu: `docs/12` P0-4 |
+| Soru havuzu (GSC/Bing/Yandex/Serper) | **Canlı kayıt** kümelenir ve taslak açar. Tohum yazılmaz. Gömme kümesi yok |
 | MCP `nexpress_search_corpus` | Vektör araması (dizin varsa), yoksa anahtar kelime |
 | Klişe kalkanı (`content:beforeSave`) | Çalışır |
 
@@ -75,15 +74,15 @@ Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/sr
 - **`merchant-feed`:** `/merchant-feed.xml` (RSS 2.0 + `g:`); yalnızca yayındaki ürünler; fiyatı, görseli veya açıklaması eksik/geçersiz olanlar beslemeye girmez; indirimli üründe `price` = eski, `sale_price` = güncel.
 - **`gap-analysis`:** panel kartı; TL;DR eksik/kısa, 180+ gün bayat, iç bağlantı almayan, 150 sözcükten ince ve benzer (Jaccard ≥ 0.6) içerikler.
 - **`mcp-log`:** `/api/mcp` istekleri (araç, ajan, sonuç, süre) → panel kartı (30 gün).
-- **Hâlâ "Yakında" (dış servis/anahtar gerektirir; manifestte nedeni yazılı):** citations, serper-intel, decay, kb-transform, google-reviews, catalog-ai, support-hub, ve SEO Temel'deki search-console.
+- **Destek arama günlüğü** sonuçsuz site aramasını yazar. Kaynak denetimi elle ve `CRON_SECRET` ile çalışır. Anlam kümesi yalnız gerçek gömme sağlayıcısında ve en çok 24 sorguda açıktır.
 
 - **`ai-compose` (2026-11-02):** `ai-writer.compose` eylemi (`registerAiCompose`): `write|rewrite|expand|shorten|fix`; girdi sınırları (istek 600, metin 4000, bağlam 3000), çıktı en çok 6 paragraf × 1200 karakter (başlıkta tek, 90). `findClaims` / `findUnverifiedNumbers` uydurma riskini işaretler. Testli (`test/compose.test.ts`, sahte model).
 - **Agentic SEO Pro Tam Modül Genişlemesi (2026-11-03):**
-  - **`citations` (AI Alıntı İzleme):** Perplexity, ChatGPT, Gemini ve Claude arama motorlarında markanın alıntılanma olasılığı, AI Görünürlük Skoru (%0-100) ve canlı simülasyon kartı (`CitationsCard`).
-  - **`google-reviews` (Google Haritalar & Yorumlar):** Google Place ID, puan ve doğrulanmış müşteri yorumlarını LocalBusiness AggregateRating ve Review grafiğine enjekte eden motor (`enrichWithGoogleReviews`) ve panel kartı (`GoogleReviewsCard`).
-  - **`serper-intel` (Serper SERP & PAA Soru Madenciliği):** Canlı Google ilk sayfa organik sıralama, "İnsanlar Bunu da Sordu" (PAA) soruları, LSI terimleri ve tek tıkla Soru-Cevap taslak içeriği oluşturma aracı (`SerperCard`).
-  - **`decay` (İçerik Erimesi Analizi):** 90+ gündür güncellenmeyen, TL;DR özeti eksik veya zayıf içerikli sayfaları tespit edip tek tıkla yenileme aksiyonu sunan panel kartı (`DecayCard`).
-  - **`kb-transform` (Bilgi Bankası Dönüşümü):** Destek notlarını, teknik rehberleri veya mevzuat maddelerini 0-KB RSC bloklu ve TL;DR'li zengin makalelere dönüştüren fabrika (`KbTransformCard`).
-  - **`catalog-ai` (E-Ticaret AI SEO Denetçisi):** Ürün başlıkları, açıklamaları, SKU ve Google Merchant Center uyumunu denetleyen katalog sağlığı analiz kartı (`CatalogAiCard`).
-  - **`support-hub` (Destek Merkezi & İçerik Açığı Raporu):** RAG destek arama günlüğü üzerinden müşterilerin aratıp sonuç bulamadığı cevapsız konuları listeleyip yeni içerik açığını kapatma aracı (`SupportHubCard`).
-  - Manifestodaki tüm modüller `status: "ready"` durumuna getirildi ve `dashboard.overview.cards` yuvasına kaydedildi.
+  - **`citations`:** hazırlık puanı (TL;DR + şema) ve kayıtlı yönlendirme. Uydurma motor satırı yok.
+  - **`google-reviews`:** ayardaki puan ve yorum şemaya girer. Places anahtarı varsa çekilir. Boş ayar örnek isim basmaz.
+  - **`serper-intel`:** canlı sorgu havuza yazılır. Anahtarsız liste demo diye işaretlenir ve kaydedilmez.
+  - **`decay`:** yaş, sözcük ve kayıtlı sıra düşüşü (`DecayCard`).
+  - **`kb-transform`:** adres veya yapıştırılan metin taslak açar. Denetle değişeni işaretler, yayınlamaz.
+  - **`catalog-ai`:** uzunluk denetimi ve yeniden yazma. Uygula ürün kaydını yazar.
+  - **`support-hub`:** sonuçsuz site aramalarını listeler. Yüzde uydurulmaz.
+  - Rapor kartları `seo.reports.queries`, `seo.reports.content` ve `seo.reports.visibility` yuvalarındadır. Ayarlar `/admin/seo/settings` altındadır.

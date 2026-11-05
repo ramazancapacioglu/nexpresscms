@@ -15,7 +15,8 @@
   "dependencies": {
     "@nexpress/core": "workspace:*",
     "@nexpress/database": "workspace:*",
-    "@nexpress/rag": "workspace:*"
+    "@nexpress/rag": "workspace:*",
+    "@nexpress/wp-importer": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0"

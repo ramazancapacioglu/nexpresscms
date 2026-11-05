@@ -12,6 +12,8 @@ import {
 } from "@nexpress/themes";
 import { Sparkles, X } from "lucide-react";
 import { ChromeWireframe } from "./chrome-wireframe";
+import { HeaderLibraryDraft } from "./header-library-draft";
+import { HeaderMiniBars } from "./header-mini-bars";
 
 type Tab = "designs" | "json";
 
@@ -33,6 +35,7 @@ export function ChromeLibraryModal({
   const [query, setQuery] = useState("");
   const [raw, setRaw] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<{ name: string; value: HeaderConfig } | null>(null);
   const wasOpen = useRef(false);
 
   useEffect(() => {
@@ -41,6 +44,7 @@ export function ChromeLibraryModal({
       setGroupId("all");
       setQuery("");
       setError(null);
+      setDraft(null);
     }
     wasOpen.current = open;
   }, [open]);
@@ -86,7 +90,12 @@ export function ChromeLibraryModal({
             <div>
               <h2 className="text-sm font-bold">{kind === "header" ? "Header kütüphanesi" : "Footer kütüphanesi"}</h2>
               <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-                {tab === "designs" ? `${items.length} tasarım. Seçince forma alınır.` : "JSON forma alınır."} Kaydet ile yayınlanır.
+                {tab === "designs"
+                  ? kind === "header"
+                    ? `${items.length} tasarım. Mobil dizi düzenlenir, sonra forma alınır.`
+                    : `${items.length} tasarım. Seçince forma alınır.`
+                  : "JSON forma alınır."}{" "}
+                Kaydet ile yayınlanır.
               </p>
             </div>
           </div>
@@ -102,7 +111,18 @@ export function ChromeLibraryModal({
             </button>
           </div>
         </div>
-        {tab === "designs" ? (
+        {tab === "designs" && draft && kind === "header" ? (
+          <HeaderLibraryDraft
+            name={draft.name}
+            value={draft.value}
+            onChange={(value) => setDraft({ name: draft.name, value })}
+            onBack={() => setDraft(null)}
+            onApply={() => {
+              onApplyHeader?.(structuredClone(draft.value));
+              onClose();
+            }}
+          />
+        ) : tab === "designs" ? (
           <div className="flex min-h-0 flex-1">
             <aside className="flex w-40 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-[#E6E7EA] p-2 dark:border-[#23262E]">
               <input
@@ -131,13 +151,16 @@ export function ChromeLibraryModal({
                     key={item.id}
                     type="button"
                     onClick={() => {
-                      if (kind === "header") onApplyHeader?.(structuredClone(item.value as HeaderConfig));
-                      else onApplyFooter?.(structuredClone(item.value as FooterConfig));
+                      if (kind === "header") {
+                        setDraft({ name: item.name, value: structuredClone(item.value as HeaderConfig) });
+                        return;
+                      }
+                      onApplyFooter?.(structuredClone(item.value as FooterConfig));
                       onClose();
                     }}
                     className="rounded-xl border border-[#E6E7EA] p-3 text-left hover:border-blue-500 dark:border-[#23262E]"
                   >
-                    <ChromeWireframe kind={item.preview} />
+                    {kind === "header" ? <HeaderMiniBars header={item.value as HeaderConfig} /> : <ChromeWireframe kind={item.preview} />}
                     <div className="mt-2 text-[12px] font-semibold">{item.name}</div>
                     <p className="mt-1 text-[11px] leading-snug text-[#5F6570] dark:text-[#8C9099]">{item.description}</p>
                   </button>

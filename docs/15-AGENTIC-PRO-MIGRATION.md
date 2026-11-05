@@ -34,7 +34,7 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 | :--- | :--- |
 | `mcp` (search_corpus hibrit, fetch_markdown, site_dna) | ✅ |
 | `nlweb-ask` (schema.org ItemList) | ✅ JSON-RPC `ask` |
-| `agent-actions` (lead / teklif / destek bileti / demo) | ✅ `nexpress_create_lead`, `nexpress_create_ticket`, `nexpress_book_demo`: `X-Agent-Key` + sunucuda `MCP_AGENT_KEY` (zamanlamaya dayanıklı karşılaştırma), alan doğrulama, saatte 30 talep sınırı, `agent_requests` tablosu, yönetici **Talepler** sayfası (`/admin/requests`, işlendi işareti, denetim kaydı). Kalan: e-posta bildirimi (SMTP yok), CSV dışa aktarma, saklama süresi |
+| `agent-actions` (lead / teklif / destek bileti / demo) | ✅ `nexpress_create_lead`, `nexpress_create_ticket`, `nexpress_book_demo`: `X-Agent-Key` + sunucuda `MCP_AGENT_KEY`, alan doğrulama, saatte 30 talep sınırı, `agent_requests`. Talepler sayfasında işlendi işareti, CSV ve 180 gün temizliği var. Oluşunca site iletişim adresine mektup gider; SMTP yoksa talep yine kaydolur. |
 
 ### Analitik
 | Modül | Durum |
@@ -42,7 +42,7 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 | `bot-analytics` (ısı haritası kartı; çekirdekte telemetri) | ✅ |
 | `ai-referrals` (ChatGPT, Perplexity, Gemini, Copilot, Claude… yönlendirme) | ✅ JS'siz: `Referer` + `utm_source` sunucuda okunur (`ai_referral_daily`; IP/UA yok, botlar sayılmaz); panel kartı. Sayaçlar **göstergedir** (Referer taklit edilebilir / bazı uygulamalar göndermez) |
 | `bot-verification` | ✅ **Çekirdeğe taşındı** (Temel SEO › "Bot doğrulama"): ters DNS + ileri doğrulama (Google, Bing, Apple, Yandex) ve **OpenAI + Perplexity'nin yayımladığı IP aralıkları** (24 sa önbellek, hata → `claimed`). Anthropic/Meta/Amazon aralık yayımlamıyor → `claimed` kalır. |
-| `citations` | ✅ Perplexity, ChatGPT, Gemini, Claude için marka alıntı izleme, AI Görünürlük Skoru (%0-100) ve alıntı simülasyon kartı. |
+| `citations` | ✅ Hazırlık puanı (TL;DR + şema). Motor alıntısı kaydı yok; uydurma satır basılmaz. |
 | `mcp-log` | ✅ |
 
 ### Zengin şema
@@ -52,27 +52,27 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 | `speakable` | ✅ |
 | `faq-qa` (AI Prompt CPT, oylama, FAQ/QAPage) | ✅ QAPage ve FAQPage şema desteği, öne çıkan uzman cevabı entegrasyonu |
 | `campaign-offer`, `tech-article`, `software-app` | ✅ Tam Schema.org grafik düğümleri ve görsel şema kartları |
-| `google-reviews` | ✅ Google Haritalar / Places Place ID, puan ve doğrulanmış müşteri yorumlarını LocalBusiness AggregateRating ve Review grafiğine enjekte eder; panel kartı hazır. |
+| `google-reviews` | ✅ Yalnızca eklenti ayarına yazılan puan ve yorum şemaya girer. Boş ayar düğümü değiştirmez. |
 
 ### İçerik operasyonları (panelden)
 | Modül | Panel kaynağı | Durum |
 | :--- | :--- | :--- |
 | `guardrails`, `copilot` (kanibalizasyon + iç bağlantı) | `llm-core` guardrails, `/content/cannibalization` | ✅ |
-| `question-mining` | `question-intel` | ✅ |
+| `question-mining` | `question-intel` | ✅ Canlı sinyal havuzu + sözcük kümesi + editör taslağı. Tohum yazılmaz. Gömme kümesi yok. |
 | `content-freshness` | WP "İçerik Tazeliği" | ✅ panel kartı (180+ gün); kampanya bitiş tarihi kampanya modülüyle |
-| `serper-intel` (SERP, PAA, terim hedefleri) | `/analysis/serp`, `serper.ts` | ✅ Google ilk sayfa organik sıralama, "İnsanlar bunu da sordu" (PAA) soru madenciliği, LSI terimleri ve tek tıkla Soru-Cevap taslak oluşturucu. |
+| `serper-intel` (SERP, PAA, terim hedefleri) | `/analysis/serp`, `serper.ts` | ✅ Canlı sorgu havuza yazılır ve taslak açar. Anahtar yoksa liste "Demo verisi"dir ve kaydedilmez. |
 | `gap-analysis` | `seo-analyzer` | ✅ panel kartı |
 | `decay` | `seo-analyzer`, `/analysis/decay` | ✅ İçerik erimesi: 90+ gün güncellenmeyen, zayıf içerikli veya organik sıralama kaybı riski taşıyan sayfalar ve yenileme aksiyonu. |
-| `kb-transform` (kaynak izleme → TL;DR + taslak, insan onaylı) | `kb-scraper`, `llm-transform` | ✅ Destek notlarını, mevzuat metinlerini ve ham teknik rehberleri doğrudan TL;DR ve 0-KB RSC bloklu taslak makalelere dönüştürür. |
+| `kb-transform` (kaynak adres veya yapıştırma → taslak) | `kb-scraper`, `llm-transform` | ✅ İç adres kapısı, taslak kuyruğu. Yayın editör onayındadır. Sürekli kaynak izleme yok. |
 | `ai-writer` (TL;DR, meta başlık/açıklama, SSS önerisi; marka yasak kalıpları; 2 geçişli düzeltme) | `llm-transform/editor-ai-rewrite.ts`, guardrails | ✅ Editör › SEO › "AI yazım asistanı" |
-| `ai-brand` (Site DNA, marka profili, few-shot stil) | `llm-core/site`, `brand` | ✅ Eklentiler › Ayarlar › Site DNA |
+| `ai-brand` (Site DNA, marka profili, few-shot stil) | `llm-core/site`, `brand` | ✅ SEO › Ayarlar › Site DNA |
 
 ### Katalog & destek
 | Modül | Durum |
 | :--- | :--- |
-| `catalog-ai` | ✅ Katalog başlıkları, açıklamaları ve Schema Product kalitesini denetler ve AI iyileştirme önerir. |
+| `catalog-ai` | ✅ Uzunluk denetimi. Yeniden yazma önerisi "Ürüne uygula" ile kayda geçer (anahtar varsa model, yoksa kural). |
 | `merchant-feed` | ✅ Yayındaki ürünlerden Google Merchant Center beslemesi (`/merchant-feed.xml`). |
-| `support-hub` | ✅ RAG tabanlı teknik destek araması ve cevapsız kalan konular için içerik açığı raporu. |
+| `support-hub` | ✅ Sonuçsuz site araması kayda geçer. Sabit yüzde yoktur. |
 
 ### Temel SEO'ya (ücretsiz) ait arama motoru bağlantıları
 - `search-console` (`@nexpress/seo-basic`): ✅ Google Search Console / Bing / Yandex sorgu metrikleri, CSV/JSON rapor içe aktarma, ilk sayfa fırsatları (Striking Distance: Pozisyon 4-15) ve düşük TO tespit paneli `/admin/seo` sayfasına entegre edildi.
@@ -82,9 +82,10 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 1. ~~`ai-writer` çekirdeği~~ yapıldı; `ai-brand` v1 yapıldı.
 2. `agent-actions` (gerçek lead/talep deposu) + `bot-verification` + `ai-referrals` (eklenti tablosu göçleri gerekir: `plugin_migrations`).
 3. ~~Arama verisi bağlayıcıları (GSC → Bing → Yandex → GA4)~~: ✅ `@nexpress/seo-core/analytics-integrations` ve `/admin/seo/integrations` ile canlı API bağlantıları, anahtar kelime fırsat analitiği (Striking Distance, Düşük CTR) ve GA4 AI Yönlendirme (ChatGPT, Perplexity, Gemini, Claude, Copilot) entegrasyonu tamamlandı.
-4. `serper-intel` → `question-mining` gerçek veri.
-5. Şema paketleri (`faq-qa`, `campaign-offer`, `tech-article`, `software-app`, `google-reviews`) ve katalog.
-6. `kb-transform`.
+4. ~~`serper-intel` → `question-mining` gerçek veri~~: canlı sorgu ve CSV/API havuza yazılır, küme taslağı editörde açılır. Tohum yazılmaz.
+5. ~~Şema paketleri ve katalog~~: yorumlar yalnız ayardan; katalog önerisi ürüne uygulanır.
+6. ~~`kb-transform`~~: adres veya yapıştırma taslak açar. Yayın editör onayındadır. Değişen kaynak `source.recheck` ile işaretlenir.
+7. SEO ayarları `/admin/seo/settings` altındadır. Raporlar üç grupta `/admin/seo/reports` sayfasındadır. Günlük eşitleme `CRON_SECRET` ile `/api/cron/seo` üzerindedir; örnek satır yazılmaz.
 
 ## 5. Ortam notu
 
@@ -94,8 +95,8 @@ Taşınan her özellik: saf mantık `plugins-pro/agentic-seo-pro/src/*` (testli)
 
 - **Akış:** Editör (istemci) → `runPluginAction("ai-writer.suggest")` server action (`requireUser`, denetim `plugins.action`) → `pluginActions` → Pro işleyici (modül kapısı → `OPENAI_API_KEY` denetimi → kullanıcı başına 10/5 dk sınır → ayarlar → OpenAI sohbet).
 - **Kural:** asistan hiçbir şeyi kaydetmez; "Uygula" yalnızca editör alanını doldurur, kaydetme ayrı adımdır. SSS yalnızca gösterilir (blok olarak elle eklenir).
-- **Güvenlik/maliyet:** sır yalnızca sunucu ortamında; içerik 6.000 karaktere kısaltılıp gönderilir; çıktı JSON şemasıyla doğrulanıp uzunluk sınırlanır (başlık 60, açıklama 160, TL;DR 300); yasak kalıp (varsayılan klişeler + Eklentiler › Ayarlar'daki liste) çıkarsa model bir kez düzeltmeye gönderilir, kalırsa arayüz uyarır.
-- **Ayarlar:** Eklentiler › Agentic SEO Pro › Ayarlar: model (varsayılan `gpt-4o-mini` veya `AI_WRITER_MODEL`), marka tonu, yasak kalıplar, özel kurallar. `OPENAI_BASE_URL` ile OpenAI uyumlu başka sağlayıcı kullanılabilir.
+- **Güvenlik/maliyet:** sır yalnızca sunucu ortamında; içerik 6.000 karaktere kısaltılıp gönderilir; çıktı JSON şemasıyla doğrulanıp uzunluk sınırlanır (başlık 60, açıklama 160, TL;DR 300); yasak kalıp (varsayılan klişeler + SEO › Ayarlar'daki liste) çıkarsa model bir kez düzeltmeye gönderilir, kalırsa arayüz uyarır.
+- **Ayarlar:** SEO › Ayarlar: model (varsayılan `gpt-4o-mini` veya `AI_WRITER_MODEL`), marka tonu, yasak kalıplar, özel kurallar. `OPENAI_BASE_URL` ile OpenAI uyumlu başka sağlayıcı kullanılabilir.
 
 ## 7. Marka profili ve Site DNA (teknik)
 

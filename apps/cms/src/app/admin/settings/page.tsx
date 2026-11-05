@@ -4,6 +4,7 @@ import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { requireAdminPage } from "@/lib/auth/session";
 import { SettingsForm } from "@/components/admin/settings-form";
+import { SiteOps } from "@/components/admin/site-ops";
 import { LocalesCard } from "@/components/admin/locales-card";
 import { mediaRoot } from "@/lib/media/storage";
 
@@ -34,6 +35,7 @@ export default async function AdminSettingsPage() {
       }}
     />
     <LocalesCard initial={site?.supportedLocales ?? ["tr"]} defaultLocale={site?.defaultLocale ?? "tr"} />
+    <SiteOps maintenance={{ enabled: general.maintenanceEnabled, message: general.maintenanceMessage }} />
     </div>
   );
 }

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { DesignTokens } from "@nexpress/core";
 import { activateThemeAction } from "@/app/admin/actions";
+import { importThemeDemoAction } from "@/app/admin/themes/demo-actions";
 import {
   activateUploadedThemeAction,
   deleteUploadedThemeAction,
@@ -40,6 +41,8 @@ export interface ThemeGalleryItem {
   pages?: number;
   hasChrome?: boolean;
   hasCss?: boolean;
+  /** Etkin temada ayrı aktarılan demo içerik sayısı. 0 ise düğme gizlenir. */
+  demoCount?: number;
 }
 
 interface ThemeGalleryViewProps {
@@ -95,13 +98,34 @@ export function ThemeGalleryView({
       try {
         const res = await activateThemeAction({ themeId: theme.id });
         if (res.ok) {
-          notify("ok", `“${theme.name}” teması başarıyla etkinleştirildi.`);
+          notify("ok", `“${theme.name}” teması etkinleştirildi. Demo sayfalar ayrı aktarılır.`);
           router.refresh();
         } else {
           notify("err", "Tema etkinleştirilemedi.");
         }
       } catch {
         notify("err", "Bir hata oluştu.");
+      }
+    });
+  };
+
+  const handleImportDemo = (theme: ThemeGalleryItem) => {
+    const count = theme.demoCount ?? 0;
+    if (!window.confirm(`“${theme.name}” demosu ${count} sayfa ve yazı ekler. Aynı adresteki içerik değişmez. Menü bu temanın düzenine çekilir.`)) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const res = await importThemeDemoAction({ themeId: theme.id });
+        if (res.ok) {
+          const skip = res.skipped.length ? ` ${res.skipped.length} adres dolu olduğu için atlandı.` : "";
+          notify("ok", `${res.added} demo içerik eklendi.${skip} İçerikler yayında ve düzenlenebilir.`);
+          router.refresh();
+        } else {
+          notify("err", res.error);
+        }
+      } catch {
+        notify("err", "Demo aktarımı tamamlanamadı.");
       }
     });
   };
@@ -186,7 +210,7 @@ export function ThemeGalleryView({
             </span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Sitenizin görsel tasarımını ve şablonlarını yönetin. Aktif temanızı özelleştirin veya yeni tema paketi yükleyin.
+            Kurulu temalar ve paket yükleme. Renk ve yazı özelleştiricide, şablon ataması şablon sayfasındadır.
           </p>
         </div>
 
@@ -548,13 +572,26 @@ export function ThemeGalleryView({
 
                   {/* Etkinleştir / Özelleştir */}
                   {isCurrentlyActive ? (
-                    <Link
-                      href="/admin/themes/customize"
-                      className="inline-flex h-7 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-[11px] font-bold text-white hover:bg-blue-700 transition"
-                    >
-                      <Palette className="h-3 w-3" />
-                      <span>Özelleştir</span>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      {(thm.demoCount ?? 0) > 0 ? (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleImportDemo(thm)}
+                          className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-[11px] font-bold hover:bg-muted disabled:opacity-50"
+                        >
+                          <Layers className="h-3 w-3" />
+                          <span>Demo veriyi aktar</span>
+                        </button>
+                      ) : null}
+                      <Link
+                        href="/admin/themes/customize"
+                        className="inline-flex h-7 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-[11px] font-bold text-white hover:bg-blue-700 transition"
+                      >
+                        <Palette className="h-3 w-3" />
+                        <span>Özelleştir</span>
+                      </Link>
+                    </div>
                   ) : thm.isOfficial ? (
                     <button
                       type="button"

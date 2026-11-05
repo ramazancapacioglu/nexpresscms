@@ -1,11 +1,18 @@
 import React from "react";
 import {
+  DEFAULT_HEADER_ZONES,
   FOOTER_LAYOUT_PRESETS,
   isSafeMenuHref,
   resolveFooterWidgets,
+  hasExplicitMobileZones,
+  resolveHeaderZones,
+  resolveMobileHeaderZones,
   type DesignTokens,
   type FooterConfig,
   type HeaderConfig,
+  type HeaderWidgetId,
+  type HeaderZones,
+  type NavigationLink,
   type NavigationMenuItem,
   type SiteSettings,
 } from "@nexpress/core";
@@ -23,13 +30,16 @@ interface HeaderProps {
   header: HeaderConfig | undefined;
   custom: SiteSettings["customizer"]["header"];
   menuLabel: string;
+  menuAllLabel: string;
+  searchLabel: string;
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, header, custom, menuLabel }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
-  const bottomLinks = header?.bottomBar.links ?? [];
+  const bottom = header?.bottomBar;
+  const bottomLinks = bottom?.links ?? [];
   const ctaLabel = (custom.ctaLabel || main?.ctaLabel || "").trim();
   const ctaHref = (custom.ctaHref || main?.ctaHref || "").trim();
   const showCta = custom.showCta !== false && ctaLabel !== "" && isSafeMenuHref(ctaHref) && !ctaHref.startsWith("/admin");
@@ -37,17 +47,109 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
   const sticky = main?.sticky ?? custom.sticky;
   const glass = main?.glassmorphism ?? custom.glass;
   const align = custom.menuAlign;
+  const topZones = resolveHeaderZones(top, DEFAULT_HEADER_ZONES.top);
+  const mainZones = resolveHeaderZones(main, DEFAULT_HEADER_ZONES.main);
+  const mobileZones = resolveMobileHeaderZones(main, mainZones);
+  const bottomZones = resolveHeaderZones(bottom, DEFAULT_HEADER_ZONES.bottom);
+  const topMobile = resolveMobileHeaderZones(top, topZones);
+  const bottomMobile = resolveMobileHeaderZones(bottom, bottomZones);
+  const zoneHas = (zones: HeaderZones, id: HeaderWidgetId) =>
+    zones.left.includes(id) || zones.center.includes(id) || zones.right.includes(id);
+
+  const widget = (id: HeaderWidgetId, viewport: "desktop" | "mobile") => {
+    if (id === "announcement") return top?.announcementText ? <span className="font-medium">{top.announcementText}</span> : null;
+    if (id === "contact") {
+      const phone = top?.contactPhone?.trim();
+      const email = top?.contactEmail?.trim();
+      if (!phone && !email) return null;
+      return (
+        <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] opacity-90">
+          {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a> : null}
+          {email ? <a href={`mailto:${email}`}>{email}</a> : null}
+        </span>
+      );
+    }
+    if (id === "logo") {
+      return (
+        <a href={`/${locale}`} className="flex min-w-0 items-center gap-2.5">
+          {custom.logoImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
+          ) : logoText === "AKINSOFT" ? (
+            <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>AKIN</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
+          ) : (
+            <span style={{ fontFamily: tokens.typography.headingFont, color: ink ? tokens.colors.foreground : undefined }} className="truncate text-lg font-bold tracking-tight">{logoText}</span>
+          )}
+          {custom.showTagline && tagline ? <span className="hidden truncate text-[11px] font-medium text-nx-muted lg:block">{tagline}</span> : null}
+        </a>
+      );
+    }
+    if (id === "menu") {
+      return viewport === "mobile"
+        ? <MobileNav menu={menu} label={menuLabel} allLabel={menuAllLabel} />
+        : <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />;
+    }
+    if (id === "search") {
+      return (
+        <a href={`/${locale}/ara`} className="whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">
+          {searchLabel}
+        </a>
+      );
+    }
+    if (id === "cta" && showCta) {
+      return (
+        <a
+          href={ctaHref}
+          style={{ backgroundColor: ink ? "transparent" : tokens.colors.primary, color: ink ? tokens.colors.foreground : tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius, border: ink ? "1px solid rgba(255,255,255,0.2)" : undefined }}
+          className="inline-flex items-center px-4 py-2 text-sm font-semibold"
+        >
+          {ctaLabel}
+        </a>
+      );
+    }
+    if (id === "links" && bottomLinks.length > 0) {
+      return (
+        <span className="flex gap-4 overflow-x-auto">
+          {bottomLinks.map((link) => (
+            <a key={link.id} href={link.href} className="whitespace-nowrap text-zinc-400 hover:text-current">{link.label}</a>
+          ))}
+        </span>
+      );
+    }
+    return null;
+  };
+
+  const row = (zones: HeaderZones, className: string, viewport: "desktop" | "mobile", collapseEmpty = false) => {
+    const sides = (["left", "center", "right"] as const).filter((side) => !collapseEmpty || zones[side].length > 0);
+    return (
+      <div className={className}>
+        {sides.map((side) => (
+          <div key={side} className={`flex min-w-0 items-center gap-3 ${side === "center" ? "justify-center" : side === "right" ? "justify-end" : ""}`}>
+            {zones[side].map((id) => {
+              const node = widget(id, viewport);
+              return node ? <React.Fragment key={id}>{node}</React.Fragment> : null;
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  };
+  const topVisible = Boolean(top?.enabled && (top.announcementText || top.contactPhone || top.contactEmail));
+  const shell = ink ? "100%" : tokens.geometry.containerMaxWidth;
 
   return (
     <>
-      {top?.enabled && (top.announcementText || top.contactPhone || top.contactEmail) ? (
+      {topVisible ? (
         <div style={{ backgroundColor: tokens.colors.secondary, color: tokens.colors.secondaryForeground }} className="border-b border-white/10 px-4 py-2 text-xs">
-          <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto flex flex-wrap items-center justify-between gap-2">
-            <span className="font-medium">{top.announcementText}</span>
-            <div className="flex items-center gap-4 text-[11px] opacity-90">
-              {top.contactPhone ? <a href={`tel:${top.contactPhone.replace(/[^\d+]/g, "")}`}>{top.contactPhone}</a> : null}
-              {top.contactEmail ? <a href={`mailto:${top.contactEmail}`}>{top.contactEmail}</a> : null}
-            </div>
+          <div style={{ maxWidth: shell }} className="mx-auto">
+            {hasExplicitMobileZones(top) ? (
+              <>
+                {row(topZones, "hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-3", "desktop")}
+                {row(topMobile, "grid grid-cols-1 items-start gap-1 md:hidden", "mobile", true)}
+              </>
+            ) : (
+              row(topZones, "grid grid-cols-1 items-start gap-1 md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-3", "desktop")
+            )}
           </div>
         </div>
       ) : null}
@@ -60,38 +162,31 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
             : `nx-public-header z-40 border-b ${sticky === false ? "relative" : "sticky top-0"} ${glass === false ? "" : "backdrop-blur-md"}`
         }
       >
-        <div style={{ maxWidth: ink ? "100%" : tokens.geometry.containerMaxWidth, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center justify-between gap-6 px-4 sm:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-8 self-stretch">
-            <a href={`/${locale}`} className="flex min-w-0 items-center gap-2.5">
-              {custom.logoImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
-              ) : (
-                <span style={{ fontFamily: tokens.typography.headingFont, color: ink ? tokens.colors.foreground : undefined }} className="truncate text-lg font-bold tracking-tight">{logoText}</span>
-              )}
-              {custom.showTagline && tagline ? <span className="hidden truncate text-[11px] font-medium text-nx-muted lg:block">{tagline}</span> : null}
-            </a>
-            <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />
-          </div>
-          <div className="flex items-center gap-3">
-            {showCta ? (
-              <a
-                href={ctaHref}
-                style={{ backgroundColor: ink ? "transparent" : tokens.colors.primary, color: ink ? tokens.colors.foreground : tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius, border: ink ? "1px solid rgba(255,255,255,0.2)" : undefined }}
-                className="inline-flex items-center px-4 py-2 text-sm font-semibold"
-              >
-                {ctaLabel}
-              </a>
-            ) : null}
-            <MobileNav menu={menu} label={menuLabel} />
-          </div>
+        <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto px-4 sm:px-6">
+          {row(mainZones, "hidden h-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
+          {row(mobileZones, "grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
-        {header?.bottomBar.enabled && bottomLinks.length > 0 ? (
-          <div className="border-t border-white/10">
-            <div style={{ maxWidth: ink ? "100%" : tokens.geometry.containerMaxWidth }} className="mx-auto flex gap-4 overflow-x-auto px-4 py-2 text-xs sm:px-6">
-              {bottomLinks.map((link) => (
-                <a key={link.id} href={link.href} className="whitespace-nowrap text-zinc-400 hover:text-current">{link.label}</a>
-              ))}
+        {bottom?.enabled && bottomLinks.length > 0 && hasExplicitMobileZones(bottom) ? (
+          <>
+            {zoneHas(bottomZones, "links") ? (
+              <div className="hidden border-t border-white/10 text-xs md:block">
+                <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
+                  {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
+                </div>
+              </div>
+            ) : null}
+            {zoneHas(bottomMobile, "links") ? (
+              <div className="border-t border-white/10 text-xs md:hidden">
+                <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2">
+                  {row(bottomMobile, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "mobile")}
+                </div>
+              </div>
+            ) : null}
+          </>
+        ) : bottom?.enabled && bottomLinks.length > 0 ? (
+          <div className="border-t border-white/10 text-xs">
+            <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
+              {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
             </div>
           </div>
         ) : null}
@@ -108,6 +203,7 @@ export function SiteFooter({
   footer,
   fallbackText,
   widgetFeed,
+  menuLibrary,
 }: {
   siteName: string;
   siteDna?: string | null;
@@ -116,6 +212,7 @@ export function SiteFooter({
   footer: FooterConfig | undefined;
   fallbackText: string;
   widgetFeed?: PublicWidgetFeed;
+  menuLibrary?: Record<string, NavigationLink[]>;
 }) {
   const layout =
     FOOTER_LAYOUT_PRESETS.find((p) => p.id === (footer?.layoutPreset ?? "brand-wide-4")) ??
@@ -180,6 +277,7 @@ export function SiteFooter({
                   tokens={tokens}
                   feed={widgetFeed}
                   cardStyle="footer"
+                  menuLibrary={menuLibrary}
                 />
               ))}
             </div>

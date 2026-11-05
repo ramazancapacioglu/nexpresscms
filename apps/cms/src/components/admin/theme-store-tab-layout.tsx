@@ -25,6 +25,7 @@ import {
   deleteTemplateAction,
   setDefaultTemplateAction,
 } from "@/app/admin/appearance/templates/actions";
+import { BackToTopPanel } from "./back-to-top-panel";
 import type { ThemeStoreState } from "./use-theme-store";
 
 /**
@@ -582,6 +583,7 @@ export function ThemeStoreTabLayout({ s }: { s: ThemeStoreState }) {
               />
             </div>
           </div>
+          <BackToTopPanel customizer={customizer} setCustomizer={setCustomizer} />
         </div>
       )}
 

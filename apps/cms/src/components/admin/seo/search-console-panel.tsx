@@ -8,6 +8,7 @@ import {
   type SearchConsoleQuery,
 } from "@nexpress/seo-core";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
+import { runPluginAction } from "@/app/admin/plugin-actions";
 
 const SAMPLE_QUERIES: SearchConsoleQuery[] = [
   { query: "ön muhasebe programı", clicks: 320, impressions: 5400, ctr: 5.92, position: 2.1 },
@@ -28,6 +29,7 @@ export function SearchConsolePanel({
   const [importText, setImportText] = useState("");
   const [showImport, setShowImport] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [sample, setSample] = useState(true);
 
   const report = analyzeSearchPerformance(queries);
 
@@ -42,9 +44,18 @@ export function SearchConsolePanel({
 
     if (parsed.length > 0) {
       setQueries(parsed);
+      setSample(false);
       setShowImport(false);
       setImportText("");
-      setNotice(`${parsed.length} arama sorgusu başarıyla içe aktarıldı ve analiz edildi.`);
+      void runPluginAction({
+        name: "intel.import",
+        payload: {
+          live: true,
+          source: "gsc",
+          rows: parsed.map((row) => ({ keyword: row.query, clicks: row.clicks, impressions: row.impressions, ctr: row.ctr, position: row.position })),
+        },
+      });
+      setNotice(`${parsed.length} arama sorgusu içe aktarıldı ve kelime havuzuna yazıldı.`);
       setTimeout(() => setNotice(null), 4000);
     } else {
       setNotice("Veri formatı tanınamadı. Lütfen Search Console CSV veya JSON çıktısını yapıştırın.");
@@ -58,8 +69,8 @@ export function SearchConsolePanel({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-nx-fg">Arama Motoru Performansı & Search Console</h3>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-              Canlı Analiz
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${sample ? "bg-amber-500/10 text-amber-800 dark:text-amber-300" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"}`}>
+              {sample ? "Demo verisi" : "İçe aktarıldı"}
             </span>
           </div>
           <p className="mt-0.5 text-xs text-nx-soft">

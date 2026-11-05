@@ -1,5 +1,5 @@
 import React from "react";
-import { ICON_PATHS, type DesignTokens, type MegaMenuConfig, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
+import { ICON_PATHS, megaChildLayout, type DesignTokens, type MegaMenuConfig, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
 
 /**
  * Ziyaretçi menüsü (RSC, istemci JS'i yok). Masaüstü: açılır alt menü ve mega menü yalnızca CSS ile (hover + klavye odağı).
@@ -55,13 +55,15 @@ function SubList({ links, depth = 0 }: { links: NavigationLink[]; depth?: number
 
 function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignTokens }) {
   const mega = item.megaMenu!;
+  const layout = megaChildLayout(item);
   const cols = COLS[Math.min(4, Math.max(1, mega.columns))] ?? "grid-cols-3";
+  const kids = item.children ?? [];
   return (
     <div
       style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border, backgroundColor: tokens.colors.background, color: tokens.colors.foreground }}
-      className={`absolute left-1/2 top-full z-50 -translate-x-1/2 ${WIDTH[mega.width ?? "wide"]} border p-5 shadow-xl transition-all duration-150 ${SHOW}`}
+      className={`nx-mega absolute left-1/2 top-full z-50 -translate-x-1/2 ${WIDTH[mega.width ?? "wide"]} border p-5 shadow-xl transition-all duration-150 ${SHOW}`}
     >
-      {(mega.mode ?? (mega.items.length > 0 ? "custom" : "children")) === "custom" ? (
+      {layout === "cards" || layout === "cards-and-list" ? (
         <div className={`grid gap-3.5 ${cols}`}>
           {mega.items.map((sub) => (
             <a key={sub.id} href={sub.href} className="group/card flex items-start gap-3 rounded-xl border border-transparent p-3 transition hover:border-current/15 hover:bg-black/5">
@@ -87,11 +89,12 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
             </a>
           ))}
         </div>
-      ) : (
+      ) : null}
+      {layout === "columns" ? (
         <div className={`grid gap-6 ${cols}`}>
-          {(item.children ?? []).map((col) => (
+          {kids.map((col) => (
             <div key={col.id}>
-              <a href={col.href} {...rel(col)} className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider hover:underline">
+              <a href={col.href} {...rel(col)} className="nx-mega-title flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider hover:underline">
                 <NavSvgIcon name={col.icon} size={14} />
                 <span>{col.label}</span>
                 {col.badge ? (
@@ -105,7 +108,12 @@ function MegaPanel({ item, tokens }: { item: NavigationMenuItem; tokens: DesignT
             </div>
           ))}
         </div>
-      )}
+      ) : null}
+      {layout === "list" || layout === "cards-and-list" ? (
+        <div className={layout === "cards-and-list" ? "mt-4 border-t border-current/10 pt-3" : ""}>
+          <SubList links={kids} />
+        </div>
+      ) : null}
       {mega.promoBanner && mega.promoBanner.title ? (
         <div style={{ backgroundColor: tokens.colors.muted, borderRadius: tokens.geometry.borderRadius }} className="mt-4 flex items-center justify-between gap-3 p-3.5">
           <div>
@@ -129,8 +137,8 @@ export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuI
         const hasPanel = Boolean(item.megaMenu?.enabled) || Boolean(item.children?.length);
         return (
           <div key={item.id} className={`group flex h-full items-center ${item.megaMenu?.enabled ? "static" : "relative"}`}>
-            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1.5 whitespace-nowrap text-sm font-medium ${linkCls}`}>
-              <NavSvgIcon name={item.icon} size={15} className="opacity-80" />
+            <a href={item.href} {...rel(item)} aria-haspopup={hasPanel ? "true" : undefined} className={`flex items-center gap-1 whitespace-nowrap text-[13px] font-medium ${linkCls}`}>
+              <NavSvgIcon name={item.icon} size={13} className="opacity-80" />
               <span>{item.label}</span>
               {item.badge ? (
                 <span style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }} className="rounded px-1.5 py-px text-[9px] font-bold uppercase">
@@ -153,14 +161,45 @@ export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuI
   );
 }
 
-/** Mobil menü: JS'siz `<details>`; tüm ağaç iç içe liste olarak açılır. */
-export function MobileNav({ menu, label }: { menu: NavigationMenuItem[]; label: string }) {
+/** Mobil dal: çocuğu olan satır kapalı gelir, JS'siz `<details>` ile açılır. */
+function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: string }) {
+  const kids = item.children ?? [];
+  if (kids.length === 0) {
+    return (
+      <a href={item.href} {...rel(item)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15px] leading-snug hover:bg-black/5">
+        <NavSvgIcon name={item.icon} size={14} className="opacity-70" />
+        <span>{item.label}</span>
+      </a>
+    );
+  }
+  return (
+    <details className="border-b border-black/5 last:border-b-0">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-3 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
+        <span>{item.label}</span>
+        <span aria-hidden="true" className="text-[10px] opacity-50">▼</span>
+      </summary>
+      <div className="space-y-0.5 pb-2 pl-2">
+        <a href={item.href} {...rel(item)} className="block rounded-lg px-3 py-2 text-[13px] font-medium text-[#0071e3]">
+          {allLabel}
+        </a>
+        {kids.map((child) => (
+          <MobileBranch key={child.id} item={child} allLabel={allLabel} />
+        ))}
+      </div>
+    </details>
+  );
+}
+
+/** Mobil menü: JS'siz panel. Kökler kapalı, altlar isteyince açılır. */
+export function MobileNav({ menu, label, allLabel }: { menu: NavigationMenuItem[]; label: string; allLabel: string }) {
   if (menu.length === 0) return null;
   return (
-    <details className="group relative md:hidden">
+    <details className="nx-mobile-nav group relative md:hidden">
       <summary className="flex h-10 cursor-pointer list-none items-center rounded-md border border-current/20 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">{label}</summary>
-      <nav aria-label="Mobil menü" className="absolute right-0 top-full z-50 mt-2 max-h-[80vh] w-[min(320px,90vw)] overflow-y-auto rounded-lg border border-current/15 bg-nx-card p-3 text-nx-fg shadow-xl">
-        <SubList links={menu} />
+      <nav aria-label="Mobil menü" className="absolute right-0 top-full z-50 mt-2 max-h-[80vh] w-[min(380px,calc(100vw-1rem))] overflow-y-auto rounded-2xl border border-current/10 bg-white p-2 text-nx-fg shadow-xl">
+        {menu.map((item) => (
+          <MobileBranch key={item.id} item={item} allLabel={allLabel} />
+        ))}
       </nav>
     </details>
   );

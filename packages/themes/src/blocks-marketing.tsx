@@ -2,6 +2,7 @@ import React from "react";
 import { createTranslator } from "@nexpress/i18n";
 import { ICON_PATHS } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
+import { AKINSOFT_THEME_ID } from "./akinsoft-merkez";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
@@ -14,6 +15,25 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
   switch (block.type) {
     case "hero": {
       if (themeId === INK_GRID_ID) return renderInkHero(p, tokens);
+      if (themeId === AKINSOFT_THEME_ID) {
+        return (
+          <section className="nx-as-hero">
+            <div className="mx-auto max-w-[1200px]">
+              {typeof p.badge === "string" && p.badge ? <p className="mb-4 text-xs font-semibold uppercase tracking-[.2em] text-[#00ac48]">{p.badge}</p> : null}
+              <h1 className="max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">{String(p.title ?? "")}</h1>
+              {typeof p.subtitle === "string" ? <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-slate-400 sm:text-lg">{p.subtitle}</p> : null}
+              <div className="mt-8 flex flex-wrap gap-3">
+                {typeof p.primaryCtaLabel === "string" ? (
+                  <a href={String(p.primaryCtaHref ?? "/tr/iletisim")} className="rounded-full bg-[#0071e3] px-6 py-3 text-sm font-semibold text-white">{p.primaryCtaLabel}</a>
+                ) : null}
+                {typeof p.secondaryCtaLabel === "string" ? (
+                  <a href={String(p.secondaryCtaHref ?? "/tr/programlar")} className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white">{p.secondaryCtaLabel}</a>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        );
+      }
       return (
         <section
           style={{
@@ -103,6 +123,21 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
     case "stats_strip": {
       if (themeId === INK_GRID_ID) return renderInkNames(p);
+      if (themeId === AKINSOFT_THEME_ID) {
+        const stats = Array.isArray(p.stats) ? p.stats : [];
+        return (
+          <section className="nx-as-band bg-black px-4 py-10 text-white">
+            <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-6 md:grid-cols-4">
+              {stats.map((st: { value?: string; label?: string }, idx: number) => (
+                <div key={idx}>
+                  <div className="text-3xl font-semibold tracking-tight text-white">{String(st?.value ?? "")}</div>
+                  <div className="mt-1 text-xs text-slate-400">{String(st?.label ?? "")}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      }
       const stats = Array.isArray(p.stats) ? p.stats : [];
       return (
         <section
@@ -131,6 +166,28 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
     case "bento_features": {
       if (themeId === INK_GRID_ID) return renderInkBento(p, tokens);
+      if (themeId === AKINSOFT_THEME_ID) {
+        const items = Array.isArray(p.items) ? p.items : [];
+        return (
+          <section className="nx-as-band bg-black px-4 py-14 text-white">
+            <div className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[1fr_2fr]">
+              <div>
+                {typeof p.title === "string" ? <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{p.title}</h2> : null}
+                {typeof p.subtitle === "string" ? <p className="mt-4 text-sm font-light leading-relaxed text-slate-400">{p.subtitle}</p> : null}
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {items.map((item: { title?: string; description?: string; href?: string }, idx: number) => (
+                  <article key={idx} className="nx-as-card p-6">
+                    <h3 className="text-lg font-semibold">{String(item?.title ?? "")}</h3>
+                    {item?.description ? <p className="mt-2 line-clamp-4 text-sm font-light leading-relaxed text-slate-400">{item.description}</p> : null}
+                    {item?.href ? <a href={item.href} className="mt-4 inline-block text-sm text-[#4da3ff]">Detaylı bilgi</a> : null}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      }
       const items = Array.isArray(p.items) ? p.items : [];
       return (
         <section className="space-y-6">

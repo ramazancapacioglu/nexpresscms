@@ -1,5 +1,6 @@
 import React from "react";
 import { getScopedRepository } from "@nexpress/database";
+import { CatalogRewrite } from "./catalog-rewrite";
 
 export async function CatalogAiCard({ siteId }: { siteId: string }) {
   const repo = getScopedRepository(siteId);
@@ -40,7 +41,7 @@ export async function CatalogAiCard({ siteId }: { siteId: string }) {
   const avgCatalogScore =
     auditedProducts.length > 0
       ? Math.round(auditedProducts.reduce((acc, p) => acc + p.score, 0) / auditedProducts.length)
-      : 88;
+      : 0;
 
   return (
     <div className="rounded-xl border border-nx-line bg-nx-card p-5 space-y-4">
@@ -83,6 +84,7 @@ export async function CatalogAiCard({ siteId }: { siteId: string }) {
                     <span className="text-amber-600 dark:text-amber-400">{item.issues.join(" • ")}</span>
                   )}
                 </div>
+                <CatalogRewrite contentId={item.id} />
               </div>
 
               <div className="flex items-center gap-3">
@@ -95,7 +97,7 @@ export async function CatalogAiCard({ siteId }: { siteId: string }) {
                   href={`/admin/contents?id=${item.id}`}
                   className="rounded border border-nx-line bg-nx-card px-2.5 py-1 text-xs font-semibold text-nx-fg hover:bg-nx-line transition"
                 >
-                  Optimize Et →
+                  Editör
                 </a>
               </div>
             </div>

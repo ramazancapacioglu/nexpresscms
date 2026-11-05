@@ -1,25 +1,36 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { querySerperIntel, type SerperIntelReport } from "./serper-intel";
+import type { SerperIntelReport } from "./serper-intel";
+import { runOps } from "./ops-client";
 
 export function SerperCard() {
-  const [keyword, setKeyword] = useState("ön muhasebe programı");
+  const [keyword, setKeyword] = useState("");
   const [report, setReport] = useState<SerperIntelReport | null>(null);
+  const [live, setLive] = useState(false);
   const [loading, startTransition] = useTransition();
   const [createdNotice, setCreatedNotice] = useState<string | null>(null);
 
   const handleSearch = () => {
     if (!keyword.trim()) return;
     startTransition(async () => {
-      const res = await querySerperIntel(keyword);
-      setReport(res);
+      const res = await runOps("intel.search", { keyword });
+      if (!res.ok) {
+        setCreatedNotice(res.error ?? "Sorgu yapılamadı.");
+        return;
+      }
+      const data = res.data as { live?: boolean; report?: SerperIntelReport } | undefined;
+      setLive(Boolean(data?.live));
+      setReport(data?.report ?? null);
+      setCreatedNotice(data?.live ? "Canlı sonuç havuza yazıldı." : "Anahtar yok veya çağrı düştü. Bu liste örnektir ve havuza yazılmaz.");
     });
   };
 
   const handleCreateDraft = (question: string, snippet: string) => {
-    setCreatedNotice(`"${question}" için Soru-Cevap taslağı hazırlandı! Editörden içerik oluşturabilirsiniz.`);
-    setTimeout(() => setCreatedNotice(null), 5000);
+    startTransition(async () => {
+      const res = await runOps("intel.draft", { label: question, detail: snippet, members: [question] });
+      setCreatedNotice(res.ok ? `Taslak açıldı. ${(res.data?.href as string | undefined) ?? ""}` : (res.error ?? "Taslak açılamadı."));
+    });
   };
 
   return (
@@ -28,8 +39,8 @@ export function SerperCard() {
         <div>
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-nx-fg">Serper SERP & "İnsanlar Bunu da Sordu" (PAA)</h4>
-            <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-              Soru Madenciliği
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${live ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-800 dark:text-amber-300"}`}>
+              {report ? (live ? "Canlı" : "Demo verisi") : "Rakip analizi"}
             </span>
           </div>
           <p className="mt-0.5 text-xs text-nx-soft">
@@ -42,7 +53,7 @@ export function SerperCard() {
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="Hedef anahtar kelime girin..."
+            placeholder="Hedef anahtar kelime"
             className="rounded-lg border border-nx-line bg-nx-subtle px-3 py-1.5 text-xs text-nx-fg focus:outline-none focus:ring-1 focus:ring-nx-primary w-48 sm:w-64"
           />
           <button
@@ -79,9 +90,10 @@ export function SerperCard() {
                     <button
                       type="button"
                       onClick={() => handleCreateDraft(paa.question, paa.snippet)}
-                      className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 text-[10px] font-semibold text-nx-fg hover:bg-nx-line transition"
+                      disabled={!live}
+                      className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 text-[10px] font-semibold text-nx-fg hover:bg-nx-line transition disabled:opacity-40"
                     >
-                      + Soru-Cevap Taslağı Oluştur
+                      {live ? "Taslak aç" : "Örnekten taslak yok"}
                     </button>
                   </div>
                 </div>

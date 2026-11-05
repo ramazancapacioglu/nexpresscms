@@ -149,6 +149,15 @@ export interface SiteCustomizerSettings {
     showExcerpt: boolean;
     showImage: boolean;
   };
+  /** Sayfa başına dönüş. Bağlantıdır; ziyaretçi sayfasına istemci kodu eklemez. */
+  backToTop: {
+    enabled: boolean;
+    position: "left" | "right";
+    icon: "arrow" | "chevron" | "corner";
+    /** Düğme zemini. İkon beyazdır. */
+    color: string;
+    size: "sm" | "md" | "lg";
+  };
   customCss: string;
   headerScripts?: string;
   footerScripts?: string;
@@ -159,11 +168,16 @@ export interface GeneralSettings {
   contactEmail: string;
   /** IANA saat dilimi, örn. Europe/Istanbul */
   timezone: string;
+  /** Açıkken ziyaretçi sayfaları bakım metnini görür; panel ve oturum açıkken önizleme durur. */
+  maintenanceEnabled: boolean;
+  maintenanceMessage: string;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   contactEmail: "",
   timezone: "Europe/Istanbul",
+  maintenanceEnabled: false,
+  maintenanceMessage: "",
 };
 
 /** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
@@ -296,10 +310,30 @@ export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {
     showExcerpt: true,
     showImage: true,
   },
+  backToTop: {
+    enabled: false,
+    position: "right",
+    icon: "arrow",
+    color: "#0f172a",
+    size: "md",
+  },
   customCss: "",
   headerScripts: "",
   footerScripts: "",
 };
+
+function sanitizeBackToTop(raw: unknown): SiteCustomizerSettings["backToTop"] {
+  const base = DEFAULT_CUSTOMIZER_SETTINGS.backToTop;
+  const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const color = typeof o.color === "string" && /^#[0-9a-fA-F]{6}$/.test(o.color) ? o.color.toLowerCase() : base.color;
+  return {
+    enabled: o.enabled === true,
+    position: o.position === "left" ? "left" : "right",
+    icon: o.icon === "chevron" || o.icon === "corner" ? o.icon : "arrow",
+    color,
+    size: o.size === "sm" || o.size === "lg" ? o.size : "md",
+  };
+}
 
 function mergeSection<T extends object>(base: T, override: unknown): T {
   if (!override || typeof override !== "object") return { ...base };
@@ -332,6 +366,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       footer: mergeSection(d.footer, c.footer),
       pageTitle: mergeSection(d.pageTitle, c.pageTitle),
       archive: mergeSection(d.archive, c.archive),
+      backToTop: sanitizeBackToTop(c.backToTop),
       customCss: typeof c.customCss === "string" ? c.customCss : d.customCss,
       headerScripts: typeof c.headerScripts === "string" ? c.headerScripts : "",
       footerScripts: typeof c.footerScripts === "string" ? c.footerScripts : "",

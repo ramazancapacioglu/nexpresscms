@@ -341,6 +341,14 @@ export interface NavigationMenuItem extends NavigationLink {
   megaMenu?: MegaMenuConfig;
 }
 
+/** Dil başına birden çok menü. Header'da basılan kayıt `header: true` olur; diğerleri footer ve kenar çubuğunda seçilir. */
+export interface SiteMenuRecord {
+  id: string;
+  name: string;
+  header: boolean;
+  items: NavigationMenuItem[];
+}
+
 export interface HeaderBarSlotConfig {
   enabled: boolean;
   sticky?: boolean;
@@ -348,6 +356,10 @@ export interface HeaderBarSlotConfig {
   leftWidgets: string[];
   centerWidgets: string[];
   rightWidgets: string[];
+  /** Küçük ekran dizisi. Yoksa masaüstünden türetilir (`resolveMobileHeaderZones`). */
+  mobileLeftWidgets?: string[];
+  mobileCenterWidgets?: string[];
+  mobileRightWidgets?: string[];
 }
 
 export interface HeaderConfig {
@@ -425,6 +437,8 @@ export interface FooterConfig {
   layoutPreset?: FooterLayoutPreset;
   topBanner?: FooterTopBannerConfig;
   widgets?: SiteWidget[];
+  /** Bu dilde kayıtlı menüler. Header menüsü ayrıca `menuItems` alanına yazılır. */
+  menus?: SiteMenuRecord[];
   columns: FooterColumnConfig[];
   showNewsletter: boolean;
   showLocalBusinessCard: boolean;

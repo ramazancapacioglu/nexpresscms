@@ -1,5 +1,7 @@
 # 03 — Tema Motoru, Tema Mağazası (Theme Store), Görsel Editör ve Admin UX
 
+Yüklenebilir tema bir kod klasörü değildir. Paket `.nxtheme` veri dosyasıdır (jeton, üst/alt şerit, başlangıç sayfası, kapsamlı CSS). Resmi temaların vitrin demosu paketten ayrıdır: tema etkinleşince gelmez, mağazadaki **Demo veriyi aktar** ile düzenlenebilir sayfa ve yazı olarak eklenir. Bir modele tema, kütüphane bölümü veya şablon ürettirmek için sözleşme `docs/23-THEME-AND-DESIGN-AUTHORING.md` dosyasıdır. Bu belgedeki klasör anlatımı resmi tema kodunun tarihi tarifidir; yeni tema yazarken 23 esas alınır.
+
 ## 1. Tema Motoru ve Tema Mağazası (`@nexpress/themes` & `themes/*`)
 
 WordPress'te tema değiştirmek genellikle tüm sayfa tasarımlarını ve kısa kodları (shortcodes) bozar. NexPress'te **Veri ile Görsel Tema birbirinden tamamen ayrılmıştır:**
@@ -12,6 +14,7 @@ flowchart LR
         T3["Editorial Pulse (Haber / Bilgi Bankası)"]
         T4["Ink Grid (Siyah ürün vitrini)"]
         T5["Crimson ERP & Muhasebe (Kurumsal ERP & Yazılım)"]
+        T6["AKINSOFT Merkez (cam şerit, siyah vitrin, sağ form)"]
     end
 
     subgraph ThemeContract [Tema Paketi Yapısı (theme.json)]
@@ -72,8 +75,8 @@ Sayfa yerleşimi NexPress blok ağacıdır. Metin alanlarının motoru **TipTap*
 
 Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satırındadır (`siteId` + `locale`). Şablon seçmek formu doldurur; yayın için Kaydet gerekir.
 
-- **Header** (`/admin/appearance/header`): üst duyuru, yapışkan ana şerit, çağrı ve alt şerit. Tasarım kütüphanesi kategorileri: Sade, Duyuru, Vitrin, Katalog. JSON aktarımı `docs/08-AI-CHROME-SPEC.md` sözleşmesidir.
-- **Menü** (`/admin/appearance/menus`): header alanlarından ayrıdır. Kök ve bir düzey alt bağlantı, tutamacıyla aynı düzeyde sürüklenir. Hazır menüler: Vitrin ve Kurumsal.
+- **Header** (`/admin/appearance/header`): üst duyuru, yapışkan ana şerit, çağrı ve alt şerit. Her şeridin öğeleri sol / orta / sağ bölgelerine dizilir (`resolveHeaderZones`); eski kimlikler (`mega_menu`, `cta_button`, `contact_info`) kanonik öğeye çevrilir. Boş dizi varsayılan düzene düşer. Ana şeridin ayrı mobil dizisi vardır (`mobileLeftWidgets` ve kardeşleri). Yazılmazsa logo solda, diğer öğeler sağda türetilir; menü öğesi küçük ekranda `<details>` düğmesi olur. Üst ve alt şerit de aynı üç alanı taşıyabilir; yazılırsa küçük ekran o diziyi basar, bağlantı kalkarsa alt şerit telefonda gizlenir. Tasarım kütüphanesi kategorileri: Sade, Duyuru, Vitrin, Katalog. Her hazır header'ın mobil dizisi kartta görünür; seçilince forma alınmadan düzenlenir. JSON aktarımı `docs/08-AI-CHROME-SPEC.md` sözleşmesidir.
+- **Menü** (`/admin/appearance/menus`): dil başına birden çok kayıt. Biri header’da basılır (`header`). Diğerleri footer sütunundaki ve kenar çubuğundaki `nav_menu` bileşeninde seçilir. Ağaçta onay kutusuyla çoklu silme ve girinti yapılır. Mega menüde alt öğe varsa panelin altında listelenir; torun varsa sütun olur.
 - **Footer** (`/admin/appearance/footer`): kolonlar, bülten ve telif. Tasarım kütüphanesi kategorileri: Sade, Kolon, Bülten, Vitrin.
 - **Kenar çubuğu** (`/admin/appearance/sidebar`): içeriğin solu veya sağı. Örnek şablon Doküman kenarı. Kapalıyken ön yüzde yer kaplamaz.
 
@@ -116,7 +119,7 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 
 ## Ek (2026-11-02): Panel düzeni, menü ağacı, mega menü, dinamik içerik, AI yazım
 
-- **Kenar çubuğu:** 6 daraltılabilir grup (Genel, İçerik, Etkileşim & Satış, Görünüm, SEO, Sistem; durum tarayıcıda hatırlanır, etkin sayfanın grubu açık kalır). **SEO** ve **Görünüm** tek öğedir; alt sayfalar sayfa üstündeki sekme çubuğundadır (`SectionTabs`): SEO = motor & dizin / site denetimi / yönlendirmeler & 404; Görünüm = temalar & özelleştirici / tema paketleri / menüler / header / footer / kenar çubuğu / tasarım kütüphanesi. Gizlenen öğeler komut paletinde (⌘K) ve üst izde kalır. Okunabilirlik: `.nx-admin` katmanı (globals.css) yazı ölçeğini bir kademe büyütür, ikincil metni koyulaştırır, kenarlıkları belirginleştirir.
+- **Kenar çubuğu:** daraltılabilir gruplar (Genel, İçerik, Etkileşim & Satış, Görünüm, Tasarım, SEO, Sistem). **Görünüm** tema galerisi, özelleştirici, header, menü, footer ve kenar çubuğudur. **Tasarım** tasarım stüdyosu ve şablon atamasıdır; tema rengi burada yoktur. **SEO** motor & dizin, webmaster & analitik, site denetimi, yönlendirmeler & 404. Her ailenin sekme çubuğu yalnız kendi sayfalarını gösterir. İçerik editörü (`/admin/contents`) tasarım stüdyosundan ayrıdır. Mağaza kuponu `Kupon ve indirim` adındadır; vitrin fırsatları `Kampanyalar` sayfasındadır. Ortam anahtarları Sistem → Entegrasyonlar; Search Console formları SEO → Webmaster.
 - **Menü ağacı (`/admin/appearance/menus`):** soldan WordPress gibi **sayfa / yazı / kategori / etiket / ürün listesinde ara-işaretle-ekle** ya da özel bağlantı; ağaçta yukarı/aşağı, girinti/girinti azalt (klavyeyle de), en çok **3 düzey**, 200 öğe. Öğeler **kimlikle** bağlanır (`source: {kind, refId}`): slug değişince bağlantı kendiliğinden güncellenir, hedef silinir/taslağa dönerse öğe yayında **gizlenir** ve panelde uyarı gösterilir. Kayıtta sunucu temizler (`sanitizeMenu`): `javascript:`/`data:` adresleri reddedilir. Menü yalnızca `tr` dil kaydına yazılır (dil başına menü yok).
 - **Mega menü:** kök öğede açılır; kaynak = alt öğelerden (sütun = alt öğe, torunlar bağlantı) ya da elle kartlar; 1–4 sütun, dar/geniş/tam genişlik, isteğe bağlı tanıtım şeridi. CSS ile (hover + klavye odağı), istemci JS'i yok. Mobilde `<details>` ile iç içe liste.
 - **Ziyaretçi header/footer:** `components/public/site-chrome.tsx`. Geliştirme artıkları kaldırıldı (NX rozeti, "Tema: …", "Tema değiştir", varsayılan "Yönetim" düğmesi, sayfada tür/şema rozeti; "Editörde düzenle" yalnızca oturumlu editöre). Logo/CTA/hizalama `customizer.header` ayarından; CTA `/admin` adresine verilemez.

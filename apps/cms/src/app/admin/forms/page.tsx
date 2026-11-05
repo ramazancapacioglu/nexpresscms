@@ -50,7 +50,7 @@ export default async function AdminFormsPage() {
               <li key={f.id} className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-[12px]">
                 <div className="min-w-0 flex-1 basis-56">
                   <Link href={`/admin/forms/${f.id}`} className="block truncate text-[13px] font-medium text-[#14151A] hover:underline dark:text-[#F3F4F6]">{f.name}</Link>
-                  <p className="text-[#5F6570] dark:text-[#8C9099]">{f.spec.fields.filter((x) => x.type !== "heading" && x.type !== "paragraph").length} alan · {f.notify.enabled ? "e-posta bildirimi açık" : "bildirim kapalı"}</p>
+                  <p className="text-[#5F6570] dark:text-[#8C9099]">{f.spec.fields.filter((x) => x.type !== "heading" && x.type !== "paragraph" && x.type !== "divider").length} alan · {f.notify.enabled || f.notify.webhook.enabled ? "bildirim açık" : "bildirim kapalı"}</p>
                 </div>
                 <span className={`rounded px-2 py-0.5 text-[11px] font-medium ${cls}`}>{label}</span>
                 <dl className="flex gap-5 text-[#5C5F66] dark:text-[#9CA3AF]">

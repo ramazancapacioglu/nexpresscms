@@ -43,7 +43,7 @@ export function SubmissionList({ items, status, isAdmin }: { items: Item[]; stat
               <div className="mt-3 space-y-2 rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-3">
                 {i.notifyStatus && i.notifyStatus !== "skipped" && (
                   <p className={`text-[11px] ${i.notifyStatus === "failed" ? "text-red-600" : "text-[#5F6570] dark:text-[#8C9099]"}`}>
-                    E-posta bildirimi: {i.notifyStatus === "sent" ? "gönderildi" : `gönderilemedi${i.notifyError ? ` (${i.notifyError})` : ""}`}
+                    Bildirim: {i.notifyStatus === "sent" ? "gönderildi" : `gönderilemedi${i.notifyError ? ` (${i.notifyError})` : ""}`}
                   </p>
                 )}
                 {i.fields.map((f) => (

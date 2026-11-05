@@ -220,6 +220,10 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         count: "Motor",
         shortcut: "G E",
       },
+      { href: "/admin/seo/engine", label: "SEO motoru", icon: Search, shortcut: "G E" },
+      { href: "/admin/seo/reports", label: "SEO raporları", icon: Activity, shortcut: "G R" },
+      { href: "/admin/seo/settings", label: "SEO ayarları", icon: SettingsIcon, shortcut: "G A" },
+      { href: "/admin/seo/integrations", label: "Webmaster", icon: Plug, shortcut: "G W" },
       {
         href: "/admin/appearance/header",
         label: "Header",
@@ -329,24 +333,33 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
 /** Panel menüsü: az grup, ilgili sayfalar tek çatıda. SEO ve Görünüm tek öğedir; alt sayfalar üstteki sekme çubuğundadır. */
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
-  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "Yeni içerik (Stüdyo)", count: undefined } }) },
+  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/commerce/marketplaces"]) },
   {
     label: "Görünüm",
-    items: [
-      ...pick(["/admin/studio", "/admin/themes", "/admin/themes/customize"], {
-        "/admin/studio": { label: "Tasarım Stüdyosu", count: undefined },
+    items: pick(
+      ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/footer", "/admin/appearance/sidebar"],
+      {
         "/admin/themes": { label: "Temalar", count: undefined },
-        "/admin/themes/customize": { label: "Tema Özelleştirici", count: undefined },
+        "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
+      }
+    ),
+  },
+  {
+    label: "Tasarım",
+    items: [
+      ...pick(["/admin/studio", "/admin/appearance/templates"], {
+        "/admin/studio": { label: "Tasarım stüdyosu", count: undefined },
+        "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
       }),
-      ...pick(["/admin/themes/packages", "/admin/appearance/templates", "/admin/appearance/menus", "/admin/appearance/header", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"].filter((h) => ITEM_BY_HREF.has(h)), {}).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   {
     label: "SEO",
     items: [
       ...pick(["/admin/seo"], { "/admin/seo": { label: "SEO Merkezi", count: undefined } }),
-      ...pick(["/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/system", "/admin/audit", "/admin/help"]) },
