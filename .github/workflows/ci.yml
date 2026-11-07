@@ -146,3 +146,20 @@ jobs:
         with:
           node-version: 20
       - run: pnpm audit --prod --audit-level=high
+
+  deploy:
+    name: ileriseo.com
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Sunucuya aktar
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' '[38.210.77.230]:4383 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHt1vm+xU/W/Q0NgxuAoGx+vdmTghTfIRXMIMyJI8Nvf' > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_deploy -p 4383 -o UserKnownHostsFile="$HOME/.ssh/known_hosts" root@38.210.77.230

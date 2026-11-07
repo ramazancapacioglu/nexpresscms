@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-07] — ileriseo.com yayını ve push ile aktarım
+- Site `ileriseo.com` üzerinde. SQLite ve medya alan adı ev dizininde; nginx 443 istekleri uygulama kapısı 3000'e verir.
+- `main` push'u CI doğrulamasından sonra sunucudaki güncelleme betiğini çalıştırır. Anahtar GitHub sırrı `DEPLOY_SSH_KEY`; parola depoda yok.
+
+### [2026-11-07] — Mimari doküman ve kampanya örnek metni
+- `docs/01` ve `docs/05` ayrı `@nexpress-pro/content-ops` paketini canlı göstermeyi bıraktı. Paket `agentic-seo-pro/src/content-ops` içindedir; eski kaynak `.archive/content-ops-pro` (derlenmez). Kompozisyon `registerAgenticSeoProPlugin` ve `registerAiDesignProPlugin`.
+- Editör önizlemesindeki örnek kampanyalar ve `campaign-showcase` testi üçüncü taraf ürün adı ve gerçek telefon taşımıyor. Örnek adres `/kampanya/restoran-erp`.
+
 ### [2026-11-07] — Tasarım kütüphanesi: Türkçe kategoriler, akordeon/sekme çeşitliliği, sayfa türü süzgeci
 - **Kategoriler:** `packages/core/src/library-categories.ts` tek kaynak (İçerik 21, Medya 4, Gelişmiş 3). Kenar çubuğu başlıklı gruplar; her örnek tam bir kategoride. Eski adlar `normalizeLibraryCategory` ile çevrilir (AI ayrıştırıcısı, kayıtlı özel tasarımlar); AI istemi yeni kimlikleri listeler.
 - **Akordeon (8) ve sekme (7) görünümü:** `blocks-disclosure.tsx` (`accordionStyle`, `icon`, `openFirst`; `tabStyle` genişledi), yalnız CSS, JS yok. Denetçide görünüm seçenekleri eklendi; AI kataloğu `tabStyle` listesi güncellendi.

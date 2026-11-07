@@ -130,6 +130,10 @@ Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne
 - [ ] Veritabanı ve `MEDIA_DIR` yedeği ayrı bir yere alınıyor; geri yükleme bir kez denendi.
 - [ ] Çoklu sunucu (yük dengeli) kuruyorsanız: giriş/sıfırlama hız sınırları ve ön yüz önbelleği **süreç başınadır**; ortak Redis katmanı henüz yok. Tek sunucuyla başlayın.
 
-## 8. Bilinen sınırlar
+## 8. ileriseo.com otomatik aktarım
+
+`main` dalına push, CI'daki tip kontrolü ve testler geçince GitHub Actions sunucuya bağlanır (`38.210.77.230` kapı `4383`). Bağlantı yalnızca `DEPLOY_SSH_KEY` sırrındaki anahtarla olur; anahtar sunucuda tek bir güncelleme betiğini çalıştırır. Betik depoyu çeker, göçü uygular, üretim derlemesini alır ve `nexpress` servisini yeniden başlatır. Kök parola ve `AUTH_SECRET` depoya yazılmaz.
+
+## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`: Redis/S3/kuyruk (çok sunuculu kurulum), CLI yedek, Lighthouse CI, Search Console bağlantısı ve "Yakında" eklenti modülleri.

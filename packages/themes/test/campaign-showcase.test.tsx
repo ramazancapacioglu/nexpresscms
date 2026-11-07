@@ -19,8 +19,8 @@ const tokens = {
 const testItems: DynamicItem[] = [
   {
     id: "camp_1",
-    title: "Akınsoft Restoran ERP Kampanyası",
-    url: "/tr/kampanya/akinsoft-restoran",
+    title: "Restoran ERP Kampanyası",
+    url: "/kampanya/restoran-erp",
     excerpt: "Restoran otomasyonunda kaçırılmayacak fırsat.",
     image: "/media/restaurant.jpg",
     discount: "%40",
@@ -29,14 +29,14 @@ const testItems: DynamicItem[] = [
     daysRemaining: 25,
     isExpired: false,
     ctaText: "Hemen Başvur",
-    ctaUrl: "/tr/kampanya/akinsoft-restoran",
+    ctaUrl: "/kampanya/restoran-erp",
     contactWhatsapp: "905551234567",
-    contactPhone: "02324251988",
+    contactPhone: "02120000000",
   },
   {
     id: "camp_2",
-    title: "Wolvox E-Ticaret Paketi",
-    url: "/tr/kampanya/wolvox-eticaret",
+    title: "E-Ticaret Paketi",
+    url: "/kampanya/eticaret-paketi",
     excerpt: "Pazaryeri entegrasyonu ile tam otomatik e-ticaret.",
     image: null,
     discount: "%30",
@@ -58,7 +58,7 @@ test("campaign_showcase: carousel görünümünde CSS snap-x ve öğelerde snap-
 
   assert.ok(html.includes("snap-x"), "snap-x sınıfı bulunmalı");
   assert.ok(html.includes("snap-start"), "snap-start sınıfı bulunmalı");
-  assert.ok(html.includes("Akınsoft Restoran ERP Kampanyası"), "Başlık görünmeli");
+  assert.ok(html.includes("Restoran ERP Kampanyası"), "Başlık görünmeli");
   assert.ok(html.includes("%40 İndirim"), "İndirim rozeti görünmeli");
   assert.ok(html.includes("Bitmesine 25 gün kaldı"), "Geri sayım görünmeli");
   assert.ok(html.includes("1 Yıllık QR Menü Hediyeli"), "Hediye avantajı görünmeli");
@@ -81,7 +81,7 @@ test("campaign_showcase: spotlight (vitrin kartı) düzeni ana kampanyayı büy�
   assert.ok(html.includes("Günün Fırsatı"), "Spotlight başlığı olmalı");
   assert.ok(html.includes("Hemen Başvur"), "CTA butonu olmalı");
   assert.ok(html.includes("wa.me/905551234567"), "WhatsApp bağlantısı olmalı");
-  assert.ok(html.includes("tel:02324251988"), "Telefon bağlantısı olmalı");
+  assert.ok(html.includes("tel:02120000000"), "Telefon bağlantısı olmalı");
 });
 
 test("campaign_showcase: ticker düzeni indirim ve başlığı duyuru şeridi olarak çizer", () => {
@@ -94,7 +94,7 @@ test("campaign_showcase: ticker düzeni indirim ve başlığı duyuru şeridi ol
   );
 
   assert.ok(html.includes("FIRSAT"), "Ticker rozeti olmalı");
-  assert.ok(html.includes("Akınsoft Restoran ERP Kampanyası"), "Başlık yer almalı");
+  assert.ok(html.includes("Restoran ERP Kampanyası"), "Başlık yer almalı");
   assert.ok(html.includes("%40 İndirim"), "İndirim bilgisi olmalı");
 });
 
@@ -143,5 +143,5 @@ test("RscSingleBlock: campaign_showcase bloğunu başarıyla render eder", () =>
   );
 
   assert.ok(html.includes("En Yeni Kampanyalar"), "Blok başlığı basılmalı");
-  assert.ok(html.includes("Akınsoft Restoran ERP Kampanyası"), "Kampanya içeriği bulunmalı");
+  assert.ok(html.includes("Restoran ERP Kampanyası"), "Kampanya içeriği bulunmalı");
 });

@@ -29,8 +29,8 @@ flowchart TB
     end
 
     subgraph ProPlugins [Lisanslı Pro Eklentiler (plugins-pro/*)]
-        ProSeo["@nexpress-pro/agentic-seo — @id Entity Graph, WebMCP, Bot Verifier, IndexNow"]
-        ProOps["@nexpress-pro/content-ops — Site DNA, Few-Shot, Soru Madenciliği, 2-Pass RAG"]
+        ProSeo["@nexpress-pro/agentic-seo — Entity Graph, WebMCP, içerik operasyonları"]
+        ProDesign["@nexpress-pro/ai-design — bölüm, sayfa ve tema jetonu"]
     end
 
     Human --> PublicRSC
@@ -38,7 +38,7 @@ flowchart TB
     Editor --> AdminUI
     AdminUI & PublicRSC & AgentGateway --> Core
     Core --> ThemeEngine & VisualEditor & SeoCore & DB & Commerce & Market
-    ProSeo & ProOps -.->|Slot & Hook Enjeksiyonu| Core
+    ProSeo & ProDesign -.->|Slot & Hook Enjeksiyonu| Core
 ```
 
 ---
@@ -62,21 +62,23 @@ nexpresscms/
 │   ├── rag/                         # Arama dizini: gömme sağlayıcıları, dizinleme, vektör arama, benzerlik raporu
 │   └── wp-importer/                 # WordPress dışa aktarmasını (WXR) NexPress içeriğine çeviren saf mantık: okuyucu, HTML→blok, plan, SSRF IP denetimi
 ├── plugins-pro/                     # Pro eklentiler. Çekirdeğe yalnızca apps/cms/src/plugins/register.ts bağlar
-│   ├── agentic-seo-pro/
-│   └── content-ops-pro/
+│   ├── agentic-seo-pro/             # GEO, ajan API ve içerik operasyonları (src/content-ops)
+│   └── ai-design/                   # AI Tasarım Pro
 ```
+
+Eski `@nexpress-pro/content-ops` paketi 2026-10-28'de `agentic-seo-pro` içine birleşti. Kaynak `.archive/content-ops-pro` altındadır; workspace'e girmez, derlenmez. Ayrıntı: `docs/15`.
 
 ---
 
 ## 3. Open-Core & Pro Eklenti Sınır Mimarisi (`Slot & Hook Bus`)
 
-Çekirdek kod Pro paketlere import etmez. Kurulum `apps/cms/src/plugins/register.ts` kompozisyon kökünden yapılır; bu modül `registerAgenticSeoProPlugin` ve `registerContentOpsProPlugin` çağırır.
+Çekirdek kod Pro paketlere import etmez. Kurulum `apps/cms/src/plugins/register.ts` kompozisyon kökünden yapılır; bu modül `registerAgenticSeoProPlugin` ve `registerAiDesignProPlugin` çağırır. İçerik operasyonları ayrı kayıt fonksiyonu değildir: `registerAgenticSeoProPlugin` içinde `registerContentOps()` çalışır. IndexNow çekirdek kompozisyondadır (`registerIndexNow`).
 
 1. **Veri ve Yaşam Döngüsü Kancaları (`packages/core/src/hooks.ts`):**
-   - `content:beforeSave`: İçerik kaydedilmeden önce `markdownCache` üretimi veya Pro SEO puanlaması.
-   - `content:afterPublish`: Önbellek temizliği (`revalidateTag`) + Pro IndexNow ping tetiklemesi.
+   - `content:beforeSave`: İçerik kaydedilmeden önce `markdownCache` üretimi; Pro tarafta klişe kalkanı ve SEO puanı (`src/content-ops`).
+   - `content:afterPublish`: Önbellek temizliği (`revalidateTag`) ve IndexNow ping'i.
    - `seo:buildSchemaGraph`: Temel JSON-LD grafiğine Pro `@id` (`Product`, `SoftwareApplication`, `Offer`, `TechArticle`) düğümlerinin eklenmesi.
 2. **Görsel Admin Yuvaları (`<PluginSlot />`):**
-   - `editor.sidebar.tabs`: Editör sağ çekmecesine "Canlı SEO & Kanibalizasyon" ve "Ürün/Entity Bağlantıları" sekmelerini ekler.
-   - `admin.sidebar.nav`: Sol menüye "Content Ops Fabrikası", "Soru Madenciliği" ve "AI Bot Analitiği" menülerini ekler.
-   - `dashboard.overview.cards`: Ana panele AI görünürlük ısı haritası ve içerik açığı (gap) özet kartlarını ekler.
+   - `editor.sidebar.tabs`: Editör sağ çekmecesine Co-Pilot (kanibalizasyon ve iç bağlantı).
+   - `admin.sidebar.nav`: Agentic SEO Pro menü kaydı.
+   - `seo.reports.content` / `seo.reports.queries` / `seo.reports.visibility`: içerik açığı, soru havuzu ve görünürlük kartları.

@@ -12,7 +12,7 @@
 | **02** | [02-DATABASE-AND-TENANCY.md](./02-DATABASE-AND-TENANCY.md) | Single-Tenant + Subdomain Multi-Tenant (`siteId`), LibSQL/SQLite $\leftrightarrow$ PostgreSQL/pgvector ve Docker kurulumu | ✅ Güncel |
 | **03** | [03-THEME-STORE-AND-EDITOR.md](./03-THEME-STORE-AND-EDITOR.md) | **Tema Motoru & Tema Mağazası**, Çift Modlu 0-KB RSC Görsel Editör, Header/Footer/Mega-Menü Stüdyosu ve Kurumsal `shadcn/ui` Admin UX | ✅ Güncel |
 | **04** | [04-CORE-SEO-AND-GEO.md](./04-CORE-SEO-AND-GEO.md) | Ücretsiz Çekirdek SEO, Çok Boyutlu GEO/Hreflang matrisi, Temel Schema.org, `/llms.txt` ve `?format=md` | ✅ Güncel |
-| **05** | [05-PRO-PLUGINS-AND-RAG.md](./05-PRO-PLUGINS-AND-RAG.md) | Pro Eklentiler (`@nexpress-pro/agentic-seo` & `@nexpress-pro/content-ops`), WebMCP, Bot Verifier, Site DNA ve 2-Pass AI Fabrika | ✅ Güncel |
+| **05** | [05-PRO-PLUGINS-AND-RAG.md](./05-PRO-PLUGINS-AND-RAG.md) | Pro eklentiler (`@nexpress-pro/agentic-seo`, içinde içerik operasyonları; `@nexpress-pro/ai-design`), WebMCP, Bot Verifier, Site DNA | ✅ Güncel |
 | **06** | [06-PROGRESS-LOG.md](./06-PROGRESS-LOG.md) | Faz bazlı canlı geliştirme takibi, tamamlanan adımlar ve sıradaki görevler | 🔄 Canlı |
 | **07** | [07-AI-PAGE-AND-BLOCK-SPEC.md](./07-AI-PAGE-AND-BLOCK-SPEC.md) | **AI İle Sayfa & Blok Tasarlatma Rehberi (`JSON AST Kontratı`)** — Claude / ChatGPT / Gemini ile sayfa üretip kanvasa aktarma şeması | ✅ Güncel |
 | **08** | [08-AI-CHROME-SPEC.md](./08-AI-CHROME-SPEC.md) | AI ile header ve footer tasarlatma. Kütüphane JSON aktarımı | ✅ Güncel |

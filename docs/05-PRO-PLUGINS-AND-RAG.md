@@ -1,6 +1,6 @@
 # 05 — Pro Eklentiler: Agentic SEO Gateway & RAG İçerik Fabrikası (`plugins-pro/*`)
 
-WSL üzerindeki `agentic-content-ops` (Faz 1–12) ve `agentic-seo-gateway` (v5.8.0) projelerinin tüm ileri düzey yetenekleri iki ticari **Pro Eklenti** olarak çekirdeğin `Slot & Hook` yuvalarına bağlanır.
+Kaynak projeler `agentic-content-ops` ve `agentic-seo-gateway` (v5.8.0). Canlı Pro paketler ikidir: `@nexpress-pro/agentic-seo` (içerik operasyonları bunun içindedir) ve `@nexpress-pro/ai-design`. İkisi de çekirdeğin `Slot & Hook` yuvalarına bağlanır.
 
 > [!IMPORTANT]
 > **Kural 4:** `packages/*` ve `apps/cms` özellik kodu `@nexpress-pro/*` import etmez. Tek kompozisyon kökü `apps/cms/src/plugins/register.ts` dosyasıdır. Etkileşimin geri kalanı `cmsHooks` ve `<PluginSlot />` üzerindedir.
@@ -29,20 +29,16 @@ WSL üzerindeki `agentic-content-ops` (Faz 1–12) ve `agentic-seo-gateway` (v5.
 
 ---
 
-## 2. Pro Eklenti B: `@nexpress-pro/content-ops` (`plugins-pro/content-ops-pro`)
+## 2. İçerik operasyonları (`plugins-pro/agentic-seo-pro/src/content-ops`)
 
-Editörün sağ çekmecesine (`editor.sidebar.tabs`) ve ana panele (`dashboard.overview.cards`) tam kapsamlı bir **İçerik Üretim Fabrikası** ekler:
+Ayrı `@nexpress-pro/content-ops` paketi yok. 2026-10-28'de `agentic-seo` içine birleşti. Eski kaynak `.archive/content-ops-pro` altındadır ve derlemeye girmez. Kayıt `registerAgenticSeoProPlugin()` → `registerContentOps()`. Modül durumu: `docs/15`.
 
-1. **Site DNA & Guardrail Kalkanı (`src/guardrails.ts`):**
+1. **Site DNA ve klişe kalkanı (`src/content-ops/guardrails.ts`):**
    - `DEFAULT_FORBIDDEN_PHRASES` (*"bu makalede"*, *"sonuç olarak"*, *"özetlemek gerekirse"*, *"günümüzde"* vb.) ile yapay AI klişelerini tespit eder.
    - `content:beforeSave` kancasına bağlanarak Answer-First `tldr` uzunluğunu, kelime derinliğini ve klişe bulunmama durumunu denetleyip dinamik `seoScore` hesaplar (`auditContentGuardrails`).
 2. **Kelime havuzu:** canlı GSC, Bing, Yandex ve Serper kayıtları `seo_intel_signals` tablosundadır. Küme sözcük örtüşmesidir (Jaccard). Örnek dizi artık kartta basılmaz.
-3. **Canlı Editör Co-Pilot (`src/index.tsx` -> `editor.sidebar.tabs`):**
-   - Vektör kanibalizasyon denetimi, AI klişe kalkanı ve semantik `@id` iç link önerilerini editör sağ çekmecesinde sunar.
-
----
-
-> **Güncelleme (2026-10-28):** `content-ops` paketi `agentic-seo` içine birleştirildi (tek Pro eklenti, modül bazlı). Güncel modül durumu ve taşıma planı: `docs/15-AGENTIC-PRO-MIGRATION.md`.
+3. **Editör Co-Pilot (`editor.sidebar.tabs`):**
+   - Vektör kanibalizasyon denetimi ve iç bağlantı önerisi editör sağ çekmecesindedir. Soru havuzu `seo.reports.queries`, içerik açığı `seo.reports.content` yuvasındadır.
 
 ## 3. Mevcut durum (dürüst özet)
 

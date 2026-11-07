@@ -19,7 +19,7 @@ const CAROUSEL_W: Record<number, string> = {
 const SAMPLE_CAMPAIGNS: DynamicItem[] = [
   {
     id: "sample_1",
-    title: "Akınsoft Restoran ERP & Barkod Otomasyonu Kampanyası",
+    title: "Restoran ERP ve Barkod Otomasyonu Kampanyası",
     url: "#",
     excerpt:
       "Sınırlı süreye özel tüm restoran, kafe ve paket servis modüllerinde net indirim ve ücretsiz kurulum fırsatı.",
@@ -35,17 +35,17 @@ const SAMPLE_CAMPAIGNS: DynamicItem[] = [
     ctaText: "Hemen Teklif Al & Başvur",
     ctaUrl: "#",
     contactWhatsapp: "905550000000",
-    contactPhone: "02324251988",
+    contactPhone: "02120000000",
   },
   {
     id: "sample_2",
-    title: "Wolvox ERP E-Ticaret & Pazaryeri Entegrasyon Paketi",
+    title: "E-Ticaret ve Pazaryeri Entegrasyon Paketi",
     url: "#",
     excerpt:
-      "Trendyol, Hepsiburada, Amazon ve e-ticaret sitenizi tek merkezden yönetin. Yılın en avantajlı lisans paketi.",
+      "Pazaryeri siparişleri ve e-ticaret sitenizi tek merkezden yönetin. Yılın en avantajlı lisans paketi.",
     image:
       "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-    imageAlt: "Wolvox E-Ticaret Paketi",
+    imageAlt: "E-Ticaret Paketi",
     date: new Date().toISOString(),
     discount: "%35",
     badge: "SINIRLI KONTENJAN",
@@ -55,7 +55,7 @@ const SAMPLE_CAMPAIGNS: DynamicItem[] = [
     ctaText: "Detaylı Bilgi & Başvuru",
     ctaUrl: "#",
     contactWhatsapp: "905550000000",
-    contactPhone: "02324251988",
+    contactPhone: "02120000000",
   },
   {
     id: "sample_3",
@@ -75,7 +75,7 @@ const SAMPLE_CAMPAIGNS: DynamicItem[] = [
     ctaText: "Fiyat Teklifi Al",
     ctaUrl: "#",
     contactWhatsapp: "905550000000",
-    contactPhone: "02324251988",
+    contactPhone: "02120000000",
   },
 ];
 
