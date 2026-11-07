@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -34,6 +35,7 @@ export async function generateMetadata({
   const nx_draft = typeof sp0.nx_draft === "string" ? sp0.nx_draft : undefined;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
   const [site, resolved] = await Promise.all([
     getPublicSite(siteId),
@@ -53,7 +55,7 @@ export async function generateMetadata({
     tagline: site?.tagline,
     baseUrl,
     locale,
-    path: `/${locale}/${content.slug}`,
+    path: `${lb}/${content.slug}`,
     title: content.title,
     tldr: content.tldr,
     excerpt: content.excerpt,
@@ -105,6 +107,7 @@ export default async function PublicDynamicContentPage({
   const sp = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   await trackBotVisit("page");
   await trackAiReferral();
 
@@ -115,11 +118,11 @@ export default async function PublicDynamicContentPage({
   ]);
 
   if (!resolved || !resolved.content) {
-    return redirectOrNotFound(siteId, `/${locale}/${slug}`);
+    return redirectOrNotFound(siteId, `${lb}/${slug}`);
   }
 
   if (resolved.isRedirect) {
-    permanentRedirect(`/${locale}/${resolved.content.slug}`);
+    permanentRedirect(`${lb}/${resolved.content.slug}`);
   }
 
   const content = resolved.content;
@@ -151,7 +154,7 @@ export default async function PublicDynamicContentPage({
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const tokens = (await getPreviewTheme(siteId))?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const pageUrl = `${baseUrl}/${locale}/${content.slug}`;
+  const pageUrl = `${baseUrl}${lb}/${content.slug}`;
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -186,7 +189,7 @@ export default async function PublicDynamicContentPage({
   const canEdit = Boolean(await getSession());
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
-  const formCtx = { forms: pageForms, path: `/${locale}/${content.slug}`, token: createFormToken(`/${locale}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const formCtx = { forms: pageForms, path: `${lb}/${content.slug}`, token: createFormToken(`${lb}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
 
@@ -196,20 +199,20 @@ export default async function PublicDynamicContentPage({
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
   if (tpl) {
     const [menu, catIndex] = await Promise.all([getResolvedMenu(siteId, locale), getScopedRepository(siteId).listTaxonomies("category")]);
-    const ctx = buildTemplateContext({
+    const ctx = buildTemplateContext({ lb,
       site: site ? { name: site.name, tagline: site.tagline } : null,
       locale,
       menu,
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: content.title, href: `/${locale}/${content.slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
         content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
         author: pub.authorName || content.authorName || null,
-        categories: categories.map((name) => ({ name, href: `/${locale}/kategori/${catIndex.find((c) => c.name === name)?.slug ?? termSlug(name)}` })),
+        categories: categories.map((name) => ({ name, href: `${lb}/kategori/${catIndex.find((c) => c.name === name)?.slug ?? termSlug(name)}` })),
       },
     });
     return (
@@ -259,13 +262,13 @@ export default async function PublicDynamicContentPage({
       <header className="space-y-4 border-b pb-8">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Link href={`/${locale}`} className="text-nx-muted hover:underline">
+            <Link href={(lb || "/")} className="text-nx-muted hover:underline">
               ← Ana Sayfa
             </Link>
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`/${locale}/${content.slug}?format=md`}
+              href={`${lb}/${content.slug}?format=md`}
               className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
             >
               Markdown
@@ -408,7 +411,7 @@ export default async function PublicDynamicContentPage({
               WhatsApp
             </a>
             <Link
-              href={`/${locale}/${content.slug}?format=md`}
+              href={`${lb}/${content.slug}?format=md`}
               className="rounded-lg bg-slate-900 px-3.5 py-2 text-white hover:bg-slate-800 font-mono"
             >
               Markdown (.md)

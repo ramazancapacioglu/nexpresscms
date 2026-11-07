@@ -46,6 +46,7 @@ function cssSafe(value: string): string {
   return value.replace(/[;{}<>]/g, "").replace(/@import/gi, "").trim();
 }
 
+const TEXT_LEAF = new Set(["heading", "heading_element", "paragraph", "paragraph_element", "text_div"]);
 const BORDER_STYLES = new Set(["solid", "dashed", "dotted", "double"]);
 const TEXT_TRANSFORMS = new Set(["none", "uppercase", "lowercase", "capitalize"]);
 
@@ -155,6 +156,15 @@ function collect(blocks: BlockNode[], parentType: string | null, out: string[], 
       }
       const all = [base, ...extra].filter(Boolean).join(";");
       if (all) out.push(`${sel}{${all}}`);
+      // Metin rengi kapsayıcıda yazılınca içteki başlık ve paragraflar da onu alır (bloklar kendi sınıf rengini taşıdığından kalıtım gerekir)
+      if (s.textColor) out.push(`${sel} :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,dt,dd,.nx-rich){color:inherit}`);
+      // Metin bloklarında yazı ölçüsü ve ağırlığı da içteki öğeye geçer (başlık/paragraf kendi sınıf boyutunu taşır)
+      if (TEXT_LEAF.has(b.type)) {
+        const inherit = (["fontSize", "fontWeight", "lineHeight", "letterSpacing"] as const)
+          .filter((k) => s[k] || s.tablet?.[k] || s.mobile?.[k])
+          .map((k) => `${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}:inherit`);
+        if (inherit.length) out.push(`${sel} :is(h1,h2,h3,h4,p,div){${inherit.join(";")}}`);
+      }
 
       if (s.backgroundOverlay && s.backgroundImage) {
         out.push(

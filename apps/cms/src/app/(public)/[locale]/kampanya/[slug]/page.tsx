@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -80,6 +81,7 @@ export default async function PublicCampaignDetailPage({
   const slug = decodeURIComponent(rawSlug);
   const sp = searchParams ? await searchParams : {};
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const repo = getScopedRepository(siteId);
 
   const draftContent = await resolveDraftPreview(siteId, locale, slug, sp?.nx_draft);
@@ -91,7 +93,7 @@ export default async function PublicCampaignDetailPage({
   ]);
 
   if (resolved?.isRedirect && resolved.content) {
-    permanentRedirect(`/${locale}/kampanya/${resolved.content.slug}`);
+    permanentRedirect(`${lb}/kampanya/${resolved.content.slug}`);
   }
 
   let content: ContentWithTranslationDto | undefined = resolved?.content;
@@ -115,7 +117,7 @@ export default async function PublicCampaignDetailPage({
   const camp = resolveCampaignData(content);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const pageUrl = `${baseUrl}/${locale}/kampanya/${camp.slug}`;
+  const pageUrl = `${baseUrl}${lb}/kampanya/${camp.slug}`;
   const siteName = site?.name ?? "NexPress CMS";
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const themeTokens = site?.designTokens ?? activeTheme.tokens;
@@ -170,9 +172,9 @@ export default async function PublicCampaignDetailPage({
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
-        <Link href={`/${locale}`} className="hover:text-foreground">Ana Sayfa</Link>
+        <Link href={(lb || "/")} className="hover:text-foreground">Ana Sayfa</Link>
         <span>/</span>
-        <Link href={`/${locale}/kampanyalar`} className="hover:text-foreground">Kampanyalar</Link>
+        <Link href={`${lb}/kampanyalar`} className="hover:text-foreground">Kampanyalar</Link>
         <span>/</span>
         <span className="text-foreground font-medium truncate max-w-xs">{camp.title}</span>
       </nav>
@@ -410,7 +412,7 @@ export default async function PublicCampaignDetailPage({
               {otherCampaigns.map((oc) => (
                 <Link
                   key={oc.contentId}
-                  href={`/${locale}/kampanya/${oc.slug}`}
+                  href={`${lb}/kampanya/${oc.slug}`}
                   className="group p-4 rounded-xl border border-border bg-card hover:border-blue-500/50 hover:shadow-xs transition space-y-2.5 flex flex-col justify-between"
                 >
                   <div className="space-y-2">

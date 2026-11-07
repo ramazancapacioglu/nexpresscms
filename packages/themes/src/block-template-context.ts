@@ -5,6 +5,8 @@ import type { DynamicItem } from "@nexpress/core";
 export interface TemplateRenderContext {
   site: { name: string; logoText: string; logoImage: string; tagline?: string | null };
   locale: string;
+  /** Dilin kök adresi (`/tr`); tek dilli sitede boş. Verilmezse `/{locale}`. */
+  lb?: string;
   copyright: string;
   /** Hazır çizilmiş menü düğümleri (yatay masaüstü + mobil, dikey liste) */
   menu: { horizontal: React.ReactNode; list: React.ReactNode } | null;

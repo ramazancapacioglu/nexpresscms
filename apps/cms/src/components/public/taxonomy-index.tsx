@@ -1,4 +1,5 @@
 import React from "react";
+import { localeBase } from "@nexpress/core";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { createTranslator } from "@nexpress/i18n";
@@ -30,22 +31,22 @@ export async function taxonomyIndexMetadata(kind: Kind, params: Promise<{ locale
   const title = kind === "category" ? t("taxonomy.categoriesTitle") : t("taxonomy.tagsTitle");
   return {
     title: `${title}${site?.name ? ` — ${site.name}` : ""}`,
-    alternates: { canonical: `${base}/${locale}/${kind === "category" ? "kategori" : "etiket"}` },
+    alternates: { canonical: `${base}${localeBase(site, locale)}/${kind === "category" ? "kategori" : "etiket"}` },
     robots: rows.length === 0 ? { index: false, follow: true } : undefined,
   };
 }
 
-function Tree({ rows, parent, depth, locale, prefix, t }: { rows: Row[]; parent: string | null; depth: number; locale: string; prefix: string; t: ReturnType<typeof createTranslator> }) {
+function Tree({ rows, parent, depth, locale, lb, prefix, t }: { rows: Row[]; parent: string | null; depth: number; locale: string; lb: string; prefix: string; t: ReturnType<typeof createTranslator> }) {
   const level = rows.filter((r) => (r.parentId ?? null) === parent).sort((a, b) => a.name.localeCompare(b.name, locale));
   if (level.length === 0 || depth > 4) return null;
   return (
     <ul className={depth === 0 ? "grid gap-3 sm:grid-cols-2" : "mt-2 space-y-1 border-l border-nx-line pl-4"}>
       {level.map((r) => (
         <li key={r.id} className={depth === 0 ? "rounded-lg border border-nx-line bg-nx-card p-4" : undefined}>
-          <a href={`/${locale}/${prefix}/${r.slug}`} className="font-semibold text-nx-link hover:underline">{r.name}</a>
+          <a href={`${lb}/${prefix}/${r.slug}`} className="font-semibold text-nx-link hover:underline">{r.name}</a>
           <span className="ml-2 text-xs text-nx-muted">{t("taxonomy.itemCount", { n: r.count })}</span>
           {r.description && depth === 0 ? <p className="mt-1 text-sm text-nx-soft">{r.description}</p> : null}
-          <Tree rows={rows} parent={r.id} depth={depth + 1} locale={locale} prefix={prefix} t={t} />
+          <Tree rows={rows} parent={r.id} depth={depth + 1} locale={locale} lb={lb} prefix={prefix} t={t} />
         </li>
       ))}
     </ul>
@@ -56,6 +57,7 @@ export async function TaxonomyIndex({ kind, params }: { kind: Kind; params: Prom
   const { locale } = await params;
   const t = createTranslator(locale);
   const { site, rows } = await load(kind, locale);
+  const lb = localeBase(site, locale);
   const tokens = site?.designTokens ?? getThemeManifest(site?.activeThemeId ?? "corporate-aurora").tokens;
   const prefix = kind === "category" ? "kategori" : "etiket";
   const title = kind === "category" ? t("taxonomy.categoriesTitle") : t("taxonomy.tagsTitle");
@@ -65,17 +67,17 @@ export async function TaxonomyIndex({ kind, params }: { kind: Kind; params: Prom
   return (
     <div className="space-y-6">
       <nav aria-label="Sayfa yolu" className="text-xs text-nx-muted">
-        <a href={`/${locale}`} className="hover:underline">{t("taxonomy.home")}</a> <span aria-hidden="true">/</span> <span aria-current="page">{title}</span>
+        <a href={(lb || "/")} className="hover:underline">{t("taxonomy.home")}</a> <span aria-hidden="true">/</span> <span aria-current="page">{title}</span>
       </nav>
       <h1 style={{ fontFamily: tokens.typography.headingFont }} className="text-3xl font-extrabold tracking-tight">{title}</h1>
       {rows.length === 0 ? (
         <p className="text-sm text-nx-soft">{t("taxonomy.indexEmpty", { kind: kind === "category" ? t("taxonomy.kindCategory") : t("taxonomy.kindTag") })}</p>
       ) : kind === "category" ? (
-        <Tree rows={normalized} parent={null} depth={0} locale={locale} prefix={prefix} t={t} />
+        <Tree rows={normalized} parent={null} depth={0} locale={locale} lb={lb} prefix={prefix} t={t} />
       ) : (
         <ul className="flex flex-wrap gap-2">
           {[...rows].sort((a, b) => a.name.localeCompare(b.name, locale)).map((r) => (
-            <li key={r.id}><a href={`/${locale}/${prefix}/${r.slug}`} className="inline-block rounded-full border border-nx-line px-3 py-1 text-sm text-nx-link hover:underline">{r.name} <span className="text-xs text-nx-muted">({r.count})</span></a></li>
+            <li key={r.id}><a href={`${lb}/${prefix}/${r.slug}`} className="inline-block rounded-full border border-nx-line px-3 py-1 text-sm text-nx-link hover:underline">{r.name} <span className="text-xs text-nx-muted">({r.count})</span></a></li>
           ))}
         </ul>
       )}

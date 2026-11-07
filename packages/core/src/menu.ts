@@ -10,6 +10,8 @@ export const MENU_LIBRARY_MAX = 12;
 
 export interface MenuLookup {
   locale: string;
+  /** Dilin kök adresi (`/tr`); tek dilli sitede boş. Verilmezse `/{locale}`. */
+  base?: string;
   /** içerik kimliği → { slug, yayında mı } */
   contents: Record<string, { slug: string; published: boolean }>;
   /** taksonomi kimliği → { slug, type: category|tag } */
@@ -24,7 +26,8 @@ export const isSafeMenuHref = (href: string): boolean => SAFE_HREF.test(href.tri
 
 /** Kaynaktan güncel adresi çözer; hedef yoksa/yayında değilse `null` (öğe yayında gizlenir). */
 export function resolveMenuHref(source: MenuSource | undefined, fallbackHref: string, lookup: MenuLookup): string | null {
-  const root = `/${lookup.locale}`;
+  const base = lookup.base ?? `/${lookup.locale}`;
+  const root = base || "/";
   switch (source?.kind) {
     case undefined:
     case "custom":
@@ -32,19 +35,19 @@ export function resolveMenuHref(source: MenuSource | undefined, fallbackHref: st
     case "home":
       return root;
     case "store":
-      return `${root}/magaza`;
+      return `${base}/magaza`;
     case "content": {
       const c = source.refId ? lookup.contents[source.refId] : undefined;
-      return c?.published ? (c.slug === "ana-sayfa" ? root : `${root}/${c.slug}`) : null;
+      return c?.published ? (c.slug === "ana-sayfa" ? root : `${base}/${c.slug}`) : null;
     }
     case "category":
     case "tag": {
       const t = source.refId ? lookup.taxonomies[source.refId] : undefined;
-      return t && t.type === source.kind ? `${root}/${source.kind === "category" ? "kategori" : "etiket"}/${t.slug}` : null;
+      return t && t.type === source.kind ? `${base}/${source.kind === "category" ? "kategori" : "etiket"}/${t.slug}` : null;
     }
     case "product": {
       const p = source.refId ? lookup.products[source.refId] : undefined;
-      return p?.published ? `${root}/magaza/${p.slug}` : null;
+      return p?.published ? `${base}/magaza/${p.slug}` : null;
     }
     default:
       return null;

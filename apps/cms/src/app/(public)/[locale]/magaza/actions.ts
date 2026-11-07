@@ -1,5 +1,6 @@
 "use server";
 
+import { siteLocaleBase } from "@/lib/locale-url";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getCommerceOpsRepository, getCommerceRepository } from "@nexpress/database";
@@ -19,6 +20,11 @@ async function siteIdFromHeaders(): Promise<string> {
   return reqHeaders.get("x-nexpress-site-id") ?? "default";
 }
 
+/** Yönlendirme adresi: tek dilli sitede dil ön eki yoktur. */
+async function pubPath(locale: string, path: string): Promise<string> {
+  return `${await siteLocaleBase(await siteIdFromHeaders(), locale)}${path}`;
+}
+
 export async function addToCartAction(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   const locale = String(formData.get("locale") ?? "tr");
@@ -28,7 +34,7 @@ export async function addToCartAction(formData: FormData) {
 
   const cart = await readCartFromCookies();
   await writeCartToCookies(addToCart(cart, productId, qty, variantId));
-  redirect(`/${locale}/magaza/sepet`);
+  redirect(await pubPath(locale, `/magaza/sepet`));
 }
 
 export async function updateCartLineAction(formData: FormData) {
@@ -40,7 +46,7 @@ export async function updateCartLineAction(formData: FormData) {
 
   const cart = await readCartFromCookies();
   await writeCartToCookies(setCartLineQuantity(cart, productId, qty, variantId));
-  redirect(`/${locale}/magaza/sepet`);
+  redirect(await pubPath(locale, `/magaza/sepet`));
 }
 
 export async function checkoutAction(formData: FormData) {
@@ -48,12 +54,12 @@ export async function checkoutAction(formData: FormData) {
   const repo = getCommerceRepository(await siteIdFromHeaders());
   const settings = await repo.getCommerceSettings();
   if (!settings.enabled) {
-    redirect(`/${locale}/magaza`);
+    redirect(await pubPath(locale, `/magaza`));
   }
 
   const cart = await readCartFromCookies();
   if (cart.lines.length === 0) {
-    redirect(`/${locale}/magaza/sepet`);
+    redirect(await pubPath(locale, `/magaza/sepet`));
   }
 
   const siteId = await siteIdFromHeaders();
@@ -117,5 +123,5 @@ export async function checkoutAction(formData: FormData) {
   await ops.addLoyalty(customerId, Math.floor(order.totalCents / 100), `Sipariş ${order.orderNumber}`);
 
   await clearCartCookies();
-  redirect(`/${locale}/magaza/tesekkurler?no=${encodeURIComponent(order.orderNumber)}`);
+  redirect(await pubPath(locale, `/magaza/tesekkurler?no=${encodeURIComponent(order.orderNumber)}`));
 }

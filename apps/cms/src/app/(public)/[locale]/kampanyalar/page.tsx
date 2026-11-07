@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
@@ -44,6 +45,7 @@ export default async function PublicCampaignsArchivePage({
 }) {
   const { locale } = await params;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const site = await getPublicSite(siteId);
   const repo = getScopedRepository(siteId);
 
@@ -67,9 +69,10 @@ export default async function PublicCampaignsArchivePage({
   const expiredCampaigns = campaigns.filter((c) => c.isExpired);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const archiveUrl = `${baseUrl}/${locale}/kampanyalar`;
+  const archiveUrl = `${baseUrl}${lb}/kampanyalar`;
 
   const itemListJsonLd = buildCampaignsItemListJsonLd(activeCampaigns, {
+    localeBase: lb,
     archiveUrl,
     siteUrl: baseUrl,
     name: `${site?.name ?? "NexPress"} Güncel Kampanyalar`,
@@ -113,7 +116,7 @@ export default async function PublicCampaignsArchivePage({
             >
               {/* Afiş Görseli */}
               <Link
-                href={`/${locale}/kampanya/${camp.slug}`}
+                href={`${lb}/kampanya/${camp.slug}`}
                 className="relative block h-48 w-full bg-muted overflow-hidden"
               >
                 {camp.featuredImageUrl ? (
@@ -157,7 +160,7 @@ export default async function PublicCampaignsArchivePage({
                 )}
 
                 <h2 className="text-lg font-bold text-card-foreground group-hover:text-blue-600 transition-colors line-clamp-2">
-                  <Link href={`/${locale}/kampanya/${camp.slug}`}>
+                  <Link href={`${lb}/kampanya/${camp.slug}`}>
                     {camp.title}
                   </Link>
                 </h2>
@@ -187,7 +190,7 @@ export default async function PublicCampaignsArchivePage({
                   </span>
 
                   <Link
-                    href={`/${locale}/kampanya/${camp.slug}`}
+                    href={`${lb}/kampanya/${camp.slug}`}
                     className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                   >
                     <span>İncele</span>
@@ -221,7 +224,7 @@ export default async function PublicCampaignsArchivePage({
                   )}
                 </div>
                 <h3 className="font-semibold text-sm line-clamp-1 text-foreground">
-                  <Link href={`/${locale}/kampanya/${camp.slug}`} className="hover:underline">
+                  <Link href={`${lb}/kampanya/${camp.slug}`} className="hover:underline">
                     {camp.title}
                   </Link>
                 </h3>

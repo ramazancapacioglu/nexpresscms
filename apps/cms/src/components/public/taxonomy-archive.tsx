@@ -1,4 +1,5 @@
 import React from "react";
+import { localeBase } from "@nexpress/core";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -35,8 +36,9 @@ export async function archiveMetadata(kind: Kind, params: Promise<{ locale: stri
   const page = Number((await searchParams).sayfa) || 1;
   const data = await load(kind, locale, slug, page);
   if (!data) return { robots: { index: false, follow: false } };
+  const lb = localeBase(data.site, locale);
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-  const path = `/${locale}/${kind === "category" ? "kategori" : "etiket"}/${slug}`;
+  const path = `${lb}/${kind === "category" ? "kategori" : "etiket"}/${slug}`;
   return {
     title: data.term.seoTitle || `${data.term.name}${data.site?.name ? ` — ${data.site.name}` : ""}`,
     description: data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili yayınlar.`,
@@ -51,6 +53,7 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   const page = Number((await searchParams).sayfa) || 1;
   const data = await load(kind, locale, slug, page);
   if (!data) notFound();
+  const lb = localeBase(data.site, locale);
   const tokens = data.site?.designTokens ?? getThemeManifest(data.site?.activeThemeId ?? "corporate-aurora").tokens;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   // Tema oluşturucu şablonu: terimin seçtiği şablon → türün varsayılanı → yerleşik görünüm
@@ -58,13 +61,13 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   if (tpl) {
     const menu = await getResolvedMenu(siteId, locale);
     const prefix = kind === "category" ? "kategori" : "etiket";
-    const ctx = buildTemplateContext({
+    const ctx = buildTemplateContext({ lb,
       site: data.site ? { name: data.site.name, tagline: data.site.tagline } : null,
       locale,
       menu,
       tokens,
       menuLabel: "Menü",
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: kind === "category" ? "Kategoriler" : "Etiketler", href: `/${locale}/${prefix}` }, { name: data.term.name, href: `/${locale}/${prefix}/${slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: kind === "category" ? "Kategoriler" : "Etiketler", href: `${lb}/${prefix}` }, { name: data.term.name, href: `${lb}/${prefix}/${slug}` }],
       archive: {
         title: data.term.name,
         description: data.term.description,
@@ -72,7 +75,7 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
         items: data.paged.items,
         page: data.paged.page,
         pages: data.paged.pages,
-        pageHref: (n) => `/${locale}/${prefix}/${slug}${n > 1 ? `?sayfa=${n}` : ""}`,
+        pageHref: (n) => `${lb}/${prefix}/${slug}${n > 1 ? `?sayfa=${n}` : ""}`,
       },
     });
     return <RscBlockRenderer blocks={tpl.blocks} themeId={data.site?.activeThemeId ?? "corporate-aurora"} tokens={tokens} locale={locale} tpl={ctx} />;
@@ -88,9 +91,9 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
       <DynamicListView query={query} items={data.paged.items} tokens={tokens} locale={locale} />
       {data.paged.pages > 1 ? (
         <nav aria-label="Sayfalama" className="flex items-center justify-between gap-3 border-t pt-4 text-sm">
-          {data.paged.page > 1 ? <a rel="prev" href={`/${locale}/${kind === "category" ? "kategori" : "etiket"}/${slug}${data.paged.page > 2 ? `?sayfa=${data.paged.page - 1}` : ""}`} className="underline">← Yeni yayınlar</a> : <span />}
+          {data.paged.page > 1 ? <a rel="prev" href={`${lb}/${kind === "category" ? "kategori" : "etiket"}/${slug}${data.paged.page > 2 ? `?sayfa=${data.paged.page - 1}` : ""}`} className="underline">← Yeni yayınlar</a> : <span />}
           <span className="opacity-70">Sayfa {data.paged.page} / {data.paged.pages}</span>
-          {data.paged.page < data.paged.pages ? <a rel="next" href={`/${locale}/${kind === "category" ? "kategori" : "etiket"}/${slug}?sayfa=${data.paged.page + 1}`} className="underline">Eski yayınlar →</a> : <span />}
+          {data.paged.page < data.paged.pages ? <a rel="next" href={`${lb}/${kind === "category" ? "kategori" : "etiket"}/${slug}?sayfa=${data.paged.page + 1}`} className="underline">Eski yayınlar →</a> : <span />}
         </nav>
       ) : null}
     </div>

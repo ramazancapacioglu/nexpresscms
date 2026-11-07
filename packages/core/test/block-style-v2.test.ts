@@ -40,3 +40,18 @@ test("gradyan oluşturucu: doğrulanmış CSS; geçersiz renk atılır; tek dura
   assert.equal(buildGradient({ type: "linear", angle: -90, stops: [{ color: "#fff", pos: -5 }, { color: "red;}body{x:y", pos: 50 }, { color: "#000", pos: 200 }] }), "linear-gradient(270deg, #fff 0%, #000 100%)");
   assert.equal(buildGradient({ type: "linear", angle: 0, stops: [{ color: "#fff", pos: 0 }] }), "");
 });
+
+test("kapsayıcının metin rengi içteki başlık ve paragraflara kalıtılır", () => {
+  const css = compileBlockStylesToCss(b({ textColor: "#fff" }));
+  assert.ok(css.includes("color:#fff"));
+  assert.ok(css.includes(":is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,dt,dd,.nx-rich){color:inherit}"));
+  assert.ok(!compileBlockStylesToCss(b({ paddingTop: "8px" })).includes("color:inherit"));
+});
+
+test("metin bloğunda yazı ölçüsü ve ağırlığı içteki öğeye kalıtılır; kapsayıcıda kalıtılmaz", () => {
+  const leaf: BlockNode[] = [{ id: "h", type: "heading_element", props: {}, style: { fontSize: "48px", fontWeight: "800", mobile: { fontSize: "30px" } } }];
+  const css = compileBlockStylesToCss(leaf);
+  assert.ok(css.includes("font-size:inherit;font-weight:inherit"));
+  const box: BlockNode[] = [{ id: "s", type: "section", props: {}, style: { fontSize: "48px" } }];
+  assert.ok(!compileBlockStylesToCss(box).includes("font-size:inherit"));
+});

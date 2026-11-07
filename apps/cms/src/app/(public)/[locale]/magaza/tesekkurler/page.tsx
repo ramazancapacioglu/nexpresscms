@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
@@ -23,7 +24,7 @@ export default async function ShopThankYouPage({
   const settings = await getCommerceRepository(siteId).getCommerceSettings();
   if (!settings.enabled) notFound();
 
-  const base = shopBasePath(settings, locale);
+  const base = shopBasePath(settings, await siteLocaleBase(siteId, locale));
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 text-center">

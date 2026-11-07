@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { resolvePublishing, resolveSiteSettings } from "@nexpress/core";
+import { resolvePublishing, resolveSiteSettings, localeBase } from "@nexpress/core";
 import { buildAtomFeed, buildRssFeed, termMatches, type FeedItem } from "@nexpress/seo-core";
 import { listPublishedContents } from "@/lib/public-data";
 import { requestLocale } from "@/lib/request-locale";
@@ -25,7 +25,7 @@ export async function feedResponse(request: NextRequest, format: "rss" | "atom")
     })
     .map((c) => ({
       title: c.title,
-      url: `${base}/${locale}/${c.slug}`,
+      url: `${base}${localeBase(site, locale)}/${c.slug}`,
       summary: c.tldr || c.excerpt || c.metaDescription || "",
       publishedAt: new Date(c.publishedAt ?? c.createdAt),
       updatedAt: new Date(c.updatedAt),
@@ -36,7 +36,7 @@ export async function feedResponse(request: NextRequest, format: "rss" | "atom")
   const xml = build({
     siteName: [site?.name ?? "NexPress CMS", category || tag].filter(Boolean).join(" — "),
     description: site?.tagline || site?.name || "",
-    homeUrl: `${base}/${locale}`,
+    homeUrl: `${base}${localeBase(site, locale)}`,
     selfUrl: `${base}/${format === "rss" ? "feed.xml" : "atom.xml"}${category ? `?category=${encodeURIComponent(category)}` : tag ? `?tag=${encodeURIComponent(tag)}` : ""}`,
     language: locale,
     items,

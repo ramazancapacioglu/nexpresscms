@@ -1,3 +1,4 @@
+import { localeBase } from "@nexpress/core";
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
 import { listPublicEntityLinks, listPublishedContents } from "./public-data";
@@ -24,16 +25,16 @@ export async function aiSitemapResponse(request: NextRequest, forcedLocale?: str
     siteProfile: site?.siteProfile ?? "corporate",
     siteDna: site?.siteDna,
     localeEndpoints: Object.fromEntries(
-      supported.map((l) => [l, { aiSitemap: `${baseUrl}/${l}/ai-sitemap.json`, llmsTxt: `${baseUrl}/${l}/llms.txt`, llmsFullTxt: `${baseUrl}/${l}/llms-full.txt` }])
+      supported.map((l) => [l, { aiSitemap: `${baseUrl}${localeBase(site, l)}/ai-sitemap.json`, llmsTxt: `${baseUrl}${localeBase(site, l)}/llms.txt`, llmsFullTxt: `${baseUrl}${localeBase(site, l)}/llms-full.txt` }])
     ),
     endpoints: {
-      llmsTxt: `${baseUrl}/${locale}/llms.txt`,
-      llmsFullTxt: `${baseUrl}/${locale}/llms-full.txt`,
+      llmsTxt: `${baseUrl}${localeBase(site, locale)}/llms.txt`,
+      llmsFullTxt: `${baseUrl}${localeBase(site, locale)}/llms-full.txt`,
       webMcpRpc: `${baseUrl}/api/mcp`,
       markdownNegotiation: "?format=md or Accept: text/markdown",
     },
     items: contents.map((item) => {
-      const publicUrl = contentUrl(baseUrl, locale, item.slug);
+      const publicUrl = contentUrl(baseUrl, locale, item.slug, localeBase(site, locale));
       return {
         id: item.id,
         title: item.title,

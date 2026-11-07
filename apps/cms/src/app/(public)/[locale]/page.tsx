@@ -1,4 +1,5 @@
 import { hasDynamicQueryParams } from "@nexpress/core";
+import { siteLocaleBase } from "@/lib/locale-url";
 import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
@@ -30,6 +31,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const { locale } = await params;
   const sp0 = await searchParams;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const site = await getPublicSite(siteId);
   const themeId = site?.activeThemeId ?? "corporate-aurora";
@@ -37,7 +39,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   return {
     ...(hasDynamicQueryParams(sp0) ? { robots: { index: false, follow: true } } : {}),
     alternates: {
-      canonical: `${baseUrl}/${locale}`,
+      canonical: `${baseUrl}${lb}`,
       ...(home ? { languages: await hreflangAlternates(siteId, home.contentId, baseUrl) } : {}),
     },
   };
@@ -55,6 +57,7 @@ export default async function PublicHomePage({
   const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   await trackBotVisit("page");
   await trackAiReferral();
 
@@ -75,7 +78,7 @@ export default async function PublicHomePage({
     siteName: site?.name ?? "NexPress CMS",
     siteUrl: baseUrl,
     locale,
-    pageUrl: `${baseUrl}/${locale}`,
+    pageUrl: `${baseUrl}${lb}`,
     content: homeContent
       ? {
           id: homeContent.id,
@@ -106,7 +109,7 @@ export default async function PublicHomePage({
           patterns={await getSyncedPatternsMap(siteId)}
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId, sp)}
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
-          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: `/${locale}`, token: createFormToken(`/${locale}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
+          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
         />
       ) : (
         <div className="rounded-xl border p-8 text-center">
@@ -168,7 +171,7 @@ export default async function PublicHomePage({
                     </span>
                   </div>
                   <Link
-                    href={`/${locale}/${item.slug}`}
+                    href={`${lb}/${item.slug}`}
                     style={{ fontFamily: tokens.typography.headingFont }}
                     className="block text-lg font-bold text-nx-fg hover:underline"
                   >
@@ -183,14 +186,14 @@ export default async function PublicHomePage({
 
                 <div className="mt-5 flex items-center justify-between border-t pt-3 text-xs">
                   <Link
-                    href={`/${locale}/${item.slug}`}
+                    href={`${lb}/${item.slug}`}
                     style={{ color: tokens.colors.primary }}
                     className="font-semibold hover:underline"
                   >
                     {t("site.openPage")}
                   </Link>
                   <Link
-                    href={`/${locale}/${item.slug}?format=md`}
+                    href={`${lb}/${item.slug}?format=md`}
                     className="font-mono text-nx-muted hover:text-nx-fg"
                   >
                     ?format=md (0ms)

@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import { createTranslator } from "@nexpress/i18n";
 import type { Metadata } from "next";
 import { Link } from "@/components/public/link";
@@ -48,6 +49,7 @@ export default async function ShopProductPage({
   const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const repo = getCommerceRepository(siteId);
   const [settings, product] = await Promise.all([
     repo.getCommerceSettings(),
@@ -60,7 +62,7 @@ export default async function ShopProductPage({
 
   const variants = await getCommerceOpsRepository(siteId).listVariants(product.id);
 
-  const base = shopBasePath(settings, locale);
+  const base = shopBasePath(settings, await siteLocaleBase(siteId, locale));
   const description = sanitizeInlineHtml(product.descriptionHtml);
 
   // Product şeması (JSON-LD): yalnızca gerçek veri; puan yalnızca bağlı içeriğin onaylı yorumlarından
@@ -80,7 +82,7 @@ export default async function ShopProductPage({
       stockStatus: product.stockStatus,
       variants: variants.map((v) => ({ sku: v.sku, priceCents: v.priceCents })),
       rating: approved.length ? { value: approved.reduce((n, r) => n + r.rating, 0) / approved.length, count: approved.length } : null,
-      breadcrumbs: [{ name: "Ana sayfa", url: `${appUrl}/${locale}` }, { name: t("shop.title"), url: `${appUrl}${base}` }, { name: product.name, url: productUrl }],
+      breadcrumbs: [{ name: "Ana sayfa", url: `${appUrl}${lb}` }, { name: t("shop.title"), url: `${appUrl}${base}` }, { name: product.name, url: productUrl }],
     })
   );
   const schemaScript = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />;
@@ -92,13 +94,13 @@ export default async function ShopProductPage({
     const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
     const tokens = site?.designTokens ?? theme.tokens;
     const dynamic = await loadDynamicData(siteId, locale, tpl.blocks, product.id);
-    const ctx = buildTemplateContext({
+    const ctx = buildTemplateContext({ lb,
       site: site ? { name: site.name, tagline: site.tagline } : null,
       locale,
       menu: await getResolvedMenu(siteId, locale),
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("shop.title"), href: base }, { name: product.name, href: `${base}/${product.slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: t("shop.title"), href: base }, { name: product.name, href: `${base}/${product.slug}` }],
       post: {
         title: product.name,
         content: description ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: description }} /> : null,

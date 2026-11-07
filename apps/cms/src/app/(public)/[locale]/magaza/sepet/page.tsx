@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import { createTranslator } from "@nexpress/i18n";
 import { Link } from "@/components/public/link";
 import { headers } from "next/headers";
@@ -27,7 +28,7 @@ export default async function ShopCartPage({
   const cart = await readCartFromCookies();
   const products = await repo.getProductsByIds(cart.lines.map((l) => l.productId));
   const byId = new Map(products.map((p) => [p.id, p]));
-  const base = shopBasePath(settings, locale);
+  const base = shopBasePath(settings, await siteLocaleBase(siteId, locale));
 
   let subtotal = 0;
   const rows = cart.lines

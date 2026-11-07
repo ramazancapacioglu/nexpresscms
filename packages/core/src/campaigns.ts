@@ -253,9 +253,11 @@ export function buildCampaignsItemListJsonLd(
     archiveUrl: string;
     siteUrl: string;
     name?: string;
+    /** Dilin kök adresi (`/tr`); tek dilli sitede boş string. Varsayılan `/tr`. */
+    localeBase?: string;
   }
 ): Record<string, unknown> {
-  const { archiveUrl, siteUrl, name = "Aktif Kampanyalar ve Fırsatlar" } = options;
+  const { archiveUrl, siteUrl, name = "Aktif Kampanyalar ve Fırsatlar", localeBase = "/tr" } = options;
 
   return {
     "@context": "https://schema.org",
@@ -268,7 +270,7 @@ export function buildCampaignsItemListJsonLd(
       "@type": "ListItem",
       position: idx + 1,
       name: camp.title,
-      url: `${siteUrl.replace(/\/$/, "")}/tr/kampanya/${camp.slug}`,
+      url: `${siteUrl.replace(/\/$/, "")}${localeBase}/kampanya/${camp.slug}`,
       ...(camp.discount ? { description: `${camp.discount} - ${camp.tldr || camp.title}` } : {}),
     })),
   };

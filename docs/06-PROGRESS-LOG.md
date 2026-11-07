@@ -21,6 +21,21 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-07] — Tek dilli sitede `/tr` ön eki yok
+- İstek: ikinci dil yoksa adreslerde dil ön eki olmasın. `AGENTS.md` kural 8 güncellendi (ön ek yalnızca birden çok dilde).
+- **Ara katman:** tek dilde `/tr/x` → 308 `/x`; `/x` içeride `/tr/x` olarak yeniden yazılır; kök `/` yeniden yazılır. Dil kipi `/api/locale-mode` ile okunur (15 sn bellek, başarısızlıkta eski davranış). Birden çok dilde ön eksiz eski adresler `/{varsayılan}/...` adresine 308 olur (elle yönlendirme önce).
+- **Adres üretimi merkezileşti:** çekirdekte `localeBase`/`stripLocaleDeep`, uygulamada `siteLocaleBase`. Sayfalar, bileşenler (header, footer, widget, arşiv, indeks, şablon bağlamı), menü çözümleme, site haritası, llms/ai-sitemap/besleme, kanonik, JSON-LD (kampanya ItemList), form dönüşü ve mağaza yönlendirmeleri ön eksiz üretir. Kayıtlı `/tr/...` bağlantıları ziyaretçi okumasında dönüştürülür.
+- **Doğrulama:** izole sitede `/` 200, `/tr` ve `/tr/x?…` 308, `/x` 200, 404 doğru; kanonik, site haritası, llms, besleme, ai-sitemap ön eksiz; sayfa formu gönderimi `/x?form=sent` ile döndü. İkinci dil eklenince eski davranış (kanonik ve site haritası `/tr/...`, ön eksiz adres 308) görüldü. Testler: `locale-path` (çekirdek), sitemap ön eksiz, `public-paths`.
+- Ayrıntı ve bilinen sınırlar: `docs/14` Ek (2026-11-07).
+
+### [2026-11-07] — Modern tasarım kütüphanesi: görselli bölümler, form tasarımları, header/footer şablonları
+- **Mevcut kütüphane incelendi** (hero, bento, ERP, yazılım firması, form ve katalog blokları); aynıları yapılmadı. Yeni: 19 modern bölüm (`lib_mod_*`): aurora ve mesh vitrin, görsel kapaklı çağrı, duyuru kapsülü, kayan logo şeridi, yorum kartları, öne çıkan alıntı, ekip kartları, görselli bento, degrade ikonlu kartlar, dönüşümlü satırlar, telefon vitrini, numaralı süreç, önce/sonra, sayaç kartları, sabit başlıklı SSS, öne çıkan fiyat kartları, mozaik galeri, degrade çağrı bandı.
+- **9 form tasarımı** (`lib_mod_form_*`): bülten şeridi, bölünmüş kart, koyu demo, üç adımlı teklif sihirbazı, memnuniyet kartı, rezervasyon, kariyer, geri arama çubuğu, iletişim + form. Çekirdeğe 4 form şablonu eklendi (rezervasyon, bekleme listesi, webinar, katalog indirme).
+- **6 header + 5 footer şablonu** (Modern grubu) ve 6 blok tabanlı başlangıç şablonu. Header'larda tasarlanmış mobil dizi var; footer'lar telefonda tek sütun.
+- **Motor düzeltmesi:** `compileBlockStylesToCss` kapsayıcıda yazılan `textColor` değerini içteki başlık/paragrafa, metin bloğundaki `fontSize`/`fontWeight` değerlerini içteki öğeye kalıtır (blokların kendi sınıf renkleri bunu engelliyordu; koyu bantlarda metin okunmuyordu).
+- **Görsel doğrulama:** izole SQLite sitede tüm bölümler ve formlar tarayıcıda sayfa olarak çizildi; koyu bantta liste rengi ve bülten düğmesi düzeltildi.
+- Testler: kütüphane sözleşmesi (kimlik, blok türü, satır içi görsel, kategori), header/footer sütun dizini ve mobil dizi, stil kalıtımı.
+
 ### [2026-11-05] — Yazılım Firması Teması: kampanya eklentisi, blog, formlar, mobil
 - 🐞 Footer alt bağlantıları aynı `href` ile çiftlenince React anahtar uyarısı veriyordu: anahtar `href|etiket` oldu, gizlilik ve kullanım koşulları ayrı demo sayfası.
 - **Kampanyalar eklentiden gelir:** demo artık 6 `campaign` kaydı yazar (indirim, hediye, rozet, bitişe kalan gün); ana sayfa karosel, ürün sayfaları ızgara `campaign_showcase` bloğu kullanır. Kampanya sayfası `/kampanyalar` eklenti rotasıdır (demo sayfası kaldırıldı).

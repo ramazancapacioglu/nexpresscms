@@ -323,6 +323,14 @@ Kütüphane doğrulaması katalog dışı türü reddeder. Bölümde `slider`, `
 
 Form kategorisindeki hazır bloklar `form_block` kullanır. `props.appearance` şunları taşır: `columns` `1|2|4`, `labels` `top|side`, `density` `compact|comfortable`, `buttonAlign` `left|center|full|beside`, `surface` `inline|dialog`, `triggerLabel`, `stepped`. Alan `width` `full|half|quarter`, `step` 1–6. `formId` yoksa alanlar `props.fields` içindedir ve gönderim gelen kutusuna düşer. Var olan bir forma bağlamak için `formId` yazılır; o zaman görünüm form tanımından gelir.
 
+### 3.3. Modern bölümler ve form tasarımları (`lib_mod_*`)
+
+`packages/editor/src/library-modern.ts` (19 bölüm) ve `library-forms-modern.ts` (9 form tasarımı) insan editörün kütüphanesidir; AI doğrulayıcısına girmez, bu yüzden `section`, `columns`, `column` ve stil anahtarları (`backgroundGradient`, `hover`, `animation`, `mobile`) kullanabilir. Ortak kurucular `library-kit.ts` içindedir (`band`, `cardStyle`, `art`, `avatar`). Kurallar: görseller satır içi SVG (`art()`), ek dosya yok; koyu bantlarda metin rengi kapsayıcıdaki `textColor` ile verilir ve içteki başlık/paragrafa kalıtılır (`compileBlockStylesToCss`); metin bloğunda `fontSize`/`fontWeight`/`lineHeight`/`letterSpacing` içteki öğeye geçer. `icon_list` kendi rengini taşır, koyu zeminde kullanma (satır metni kullan). Kategoriler mevcut gruplara bağlıdır (vitrin, sosyal kanıt, kartlar, bento, veri, ticaret, medya, formlar). `form_block` alanları satır içidir; `beside` düğme yalnız birden çok sütunda alanın yanına gelir.
+
+Form şablonları (`core/form-templates.ts`): `reservation`, `waitlist`, `webinar`, `catalog-download` eklendi (toplam 17).
+
+Header ve footer şablonları (`themes/src/chrome-library-modern.ts`, grup **Modern**): header — `header-modern-glass`, `header-two-tier`, `header-center-brand`, `header-app-search`, `header-shop-categories`, `header-landing-minimal`; her birinde tasarlanmış mobil dizi vardır (logo solda kalır, menü sağda `<details>`). Footer — `footer-cta-brand`, `footer-centered-brand`, `footer-newsletter-split`, `footer-trust-three`, `footer-local-business`; telefonda tek sütuna iner (marka ve çağrı bandı üstte). Blok tabanlı başlangıç şablonları (`core/templates.ts`): `header-glass-search`, `header-centered-announce`, `header-landing-cta`, `footer-cta-band`, `footer-newsletter-form`, `footer-centered-links`.
+
 ---
 
 ## 4. Blok düğümü (`BlockNode`)

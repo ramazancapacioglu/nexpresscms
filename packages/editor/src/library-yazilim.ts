@@ -1,30 +1,24 @@
-import type { BlockNode } from "@nexpress/core";
 import type { DesignLibraryItem } from "./library-types";
+import { SPAN, cols, itemFactory, n, type LibNode } from "./library-kit";
 
 /**
  * Yazılım Firması Teması bölümleri. Bant ve kart sınıfları (`yf-*`) tema etkinken görünür;
  * başka temada düz bloklar olarak kalır. Görseller `/demo/yazilim-firmasi/` altındaki temsili çizimlerdir.
  */
 const ART = "/demo/yazilim-firmasi";
-const span = { desktop: 12, tablet: 12, mobile: 12 };
-let seq = 0;
-type Node = Omit<BlockNode, "id"> & { id?: string };
-const n = (type: string, props: Record<string, unknown>, extra: Partial<BlockNode> = {}): BlockNode => ({ id: `lyf_${++seq}`, type, props, ...extra }) as BlockNode;
 
 const heading = (t: string, level = "h2") => n("heading_element", { text: t, level, align: "center" });
 const para = (t: string) => n("paragraph_element", { text: t });
-const col = (children: BlockNode[], cls = "yf-card") => n("column", {}, { children, style: { cssClass: cls } });
+const col = (children: ReturnType<typeof n>[], cls = "yf-card") => n("column", {}, { children, style: { cssClass: cls } });
 const card = (art: string, title: string, t: string) => col([
   n("image_figure", { url: `${ART}/${art}.svg`, altText: title, borderRadius: "lg", aspectRatio: "3:2" }),
   n("heading_element", { text: title, level: "h3" }),
   n("paragraph_element", { text: t }),
 ]);
-const band = (tone: string, children: BlockNode[], center = true): Node =>
-  ({ type: "section", gridSpan: span, props: { containerMode: "boxed" }, children, style: { fullWidth: true, paddingTop: "72px", paddingBottom: "72px", cssClass: `yf-band yf-${tone}${center ? " yf-center" : ""}` } });
-const cols = (layout: string, children: BlockNode[]) => n("columns", { layout, gap: "24px", verticalAlign: "top", stackAt: "tablet" }, { children });
+const band = (tone: string, children: ReturnType<typeof n>[], center = true): LibNode =>
+  ({ type: "section", gridSpan: SPAN, props: { containerMode: "boxed" }, children, style: { fullWidth: true, paddingTop: "72px", paddingBottom: "72px", cssClass: `yf-band yf-${tone}${center ? " yf-center" : ""}` } });
 
-const item = (id: string, name: string, category: DesignLibraryItem["category"], description: string, previewKind: DesignLibraryItem["previewKind"], block: Node, badge = "Yazılım Firması"): DesignLibraryItem =>
-  ({ id: `lib_yf_${id}`, name, category, description, badge, previewKind, block });
+const item = itemFactory("lib_yf_", "Yazılım Firması");
 
 export const YAZILIM_LIBRARY_ITEMS: DesignLibraryItem[] = [
   item("hero", "Siyah vitrin kahramanı", "hero", "Ortalı başlık, iki düğme ve altında ürün görseli olan siyah bant.", "hero-centered",

@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { bm25Rank, makeSnippet, resolvePublishing, templateHasBlock } from "@nexpress/core";
@@ -30,6 +31,7 @@ export default async function SearchPage({
   const t = createTranslator(locale);
   const q = ((await searchParams).q ?? "").trim().slice(0, MAX_QUERY);
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
 
   let results: Array<{ id: string; slug: string; title: string; snippet: string }> = [];
   if (q) {
@@ -56,13 +58,13 @@ export default async function SearchPage({
     const site = await getPublicSite(siteId);
     const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
     const tokens = site?.designTokens ?? theme.tokens;
-    const ctx = buildTemplateContext({
+    const ctx = buildTemplateContext({ lb,
       site: site ? { name: site.name, tagline: site.tagline } : null,
       locale,
       menu: await getResolvedMenu(siteId, locale),
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("search.title"), href: `/${locale}/ara` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: t("search.title"), href: `${lb}/ara` }],
       archive: {
         title: q ? `"${q}" — ${t("search.title")}` : t("search.title"),
         description: q ? `${results.length} sonuç bulundu.` : t("search.placeholder"),
@@ -70,12 +72,12 @@ export default async function SearchPage({
         items: results.map((r) => ({
           id: r.id,
           title: r.title,
-          url: `/${locale}/${r.slug === "ana-sayfa" ? "" : r.slug}`.replace(/\/$/, ""),
+          url: `${lb}/${r.slug === "ana-sayfa" ? "" : r.slug}`.replace(/\/$/, ""),
           excerpt: r.snippet,
         })),
         page: 1,
         pages: 1,
-        pageHref: () => `/${locale}/ara${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+        pageHref: () => `${lb}/ara${q ? `?q=${encodeURIComponent(q)}` : ""}`,
       },
     });
     return <RscBlockRenderer blocks={tpl.blocks} themeId={theme.id} tokens={tokens} locale={locale} tpl={ctx} />;
@@ -84,7 +86,7 @@ export default async function SearchPage({
   return (
     <section className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-3xl font-bold">{t("search.title")}</h1>
-      <form method="get" action={`/${locale}/ara`} role="search" className="flex gap-2">
+      <form method="get" action={`${lb}/ara`} role="search" className="flex gap-2">
         <input
           type="search"
           name="q"
@@ -103,7 +105,7 @@ export default async function SearchPage({
         <ol className="space-y-5">
           {results.map((r) => (
             <li key={r.slug}>
-              <Link href={`/${locale}/${r.slug === "ana-sayfa" ? "" : r.slug}`.replace(/\/$/, "")} className="text-lg font-semibold underline-offset-2 hover:underline">
+              <Link href={`${lb}/${r.slug === "ana-sayfa" ? "" : r.slug}`.replace(/\/$/, "")} className="text-lg font-semibold underline-offset-2 hover:underline">
                 {r.title}
               </Link>
               <p className="text-sm opacity-80">{r.snippet}</p>

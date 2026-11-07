@@ -51,7 +51,7 @@ Projede kod yazan veya mimari değişiklik yapan her geliştirici ve AI ajanı a
 - Yeni bir admin modülü yaklaşık 400 satırı aşıyorsa bölünür. Aynı işi yapan ikinci soyutlama yazılmaz.
 
 ## 8. Dil
-- Varsayılan locale `tr`dir; herkese açık adres her zaman `/{locale}/...`. Dil listesi `sites.supportedLocales` alanındadır (ayrı `locales`/`regions` tablosu açılmaz).
+- Varsayılan locale `tr`dir. Sitede **tek dil** varken herkese açık adreslerde dil ön eki yoktur (`/hakkimizda`, ana sayfa `/`); ikinci dil eklenince tüm adresler `/{locale}/...` olur. Rota ağacı hep `[locale]` kalır: ara katman tek dilde ön eksiz yolu içeride `/{varsayılan}/...` olarak yeniden yazar, `/{varsayılan}/...` isteğini 308 ile ön eksize çevirir. Ziyaretçiye dönen her adres `localeBase(site, locale)` / `siteLocaleBase` ile üretilir (elle `/${locale}` yazılmaz); kayıtlı içerik adresleri ziyaretçi okumasında `stripLocaleDeep` ile dönüştürülür. Dil listesi `sites.supportedLocales` alanındadır (ayrı `locales`/`regions` tablosu açılmaz).
 - Ziyaretçiye dönen metinler `@nexpress/i18n` kataloğundan gelir (`createTranslator(locale)`); `tr` kataloğu anahtarların kaynağıdır ve her dil aynı anahtarlara sahip olmak zorundadır. Yeni görünür metin sabit yazılmaz, anahtar eklenir. Katalog istemci JS'ine taşınmaz.
 - Çeviri aynı `contentId` altında `content_translations` satırıdır; ziyaretçiye görünmesi için içerik VE çeviri (`translation_status`) yayında olmalıdır. Ziyaretçi yüzeyleri taslak, zamanlanmış, arşiv ve `private` içeriği asla vermez (`publicOnly`).
 - Panel arayüzü dili kullanıcı başınadır (`users.ui_locale`, katalog `admin.*`); menü ve yeni ekranlar anahtar kullanır, eski ekranların iç metinleri kademeli taşınır. İçerik dili panel dilinden bağımsızdır.

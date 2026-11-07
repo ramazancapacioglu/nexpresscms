@@ -1,4 +1,5 @@
 import React from "react";
+import { localeBase } from "@nexpress/core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getActiveSkin, getPreviewTheme } from "@/lib/public-theme";
@@ -57,6 +58,7 @@ export default async function PublicLocaleLayout({
   after(() => runScheduler(siteId).then(() => undefined));
 
   const site = await getPublicSite(siteId);
+  const lb = localeBase(site, locale);
   const maintenance = resolveSiteSettings(site?.settings).general;
   if (maintenance.maintenanceEnabled && !(await getSession())) {
     return <MaintenanceView locale={locale} message={maintenance.maintenanceMessage} />;
@@ -68,7 +70,11 @@ export default async function PublicLocaleLayout({
 
   // Tanımsız dil kökü ana sayfayı kopyalamasın: yalnızca site dilleri 200 döner.
   // Tek segmentli bilinmeyen yollar (`/eski-adres`) buraya düşer: yönlendirme kuralı varsa uygula, yoksa 404 izleyiciye yaz
-  if (site && !site.supportedLocales.includes(locale)) return redirectOrNotFound(siteId, `/${locale}`);
+  if (site && !site.supportedLocales.includes(locale)) {
+    // Sitede birden çok dil varken ön eksiz eski adres: elle yönlendirme yoksa varsayılan dilin adresine kalıcı yönlendir
+    const full = reqHeaders.get("x-nexpress-pathname") ?? `/${locale}`;
+    return redirectOrNotFound(siteId, `/${locale}`, { orElse: `/${site.defaultLocale}${full}` });
+  }
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const isInk = activeTheme.id === INK_GRID_ID;
@@ -96,7 +102,7 @@ export default async function PublicLocaleLayout({
   const ga4MeasurementId = (ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
-  const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
+  const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ lb, site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
 
   // Sayfa türünü belirle (Kadence / WordPress tarzı akıllı kenar çubuğu eşleşmesi)
   const isHome = segs.length <= 1 || (segs.length === 1 && segs[0] === locale);
@@ -301,6 +307,7 @@ export default async function PublicLocaleLayout({
         </header>
       ) : (
       <SiteHeader
+        lb={lb}
         siteName={site?.name ?? "NexPress CMS"}
         tagline={site?.tagline}
         locale={locale}
@@ -325,7 +332,7 @@ export default async function PublicLocaleLayout({
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
           ) : activeSidebarArea ? (
-            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} lb={lb} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
           ) : null
         ) : null}
         <main
@@ -346,7 +353,7 @@ export default async function PublicLocaleLayout({
               <RscBlockRenderer blocks={sidebarTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />
             </aside>
           ) : activeSidebarArea ? (
-            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
+            <PublicSidebarWidgetArea sidebar={activeSidebarArea} locale={locale} lb={lb} tokens={vt} feed={widgetFeed} width={sidebarWidth} menuLibrary={menuLibrary} />
           ) : null
         ) : null}
       </div>
@@ -358,7 +365,7 @@ export default async function PublicLocaleLayout({
           </div>
         </footer>
       ) : (
-        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
       {resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />

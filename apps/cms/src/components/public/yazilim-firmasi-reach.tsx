@@ -1,6 +1,8 @@
 import React from "react";
 import { headers } from "next/headers";
+import { stripLocalePath } from "@nexpress/core";
 import { YF_REACH_FORM_ID } from "@nexpress/themes";
+import { siteLocaleBase } from "@/lib/locale-url";
 import { createFormToken } from "@/lib/form-token";
 
 const PATH_RE = /^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/([a-z0-9][a-z0-9-]{0,120}))?$/;
@@ -10,7 +12,10 @@ export async function YazilimFirmasiReach({ locale }: { locale: string }) {
   const h = await headers();
   const search = new URLSearchParams(h.get("x-nexpress-search") ?? "");
   const current = h.get("x-nexpress-path") ?? "";
-  const path = PATH_RE.test(current) ? current : `/${locale}`;
+  const lb = await siteLocaleBase(h.get("x-nexpress-site-id") ?? "default", locale);
+  const internal = PATH_RE.test(current) ? current : `/${locale}`;
+  // Tek dilli sitede form dönüş adresi ön eksizdir
+  const path = lb === "" ? stripLocalePath(internal, locale) : internal;
   const sent = search.get("form") === "sent" && !search.get("fb");
   const failed = search.get("form") === "error" && !search.get("fb");
   return (

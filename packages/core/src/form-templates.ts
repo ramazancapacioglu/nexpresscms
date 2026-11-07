@@ -93,6 +93,27 @@ export const FORM_TEMPLATES: FormTemplate[] = [
     f("telefon", "Telefon", "tel", true, half), f("eposta", "E-posta", "email", true, half),
     f("sehir", "Şehir", "text", true), f("not", "Kısaca kendinizden bahsedin", "textarea", false, { max: 2000 }),
   ], { submitLabel: "Başvur", successMessage: "Başvurunuz alındı.", subject: "Çözüm ortağı başvurusu: {form}" }),
+  tpl("reservation", "Rezervasyon", "Tarih, saat, kişi sayısı ve tercih.", "etkinlik", [
+    f("ad", "Ad soyad", "text", true, half), f("telefon", "Telefon", "tel", true, half),
+    f("tarih", "Tarih", "date", true, half), f("saat", "Saat", "time", true, half),
+    f("kisi", "Kişi sayısı", "number", true, { ...half, min: 1, max: 20 }),
+    f("tercih", "Tercih", "select", false, { ...half, options: ["İç mekân", "Dış mekân", "Fark etmez"] }),
+    f("not", "Özel istek", "textarea"),
+  ], { submitLabel: "Rezervasyon yap", successMessage: "Rezervasyon talebiniz alındı.", autoReply: true }),
+  tpl("waitlist", "Bekleme listesi", "Yeni ürün için e-posta ve ilgi alanı.", "iletisim", [
+    f("eposta", "E-posta", "email", true, { placeholder: "ornek@site.com" }),
+    f("ilgi", "En çok neyi merak ediyorsunuz?", "radio", false, { options: ["Fiyat", "Özellikler", "Çıkış tarihi", "Entegrasyonlar"] }),
+  ], { submitLabel: "Listeye katıl", successMessage: "Listeye eklendiniz, çıkışta haber vereceğiz." }),
+  tpl("webinar", "Webinar kaydı", "Katılımcı bilgisi ve konu seçimi.", "etkinlik", [
+    f("ad", "Ad soyad", "text", true, half), f("eposta", "E-posta", "email", true, half),
+    f("firma", "Firma", "text", false, half), f("unvan", "Unvan", "text", false, half),
+    f("konu", "Hangi konuyu dinlemek istersiniz?", "checkboxes", false, { options: ["Yeni özellikler", "Canlı demo", "Soru-cevap"] }),
+  ], { submitLabel: "Kaydol", successMessage: "Kaydınız alındı, bağlantı e-postayla gelecek.", autoReply: true }),
+  tpl("catalog-download", "Katalog indirme", "Kısa bilgiyle katalog bağlantısı gönderimi.", "satis", [
+    f("ad", "Ad soyad", "text", true, half), f("eposta", "E-posta", "email", true, half),
+    f("sektor", "Sektör", "select", false, { options: ["Perakende", "Üretim", "Hizmet", "Sağlık", "Eğitim", "Diğer"] }),
+    f("kvkk", "Kişisel verilerimin işlenmesini kabul ediyorum.", "checkbox", true),
+  ], { submitLabel: "Kataloğu gönder", successMessage: "Katalog e-posta adresinize gönderildi.", autoReply: true }),
 ];
 
 export function getFormTemplate(id: string): FormTemplate | null {

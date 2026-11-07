@@ -1,10 +1,11 @@
 import { NextResponse, after, type NextRequest } from "next/server";
-import { normalizeFormSpec, resolveFormFields, safeInternalPath, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
+import { isPrefixless, normalizeFormSpec, resolveFormFields, safeInternalPath, spamReasons, validateSubmission, safeBlockDomId, type BlockNode } from "@nexpress/core";
 import { getFormDefinitionRepository, getFormSubmissionRepository, getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { ipDigest, verifyFormToken } from "@/lib/form-token";
 import { notifySubmission } from "@/lib/form-notify";
 import { notify } from "@/lib/notify";
+import { getPublicSite } from "@/lib/public-data";
 
 export const runtime = "nodejs";
 
@@ -30,7 +31,11 @@ export async function POST(request: NextRequest) {
   const form = await request.formData().catch(() => null);
   const get = (k: string) => (typeof form?.get(k) === "string" ? (form!.get(k) as string) : "");
   const path = get("_path");
-  const pathMatch = path.match(PATH_RE);
+  // Tek dilli sitede sayfa adresi ön eksizdir (`/hakkimizda`); eşleştirme içeride `/tr/hakkimizda` ile yapılır
+  const siteHead = await getPublicSite(request.headers.get("x-nexpress-site-id") ?? "default");
+  const prefixless = isPrefixless(siteHead, siteHead?.defaultLocale ?? "tr");
+  const internalPath = prefixless && path.startsWith("/") ? `/${siteHead!.defaultLocale}${path === "/" ? "" : path}` : path;
+  const pathMatch = internalPath.match(PATH_RE);
   const back = (status: "sent" | "error", blockId = "", hash = "") =>
     NextResponse.redirect(
       new URL(pathMatch ? `${path}?form=${status}${blockId ? `&fb=${encodeURIComponent(blockId)}#${hash || safeBlockDomId(blockId)}` : ""}` : "/", request.url),

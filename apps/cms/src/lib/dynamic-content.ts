@@ -1,6 +1,7 @@
 import "server-only";
 import {
   collectDynamicBlocks,
+  localeBase,
   normalizeDynamicQuery,
   resolveDynamicBlock,
   resolvePublishing,
@@ -11,7 +12,7 @@ import {
 } from "@nexpress/core";
 import { getCommerceRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
-import { listPublishedContents } from "./public-data";
+import { getPublicSite, listPublishedContents } from "./public-data";
 
 const money = (cents: number, currency: string, locale: string) => {
   try {
@@ -23,10 +24,12 @@ const money = (cents: number, currency: string, locale: string) => {
 
 /** Dinamik listelerin aday havuzu: yalnızca herkese açık, dizine açık yayınlar, kampanyalar ve yayındaki ürünler (yönetim kaydında düşer). */
 export const getDynamicCandidates = cachedRead("dynamic-candidates", async (siteId: string, locale: string): Promise<DynamicCandidate[]> => {
-  const [contents, products] = await Promise.all([
+  const [site, contents, products] = await Promise.all([
+    getPublicSite(siteId),
     listPublishedContents(siteId, locale),
     getCommerceRepository(siteId).listProducts({ status: "published" }).catch(() => []),
   ]);
+  const base = localeBase(site, locale);
   const out: DynamicCandidate[] = [];
   for (const c of contents) {
     const pub = resolvePublishing(c.schemaAttributes);
@@ -46,7 +49,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
         id: c.contentId,
         kind: "campaigns",
         title: camp.title || c.title,
-        url: `/${locale}/kampanya/${camp.slug || c.slug}`,
+        url: `${base}/kampanya/${camp.slug || c.slug}`,
         excerpt: (camp.tldr || c.tldr || c.excerpt || c.metaDescription || "").slice(0, 220),
         image: camp.featuredImageUrl || pub.featuredImageUrl || c.featuredImage || null,
         imageAlt: camp.featuredImageAlt || pub.featuredImageAlt || "",
@@ -72,7 +75,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
       id: c.contentId,
       kind,
       title: c.title,
-      url: `/${locale}/${c.slug}`,
+      url: `${base}/${c.slug}`,
       excerpt: (c.tldr || c.excerpt || c.metaDescription || "").slice(0, 220),
       image: pub.featuredImageUrl || c.featuredImage || null,
       imageAlt: pub.featuredImageAlt || "",
@@ -86,7 +89,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
       id: p.id,
       kind: "products",
       title: p.name,
-      url: `/${locale}/magaza/${p.slug}`,
+      url: `${base}/magaza/${p.slug}`,
       excerpt: p.shortDescription.slice(0, 220),
       image: p.imageUrl,
       date: p.updatedAt.toISOString(),

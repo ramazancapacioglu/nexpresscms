@@ -1,19 +1,21 @@
 import "server-only";
-import { menuLibraryFrom, resolveMenuTree, type MenuLookup, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
+import { localeBase, menuLibraryFrom, resolveMenuTree, type MenuLookup, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
 import { getCommerceRepository, getScopedRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
-import { getPublicNavigation, listPublishedContents } from "./public-data";
+import { getPublicNavigation, getPublicSite, listPublishedContents } from "./public-data";
 
 /** Menü bağlantılarını çözmek için kimlik → slug eşlemeleri (ziyaretçi; yönetim kaydında düşer). */
 export const getMenuLookup = cachedRead("menu-lookup", async (siteId: string, locale: string): Promise<MenuLookup> => {
   const repo = getScopedRepository(siteId);
-  const [contents, taxonomies, products] = await Promise.all([
+  const [site, contents, taxonomies, products] = await Promise.all([
+    getPublicSite(siteId),
     listPublishedContents(siteId, locale),
     repo.listTaxonomies(),
     getCommerceRepository(siteId).listProducts({ status: "published" }).catch(() => []),
   ]);
   return {
     locale,
+    base: localeBase(site, locale),
     contents: Object.fromEntries(contents.map((c) => [c.contentId, { slug: c.slug, published: true }])),
     taxonomies: Object.fromEntries(taxonomies.map((t) => [t.id, { slug: t.slug, type: t.taxonomyType }])),
     products: Object.fromEntries(products.map((p) => [p.id, { slug: p.slug, published: true }])),

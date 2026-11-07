@@ -88,3 +88,12 @@
 - Aynı `slug` farklı dillerde: tekillik `(siteId, locale, slug)` ile korunur (şemada var).
 - Önbellek anahtarları dili içermeli (`cachedRead` argümanları zaten `locale` taşır; dönem sayacı site başınadır).
 - Yerel gömme modeli çok dilli değildir; çok dilli sitede anlamsal sağlayıcı önerilir.
+
+
+## Ek (2026-11-07): Tek dilli sitede dil ön eksiz adresler
+
+- **Kural:** `sites.supportedLocales` tek elemanlıysa herkese açık adresler ön eksizdir (`/hakkimizda`, ana sayfa `/`). İkinci dil eklenince tüm adresler `/{dil}/...` olur; ön eksiz eski adresler `/{varsayılan dil}/...` adresine 308 ile yönlenir (elle yönlendirme kuralı önceliklidir).
+- **Mimari:** rota ağacı değişmez (`app/(public)/[locale]/...`). `middleware.ts` tek dilde (a) `/{dil}/...` → 308 ön eksiz, (b) ön eksiz yolu içeride `/{dil}/...` olarak `rewrite` eder, kök `/` yeniden yazılır. Dil kipi `/api/locale-mode` iç ucundan okunur ve bellekte kısa süre tutulur (15 sn; sorgu başarısızsa eski ön ekli davranış korunur). Panel, API, medya, oturum sayfaları, kök dosyalar ve uzantılı yollar kuralın dışındadır (`lib/public-paths.ts`). Proxy arkasında iç adres için `INTERNAL_APP_URL` tanımlanabilir.
+- **Adres üretimi:** `@nexpress/core` `localeBase(site, locale)` (ön eksizde boş), `joinBase`, `stripLocalePath`, `stripLocaleDeep`; uygulamada `siteLocaleBase(siteId, locale)`. Sayfa ve bileşenler `lb` değişkenini kullanır (kök adres `lb || "/"`). Menü çözümleme (`MenuLookup.base`), site haritası (`entryPath(entry, prefixless)`), llms, ai-sitemap, besleme, kanonik, JSON-LD, yönlendirme hedefleri, form dönüşü ve mağaza yönlendirmeleri ön eksizdir.
+- **Kayıtlı veri:** blok, menü, footer ve şablon içindeki `/tr/...` bağlantıları veritabanında olduğu gibi kalır; ziyaretçi okumasında (`getPublicContentBySlug`, `resolvePublicContent`, `getPublicNavigation`) ön eksize çevrilir. Düz metin ve başka dilin adresleri değişmez. Kod içindeki birkaç sabit örnek bağlantı (`/tr/...`) çalışır ama 308 ile ön eksize gider.
+- **Bilinen sınırlar:** admin SEO sekmesindeki adres önizlemesi ve panelden "Önizle" bağlantıları `/{dil}/...` gösterir (308 ile açılır); `search_box` bloğunun varsayılan `action` adresi 308 ile ön eksize gider.

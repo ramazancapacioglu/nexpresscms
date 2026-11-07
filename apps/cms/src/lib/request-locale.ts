@@ -13,5 +13,5 @@ export async function requestLocale(request: NextRequest, siteId: string, forced
 }
 
 /** Bir içeriğin dil bağlı adresi (ana sayfa kök adres). */
-export const contentUrl = (baseUrl: string, locale: string, slug: string) =>
-  `${baseUrl.replace(/\/$/, "")}/${locale}${slug === "ana-sayfa" ? "" : `/${slug}`}`;
+export const contentUrl = (baseUrl: string, locale: string, slug: string, base = `/${locale}`) =>
+  `${baseUrl.replace(/\/$/, "")}${base}${slug === "ana-sayfa" ? "" : `/${slug}`}`.replace(/\/$/, "");

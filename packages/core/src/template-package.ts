@@ -9,7 +9,7 @@ import { fnv1a64 } from "./chunker";
  */
 export const TEMPLATE_PACKAGE_FORMAT = "nexpress-templates";
 export const TEMPLATE_PACKAGE_VERSION = 1;
-export const PACKAGE_LIMITS = { bytes: 2 * 1024 * 1024, templates: 50, nodes: 600, depth: 12, string: 20_000, name: 80 } as const;
+export const PACKAGE_LIMITS = { bytes: 2 * 1024 * 1024, templates: 100, nodes: 600, depth: 12, string: 20_000, name: 80 } as const;
 
 export interface TemplatePackageItem {
   name: string;

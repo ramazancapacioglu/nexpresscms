@@ -42,7 +42,7 @@ export function renderTemplateBlock({ block, tokens, tpl, locale }: BlockRenderC
       );
     }
     case "tpl_breadcrumb": {
-      const crumbs = tpl?.breadcrumbs?.length ? tpl.breadcrumbs : [{ name: "Ana sayfa", href: `/${loc}` }, { name: "Sayfa", href: "#" }];
+      const crumbs = tpl?.breadcrumbs?.length ? tpl.breadcrumbs : [{ name: "Ana sayfa", href: (tpl?.lb ?? `/${loc}`) || "/" }, { name: "Sayfa", href: "#" }];
       return (
         <nav aria-label="Sayfa yolu" className="text-xs opacity-75">
           <ol className="flex flex-wrap items-center gap-1.5">
@@ -87,7 +87,7 @@ export function renderTemplateBlock({ block, tokens, tpl, locale }: BlockRenderC
       const s = tpl?.site ?? { name: "Site adı", logoText: "", logoImage: "" };
       const text = s.logoText || s.name;
       return (
-        <a href={`/${loc}`} className={`flex items-center gap-2 ${alignCls(p.align).split(" ")[1] ?? ""}`}>
+        <a href={(tpl?.lb ?? `/${loc}`) || "/"} className={`flex items-center gap-2 ${alignCls(p.align).split(" ")[1] ?? ""}`}>
           {s.logoImage ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={s.logoImage} alt={text} className="h-8 w-auto" /> : <span style={{ fontFamily: tokens.typography.headingFont }} className="text-lg font-bold tracking-tight">{text}</span>}
         </a>
       );

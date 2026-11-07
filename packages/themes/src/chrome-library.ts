@@ -1,6 +1,7 @@
 import type { FooterConfig, HeaderConfig } from "@nexpress/core";
 import { FOOTER_TEMPLATES, HEADER_TEMPLATES } from "./chrome-templates";
 import { YF_FOOTER, YF_HEADER } from "./yazilim-firmasi";
+import { MODERN_FOOTERS, MODERN_HEADERS } from "./chrome-library-modern";
 
 export type ChromeLibraryKind = "header" | "footer";
 
@@ -132,6 +133,7 @@ export const HEADER_LIBRARY: ChromeLibraryItem<HeaderConfig>[] = [
     header(item.id, item.name, item.description, categoryForHeader(item.id), previewForHeader(item.id), item.value)
   ),
   header("header-yazilim-vitrin", "Yazılım firması mega menü", "Buzlu yapışkan şerit, ortada dört sütunlu mega menü, sağda telefon ve demo düğmesi.", "vitrin", "bar-center", YF_HEADER),
+  ...MODERN_HEADERS.map((h) => header(...h)),
   header("header-center", "Orta menü", "Logo solda, menü ortada, çağrı sağda. Üst şerit yok.", "vitrin", "bar-center", {
     topBar: { ...off },
     mainBar: {
@@ -198,6 +200,7 @@ export const FOOTER_LIBRARY: ChromeLibraryItem<FooterConfig>[] = [
   ...FOOTER_TEMPLATES.map((item) =>
     footer(item.id, item.name, item.description, categoryForFooter(item.id), previewForFooter(item.id), item.value)
   ),
+  ...MODERN_FOOTERS.map((f) => footer(...f)),
   footer("footer-four", "Dört kolon", "Ürün, geliştirici, kurum ve yasal bağlantılar.", "kolon", "foot-columns", {
     columns: [
       {
@@ -267,6 +270,7 @@ export const HEADER_LIBRARY_GROUPS = [
   { id: "duyuru", label: "Duyuru" },
   { id: "vitrin", label: "Vitrin" },
   { id: "katalog", label: "Katalog" },
+  { id: "modern", label: "Modern" },
 ];
 
 export const FOOTER_LIBRARY_GROUPS = [
@@ -275,6 +279,7 @@ export const FOOTER_LIBRARY_GROUPS = [
   { id: "kolon", label: "Kolon" },
   { id: "bulten", label: "Bülten" },
   { id: "vitrin", label: "Vitrin" },
+  { id: "modern", label: "Modern" },
 ];
 
 export const CHROME_AI_DESIGN_PROMPT = `Sen bir NexPress yerleşim mimarısın. Header ve footer sayfa bloğu değildir. Açıklama yazmadan yalnızca geçerli JSON döndür.

@@ -1,5 +1,5 @@
 import "server-only";
-import { collectFormIds, resolvePublishing, type BlockNode } from "@nexpress/core";
+import { collectFormIds, isPrefixless, resolvePublishing, stripLocaleDeep, type BlockNode } from "@nexpress/core";
 import { getFormDefinitionRepository, getScopedRepository, getSitemapRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
 
@@ -16,12 +16,21 @@ export const getPublicForms = cachedRead("forms", async (siteId: string, ids: st
  */
 export const getPublicSite = cachedRead("site", (siteId: string) => getScopedRepository(siteId).getSite());
 
-export const resolvePublicContent = cachedRead("resolve", (siteId: string, slug: string, locale: string) =>
-  getScopedRepository(siteId).resolveContentBySlug(slug, locale, { publicOnly: true })
+/**
+ * Tek dilli sitede kayıtlı `/{dil}/...` adresleri (blok bağlantıları, HTML href'leri) ziyaretçiye ön eksiz verilir.
+ * Veri tabanındaki kayıt değişmez; yalnızca ziyaretçi okumasının çıktısı dönüştürülür.
+ */
+async function forVisitor<T>(siteId: string, locale: string, value: T): Promise<T> {
+  const site = await getPublicSite(siteId);
+  return isPrefixless(site, locale) ? stripLocaleDeep(value, locale) : value;
+}
+
+export const resolvePublicContent = cachedRead("resolve", async (siteId: string, slug: string, locale: string) =>
+  forVisitor(siteId, locale, await getScopedRepository(siteId).resolveContentBySlug(slug, locale, { publicOnly: true }))
 );
 
-export const getPublicContentBySlug = cachedRead("by-slug", (siteId: string, slug: string, locale: string) =>
-  getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true })
+export const getPublicContentBySlug = cachedRead("by-slug", async (siteId: string, slug: string, locale: string) =>
+  forVisitor(siteId, locale, await getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true }))
 );
 
 /** Yayındaki içerikler; `private` görünürlüklü içerik hiçbir ziyaretçi/bot yüzeyine (llms, besleme, arama) girmez. */
@@ -40,7 +49,7 @@ export const getPublicTranslations = cachedRead("translations", (siteId: string,
 export const getPublicNavigation = cachedRead("nav", async (siteId: string, locale: string) => {
   const repo = getScopedRepository(siteId);
   const own = await repo.getNavigationLayout(locale);
-  if (own) return own;
+  if (own) return forVisitor(siteId, locale, own);
   const site = await repo.getSite();
   return site && site.defaultLocale !== locale ? repo.getNavigationLayout(site.defaultLocale) : null;
 });

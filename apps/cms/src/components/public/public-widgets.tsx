@@ -37,6 +37,7 @@ function PublicSvgIcon({ name, className = "h-4 w-4 shrink-0" }: { name?: string
 export function RenderPublicWidget({
   widget,
   locale,
+  lb,
   tokens,
   feed,
   cardStyle = "cards",
@@ -44,6 +45,8 @@ export function RenderPublicWidget({
 }: {
   widget: SiteWidget;
   locale: string;
+  /** Dilin kök adresi (`/tr`); tek dilli sitede boş. Verilmezse `/{locale}`. */
+  lb?: string;
   tokens: DesignTokens;
   feed?: PublicWidgetFeed;
   cardStyle?: "cards" | "minimal" | "bordered" | "footer";
@@ -52,12 +55,13 @@ export function RenderPublicWidget({
 }) {
   if (!widget.enabled) return null;
   const s = widget.settings;
+  const root = lb ?? `/${locale}`;
 
   // Kampanya kutusu kendi özel tasarım kartıyla çizilir
   if (widget.type === "campaigns") {
     const isPrimary = s.tone === "primary" || !s.tone;
     const isDark = s.tone === "dark";
-    const href = s.ctaHref && isSafeMenuHref(s.ctaHref) ? s.ctaHref : `/${locale}/magaza`;
+    const href = s.ctaHref && isSafeMenuHref(s.ctaHref) ? s.ctaHref : `${root}/magaza`;
     return (
       <div
         style={{
@@ -136,7 +140,7 @@ export function RenderPublicWidget({
             s.style === "pills" ? (
               <a
                 key={cat.id}
-                href={`/${locale}/kategori/${encodeURIComponent(cat.slug)}`}
+                href={`${root}/kategori/${encodeURIComponent(cat.slug)}`}
                 className="inline-flex items-center gap-1 rounded-full border border-nx-line px-2.5 py-1 text-xs font-medium opacity-85 hover:opacity-100"
               >
                 <span>{cat.name}</span>
@@ -147,7 +151,7 @@ export function RenderPublicWidget({
             ) : (
               <a
                 key={cat.id}
-                href={`/${locale}/kategori/${encodeURIComponent(cat.slug)}`}
+                href={`${root}/kategori/${encodeURIComponent(cat.slug)}`}
                 className={`flex items-center justify-between rounded-md px-1.5 py-1 opacity-85 transition hover:bg-black/5 hover:opacity-100 ${
                   s.showHierarchy && cat.parentId ? "pl-4" : ""
                 }`}
@@ -170,7 +174,7 @@ export function RenderPublicWidget({
           {(feed?.recentPosts ?? []).slice(0, s.count ?? 4).map((post, idx) => (
             <li key={post.id}>
               <a
-                href={`/${locale}/${encodeURIComponent(post.slug)}`}
+                href={`${root}/${encodeURIComponent(post.slug)}`}
                 className="group flex items-start gap-2.5 opacity-85 hover:opacity-100"
               >
                 {s.style === "numbered" ? (
@@ -244,7 +248,7 @@ export function RenderPublicWidget({
           ).map((prod) => (
             <a
               key={prod.id}
-              href={`/${locale}/${encodeURIComponent(prod.slug)}`}
+              href={`${root}/${encodeURIComponent(prod.slug)}`}
               className="flex items-center justify-between gap-2 rounded-lg border border-nx-line p-2 opacity-85 hover:opacity-100"
             >
               <span className="truncate font-medium">{prod.title}</span>
@@ -273,7 +277,7 @@ export function RenderPublicWidget({
           ).map((tag) => (
             <a
               key={tag.id}
-              href={`/${locale}/etiket/${encodeURIComponent(tag.slug)}`}
+              href={`${root}/etiket/${encodeURIComponent(tag.slug)}`}
               className="rounded-md bg-nx-subtle px-2 py-1 text-[11px] font-medium opacity-85 hover:opacity-100"
             >
               #{tag.name}
@@ -285,7 +289,7 @@ export function RenderPublicWidget({
       {/* SİTE İÇİ ARAMA */}
       {widget.type === "search" && (
         <div className="space-y-2">
-          <form action={`/${locale}/ara`} method="get" className="flex gap-1.5">
+          <form action={`${root}/ara`} method="get" className="flex gap-1.5">
             <input
               type="search"
               name="q"
@@ -314,7 +318,7 @@ export function RenderPublicWidget({
                 .map((kw) => (
                   <a
                     key={kw}
-                    href={`/${locale}/ara?q=${encodeURIComponent(kw)}`}
+                    href={`${root}/ara?q=${encodeURIComponent(kw)}`}
                     className="underline hover:opacity-100"
                   >
                     {kw}
@@ -329,7 +333,7 @@ export function RenderPublicWidget({
       {widget.type === "newsletter" && (
         <div className="space-y-2">
           {s.subtitle ? <p className="text-xs leading-relaxed opacity-80">{s.subtitle}</p> : null}
-          <form action={`/${locale}/kurumsal`} className="flex gap-1.5">
+          <form action={`${root}/kurumsal`} className="flex gap-1.5">
             <input
               type="email"
               name="email"
@@ -398,7 +402,7 @@ export function RenderPublicWidget({
           {s.hours ? <div className="text-[11px] opacity-70">{s.hours}</div> : null}
           {s.ctaLabel ? (
             <a
-              href={s.ctaHref && isSafeMenuHref(s.ctaHref) ? s.ctaHref : `/${locale}/kurumsal`}
+              href={s.ctaHref && isSafeMenuHref(s.ctaHref) ? s.ctaHref : `${root}/kurumsal`}
               style={{
                 backgroundColor: tokens.colors.primary,
                 color: tokens.colors.primaryForeground,
@@ -446,7 +450,7 @@ export function RenderPublicWidget({
           {(s.links ?? []).map((lnk, idx) => (
             <li key={lnk.id || idx}>
               <a
-                href={isSafeMenuHref(lnk.href) ? lnk.href : `/${locale}`}
+                href={isSafeMenuHref(lnk.href) ? lnk.href : (root || "/")}
                 className="flex items-center justify-between gap-2 opacity-80 transition hover:opacity-100"
               >
                 <span className="flex items-center gap-1.5 truncate">
@@ -479,6 +483,7 @@ export function RenderPublicWidget({
 export function PublicSidebarWidgetArea({
   sidebar,
   locale,
+  lb,
   tokens,
   feed,
   width = "300px",
@@ -486,6 +491,7 @@ export function PublicSidebarWidgetArea({
 }: {
   sidebar: SidebarConfig | SidebarAreaConfig;
   locale: string;
+  lb?: string;
   tokens: DesignTokens;
   feed?: PublicWidgetFeed;
   width?: string;
@@ -510,6 +516,7 @@ export function PublicSidebarWidgetArea({
             key={w.id}
             widget={w}
             locale={locale}
+            lb={lb}
             tokens={tokens}
             feed={feed}
             cardStyle={sidebar.styleVariant ?? "cards"}

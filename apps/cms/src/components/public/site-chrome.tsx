@@ -24,6 +24,8 @@ interface HeaderProps {
   siteName: string;
   tagline?: string | null;
   locale: string;
+  /** Dilin kök adresi; tek dilli sitede boş. */
+  lb?: string;
   menu: NavigationMenuItem[];
   tokens: DesignTokens;
   ink: boolean;
@@ -35,7 +37,7 @@ interface HeaderProps {
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
   const bottom = header?.bottomBar;
@@ -71,7 +73,7 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
     }
     if (id === "logo") {
       return (
-        <a href={`/${locale}`} className="flex min-w-0 items-center gap-2.5">
+        <a href={(lb ?? `/${locale}`) || "/"} className="flex min-w-0 items-center gap-2.5">
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
@@ -91,7 +93,7 @@ export function SiteHeader({ siteName, tagline, locale, menu, tokens, ink, heade
     }
     if (id === "search") {
       return (
-        <a href={`/${locale}/ara`} className="whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">
+        <a href={`${lb ?? `/${locale}`}/ara`} className="whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">
           {searchLabel}
         </a>
       );
@@ -199,6 +201,7 @@ export function SiteFooter({
   siteName,
   siteDna,
   locale,
+  lb,
   tokens,
   footer,
   fallbackText,
@@ -208,6 +211,7 @@ export function SiteFooter({
   siteName: string;
   siteDna?: string | null;
   locale: string;
+  lb?: string;
   tokens: DesignTokens;
   footer: FooterConfig | undefined;
   fallbackText: string;
@@ -274,6 +278,7 @@ export function SiteFooter({
                   key={w.id}
                   widget={w}
                   locale={locale}
+                  lb={lb}
                   tokens={tokens}
                   feed={widgetFeed}
                   cardStyle="footer"

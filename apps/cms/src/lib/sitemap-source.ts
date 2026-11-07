@@ -1,5 +1,5 @@
 import "server-only";
-import { resolveSiteSettings, termSlug } from "@nexpress/core";
+import { isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
@@ -21,6 +21,7 @@ export async function loadSitemap(siteId: string) {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, "archive"]),
     defaultLocale: site?.defaultLocale ?? "tr",
+    prefixless: isPrefixless(site, site?.defaultLocale ?? "tr"),
   };
 }
 

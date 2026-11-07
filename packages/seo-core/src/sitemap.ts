@@ -83,11 +83,13 @@ export function xmlEscape(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function entryPath(entry: Pick<SitemapEntry, "locale" | "slug" | "pathPrefix">): string {
+/** `prefixless`: tek dilli sitede dil ön eki yoktur (`/hakkimizda`, ana sayfa `/`). */
+export function entryPath(entry: Pick<SitemapEntry, "locale" | "slug" | "pathPrefix">, prefixless = false): string {
   // Slug URL parçası olarak kodlanır (boşluk, &, Unicode); XML kaçışı ayrıca uygulanır.
+  const root = prefixless ? "" : `/${entry.locale}`;
   return entry.slug === "ana-sayfa"
-    ? `/${entry.locale}`
-    : `/${entry.locale}/${entry.pathPrefix ? `${entry.pathPrefix}/` : ""}${encodeURIComponent(entry.slug)}`;
+    ? root || "/"
+    : `${root}/${entry.pathPrefix ? `${entry.pathPrefix}/` : ""}${encodeURIComponent(entry.slug)}`;
 }
 
 export function hreflangOf(entry: Pick<SitemapEntry, "locale" | "region">): string {
@@ -156,7 +158,8 @@ export function buildUrlset(
   baseUrl: string,
   file: SitemapFile,
   allEntries: SitemapEntry[],
-  defaultLocale: string
+  defaultLocale: string,
+  prefixless = false
 ): string {
   const byContent = new Map<string, SitemapEntry[]>();
   for (const e of allEntries) {
@@ -169,14 +172,14 @@ export function buildUrlset(
       const group = byContent.get(entry.contentId) ?? [entry];
       const alternates = group.map(
         (g) =>
-          `    <xhtml:link rel="alternate" hreflang="${xmlEscape(hreflangOf(g))}" href="${xmlEscape(baseUrl + entryPath(g))}" />`
+          `    <xhtml:link rel="alternate" hreflang="${xmlEscape(hreflangOf(g))}" href="${xmlEscape(baseUrl + entryPath(g, prefixless))}" />`
       );
       const fallback = group.find((g) => g.locale === defaultLocale) ?? group[0]!;
       alternates.push(
-        `    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEscape(baseUrl + entryPath(fallback))}" />`
+        `    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEscape(baseUrl + entryPath(fallback, prefixless))}" />`
       );
       return `  <url>
-    <loc>${xmlEscape(baseUrl + entryPath(entry))}</loc>
+    <loc>${xmlEscape(baseUrl + entryPath(entry, prefixless))}</loc>
     <lastmod>${new Date(entry.updatedAt).toISOString()}</lastmod>
 ${alternates.join("\n")}${entry.images?.length ? `\n${imageXml(entry.images, baseUrl)}` : ""}
   </url>`;

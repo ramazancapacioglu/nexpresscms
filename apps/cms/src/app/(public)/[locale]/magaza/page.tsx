@@ -1,4 +1,5 @@
 import React from "react";
+import { siteLocaleBase } from "@/lib/locale-url";
 import { createTranslator } from "@nexpress/i18n";
 import type { Metadata } from "next";
 import { Link } from "@/components/public/link";
@@ -35,6 +36,7 @@ export default async function ShopIndexPage({
   const t = createTranslator(locale);
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const lb = await siteLocaleBase(siteId, locale);
   const repo = getCommerceRepository(siteId);
   const [settings, products, cart] = await Promise.all([
     repo.getCommerceSettings(),
@@ -44,7 +46,7 @@ export default async function ShopIndexPage({
 
   if (!settings.enabled) notFound();
 
-  const base = shopBasePath(settings, locale);
+  const base = shopBasePath(settings, await siteLocaleBase(siteId, locale));
   const count = cartItemCount(cart);
 
   // Tema oluşturucu: mağaza listesi şablonu (arşiv listesi yuvası zorunlu; yoksa yerleşik görünüm)
@@ -53,13 +55,13 @@ export default async function ShopIndexPage({
     const site = await getPublicSite(siteId);
     const theme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
     const tokens = site?.designTokens ?? theme.tokens;
-    const ctx = buildTemplateContext({
+    const ctx = buildTemplateContext({ lb,
       site: site ? { name: site.name, tagline: site.tagline } : null,
       locale,
       menu: await getResolvedMenu(siteId, locale),
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: `/${locale}` }, { name: t("shop.title"), href: base }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: t("shop.title"), href: base }],
       archive: {
         title: t("shop.title"),
         description: t("shop.subtitle"),

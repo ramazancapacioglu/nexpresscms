@@ -2,19 +2,51 @@ import { NextResponse, type NextRequest } from "next/server";
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
+import { isReservedPath } from "@/lib/public-paths";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
 const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations"];
+
+type LocaleMode = { single: boolean; locale: string };
+const modeCache = new Map<string, { mode: LocaleMode | null; at: number }>();
+
+/** Sitenin dil kipi (tek dil mi?). Kısa süre bellekte tutulur; sorgu başarısızsa ön ekli (eski) davranış korunur. */
+async function localeMode(request: NextRequest, siteId: string): Promise<LocaleMode | null> {
+  const hit = modeCache.get(siteId);
+  if (hit && Date.now() - hit.at < (hit.mode ? 15_000 : 3_000)) return hit.mode;
+  let mode: LocaleMode | null = null;
+  try {
+    const origin = process.env.INTERNAL_APP_URL || request.nextUrl.origin;
+    const res = await fetch(`${origin}/api/locale-mode`, { headers: { "x-nexpress-site-id": siteId, host: request.headers.get("host") ?? "" }, signal: AbortSignal.timeout(2500), cache: "no-store" });
+    if (res.ok) mode = (await res.json()) as LocaleMode;
+  } catch {
+    mode = null;
+  }
+  modeCache.set(siteId, { mode, at: Date.now() });
+  return mode;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const host = request.headers.get("host");
   const siteId = resolveSiteIdFromHost(host);
 
+  // Tek dilli sitede dil ön eki yoktur: `/tr/x` → 308 `/x`; ön eksiz yol içeride `/tr/x` olarak yeniden yazılır.
+  const mode = pathname === "/api/locale-mode" || isReservedPath(pathname) ? null : await localeMode(request, siteId);
+  const prefixless = Boolean(mode?.single);
+  if (prefixless && (pathname === `/${mode!.locale}` || pathname.startsWith(`/${mode!.locale}/`))) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.slice(mode!.locale.length + 1) || "/";
+    return NextResponse.redirect(url, 308);
+  }
+  const internalPath = prefixless ? `/${mode!.locale}${pathname === "/" ? "" : pathname}` : pathname;
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nexpress-site-id", siteId);
+  if (prefixless) requestHeaders.set("x-nexpress-prefixless", "1");
+  else requestHeaders.delete("x-nexpress-prefixless");
   // AI yönlendirme izleme girdileri: istemciden gelen değerler her zaman ezilir
-  requestHeaders.set("x-nexpress-path", pathname);
+  requestHeaders.set("x-nexpress-path", internalPath);
   requestHeaders.set("x-nexpress-search", searchParams.toString().slice(0, 180));
   // Tema önizleme: yalnızca geçerli oturumlu kullanıcı için (`?nx_preview=<tema>`); istemciden gelen başlık her zaman ezilir
   requestHeaders.delete("x-nexpress-preview-theme");
@@ -27,9 +59,9 @@ export async function middleware(request: NextRequest) {
       previewing = true;
     }
   }
-  requestHeaders.set("x-nexpress-pathname", pathname);
+  requestHeaders.set("x-nexpress-pathname", internalPath);
   // Sayfa dili (kök <html lang/dir> için): ilk yol parçası dil etiketi gibiyse o, değilse boş
-  const lang = pathname.match(/^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/|$)/)?.[1];
+  const lang = internalPath.match(/^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/|$)/)?.[1];
   if (lang) requestHeaders.set("x-nexpress-locale", lang);
   else requestHeaders.delete("x-nexpress-locale");
   const utm = searchParams.get("utm_source");
@@ -58,7 +90,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Kök dizini varsayılan dile yönlendir
-  if (pathname === "/") {
+  if (pathname === "/" && !prefixless) {
     const url = request.nextUrl.clone();
     url.pathname = "/tr";
     return NextResponse.redirect(url);
@@ -78,20 +110,23 @@ export async function middleware(request: NextRequest) {
   ) {
     const rewriteUrl = request.nextUrl.clone();
     rewriteUrl.pathname = "/api/markdown-negotiation";
-    rewriteUrl.searchParams.set("targetPath", pathname);
+    rewriteUrl.searchParams.set("targetPath", internalPath);
     // Yeniden yazılan sorgu, rota işleyicisinin nextUrl'ine düşmeyebilir.
     // Asıl yol bu yüzden istek başlığında taşınır.
-    requestHeaders.set("x-nexpress-target-path", pathname);
+    requestHeaders.set("x-nexpress-target-path", internalPath);
     return NextResponse.rewrite(rewriteUrl, {
       request: { headers: requestHeaders },
     });
   }
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  let response: NextResponse;
+  if (prefixless) {
+    const rewriteTo = request.nextUrl.clone();
+    rewriteTo.pathname = internalPath;
+    response = NextResponse.rewrite(rewriteTo, { request: { headers: requestHeaders } });
+  } else {
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  }
   if (previewing) response.headers.set("Cache-Control", "private, no-store");
   // Taslak önizleme bağlantısı: asla paylaşımlı önbelleğe girmez, dizinlenmez
   if (searchParams.has("nx_draft")) {
@@ -99,7 +134,7 @@ export async function middleware(request: NextRequest) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
-  if (/^\/[a-z]{2}(\/[^/]+)?$/.test(pathname)) {
+  if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);
   }
   return response;

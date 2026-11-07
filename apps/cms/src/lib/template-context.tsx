@@ -8,6 +8,8 @@ import { DesktopNav, MenuList, MobileNav } from "@/components/public/site-nav";
 interface Input {
   site: { name: string; tagline?: string | null; logoText?: string; logoImage?: string } | null;
   locale: string;
+  /** Dilin kök adresi; tek dilli sitede boş. */
+  lb?: string;
   copyright?: string;
   menu: NavigationMenuItem[];
   tokens: DesignTokens;
@@ -22,6 +24,7 @@ export function buildTemplateContext(i: Input): TemplateRenderContext {
   return {
     site: { name: i.site?.name ?? "NexPress CMS", tagline: i.site?.tagline, logoText: i.site?.logoText ?? "", logoImage: i.site?.logoImage ?? "" },
     locale: i.locale,
+    lb: i.lb,
     copyright: i.copyright ?? "",
     menu: i.menu.length
       ? {

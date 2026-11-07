@@ -103,3 +103,14 @@ test("entryPath: arşiv girdileri sabit yol önekini korur, slug kodlanır", asy
   assert.equal(entryPath({ locale: "tr", slug: "a&b" }), "/tr/a%26b");
   assert.equal(entryPath({ locale: "tr", slug: "ana-sayfa" }), "/tr");
 });
+
+test("ön eksiz mod: tek dilli sitede adresler dil ekinden arınır", async () => {
+  const { entryPath, buildUrlset } = await import("../src/sitemap");
+  assert.equal(entryPath({ locale: "tr", slug: "ana-sayfa" }, true), "/");
+  assert.equal(entryPath({ locale: "tr", slug: "hakkimizda" }, true), "/hakkimizda");
+  assert.equal(entryPath({ locale: "tr", slug: "x y", pathPrefix: "kategori" }, true), "/kategori/x%20y");
+  const entry = { contentId: "c", type: "page", locale: "tr", region: "", slug: "hakkimizda", updatedAt: new Date(0) } as never;
+  const xml = buildUrlset("https://ex.com", { type: "page", page: 1, entries: [entry] }, [entry], "tr", true);
+  assert.ok(xml.includes("<loc>https://ex.com/hakkimizda</loc>"));
+  assert.ok(!xml.includes("/tr/"));
+});

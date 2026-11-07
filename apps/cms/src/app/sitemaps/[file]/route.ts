@@ -12,11 +12,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!parsed) return notFound();
 
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
-  const { files, entries, defaultLocale } = await loadSitemap(siteId);
+  const { files, entries, defaultLocale, prefixless } = await loadSitemap(siteId);
   const file = files.find((f) => f.type === parsed.type && f.page === parsed.page);
   if (!file) return notFound();
 
-  return new NextResponse(buildUrlset(sitemapBaseUrl(), file, entries, defaultLocale), {
+  return new NextResponse(buildUrlset(sitemapBaseUrl(), file, entries, defaultLocale, prefixless), {
     status: 200,
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
