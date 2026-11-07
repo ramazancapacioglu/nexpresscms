@@ -18,6 +18,12 @@ export interface SeoEngineSettings {
   organizationLogo: string;
   sameAs: string[];
   robotsTxtExtra: string;
+  /**
+   * Arama motoru indeksi. `false` iken tüm site `noindex`, site haritası boş
+   * ve `robots.txt` siteyi kapatır. Kopya veya deneme sitesinde kapalı tutulur.
+   * Kayıt yoksa açık sayılır.
+   */
+  searchIndexing?: boolean;
   /** Bot kimliği (`KNOWN_BOTS[].id`) → robots.txt kararı. Kayıt yoksa `allow`. */
   botPolicy?: Record<string, "allow" | "block">;
   /** Arama konsolu site sahipliği doğrulama kodları (yalnızca içerik değeri, etiket değil) */
@@ -216,6 +222,7 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   organizationLogo: "",
   sameAs: [],
   robotsTxtExtra: "",
+  searchIndexing: true,
   botPolicy: {},
   verification: {},
   integrations: {

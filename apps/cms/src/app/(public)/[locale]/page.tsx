@@ -1,12 +1,13 @@
-import { hasDynamicQueryParams } from "@nexpress/core";
+import { hasDynamicQueryParams, resolvePublishing } from "@nexpress/core";
 import { siteLocaleBase } from "@/lib/locale-url";
 import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
-import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
+import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { getSyncedPatternsMap } from "@/lib/templates";
+import { coverTemplateContext } from "@/lib/template-context";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme } from "@/lib/public-theme";
@@ -36,10 +37,45 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const site = await getPublicSite(siteId);
   const themeId = site?.activeThemeId ?? "corporate-aurora";
   const home = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, themeId, locale), locale);
+  const seoMeta = home
+    ? resolveSeoMeta({
+        siteName: site?.name ?? "NexPress CMS",
+        tagline: site?.tagline,
+        baseUrl,
+        locale,
+        path: lb || "/",
+        isHome: true,
+        title: home.title,
+        tldr: home.tldr,
+        excerpt: home.excerpt,
+        metaTitle: home.metaTitle,
+        metaDescription: home.metaDescription,
+        canonicalUrl: home.canonicalUrl,
+        noIndex: home.noIndex,
+        settings: site?.settings?.seo,
+      })
+    : null;
   return {
-    ...(hasDynamicQueryParams(sp0) ? { robots: { index: false, follow: true } } : {}),
+    ...(seoMeta
+      ? {
+          title: seoMeta.title,
+          description: seoMeta.description,
+          robots: hasDynamicQueryParams(sp0) ? { index: false, follow: true } : seoMeta.robots,
+          openGraph: {
+            title: seoMeta.openGraph.title,
+            description: seoMeta.openGraph.description,
+            url: seoMeta.openGraph.url,
+            siteName: seoMeta.openGraph.siteName,
+            locale: seoMeta.openGraph.locale,
+            type: seoMeta.openGraph.type,
+            images: seoMeta.openGraph.images,
+          },
+        }
+      : hasDynamicQueryParams(sp0)
+        ? { robots: { index: false, follow: true } }
+        : {}),
     alternates: {
-      canonical: `${baseUrl}${lb}`,
+      canonical: seoMeta?.canonical ?? `${baseUrl}${lb}`,
       ...(home ? { languages: await hreflangAlternates(siteId, home.contentId, baseUrl) } : {}),
     },
   };
@@ -110,6 +146,19 @@ export default async function PublicHomePage({
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId, sp)}
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
           form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
+          tpl={coverTemplateContext({
+            site: site ? { name: site.name, tagline: site.tagline } : null,
+            locale,
+            lb,
+            tokens,
+            title: homeContent.title,
+            excerpt: homeContent.tldr,
+            featuredImage: (() => {
+              const pub = resolvePublishing(homeContent.schemaAttributes);
+              const url = homeContent.featuredImage ?? pub.featuredImageUrl;
+              return url ? { url, alt: pub.featuredImageAlt || homeContent.title, caption: pub.featuredImageCaption } : null;
+            })(),
+          })}
         />
       ) : (
         <div className="rounded-xl border p-8 text-center">

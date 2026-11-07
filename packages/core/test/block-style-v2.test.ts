@@ -9,6 +9,19 @@ test("tipografi, metin gölgesi, arka plan ve dönüşüm CSS'e derlenir", () =>
   for (const frag of ["font-family:Inter, sans-serif", "font-weight:700", "line-height:1.2", "letter-spacing:-0.02em", "text-transform:uppercase", "text-shadow:0 2px 8px", "background-size:contain", "background-position:top left", "background-attachment:fixed", "transform:translateY(-4px) scale(1.05) rotate(2deg)", "margin-left:auto", "margin-right:auto"]) assert.ok(css.includes(frag), frag);
 });
 
+test("blok genişliği site kapsayıcısı ya da tam ekran olur", () => {
+  const site = compileBlockStylesToCss(b({ blockWidth: "site" }));
+  assert.ok(site.includes("max-width:var(--nx-container,1200px)"));
+  assert.ok(site.includes("margin-left:auto"));
+  const nested = compileBlockStylesToCss([
+    { id: "row", type: "columns", props: {}, children: [{ id: "ic", type: "paragraph", props: {}, style: { blockWidth: "full" } }] },
+  ]);
+  assert.ok(nested.includes('[data-nx-b="ic"]{width:100vw'));
+  assert.ok(nested.includes("margin-left:-50vw"));
+  assert.ok(compileBlockStylesToCss(b({ fullWidth: true })).includes("width:100vw"));
+  assert.ok(!compileBlockStylesToCss(b({})).includes("100vw"));
+});
+
 test("kenarlık biçimi yalnızca kalınlıkla birlikte ve izinli değerlerle yazılır", () => {
   assert.ok(compileBlockStylesToCss(b({ borderWidth: "2px", borderStyle: "dashed" })).includes("border-style:dashed"));
   assert.ok(!compileBlockStylesToCss(b({ borderStyle: "dashed" })).includes("dashed"));

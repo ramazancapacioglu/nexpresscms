@@ -289,5 +289,17 @@ ${S} .nx-mobile-nav a, ${S} .nx-mobile-nav summary { color:#1d1d1f; }
   ${S} footer > div:first-child > div { grid-column:auto !important; }
   ${S} .nx-yf-reach > div { right:-4px; }
 }
+/* Arama düğmesi: bağlantı yerine pencere açar; büyüteç ikonu yazının yerini alır */
+${S} button.nx-header-search { font-size:0; line-height:0; width:40px; height:40px; border:0; padding:0; cursor:pointer; background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a202c' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") center/22px no-repeat; }
+/* Canlı arama penceresi: üst katman, bu temanın arama düğmesine bağlı */
+${S} .nx-yf-search { margin:0; border:0; padding:0; background:transparent; width:min(680px,calc(100vw - 24px)); inset:14vh auto auto 50%; transform:translateX(-50%); }
+${S} .nx-yf-search::backdrop { background:rgba(4,38,70,.45); }
+${S} .nx-yf-search-panel { background:#fff; color:#1a202c; border-radius:18px; padding:18px; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+${S} .nx-yf-search-panel input { width:100%; border:1px solid #d7dee7; border-radius:12px; padding:12px 14px; font-size:16px; outline:none; }
+${S} .nx-yf-search-panel input:focus { border-color:#0b4f8a; }
+${S} .nx-yf-search-panel a { display:block; padding:10px 8px; border-bottom:1px solid #eef2f6; color:#042646; text-decoration:none; }
+${S} .nx-yf-search-panel a:hover { background:#f7fafc; }
+${S} .nx-yf-search-panel a strong { display:block; font-size:15px; }
+${S} .nx-yf-search-panel a p { margin:4px 0 0; font-size:13px; color:#4a5568; }
 
 `.trim();

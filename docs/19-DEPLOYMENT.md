@@ -134,6 +134,8 @@ Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne
 
 `main` dalına push, CI'daki tip kontrolü ve testler geçince GitHub Actions sunucuya bağlanır (`38.210.77.230` kapı `4383`). Bağlantı yalnızca `DEPLOY_SSH_KEY` sırrındaki anahtarla olur; anahtar sunucuda tek bir güncelleme betiğini çalıştırır. Betik depoyu çeker, göçü uygular, üretim derlemesini alır ve `nexpress` servisini yeniden başlatır. Kök parola ve `AUTH_SECRET` depoya yazılmaz.
 
+Canlı veritabanı PostgreSQL 16 + pgvector 0.6 (`nexpress_cms`, yalnızca `127.0.0.1:5432`). `DB_DIALECT=postgresql`. RAG vektör sütunu `vector(1536)` ve HNSW indeksi bu kurulumdadır. SQLite dosyası durur, uygulama onu okumaz.
+
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`: Redis/S3/kuyruk (çok sunuculu kurulum), CLI yedek, Lighthouse CI, Search Console bağlantısı ve "Yakında" eklenti modülleri.

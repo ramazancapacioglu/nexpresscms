@@ -228,7 +228,7 @@ Kurallar:
 }
 ```
 
-Kolon 0–6. `colSpan` 1–12. Kolon başına en çok 20 bağlantı. `bottomLinks` en çok 12. `label` ≤ 80, `href` ≤ 300, `copyrightText` ≤ 300. `showNewsletter: true` ön yüze e-posta satırı basar; adres uydurma.
+Kolon 0–6. `colSpan` 1–12. Kolon başına en çok 20 bağlantı. `bottomLinks` en çok 12. `label` ≤ 80, `href` ≤ 300, `copyrightText` ≤ 300. `showNewsletter: true` ön yüze e-posta satırı basar; adres uydurma. İsteğe bağlı `layoutPreset`: `4-equal`, `brand-wide-4`, `3-equal`, `2-asymmetric`, `1-centered`, `6-equal`. `6-equal` altı eşit sütundur (`columnIndex` 0–5).
 
 ### 2.5. `pages/<slug>.json`
 
@@ -379,7 +379,7 @@ Header ve footer şablonları (`themes/src/chrome-library-modern.ts`, grup **Mod
 
 AI’ın yazabildiği stil anahtarları: `paddingTop`, `paddingBottom`, `textAlign` (`left`|`center`|`right`), `backgroundColor`, `textColor` (`#rrggbb`), `maxWidth`. Metin/zemin kontrastı en az 4.5:1. `customCss` kütüphane yolunda güvenli seçiciyle sınırlıdır; tema paketinin CSS’i `skins.css` içindedir, blok stilinin içine uzun CSS yığma.
 
-İnsan editörün ek stil alanları (model kütüphane JSON’unda kullanmasın): `paddingLeft`, `paddingRight`, `margin*`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`, `textTransform`, `border*`, `borderRadius`, `boxShadow` (`none|sm|md|lg|xl`), `opacity`, `backgroundImage`, `backgroundGradient`, `hideOn`, `fullWidth`, `anchorId`, `cssClass`, `animation` (`fade-in|fade-up|fade-down|fade-left|fade-right|zoom-in`), `hover`.
+İnsan editörün ek stil alanları (model kütüphane JSON’unda kullanmasın): `paddingLeft`, `paddingRight`, `margin*`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`, `textTransform`, `border*`, `borderRadius`, `boxShadow` (`none|sm|md|lg|xl`), `opacity`, `backgroundImage`, `backgroundGradient`, `hideOn`, `fullWidth`, `blockWidth` (`site` tema kapsayıcısı, `full` kenardan kenara; yoksa sayfa yerleşimi), `anchorId`, `cssClass`, `animation` (`fade-in|fade-up|fade-down|fade-left|fade-right|zoom-in`), `hover`.
 
 ---
 
@@ -490,7 +490,7 @@ Yuvalar veri taşımaz. Başlık, gövde, görsel, fiyat ve menü yayında sayfa
 
 | Tür | `props` |
 | :--- | :--- |
-| `tpl_post_title` | `align`: `left` \| `center` \| `right` |
+| `tpl_post_title` | `align`: `left` \| `center` \| `right`. `showTldr: true` ise sayfanın kısa açıklaması (`tldr`) başlığın altında basılır. Sayfa blokları da bu yuvayı görür. |
 | `tpl_post_content` | yok |
 | `tpl_featured_image` | yok |
 | `tpl_post_meta` | `showDate`, `showAuthor`, `showCategories` (varsayılan true) |

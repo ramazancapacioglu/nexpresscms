@@ -13,6 +13,8 @@ export interface TemplateRenderContext {
   breadcrumbs: Array<{ name: string; href: string }>;
   post?: {
     title: string;
+    /** Kısa açıklama (içerik `tldr`). Kapak başlığı `showTldr` ile basar. */
+    excerpt?: string | null;
     /** Sayfanın kendi bloklarının çizimi (tpl_post_content yuvasına konur) */
     content: React.ReactNode;
     featuredImage?: { url: string; alt: string; caption?: string } | null;

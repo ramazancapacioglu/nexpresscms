@@ -27,7 +27,8 @@ export type FooterLayoutPreset =
   | "brand-wide-4"
   | "3-equal"
   | "2-asymmetric"
-  | "1-centered";
+  | "1-centered"
+  | "6-equal";
 
 export interface FooterLayoutPresetMeta {
   id: FooterLayoutPreset;
@@ -80,6 +81,14 @@ export const FOOTER_LAYOUT_PRESETS: FooterLayoutPresetMeta[] = [
     colSpans: [12],
     columnLabels: ["Merkez Bileşen Alanı"],
   },
+  {
+    id: "6-equal",
+    label: "6 Eşit Sütun (2+2+2+2+2+2)",
+    description: "Altı eşit dizin sütunu. İletişim ve beş bağlantı grubu yan yana durur.",
+    columnCount: 6,
+    colSpans: [2, 2, 2, 2, 2, 2],
+    columnLabels: ["1. Sütun", "2. Sütun", "3. Sütun", "4. Sütun", "5. Sütun", "6. Sütun"],
+  },
 ];
 
 export interface SiteWidgetSettings {
@@ -122,7 +131,7 @@ export interface SiteWidget {
   type: SiteWidgetType;
   title: string;
   enabled: boolean;
-  /** Footer yerleşiminde hangi sütunda (0..3) yer aldığı */
+  /** Footer yerleşiminde hangi sütunda durduğu. Üst sınır yerleşim ön ayarına bağlıdır. */
   columnIndex?: number;
   settings: SiteWidgetSettings;
 }

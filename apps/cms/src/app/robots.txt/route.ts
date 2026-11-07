@@ -11,8 +11,9 @@ export async function GET(request: NextRequest) {
   const site = await getPublicSite(siteId);
   const seo = resolveSiteSettings(site?.settings).seo;
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const indexing = seo.searchIndexing !== false;
   const hooked = await cmsHooks.runFilter("robots:buildTxt", { siteId, groupLines: [], botPolicy: seo.botPolicy ?? {} });
-  const body = buildRobotsTxt({ baseUrl: base, botPolicy: seo.botPolicy, extra: seo.robotsTxtExtra, groupLines: hooked.groupLines });
+  const body = buildRobotsTxt({ baseUrl: base, botPolicy: seo.botPolicy, extra: seo.robotsTxtExtra, groupLines: hooked.groupLines, indexing });
 
   return new NextResponse(body, {
     status: 200,
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
       "X-NexPress-Site-Id": siteId,
+      ...(indexing ? {} : { "X-Robots-Tag": "noindex, nofollow" }),
     },
   });
 }

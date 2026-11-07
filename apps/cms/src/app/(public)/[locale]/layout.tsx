@@ -1,5 +1,5 @@
 import React from "react";
-import { localeBase } from "@nexpress/core";
+import { localeBase, prefixedFallbackPath } from "@nexpress/core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getActiveSkin, getPreviewTheme } from "@/lib/public-theme";
@@ -31,7 +31,8 @@ import { RscBlockRenderer } from "@nexpress/themes";
 export async function generateMetadata(): Promise<Metadata> {
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const site = await getPublicSite(siteId);
-  const closed = resolveSiteSettings(site?.settings).general.maintenanceEnabled;
+  const settings = resolveSiteSettings(site?.settings);
+  const closed = settings.general.maintenanceEnabled || settings.seo.searchIndexing === false;
   return {
     robots: closed ? { index: false, follow: false } : undefined,
     alternates: {
@@ -71,9 +72,10 @@ export default async function PublicLocaleLayout({
   // Tanımsız dil kökü ana sayfayı kopyalamasın: yalnızca site dilleri 200 döner.
   // Tek segmentli bilinmeyen yollar (`/eski-adres`) buraya düşer: yönlendirme kuralı varsa uygula, yoksa 404 izleyiciye yaz
   if (site && !site.supportedLocales.includes(locale)) {
-    // Sitede birden çok dil varken ön eksiz eski adres: elle yönlendirme yoksa varsayılan dilin adresine kalıcı yönlendir
+    // Çok dilde ön eksiz eski adres varsayılan dile gider. Tek dilde `/tr` eklenmez (kalıcı yönlendirme tarayıcıda kalır).
     const full = reqHeaders.get("x-nexpress-pathname") ?? `/${locale}`;
-    return redirectOrNotFound(siteId, `/${locale}`, { orElse: `/${site.defaultLocale}${full}` });
+    const orElse = prefixedFallbackPath(site.supportedLocales.length, site.defaultLocale, full);
+    return redirectOrNotFound(siteId, `/${locale}`, orElse ? { orElse } : {});
   }
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
@@ -319,8 +321,16 @@ export default async function PublicLocaleLayout({
         menuLabel={t("site.menu")}
         menuAllLabel={t("site.menuAll")}
         searchLabel={t("site.search")}
+        liveSearch={isYf}
       />
       )}
+      {isYf ? (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var box=document.getElementById("nx-yf-search");if(!box)return;var input=box.querySelector("input");var out=document.getElementById("nx-yf-search-results");if(!input||!out)return;var timer;box.addEventListener("toggle",function(){if(box.matches(":popover-open"))input.focus();});input.addEventListener("input",function(){clearTimeout(timer);var q=input.value.trim();timer=setTimeout(function(){if(q.length<2){out.replaceChildren();return;}fetch("/api/search?q="+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(data){out.replaceChildren();(data.items||[]).forEach(function(item){var a=document.createElement("a");a.href=item.href||"#";var s=document.createElement("strong");s.textContent=item.title||"";a.appendChild(s);if(item.snippet){var p=document.createElement("p");p.textContent=item.snippet;a.appendChild(p);}out.appendChild(a);});}).catch(function(){});},180);});})();`,
+          }}
+        />
+      ) : null}
 
       <div
         style={hasSidebar ? { maxWidth: tokens.geometry.containerMaxWidth } : undefined}

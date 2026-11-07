@@ -14,7 +14,13 @@ export function renderTemplateBlock({ block, tokens, tpl, locale }: BlockRenderC
   switch (block.type) {
     case "tpl_post_title": {
       const title = tpl?.post?.title ?? tpl?.archive?.title ?? "Sayfa başlığı";
-      return <h1 style={{ fontFamily: tokens.typography.headingFont }} className={`text-3xl font-extrabold tracking-tight sm:text-4xl ${alignCls(p.align).split(" ")[0]}`}>{title}</h1>;
+      const excerpt = tpl?.post?.excerpt?.trim();
+      return (
+        <header className="space-y-3">
+          <h1 style={{ fontFamily: tokens.typography.headingFont }} className={`text-3xl font-extrabold tracking-tight sm:text-4xl ${alignCls(p.align).split(" ")[0]}`}>{title}</h1>
+          {p.showTldr === true && excerpt ? <p className="max-w-2xl text-base leading-relaxed opacity-80">{excerpt}</p> : null}
+        </header>
+      );
     }
     case "tpl_post_content":
       return <div className="nx-post-content">{tpl?.post?.content ?? <p className="rounded border border-dashed p-6 text-sm opacity-70">Sayfanın kendi içeriği burada görünür.</p>}</div>;

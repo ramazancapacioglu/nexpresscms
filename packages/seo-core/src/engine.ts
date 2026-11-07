@@ -479,9 +479,10 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
   const pageUrl = `${base}${input.path}`;
   const canonical = input.canonicalUrl?.trim() || (s.autoCanonical ? pageUrl : undefined);
 
+  const siteClosed = s.searchIndexing === false;
   const robots = [
-    input.noIndex ? "noindex" : "index",
-    input.noFollow ? "nofollow" : "follow",
+    siteClosed || input.noIndex ? "noindex" : "index",
+    siteClosed || input.noFollow ? "nofollow" : "follow",
     "max-image-preview:large",
     "max-snippet:-1",
   ].join(", ");

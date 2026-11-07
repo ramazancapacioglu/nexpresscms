@@ -23,15 +23,19 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
           : align === "right"
             ? "text-right"
             : "text-left";
-      const tag = rawLevel === "3" || rawLevel === "h3" ? "h3" : rawLevel === "4" || rawLevel === "h4" ? "h4" : "h2";
+      const tag = rawLevel === "1" || rawLevel === "h1" ? "h1" : rawLevel === "3" || rawLevel === "h3" ? "h3" : rawLevel === "4" || rawLevel === "h4" ? "h4" : "h2";
       const ink = themeId === INK_GRID_ID;
       const size = ink
-        ? tag === "h3"
+        ? tag === "h1"
+          ? "text-4xl md:text-5xl font-semibold tracking-tight"
+          : tag === "h3"
           ? "text-xl font-medium"
           : tag === "h4"
             ? "text-lg font-medium"
             : "text-3xl md:text-4xl font-semibold tracking-tight"
-        : tag === "h3"
+        : tag === "h1"
+          ? "text-3xl md:text-4xl font-bold tracking-tight"
+          : tag === "h3"
           ? "text-xl font-bold"
           : tag === "h4"
             ? "text-lg font-semibold"

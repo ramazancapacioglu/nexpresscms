@@ -11,7 +11,7 @@ import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/t
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
-import { buildTemplateContext } from "@/lib/template-context";
+import { buildTemplateContext, coverTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
@@ -184,6 +184,15 @@ export default async function PublicDynamicContentPage({
   });
 
   const t = createTranslator(locale);
+  const cover = coverTemplateContext({
+    site: site ? { name: site.name, tagline: site.tagline } : null,
+    locale,
+    lb,
+    tokens,
+    title: content.title,
+    excerpt: content.tldr,
+    featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
+  });
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
   const canEdit = Boolean(await getSession());
@@ -208,8 +217,9 @@ export default async function PublicDynamicContentPage({
       breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} />,
+        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
+        excerpt: content.tldr,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
         author: pub.authorName || content.authorName || null,
         categories: categories.map((name) => ({ name, href: `${lb}/kategori/${catIndex.find((c) => c.name === name)?.slug ?? termSlug(name)}` })),
@@ -245,6 +255,7 @@ export default async function PublicDynamicContentPage({
           dynamic={dynamicData} pageSchema={pageSchema}
           patterns={syncedPatterns}
           form={formCtx}
+          tpl={cover}
         />
       </>
     );
@@ -369,6 +380,7 @@ export default async function PublicDynamicContentPage({
         dynamic={dynamicData} pageSchema={pageSchema}
         patterns={syncedPatterns}
         form={formCtx}
+        tpl={cover}
       />
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}

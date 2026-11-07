@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isPrefixless, joinBase, localeBase, stripLocaleDeep, stripLocalePath } from "../src/locale-path";
+import { isPrefixless, joinBase, localeBase, prefixedFallbackPath, resolveLocaleMode, stripLocaleDeep, stripLocalePath } from "../src/locale-path";
 
 const one = { supportedLocales: ["tr"], defaultLocale: "tr" };
 const two = { supportedLocales: ["tr", "en"], defaultLocale: "tr" };
@@ -12,6 +12,15 @@ test("ön ek yalnızca tek dilli sitede ve o dilde kalkar; site bilinmiyorsa ön
   assert.equal(isPrefixless(null, "tr"), false);
   assert.equal(localeBase(one, "tr"), "");
   assert.equal(localeBase(two, "tr"), "/tr");
+});
+
+test("dil kipi okunamazsa tek dil kalır; çok dilde yalnızca birden fazla dil varken ön ek eklenir", () => {
+  assert.deepEqual(resolveLocaleMode(null, null), { single: true, locale: "tr" });
+  assert.deepEqual(resolveLocaleMode(null, { single: false, locale: "tr" }), { single: false, locale: "tr" });
+  assert.deepEqual(resolveLocaleMode({ single: true, locale: "tr" }, { single: false, locale: "en" }), { single: true, locale: "tr" });
+  assert.equal(prefixedFallbackPath(1, "tr", "/wolvox-erp"), null);
+  assert.equal(prefixedFallbackPath(2, "tr", "/wolvox-erp"), "/tr/wolvox-erp");
+  assert.equal(prefixedFallbackPath(2, "tr", "/"), "/tr");
 });
 
 test("joinBase: kök adres boşsa / döner; yol eklenir", () => {

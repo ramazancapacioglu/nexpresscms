@@ -15,6 +15,13 @@ test("robots.txt: engellenen botlar kendi grubunda Disallow: / alır", () => {
   assert.doesNotMatch(txt, /ClaudeBot/);
 });
 
+test("robots.txt: indeks kapalıyken tüm site kapanır ve site haritası yazılmaz", () => {
+  const txt = buildRobotsTxt({ baseUrl: "https://x.test", indexing: false, extra: "Crawl-delay: 5" });
+  assert.equal(txt, "User-agent: *\nDisallow: /\n\nCrawl-delay: 5\n");
+  assert.doesNotMatch(txt, /Sitemap:/);
+  assert.doesNotMatch(txt, /Allow: \//);
+});
+
 test("robots.txt: ek satırlar sona eklenir; her botun simgesi var", () => {
   assert.match(buildRobotsTxt({ baseUrl: "https://x.test", extra: "Crawl-delay: 5" }), /\nCrawl-delay: 5\n$/);
   for (const b of KNOWN_BOTS) assert.ok(b.robotsTokens.length > 0, b.id);

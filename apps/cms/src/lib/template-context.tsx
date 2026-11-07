@@ -42,3 +42,30 @@ export function buildTemplateContext(i: Input): TemplateRenderContext {
     archive: i.archive,
   };
 }
+
+/** Sayfa bloklarındaki kapak yuvası: başlık, kısa açıklama ve öne çıkan görsel. Menü çizmez. */
+export function coverTemplateContext(i: {
+  site: Input["site"];
+  locale: string;
+  lb?: string;
+  tokens: Input["tokens"];
+  title: string;
+  excerpt?: string | null;
+  featuredImage?: { url: string; alt: string; caption?: string } | null;
+}): TemplateRenderContext {
+  return buildTemplateContext({
+    site: i.site,
+    locale: i.locale,
+    lb: i.lb,
+    menu: [],
+    tokens: i.tokens,
+    menuLabel: "Menü",
+    post: {
+      title: i.title,
+      excerpt: i.excerpt ?? "",
+      content: null,
+      featuredImage: i.featuredImage ?? null,
+      categories: [],
+    },
+  });
+}

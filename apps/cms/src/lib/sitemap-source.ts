@@ -15,6 +15,9 @@ export function sitemapBaseUrl(): string {
 export async function loadSitemap(siteId: string) {
   const [site, contentEntries] = await Promise.all([getPublicSite(siteId), listSitemapEntries(siteId)]);
   const settings = resolveSiteSettings(site?.settings);
+  if (settings.seo.searchIndexing === false) {
+    return { entries: [], files: [], defaultLocale: site?.defaultLocale ?? "tr", prefixless: isPrefixless(site, site?.defaultLocale ?? "tr") };
+  }
   const archives = await archiveEntries(siteId, site?.defaultLocale ?? "tr");
   const entries = [...contentEntries, ...archives];
   return {

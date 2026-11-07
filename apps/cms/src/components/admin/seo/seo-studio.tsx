@@ -94,6 +94,11 @@ export function SeoStudio({
         </div>
       </header>
       {notice ? <p className="text-[12px] text-emerald-800 dark:text-emerald-400">{notice}</p> : null}
+      {seo.searchIndexing === false ? (
+        <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+          Arama indeksi kapalı. Sayfalar noindex, site haritası boş, robots.txt tüm siteyi kapatır.
+        </p>
+      ) : null}
       {tab === "summary" ? <SummaryView summary={summary} /> : <SettingsView seo={seo} patch={patch} />}
     </div>
   );
@@ -329,6 +334,20 @@ function SettingsView({
       </section>
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
         <h2 className="text-[13px] font-semibold">Sitemap ve robots</h2>
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+          Arama motoru indeksi
+          <select
+            className={`${fieldClass} mt-1`}
+            value={seo.searchIndexing === false ? "off" : "on"}
+            onChange={(e) => patch({ searchIndexing: e.target.value === "on" })}
+          >
+            <option value="on">Açık — site indekslenebilir</option>
+            <option value="off">Kapalı — tüm site noindex</option>
+          </select>
+        </label>
+        <p className="text-[11px] leading-relaxed text-[#5F6570] dark:text-[#8C9099]">
+          Kapalıyken her sayfa noindex olur, site haritası boş döner ve robots.txt siteyi kapatır. Kopya veya deneme adresinde kapalı tutun; kaydı unutmayın.
+        </p>
         <div className="flex flex-wrap gap-2">
           {TYPES.map((type) => {
             const on = seo.sitemapTypes.includes(type.id);

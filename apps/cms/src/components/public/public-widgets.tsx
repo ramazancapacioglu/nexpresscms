@@ -398,8 +398,10 @@ export function RenderPublicWidget({
       {widget.type === "contact_card" && (
         <div className="space-y-2 text-xs">
           {s.subtitle ? <p className="leading-relaxed opacity-80">{s.subtitle}</p> : null}
-          {s.phone ? <div className="font-bold">{s.phone}</div> : null}
-          {s.hours ? <div className="text-[11px] opacity-70">{s.hours}</div> : null}
+          {s.phone ? <div className="font-semibold">Telefon: {s.phone}</div> : null}
+          {s.hours ? <div className="font-semibold">{s.hours}</div> : null}
+          {s.email ? <a href={`mailto:${s.email}`}>Mail: {s.email}</a> : null}
+          {s.address ? <div>Adres: {s.address}</div> : null}
           {s.ctaLabel ? (
             <a
               href={s.ctaHref && isSafeMenuHref(s.ctaHref) ? s.ctaHref : `${root}/kurumsal`}

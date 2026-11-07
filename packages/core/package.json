@@ -8,6 +8,7 @@
     "./hooks": "./src/hooks.ts",
     "./slots": "./src/slots.tsx",
     "./tenancy": "./src/tenancy.ts",
+    "./locale-path": "./src/locale-path.ts",
     "./session": "./src/session-token.ts",
     "./password": "./src/password.ts",
     "./secret-box": "./src/secret-box.ts",

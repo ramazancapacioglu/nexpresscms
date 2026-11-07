@@ -8,6 +8,26 @@ export interface LocaleSiteInfo {
   defaultLocale: string;
 }
 
+export type LocaleMode = { single: boolean; locale: string };
+
+/**
+ * Dil kipi sorgusu başarısızsa son bilinen sonuç kullanılır.
+ * Hiç okunamadıysa tek dil varsayılır (`tr`, ön eksiz). Ön ekli moda düşmek `/sayfa` → `/tr/sayfa` kalıcı yönlendirmesi üretir.
+ */
+export function resolveLocaleMode(fetched: LocaleMode | null, previous: LocaleMode | null): LocaleMode {
+  return fetched ?? previous ?? { single: true, locale: "tr" };
+}
+
+/**
+ * Çok dilli sitede ön eksiz eski adres varsayılan dilin adresine gider.
+ * Tek dilde `null`: yolu `/tr/...` yapmak kalıcı yönlendirmeyi tarayıcıya yazar.
+ */
+export function prefixedFallbackPath(supportedCount: number, defaultLocale: string, pathname: string): string | null {
+  if (supportedCount <= 1) return null;
+  const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return `/${defaultLocale}${path === "/" ? "" : path}`;
+}
+
 /** Ön eksiz mod: sitede tek dil var ve istenen dil o dil. Site bilinmiyorsa (null) ön ek korunur. */
 export function isPrefixless(site: Partial<LocaleSiteInfo> | null | undefined, locale: string): boolean {
   return Boolean(site && site.supportedLocales?.length === 1 && site.defaultLocale === locale);

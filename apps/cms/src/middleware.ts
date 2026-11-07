@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { resolveLocaleMode, type LocaleMode } from "@nexpress/core/locale-path";
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
@@ -7,23 +8,36 @@ import { isReservedPath } from "@/lib/public-paths";
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
 const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations"];
 
-type LocaleMode = { single: boolean; locale: string };
-const modeCache = new Map<string, { mode: LocaleMode | null; at: number }>();
+type SiteGate = LocaleMode & { index: boolean };
 
-/** Sitenin dil kipi (tek dil mi?). Kısa süre bellekte tutulur; sorgu başarısızsa ön ekli (eski) davranış korunur. */
-async function localeMode(request: NextRequest, siteId: string): Promise<LocaleMode | null> {
+const modeCache = new Map<string, { mode: SiteGate; at: number }>();
+
+/** Dil kipi ve arama indeksi. Sorgu düşerse son başarılı sonuç kalır. */
+async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate> {
   const hit = modeCache.get(siteId);
-  if (hit && Date.now() - hit.at < (hit.mode ? 15_000 : 3_000)) return hit.mode;
-  let mode: LocaleMode | null = null;
-  try {
-    const origin = process.env.INTERNAL_APP_URL || request.nextUrl.origin;
-    const res = await fetch(`${origin}/api/locale-mode`, { headers: { "x-nexpress-site-id": siteId, host: request.headers.get("host") ?? "" }, signal: AbortSignal.timeout(2500), cache: "no-store" });
-    if (res.ok) mode = (await res.json()) as LocaleMode;
-  } catch {
-    mode = null;
+  if (hit && Date.now() - hit.at < 15_000) return hit.mode;
+  let fetched: (LocaleMode & { index?: boolean }) | null = null;
+  const port = process.env.PORT || "3000";
+  const origins = [...new Set([process.env.INTERNAL_APP_URL, `http://127.0.0.1:${port}`, request.nextUrl.origin].filter((o): o is string => Boolean(o)))];
+  for (const origin of origins) {
+    try {
+      const res = await fetch(`${origin}/api/locale-mode`, {
+        headers: { "x-nexpress-site-id": siteId, host: request.headers.get("host") ?? "" },
+        signal: AbortSignal.timeout(800),
+        cache: "no-store",
+      });
+      if (!res.ok) continue;
+      fetched = (await res.json()) as LocaleMode & { index?: boolean };
+      break;
+    } catch {
+      /* sonraki adres */
+    }
   }
-  modeCache.set(siteId, { mode, at: Date.now() });
-  return mode;
+  const mode = resolveLocaleMode(fetched, hit?.mode ?? null);
+  const index = typeof fetched?.index === "boolean" ? fetched.index : hit?.mode.index ?? true;
+  const gate: SiteGate = { ...mode, index };
+  modeCache.set(siteId, { mode: gate, at: Date.now() });
+  return gate;
 }
 
 export async function middleware(request: NextRequest) {
@@ -32,14 +46,19 @@ export async function middleware(request: NextRequest) {
   const siteId = resolveSiteIdFromHost(host);
 
   // Tek dilli sitede dil ön eki yoktur: `/tr/x` → 308 `/x`; ön eksiz yol içeride `/tr/x` olarak yeniden yazılır.
-  const mode = pathname === "/api/locale-mode" || isReservedPath(pathname) ? null : await localeMode(request, siteId);
-  const prefixless = Boolean(mode?.single);
-  if (prefixless && (pathname === `/${mode!.locale}` || pathname.startsWith(`/${mode!.locale}/`))) {
+  const gate = pathname === "/api/locale-mode" ? null : await siteGate(request, siteId);
+  const indexing = gate?.index !== false;
+  const seal = (response: NextResponse) => {
+    if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  };
+  const prefixless = Boolean(gate && !isReservedPath(pathname) && gate.single);
+  if (gate && prefixless && (pathname === `/${gate.locale}` || pathname.startsWith(`/${gate.locale}/`))) {
     const url = request.nextUrl.clone();
-    url.pathname = pathname.slice(mode!.locale.length + 1) || "/";
-    return NextResponse.redirect(url, 308);
+    url.pathname = pathname.slice(gate.locale.length + 1) || "/";
+    return seal(NextResponse.redirect(url, 308));
   }
-  const internalPath = prefixless ? `/${mode!.locale}${pathname === "/" ? "" : pathname}` : pathname;
+  const internalPath = gate && prefixless ? `/${gate.locale}${pathname === "/" ? "" : pathname}` : pathname;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nexpress-site-id", siteId);
@@ -78,14 +97,14 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.search = `?next=${encodeURIComponent(pathname)}`;
-      return NextResponse.redirect(url);
+      return seal(NextResponse.redirect(url));
     }
     // Yönetici bölümleri: editör için anında 307 (sayfa içinde de veritabanı rolüyle ayrıca denetlenir)
     if (session.role !== "admin" && ADMIN_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin";
       url.search = "";
-      return NextResponse.redirect(url);
+      return seal(NextResponse.redirect(url));
     }
   }
 
@@ -93,7 +112,7 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/" && !prefixless) {
     const url = request.nextUrl.clone();
     url.pathname = "/tr";
-    return NextResponse.redirect(url);
+    return seal(NextResponse.redirect(url));
   }
 
   // Kural 5 & 04-CORE-SEO-AND-GEO:
@@ -114,9 +133,9 @@ export async function middleware(request: NextRequest) {
     // Yeniden yazılan sorgu, rota işleyicisinin nextUrl'ine düşmeyebilir.
     // Asıl yol bu yüzden istek başlığında taşınır.
     requestHeaders.set("x-nexpress-target-path", internalPath);
-    return NextResponse.rewrite(rewriteUrl, {
+    return seal(NextResponse.rewrite(rewriteUrl, {
       request: { headers: requestHeaders },
-    });
+    }));
   }
 
   let response: NextResponse;
@@ -133,6 +152,7 @@ export async function middleware(request: NextRequest) {
     response.headers.set("Cache-Control", "private, no-store");
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
+  if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
   if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);

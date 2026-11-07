@@ -151,8 +151,12 @@ function collect(blocks: BlockNode[], parentType: string | null, out: string[], 
     if (s) {
       const base = valuesToDeclarations(s);
       const extra: string[] = [];
-      if (s.fullWidth && parentType === null) {
-        extra.push("width:100vw", "position:relative", "left:50%", "margin-left:-50vw");
+      const width = s.blockWidth === "site" || s.blockWidth === "full" ? s.blockWidth : s.fullWidth && parentType === null ? "full" : null;
+      if (width === "full") {
+        extra.push("width:100vw", "max-width:100vw", "position:relative", "left:50%", "margin-left:-50vw");
+      }
+      if (width === "site") {
+        extra.push("width:100%", "max-width:var(--nx-container,1200px)", "margin-left:auto", "margin-right:auto");
       }
       const all = [base, ...extra].filter(Boolean).join(";");
       if (all) out.push(`${sel}{${all}}`);

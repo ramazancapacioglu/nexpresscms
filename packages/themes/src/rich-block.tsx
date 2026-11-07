@@ -12,7 +12,7 @@ export function RichBlock({
   text?: unknown;
   className: string;
   style?: React.CSSProperties;
-  as: "p" | "div" | "h2" | "h3" | "h4";
+  as: "p" | "div" | "h1" | "h2" | "h3" | "h4";
 }) {
   const Tag = as;
   const markup = typeof html === "string" ? html.trim() : "";

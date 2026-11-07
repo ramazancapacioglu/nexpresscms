@@ -9,6 +9,7 @@ import { SchemaFields } from "./schema-fields";
 import { SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
 import { CampaignShowcaseFields } from "./campaign-showcase-fields";
+import { BlockWidthField } from "./block-width-field";
 
 /** Kendi özel alan arayüzü olan (veya düzenlenecek alanı olmayan) bloklar; kalan her blok şema tabanlı alanlarla düzenlenir. */
 const DEDICATED_UI = new Set(["section", "columns", "column", "paragraph", "heading", "paragraph_element", "heading_element", "text_div", "divider_spacer", "media_file", "dynamic_list", "schema_card", "image_figure", "hero", "button_element", "list_element", "anchor_nav", "campaign_showcase"]);
@@ -35,6 +36,7 @@ export function BlockGeneralTab() {
 
   return (
                         <div className="space-y-3">
+                          <BlockWidthField />
                           {(selectedBlock.type === "paragraph" || selectedBlock.type === "heading" || selectedBlock.type === "paragraph_element" || selectedBlock.type === "heading_element") && <AiComposePanel />}
                           {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
                           {selectedBlock.type === "campaign_showcase" && <CampaignShowcaseFields />}

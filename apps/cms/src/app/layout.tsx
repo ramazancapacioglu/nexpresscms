@@ -11,9 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const site = await getPublicSite(siteId);
   return {
-    title: "NexPress CMS — Open-Core Dual-Engine Platform",
-    description:
-      "Next.js 15 (100/100 Lighthouse RSC), Dual-Database (LibSQL & PostgreSQL/pgvector), Theme Store & Agentic SEO CMS",
+    title: site?.name ?? "NexPress CMS",
+    description: site?.tagline || undefined,
     verification: webmasterVerification(site?.settings?.seo?.verification),
   };
 }

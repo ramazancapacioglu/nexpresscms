@@ -15,7 +15,7 @@ export interface StylePreset {
 export const MAX_STYLE_PRESETS = 50;
 
 /** Bloğa özel (ön ayara girmeyen) alanlar */
-const BLOCK_SPECIFIC = ["anchorId", "cssClass", "customCss", "hideOn", "fullWidth"] as const;
+const BLOCK_SPECIFIC = ["anchorId", "cssClass", "customCss", "hideOn", "fullWidth", "blockWidth"] as const;
 
 const VALUE_KEYS: ReadonlyArray<keyof BlockStyleValues> = [
   "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "marginTop", "marginBottom", "marginLeft", "marginRight",

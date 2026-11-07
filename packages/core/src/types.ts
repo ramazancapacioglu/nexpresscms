@@ -261,6 +261,8 @@ export interface BlockStyle extends BlockStyleValues {
   /** Geçiş süresi (ms); hover geçişi için de kullanılır */
   transitionMs?: number;
   hideOn?: DeviceKey[] | { desktop?: boolean; tablet?: boolean; mobile?: boolean };
+  /** Sayfa yerleşimini ezer: `site` tema kapsayıcısı, `full` kenardan kenara. Yoksa sayfa ayarı geçerli. */
+  blockWidth?: "site" | "full";
   fullWidth?: boolean; // Kapsayıcıdan taşarak tam ekran genişlik
   anchorId?: string;
   cssClass?: string;

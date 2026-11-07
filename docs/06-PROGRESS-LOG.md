@@ -21,6 +21,32 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-07] — Vitrin kütüphanesi ve tema arama penceresi
+- Tasarım kütüphanesine on vitrin yerleşimi eklendi: çözüm kartları, demo çağrı bandı, görsel-liste, mint bant, geri arama formu, modül kartları, örtülü görsel, kanal şeridi, kurulum formu, kapak başlık.
+- Kapak başlık sayfanın başlığını, kısa açıklamasını ve öne çıkan görselini çeker (`tpl_post_title` + `showTldr`).
+- Yazılım firması temasında arama ikonu dialog açar; yazdıkça `/api/search` sonuç döner. Diğer temalar `/ara` bağlantısında kalır.
+
+### [2026-11-07] — Genel arama indeksi anahtarı
+- SEO ayarlarına site geneli açık/kapalı indeks eklendi (`seo.searchIndexing`). Kapalıyken sayfalar noindex, site haritası boş, robots.txt tüm siteyi kapatır. Kayıt yoksa indeks açık kalır.
+
+### [2026-11-07] — Akınsoft İzmir şeridi ve ana sayfa düzeni
+- Üst şerit iki sıra: solda marka yazısı, ortada yardımcı bağlantılar (alt menülü), sağda telefon ve arama; altta ortalanmış ana menü. Footer’a `6-equal` yerleşimi eklendi. Ana sayfa kahraman başlığı `h1`, çözüm kartları ızgara, çağrı bandı ve iki içerik satırı kaynak yerleşime yaklaştırıldı.
+
+### [2026-11-07] — Blok genişliği: site ya da tam
+- Denetçinin Genel sekmesinde her blok sayfa yerleşimini koruyabilir, site kapsayıcısına çekilebilir ya da kenardan kenara açılabilir (`style.blockWidth`). Eski `fullWidth` kök bloklarda durur.
+
+### [2026-11-07] — Tek dilde adres ön eki geri gelmesin
+- Dil kipi okunamazsa site ön ekli moda düşmüyor; son başarılı sonuç, yoksa tek dil (`tr`, ön eksiz) kalıyor. Tek dilli sitede tanımsız bir yol `/tr/...` adresine 308 ile gitmiyor.
+
+### [2026-11-07] — akinsoftizmir.com.tr içeriği ileriseo.com'a aktarıldı
+- Canlı sitede sayfa, yazı ve kampanya kayıtları silindi. Tema `yazilim-firmasi`, form tanımı ve kod içindeki tasarım kütüphanesi duruyor. Veritabanındaki tasarım kütüphanesi ve şablon satırı aktarımdan önce de boştu.
+- WordPress dışa aktarımından 86 sayfa ve 67 yazı, Rank Math başlık/açıklama/odak kelime ve şema türüyle yazıldı. Ana sayfa `ana-sayfa` oldu. Header menüsü, yedi footer sütunu, site adı ve telefon kaynak siteden alındı. Görseller eski adreste kaldı.
+- Ana sayfa başlığı artık içerik SEO kaydından üretiliyor. Kök düzenin sabit ürün sloganı, site adı ve sloganına bırakıldı.
+
+### [2026-11-07] — ileriseo.com PostgreSQL + pgvector
+- Canlı site SQLite dosyasından PostgreSQL 16.15 + pgvector 0.6'ya alındı. Veritabanı `nexpress_cms`, dinleme yalnız yerelde. Göç `fresh`, başlangıç verisi yeniden yüklendi, sağlık ucu `ok`. HNSW indeksli `vector(1536)` sütunu açıldı.
+- SQLite üzerinde RAG susmaz: vektör süreç içi taranır, yaklaşık 20 bin parçaya kadar idare eder. Anlam araması ve HNSW üretimi PostgreSQL'dedir.
+
 ### [2026-11-07] — ileriseo.com yayını ve push ile aktarım
 - Site `ileriseo.com` üzerinde. SQLite ve medya alan adı ev dizininde; nginx 443 istekleri uygulama kapısı 3000'e verir.
 - `main` push'u CI doğrulamasından sonra sunucudaki güncelleme betiğini çalıştırır. Anahtar GitHub sırrı `DEPLOY_SSH_KEY`; parola depoda yok.

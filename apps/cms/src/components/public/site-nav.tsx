@@ -191,13 +191,15 @@ function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: stri
 }
 
 /** Mobil menü: JS'siz panel. Kökler kapalı, altlar isteyince açılır. */
-export function MobileNav({ menu, label, allLabel }: { menu: NavigationMenuItem[]; label: string; allLabel: string }) {
-  if (menu.length === 0) return null;
+export function MobileNav({ menu, extra, label, allLabel }: { menu: NavigationMenuItem[]; extra?: NavigationLink[]; label: string; allLabel: string }) {
+  const seen = new Set(menu.map((item) => `${item.label}|${item.href}`));
+  const items: NavigationLink[] = [...menu, ...(extra ?? []).filter((item) => !seen.has(`${item.label}|${item.href}`))];
+  if (items.length === 0) return null;
   return (
     <details className="nx-mobile-nav group relative md:hidden">
       <summary className="flex h-10 cursor-pointer list-none items-center rounded-md border border-current/20 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">{label}</summary>
       <nav aria-label="Mobil menü" className="absolute right-0 top-full z-50 mt-2 max-h-[80vh] w-[min(380px,calc(100vw-1rem))] overflow-y-auto rounded-2xl border border-current/10 bg-white p-2 text-nx-fg shadow-xl">
-        {menu.map((item) => (
+        {items.map((item) => (
           <MobileBranch key={item.id} item={item} allLabel={allLabel} />
         ))}
       </nav>

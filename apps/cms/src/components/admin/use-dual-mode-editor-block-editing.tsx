@@ -96,7 +96,15 @@ export function useDualModeEditorBlockEditing(p: ReturnType<typeof useDualModeEd
   /** Cihazdan bağımsız alanlar (hover, animasyon, geçiş süresi) her zaman kök stile yazılır. */
   const updateSelectedBlockStyleRoot = (patch: Partial<BlockStyle>) => {
     if (!selectedBlockId) return;
-    setBlocks((prev) => updateBlockById(prev, selectedBlockId, (b) => ({ ...b, style: { ...(b.style ?? {}), ...patch } })));
+    setBlocks((prev) =>
+      updateBlockById(prev, selectedBlockId, (b) => {
+        const style: BlockStyle = { ...(b.style ?? {}), ...patch };
+        for (const key of Object.keys(patch) as (keyof BlockStyle)[]) {
+          if (patch[key] === undefined) delete style[key];
+        }
+        return { ...b, style };
+      })
+    );
   };
 
   // Aktif cihaza göre seçili bloğun stil değerini oku

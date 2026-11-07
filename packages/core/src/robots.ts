@@ -10,6 +10,8 @@ export interface RobotsInput {
   sitemapUrls?: string[];
   /** `*` grubuna eklenecek ek satırlar (ör. Content-Signal) */
   groupLines?: string[];
+  /** `false` ise tüm site `Disallow: /` olur ve site haritası yazılmaz. */
+  indexing?: boolean;
 }
 
 /**
@@ -17,6 +19,10 @@ export interface RobotsInput {
  * genel grup (`*`) yönetim ve API yollarını her zaman kapatır.
  */
 export function buildRobotsTxt(input: RobotsInput): string {
+  const extra = input.extra?.trim();
+  if (input.indexing === false) {
+    return `User-agent: *\nDisallow: /\n${extra ? `\n${extra}\n` : ""}`;
+  }
   const policy = input.botPolicy ?? {};
   const lines: string[] = [];
   const blockedTokens = KNOWN_BOTS.filter((b) => policy[b.id] === "block").flatMap((b) => b.robotsTokens);
@@ -25,7 +31,6 @@ export function buildRobotsTxt(input: RobotsInput): string {
   lines.push("User-agent: *", "Allow: /", "Disallow: /admin", "Disallow: /api", ...(input.groupLines ?? []), "");
   const base = input.baseUrl.replace(/\/$/, "");
   for (const url of input.sitemapUrls ?? [`${base}/sitemap.xml`]) lines.push(`Sitemap: ${url}`);
-  const extra = input.extra?.trim();
   if (extra) lines.push("", extra);
   return `${lines.join("\n")}\n`;
 }

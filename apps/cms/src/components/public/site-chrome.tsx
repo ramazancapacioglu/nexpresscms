@@ -34,10 +34,12 @@ interface HeaderProps {
   menuLabel: string;
   menuAllLabel: string;
   searchLabel: string;
+  /** Yazılım firması teması: arama ikonu sayfa yerine canlı sonuç penceresi açar. */
+  liveSearch?: boolean;
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, liveSearch }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
   const bottom = header?.bottomBar;
@@ -66,19 +68,27 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       if (!phone && !email) return null;
       return (
         <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] opacity-90">
-          {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a> : null}
+          {phone ? <a className="nx-header-phone" href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a> : null}
           {email ? <a href={`mailto:${email}`}>{email}</a> : null}
         </span>
       );
     }
     if (id === "logo") {
+      const home = (lb ?? `/${locale}`) || "/";
+      const lockup = logoText.split(" - ");
+      const branded = !custom.logoImage && lockup.length > 1;
       return (
-        <a href={(lb ?? `/${locale}`) || "/"} className="flex min-w-0 items-center gap-2.5">
+        <a href={home} className="nx-logo flex min-w-0 items-center gap-2.5 no-underline">
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
           ) : /^[A-ZÇĞİÖŞÜ]{3,}SOFT$/.test(logoText) ? (
             <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>{logoText.slice(0, -4)}</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
+          ) : branded ? (
+            <span className="nx-logo-lockup truncate text-[17px] font-bold leading-tight">
+              <span className="nx-logo-brand underline">{lockup[0]}</span>
+              <span className="nx-logo-suffix font-semibold no-underline">{" - "}{lockup.slice(1).join(" - ")}</span>
+            </span>
           ) : (
             <span style={{ fontFamily: tokens.typography.headingFont, color: ink ? tokens.colors.foreground : undefined }} className="truncate text-lg font-bold tracking-tight">{logoText}</span>
           )}
@@ -88,12 +98,19 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
     }
     if (id === "menu") {
       return viewport === "mobile"
-        ? <MobileNav menu={menu} label={menuLabel} allLabel={menuAllLabel} />
+        ? <MobileNav menu={menu} extra={bottomLinks} label={menuLabel} allLabel={menuAllLabel} />
         : <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />;
     }
     if (id === "search") {
+      if (liveSearch) {
+        return (
+          <button type="button" popoverTarget="nx-yf-search" className="nx-header-search whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100" aria-label={searchLabel}>
+            {searchLabel}
+          </button>
+        );
+      }
       return (
-        <a href={`${lb ?? `/${locale}`}/ara`} className="whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">
+        <a href={`${lb ?? `/${locale}`}/ara`} className="nx-header-search whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">
           {searchLabel}
         </a>
       );
@@ -111,9 +128,20 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
     }
     if (id === "links" && bottomLinks.length > 0) {
       return (
-        <span className="flex gap-4 overflow-x-auto">
+        <span className="nx-utility-links flex flex-wrap items-center gap-x-5 gap-y-1">
           {bottomLinks.map((link) => (
-            <a key={link.id} href={link.href} className="whitespace-nowrap text-zinc-400 hover:text-current">{link.label}</a>
+            <span key={link.id} className="group relative">
+              <a href={link.href} className="nx-utility-link whitespace-nowrap text-sm">{link.label}</a>
+              {link.children?.length ? (
+                <span className="invisible absolute left-0 top-full z-50 min-w-52 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <span className="block rounded-lg border border-black/10 bg-white p-2 text-sm shadow-lg">
+                    {link.children.map((child) => (
+                      <a key={child.id} href={child.href} className="block rounded px-2 py-1.5 hover:bg-black/5">{child.label}</a>
+                    ))}
+                  </span>
+                </span>
+              ) : null}
+            </span>
           ))}
         </span>
       );
@@ -139,10 +167,20 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const topVisible = Boolean(top?.enabled && (top.announcementText || top.contactPhone || top.contactEmail));
   const shell = ink ? "100%" : tokens.geometry.containerMaxWidth;
 
+  const shellSticky = sticky !== false && !ink;
+  const searchAction = `${lb ?? `/${locale}`}/ara`;
   return (
-    <>
+    <div className={shellSticky ? "nx-header-shell sticky top-0 z-40" : "nx-header-shell"}>
+      {liveSearch ? (
+        <div id="nx-yf-search" popover="auto" className="nx-yf-search">
+          <form action={searchAction} method="get" role="search" className="nx-yf-search-panel">
+            <input name="q" type="search" placeholder={searchLabel} autoComplete="off" aria-label={searchLabel} enterKeyHint="search" />
+            <div id="nx-yf-search-results" />
+          </form>
+        </div>
+      ) : null}
       {topVisible ? (
-        <div style={{ backgroundColor: tokens.colors.secondary, color: tokens.colors.secondaryForeground }} className="border-b border-white/10 px-4 py-2 text-xs">
+        <div style={{ backgroundColor: tokens.colors.secondary, color: tokens.colors.secondaryForeground }} className="nx-header-top border-b border-white/10 px-4 py-2 text-xs">
           <div style={{ maxWidth: shell }} className="mx-auto">
             {hasExplicitMobileZones(top) ? (
               <>
@@ -161,7 +199,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
         className={
           ink
             ? "nx-public-header sticky top-0 z-40 border-b"
-            : `nx-public-header z-40 border-b ${sticky === false ? "relative" : "sticky top-0"} ${glass === false ? "" : "backdrop-blur-md"}`
+            : `nx-public-header relative z-40 border-b ${glass === false ? "" : "backdrop-blur-md"}`
         }
       >
         <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto px-4 sm:px-6">
@@ -193,7 +231,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
           </div>
         ) : null}
       </header>
-    </>
+    </div>
   );
 }
 
