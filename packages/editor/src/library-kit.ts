@@ -18,6 +18,9 @@ export const button = (label: string, href: string, styleVariant: "primary" | "s
 export const image = (url: string, alt: string, props: Record<string, unknown> = {}, style?: BlockNode["style"]) =>
   n("image_figure", { url, altText: alt, borderRadius: "lg", ...props }, style ? { style } : {});
 export const col = (children: BlockNode[], style?: BlockNode["style"]) => n("column", {}, { children, ...(style ? { style } : {}) });
+/** Kutu: sütun olmayan yerde (bölüm içinde, sütun içinde) stilli kapsayıcı. `column` yalnızca `columns` içinde geçerlidir. */
+export const box = (children: BlockNode[], style?: BlockNode["style"]) =>
+  n("section", { containerMode: "full" }, { children, ...(style ? { style } : {}) });
 export const cols = (layout: string, children: BlockNode[], opts: Record<string, unknown> = {}) =>
   n("columns", { layout, gap: "24px", verticalAlign: "top", stackAt: "tablet", ...opts }, { children });
 
@@ -61,7 +64,8 @@ export const cardStyle = (extra: NonNullable<BlockNode["style"]> = {}): NonNulla
   ...extra,
 });
 
-const enc = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+/** Noktalı virgülsüz biçim: CSS `background-image` değerleri `;` temizlendiğinden bozulmaz. */
+const enc = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 
 type ArtKind = "dashboard" | "phone" | "cloud" | "chart" | "people" | "grid" | "globe" | "doc";
 

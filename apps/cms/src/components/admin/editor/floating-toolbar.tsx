@@ -90,7 +90,8 @@ export function FloatingToolbar({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute -top-10 left-2 z-30 flex max-w-[94vw] flex-wrap items-center gap-0.5 rounded-lg border border-slate-700/80 bg-slate-900/95 px-1.5 py-1 text-[11px] text-white shadow-xl backdrop-blur-md select-none"
+      data-nx-toolbar="block"
+      className={`absolute left-2 z-30 flex max-w-[94vw] flex-wrap items-center gap-0.5 rounded-lg border border-slate-700/80 bg-slate-900/95 px-1.5 py-1 text-[11px] text-white shadow-xl backdrop-blur-md select-none ${isText ? "top-full mt-1.5" : "-top-10"}`}
     >
       {/* Üst Bloğu Seç (Parent Jump) */}
       {parentId && onSelectParent && (

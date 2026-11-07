@@ -1,6 +1,6 @@
 import type { BlockNode } from "@nexpress/core";
 import type { DesignLibraryItem } from "./library-types";
-import { GRAD, art, band, cardStyle, col, cols, heading, image, itemFactory, n, para } from "./library-kit";
+import { GRAD, art, band, box, cardStyle, col, cols, heading, image, itemFactory, n, para } from "./library-kit";
 
 /**
  * Form tasarımları: formun kendisi `form_block`, çevresi degrade bant, bölünmüş kart veya sihirbaz düzenidir.
@@ -19,7 +19,7 @@ export const MODERN_FORM_ITEMS: DesignLibraryItem[] = [
   item("newsletter_strip", "Bülten şeridi (e-posta + düğme yan yana)", "forms", "Degrade bant; tek alan ve yanında düğme.", "form",
     band({ backgroundGradient: GRAD.ocean, textColor: "#ffffff", textAlign: "center" }, [
       heading("Haberleri kaçırmayın", "h2", { style: { textAlign: "center" } }), para("Ayda bir, yalnızca işinize yarayan içerikler.", { style: { textAlign: "center" } }),
-      col([form("Bülten", [f("eposta", "E-posta adresiniz", "email", { placeholder: "ornek@site.com", width: "half" })], "Abone ol", { columns: 2, buttonAlign: "beside" })], { backgroundColor: "#ffffff", textColor: "#0f172a", borderRadius: "20px", paddingTop: "20px", paddingBottom: "20px", paddingLeft: "20px", paddingRight: "20px", maxWidth: "560px", marginLeft: "auto", marginRight: "auto" }),
+      box([form("Bülten", [f("eposta", "E-posta adresiniz", "email", { placeholder: "ornek@site.com", width: "half" })], "Abone ol", { columns: 2, buttonAlign: "beside" })], { backgroundColor: "#ffffff", textColor: "#0f172a", borderRadius: "20px", paddingTop: "20px", paddingBottom: "20px", paddingLeft: "20px", paddingRight: "20px", maxWidth: "560px", marginLeft: "auto", marginRight: "auto" }),
     ], 64)),
   item("split_card", "Görselli bölünmüş form kartı", "forms", "Solda çizim ve güven maddeleri, sağda form; tek yuvarlak kart.", "form",
     band({ backgroundColor: "#f1f5f9" }, [cols("5+7", [
@@ -41,9 +41,9 @@ export const MODERN_FORM_ITEMS: DesignLibraryItem[] = [
       ], "Teklif iste", { stepped: true, buttonAlign: "full" })], cardStyle({ hover: undefined })),
     ], { verticalAlign: "center" })], 72), "Adımlı"),
   item("nps_card", "Memnuniyet kartı (puan + yorum)", "forms", "Ortalı dar kart: 0–10 puan, yıldız ve serbest yorum.", "form",
-    band({ backgroundGradient: GRAD.soft }, [col([heading("Deneyiminizi puanlayın", "h3", { style: { textAlign: "center" } }), form("Memnuniyet", [f("nps", "Bizi arkadaşınıza önerme olasılığınız?", "scale", { help: "0 = hiç önermem, 10 = kesinlikle öneririm" }), f("puan", "Genel memnuniyet", "rating"), f("yorum", "Eklemek istedikleriniz", "textarea")], "Gönder", { columns: 1, buttonAlign: "full" })], cardStyle({ maxWidth: "640px", marginLeft: "auto", marginRight: "auto", hover: undefined }))], 64), "Anket"),
+    band({ backgroundGradient: GRAD.soft }, [box([heading("Deneyiminizi puanlayın", "h3", { style: { textAlign: "center" } }), form("Memnuniyet", [f("nps", "Bizi arkadaşınıza önerme olasılığınız?", "scale", { help: "0 = hiç önermem, 10 = kesinlikle öneririm" }), f("puan", "Genel memnuniyet", "rating"), f("yorum", "Eklemek istedikleriniz", "textarea")], "Gönder", { columns: 1, buttonAlign: "full" })], cardStyle({ maxWidth: "640px", marginLeft: "auto", marginRight: "auto", hover: undefined }))], 64), "Anket"),
   item("reservation", "Rezervasyon formu (görsel başlıklı)", "forms", "Üstte kapak çizimi; tarih, saat, kişi sayısı ve not alanları.", "form",
-    band({ backgroundColor: "#f8fafc" }, [col([image(art("cloud", "#f97316", "#ec4899"), "Rezervasyon", { aspectRatio: "21:9", borderRadius: "none" }), form("Rezervasyon", [f("ad", "Ad soyad", "text", { width: "half" }), f("telefon", "Telefon", "tel", { width: "half" }), f("tarih", "Tarih", "date", { width: "half" }), f("saat", "Saat", "time", { width: "half" }), f("kisi", "Kişi sayısı", "number", { width: "half", min: 1, max: 20 }), f("alan", "Tercih", "select", { width: "half", options: ["İç mekân", "Bahçe", "Fark etmez"] }), f("not", "Özel istek", "textarea")], "Rezervasyon yap")], cardStyle({ maxWidth: "760px", marginLeft: "auto", marginRight: "auto", paddingTop: "0px", paddingLeft: "0px", paddingRight: "0px", hover: undefined }))], 64), "Rezervasyon"),
+    band({ backgroundColor: "#f8fafc" }, [box([image(art("cloud", "#f97316", "#ec4899"), "Rezervasyon", { aspectRatio: "21:9", borderRadius: "none" }), form("Rezervasyon", [f("ad", "Ad soyad", "text", { width: "half" }), f("telefon", "Telefon", "tel", { width: "half" }), f("tarih", "Tarih", "date", { width: "half" }), f("saat", "Saat", "time", { width: "half" }), f("kisi", "Kişi sayısı", "number", { width: "half", min: 1, max: 20 }), f("alan", "Tercih", "select", { width: "half", options: ["İç mekân", "Bahçe", "Fark etmez"] }), f("not", "Özel istek", "textarea")], "Rezervasyon yap")], cardStyle({ maxWidth: "760px", marginLeft: "auto", marginRight: "auto", paddingTop: "0px", paddingLeft: "0px", paddingRight: "0px", hover: undefined }))], 64), "Rezervasyon"),
   item("career", "Kariyer başvuru formu", "forms", "Solda açık pozisyon bilgisi, sağda başvuru alanları.", "form",
     band({ backgroundColor: "#ffffff" }, [cols("4+8", [
       col([heading("Ekibimize katılın", "h3"), para("Uzaktan ve hibrit çalışma, yıllık eğitim bütçesi, esnek saatler."), n("icon_list", { items: [{ icon: "briefcase", title: "Tam zamanlı", text: "" }, { icon: "map-pin", title: "İstanbul / Uzaktan", text: "" }] })], cardStyle({ backgroundColor: "#eef2ff", borderColor: "#c7d2fe", hover: undefined })),

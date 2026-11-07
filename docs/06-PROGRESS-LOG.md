@@ -21,6 +21,25 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-07] — Tasarım kütüphanesi: Türkçe kategoriler, akordeon/sekme çeşitliliği, sayfa türü süzgeci
+- **Kategoriler:** `packages/core/src/library-categories.ts` tek kaynak (İçerik 21, Medya 4, Gelişmiş 3). Kenar çubuğu başlıklı gruplar; her örnek tam bir kategoride. Eski adlar `normalizeLibraryCategory` ile çevrilir (AI ayrıştırıcısı, kayıtlı özel tasarımlar); AI istemi yeni kimlikleri listeler.
+- **Akordeon (8) ve sekme (7) görünümü:** `blocks-disclosure.tsx` (`accordionStyle`, `icon`, `openFirst`; `tabStyle` genişledi), yalnız CSS, JS yok. Denetçide görünüm seçenekleri eklendi; AI kataloğu `tabStyle` listesi güncellendi.
+- **Yeni tasarımlar:** `library-disclosure.ts` (14), `library-sections.ts` (24), `library-extras.ts` (10), `library-fresh.ts` (27); kütüphane 108 → 184 öğe (eklenen 27 özgün bölüm dahil). Her kategoride en az 2 tasarım.
+- **Sayfa türü süzgeci:** tam sayfa paketleri `pageCategory` taşır; 5 yeni paket (modern ana sayfa, hizmetler, portfolyo, ekip, galeri). Pencerede Tümü / Ana sayfa / Hakkında / İletişim / Hizmetler / Portfolyo / Ekip / Galeri.
+- **27 yeni özgün bölüm** (`library-fresh.ts`, `lib_fr_*`; kütüphane 184 öğe): arama vitrini, tarayıcı çerçeveli ve ikiye bölünmüş vitrin, numaralı/pastel/kademeli kartlar, kısa yorum kartları, puan bandı, tek büyük sayaç, yol haritası, sürüm notları, kupon ve soru çağrıları, ekibe katıl, sosyal bağlantılı kişiler, indirimli ürün, kutuda neler var, tek plan, artı/eksi, biz-ve-diğerleri, polaroid galeri, çakışan görsel, bölümlü video, 2 sütunlu akordeon, üçlü iletişim, hediyeli abonelik, kenar notlu alıntı. Yalnız desteklenen stil anahtarları kullanılır (`rotate`, `borderWidth` kısaltması, `textColor`).
+- **Akordeon açılışı:** `openMode` (ilk açık / hepsi kapalı / hepsi açık) ve `exclusive` (biri açılınca diğerleri kapanır); SSS bloğu da okur.
+- **Editör:** metin bloğunun araç çubuğu bloğun altına alındı (metin biçim çubuğuyla üst üste binmesin); kütüphane kartı iç içe `<button>` uyarısı giderildi.
+- Testler: kategori sözleşmesi (her kategori dolu, geçerli kimlik, ≥6 akordeon ve sekme görünümü), `normalizeLibraryCategory`, akordeon/sekme sunucu çıktısı.
+
+### [2026-11-07] — Tasarım kütüphanesi: düzenlenebilirlik, sadeleştirme, yaratıcı bölümler, canlı önizleme
+- 🐞 **Kütüphane bloklarının bir kısmı düzenlenemiyordu:** iç içe `column` (sütunun içinde sütun) tuvalde yaprak blok gibi çiziliyor, içindeki metinler satır içi düzenlenemiyordu. Kütüphane düzeltildi (`box()`), çekirdeğe `repairBlockNesting` eklendi (editör yüklenirken ve her yazmada kayıtlı/eski yapıyı onarır), sözleşme testi eklendi. `hero` denetçisine ikincil düğme alanları eklendi; satır içi düzenleme eski tarayıcıda `contenteditable="true"` ile çalışır.
+- 🐞 Görsel üstü kart ve kapaklı bölümlerde görsel görünmüyordu: SVG veri adresindeki `;` CSS temizliğinde siliniyordu; adres `data:image/svg+xml,...` oldu. Çok katmanlı mesh degrade `background` alanına yazıldı.
+- **Sadeleştirme:** 150 → 108 öğe. Aynı işi yapan ERP/yazılım firması varyantları, yatay/dörtlü/adımlı eski formlar, temaya bağlı `lib_yf_*`, destek aracı ve iki yerleşim öğesi kaldırıldı; başlangıç paketleri eşdeğerlerine bağlandı (yinelenen `pick` temizlendi).
+- **13 yaratıcı bölüm** (`lib_cr_*`) listenin başında. Kart adları en çok 24 karakter, kart başlığı 12,5 px ve tek satır.
+- **Canlı önizleme:** kart küçük resmi artık bloğun gerçek çıktısı (görününce yüklenir); eski şematik çizim kaldırıldı.
+- **Seçim vurgusu:** seçili blok/satır/sütun 3 px mavi çerçeve, ışıma ve hafif zemin; seçili sütunda kalıcı "Seçili sütun N · %X" etiketi.
+- Testler: kütüphane sözleşmesi (kısa ad, yinelenen yok, paketler, denetçi kapsamı, sütun yuvası), `repairBlockNesting`.
+
 ### [2026-11-07] — Editör: çapa alanı tek yerde, sütun/görsel sürükleme düzeltmesi
 - HTML çapa kimliği artık yalnızca **Gelişmiş** sekmesinde; Genel sekmesindeki yinelenen alan (bölüm ve diğer bloklar) kaldırıldı. Çapa gezgininin önerileri (`ANCHOR_ID_PRESETS`) duruyor.
 - 🐞 **Sütun ayırıcı ve görsel ölçekleme sürüklemesi:** tuval bir iframe içindedir; fare olayları üst pencereye değil iframe penceresine düşer, dinleyiciler `window`'a bağlı olduğundan sürükleme canlı güncellenmiyor, bırakma kaçıyor ve genişlik sonradan/yanlış oturuyordu. Dinleyiciler artık tutamacın `ownerDocument.defaultView` penceresine bağlanır. Sütunlara `min-w-0` ve `transition-all` yerine `transition-colors` verildi (genişlik animasyonu gecikme yaratıyordu). Tarayıcıda doğrulandı: sürükleme sırasında anında, bırakınca kalıcı.

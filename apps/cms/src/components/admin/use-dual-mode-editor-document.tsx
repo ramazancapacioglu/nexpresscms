@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { DEFAULT_STUDIO_TOKENS } from "@/components/admin/editor/studio-model";
 import { useRouter } from "next/navigation";
-import { ensureUniqueBlockIds, slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
+import { ensureUniqueBlockIds, repairBlockNesting, slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
 import type { ContentDto, MediaAssetDto, TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 
 export interface DualModeEditorClientProps {
@@ -80,7 +80,7 @@ export function useDualModeEditorDocument({
     []
   );
   const initialBlocks = useMemo(
-    () => ensureUniqueBlockIds(initialDoc?.blocks?.length ? initialDoc.blocks : blankBlocks),
+    () => ensureUniqueBlockIds(repairBlockNesting(initialDoc?.blocks?.length ? initialDoc.blocks : blankBlocks)),
     [initialDoc, blankBlocks]
   );
   const [blocks, setBlocksState] = useState<BlockNode[]>(initialBlocks);
@@ -130,7 +130,7 @@ export function useDualModeEditorDocument({
     recordHistory = true
   ) => {
     const rawNext = typeof updater === "function" ? updater(blocksRef.current) : updater;
-    const next = ensureUniqueBlockIds(rawNext);
+    const next = ensureUniqueBlockIds(repairBlockNesting(rawNext));
     blocksRef.current = next;
     setBlocksState(next);
     if (recordHistory) {

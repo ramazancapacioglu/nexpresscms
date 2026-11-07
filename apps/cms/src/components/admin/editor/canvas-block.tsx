@@ -170,7 +170,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
       }}
       className={`${spanClass} group/blk relative rounded-lg transition-all ${
         isSelected
-          ? "outline-2 outline-blue-600"
+          ? "z-10 bg-blue-500/[0.05] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.14)]"
           : "hover:outline-1 hover:outline-dashed hover:outline-blue-400/75"
       } ${
         dropSide === "before"
@@ -324,10 +324,15 @@ export function CanvasBlock(props: CanvasBlockProps) {
                         overColId === col.id
                           ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
                           : colSelected
-                            ? "outline-2 outline-blue-600"
+                            ? "z-10 bg-blue-500/[0.06] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.16)]"
                             : "hover:outline-1 hover:outline-dashed hover:outline-slate-300"
                       }`}
                     >
+                      {colSelected && (
+                        <span className="pointer-events-none absolute -top-3 left-3 z-30 rounded-md bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+                          Seçili sütun {colIdx + 1} · %{Math.round(widthPct)}
+                        </span>
+                      )}
                       {/* Sütun Seçiliyse Yüzen Araç Çubuğu */}
                       {colSelected && (
                         <FloatingToolbar

@@ -155,39 +155,6 @@ export const CATALOG_LIBRARY_ITEMS: DesignLibraryItem[] = [
       { label: "Mesaj", name: "mesaj", type: "textarea", required: true, width: "full" },
     ],
   }, "Dikey"),
-  entry("lib_form_row", "Yatay iletişim", "forms", "Ad ve e-posta yan yana, düğme son alanın yanında.", "form", "form_block", {
-    title: "Kısa not",
-    submitLabel: "Gönder",
-    appearance: { columns: 2, labels: "top", density: "compact", buttonAlign: "beside" },
-    fields: [
-      { label: "Ad", name: "ad", type: "text", required: true, width: "half" },
-      { label: "E-posta", name: "eposta", type: "email", required: true, width: "half" },
-      { label: "Konu", name: "konu", type: "text", width: "half" },
-      { label: "Telefon", name: "telefon", type: "tel", width: "half" },
-    ],
-  }, "Yatay"),
-  entry("lib_form_grid", "Dörtlü kayıt", "forms", "Dört kısa alan tek satırda. Dar ekranda alt alta iner.", "form", "form_block", {
-    title: "Hızlı kayıt",
-    submitLabel: "Kaydol",
-    appearance: { columns: 4, density: "compact", buttonAlign: "full" },
-    fields: [
-      { label: "Ad", name: "ad", type: "text", required: true, width: "quarter" },
-      { label: "Soyad", name: "soyad", type: "text", width: "quarter" },
-      { label: "E-posta", name: "eposta", type: "email", required: true, width: "quarter" },
-      { label: "Telefon", name: "telefon", type: "tel", width: "quarter" },
-    ],
-  }, "4'lü"),
-  entry("lib_form_steps", "Randevu adımları", "forms", "Önce kişi, sonra tarih ve saat. Gönder son adımdadır.", "form", "form_block", {
-    title: "Randevu",
-    submitLabel: "Randevu iste",
-    appearance: { columns: 2, stepped: true, buttonAlign: "full" },
-    fields: [
-      { label: "Ad soyad", name: "ad", type: "text", required: true, width: "half", step: 1 },
-      { label: "E-posta", name: "eposta", type: "email", required: true, width: "half", step: 1 },
-      { label: "Tarih", name: "tarih", type: "date", required: true, width: "half", step: 2 },
-      { label: "Saat", name: "saat", type: "time", required: true, width: "half", step: 2 },
-    ],
-  }, "Adım"),
   entry("lib_form_dialog", "Hızlı iletişim penceresi", "forms", "Sayfada bir bağlantı. Form açılır pencerede durur.", "form", "form_block", {
     title: "Hızlı iletişim",
     submitLabel: "Gönder",

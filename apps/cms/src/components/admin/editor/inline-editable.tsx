@@ -3,6 +3,15 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { assignStringsToTexts, collectEditableStrings, normalizeText, patchAtPath, type BlockNode } from "@nexpress/core";
 
+/** `plaintext-only` her tarayıcıda yok (eski Firefox); desteklenmiyorsa düz `true` kullanılır. */
+let plainMode: "plaintext-only" | "true" | null = null;
+function editableMode(el: HTMLElement): "plaintext-only" | "true" {
+  if (plainMode) return plainMode;
+  el.contentEditable = "plaintext-only";
+  plainMode = el.contentEditable === "plaintext-only" ? "plaintext-only" : "true";
+  return plainMode;
+}
+
 /**
  * Satır içi metin düzenleme sarmalayıcısı: bloğun render çıktısındaki yaprak metin öğelerini blok özellikleriyle eşleştirir
  * (`assignStringsToTexts`), eşleşenleri `contenteditable` yapar ve düzenlemeyi `blur`/Enter'da `props`'a geri yazar.
@@ -25,7 +34,7 @@ export function InlineEditable({ block, onChange, onCommit, children }: { block:
     map.forEach((path, idx) => {
       const el = leaves[idx]!;
       const original = el.textContent ?? "";
-      el.setAttribute("contenteditable", "plaintext-only");
+      el.setAttribute("contenteditable", editableMode(el));
       el.setAttribute("data-nx-inline", path.join("."));
       el.setAttribute("spellcheck", "false");
       const onKey = (e: KeyboardEvent) => {

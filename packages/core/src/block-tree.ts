@@ -463,3 +463,30 @@ export function appendRepeaterItem(block: BlockNode): BlockNode {
       return block;
   }
 }
+
+/**
+ * Yapı onarımı: `column` yalnızca `columns` içinde (ya da `tabs` panelinde) tuvalde düzenlenebilir; başka yerde kalan sütun
+ * (eski kayıt, içe aktarılan tasarım) stilini ve çocuklarını koruyarak tam genişlik bir `section` olur. `columns` içindeki
+ * sütun olmayan çocuk bir sütuna sarılır. Değişiklik yoksa aynı dizi döner.
+ */
+export function repairBlockNesting(blocks: BlockNode[], parent = "root"): BlockNode[] {
+  let changed = false;
+  const out = blocks.map((b) => {
+    let node = b;
+    if (b.type === "column" && parent !== "columns" && parent !== "tabs") {
+      node = { ...b, type: "section", props: { containerMode: "full" } };
+      changed = true;
+    }
+    const kids = node.children;
+    if (kids?.length) {
+      let fixed = repairBlockNesting(kids, node.type);
+      if (node.type === "columns" && fixed.some((c) => c.type !== "column")) {
+        fixed = fixed.map((c) => (c.type === "column" ? c : ({ id: `${c.id}_col`, type: "column", props: {}, children: [c] }) as BlockNode));
+        changed = true;
+      }
+      if (fixed !== kids) { node = { ...node, children: fixed }; changed = true; }
+    }
+    return node;
+  });
+  return changed ? out : blocks;
+}

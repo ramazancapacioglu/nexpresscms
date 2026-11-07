@@ -1,23 +1,7 @@
-import type { BlockNode } from "@nexpress/core";
+import { LIBRARY_CATEGORIES, LIBRARY_CATEGORY_GROUPS, type BlockNode } from "@nexpress/core";
 
-export type LibraryCategory =
-  | "all"
-  | "hero"
-  | "layout"
-  | "text"
-  | "media"
-  | "cards"
-  | "bento"
-  | "social"
-  | "pricing"
-  | "commerce"
-  | "forms"
-  | "data"
-  | "aio_sge"
-  | "editorial"
-  | "template"
-  | "schema"
-  | "custom";
+/** Kategori kimlikleri `@nexpress/core` içindeki `LIBRARY_CATEGORIES` listesinden gelir. */
+export type LibraryCategory = "all" | string;
 
 export type LibraryPreviewKind =
   | "hero-split"
@@ -42,7 +26,7 @@ export type LibraryPreviewKind =
 export interface DesignLibraryItem {
   id: string;
   name: string;
-  category: Exclude<LibraryCategory, "all">;
+  category: string;
   description: string;
   badge?: string;
   isCustom?: boolean;
@@ -58,26 +42,36 @@ export interface StarterPagePack {
   schemaType: string;
   tldr: string;
   blocks: Array<Omit<BlockNode, "id">>;
+  /** Sayfa türü süzgeci: home | about | contact | services | portfolio | team | gallery */
+  pageCategory?: PagePackCategory;
 }
+
+export type PagePackCategory = "home" | "about" | "contact" | "services" | "portfolio" | "team" | "gallery";
+
+export const PAGE_PACK_CATEGORIES: Array<{ id: PagePackCategory; label: string }> = [
+  { id: "home", label: "Ana sayfa" },
+  { id: "about", label: "Hakkında" },
+  { id: "contact", label: "İletişim" },
+  { id: "services", label: "Hizmetler" },
+  { id: "portfolio", label: "Portfolyo" },
+  { id: "team", label: "Ekip" },
+  { id: "gallery", label: "Galeri" },
+];
 
 export interface LibraryGroup {
   id: string;
   label: string;
   categories: string[];
+  /** Kenar çubuğu başlığı (İçerik / Medya / Gelişmiş) */
+  section?: string;
 }
 
 export const LIBRARY_GROUPS: LibraryGroup[] = [
   { id: "all", label: "Tümü", categories: [] },
-  { id: "hero", label: "Vitrin", categories: ["hero"] },
-  { id: "layout", label: "Yerleşim", categories: ["layout"] },
-  { id: "text", label: "Metin", categories: ["text", "editorial", "aio_sge"] },
-  { id: "media", label: "Medya", categories: ["media"] },
-  { id: "cards", label: "Kartlar", categories: ["cards", "bento"] },
-  { id: "social", label: "Sosyal kanıt", categories: ["social"] },
-  { id: "commerce", label: "Ticaret", categories: ["commerce", "pricing"] },
-  { id: "forms", label: "Formlar", categories: ["forms"] },
-  { id: "data", label: "Veri", categories: ["data"] },
-  { id: "template", label: "Şablon yuvaları", categories: ["template"] },
-  { id: "schema", label: "Şema", categories: ["schema"] },
-  { id: "custom", label: "Özel", categories: ["custom"] },
+  ...LIBRARY_CATEGORIES.map((c) => ({
+    id: c.id,
+    label: c.label,
+    categories: [c.id],
+    section: LIBRARY_CATEGORY_GROUPS.find((g) => g.id === c.group)?.label,
+  })),
 ];

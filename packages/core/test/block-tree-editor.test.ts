@@ -114,3 +114,20 @@ describe("block-tree editor helpers", () => {
   });
 });
 
+
+it("repairBlockNesting: dışarıda kalan sütun bölüme dönüşür, columns çocukları sütuna sarılır, sorun yoksa aynı dizi", async () => {
+  const { repairBlockNesting } = await import("../src/block-tree");
+  const ok = [{ id: "r", type: "columns", props: {}, children: [{ id: "c1", type: "column", props: {}, children: [{ id: "p", type: "paragraph_element", props: { text: "a" } }] }] }] as never;
+  assert.equal(repairBlockNesting(ok), ok);
+  const nested = [{ id: "r", type: "columns", props: {}, children: [{ id: "c1", type: "column", props: {}, children: [{ id: "c2", type: "column", props: {}, style: { cssClass: "x" }, children: [{ id: "p", type: "paragraph_element", props: { text: "a" } }] }] }] }] as never;
+  const fixed = repairBlockNesting(nested) as Array<{ children: Array<{ children: Array<{ type: string; style?: unknown; props: unknown }> }> }>;
+  const inner = fixed[0]!.children[0]!.children[0]!;
+  assert.equal(inner.type, "section");
+  assert.deepEqual(inner.props, { containerMode: "full" });
+  assert.deepEqual(inner.style, { cssClass: "x" });
+  const stray = [{ id: "r", type: "columns", props: {}, children: [{ id: "h", type: "heading_element", props: { text: "t" } }] }] as never;
+  const wrapped = repairBlockNesting(stray) as Array<{ children: Array<{ type: string; id: string }> }>;
+  assert.equal(wrapped[0]!.children[0]!.type, "column");
+  const tabs = [{ id: "t", type: "tabs", props: {}, children: [{ id: "pane", type: "column", props: { label: "A" }, children: [] }] }] as never;
+  assert.equal(repairBlockNesting(tabs), tabs);
+});

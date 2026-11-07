@@ -303,6 +303,24 @@ export function BlockGeneralTab() {
                                   className="h-8 rounded border border-border bg-background px-2 font-mono"
                                 />
                               </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  aria-label="İkincil buton yazısı"
+                                  type="text"
+                                  value={String(selectedBlock.props.secondaryCtaLabel ?? "")}
+                                  onChange={(e) => updateSelectedBlockProps({ secondaryCtaLabel: e.target.value || undefined })}
+                                  placeholder="İkincil Buton"
+                                  className="h-8 rounded border border-border bg-background px-2"
+                                />
+                                <input
+                                  aria-label="İkincil buton adresi"
+                                  type="text"
+                                  value={String(selectedBlock.props.secondaryCtaHref ?? "")}
+                                  onChange={(e) => updateSelectedBlockProps({ secondaryCtaHref: e.target.value || undefined })}
+                                  placeholder="Hedef URL"
+                                  className="h-8 rounded border border-border bg-background px-2 font-mono"
+                                />
+                              </div>
                             </div>
                           )}
 
@@ -770,6 +788,63 @@ export function BlockGeneralTab() {
                               />
                             </div>
                           )}
+                          {(selectedBlock.type === "accordion" || selectedBlock.type === "faq_accordion") && (
+                            <div className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-2.5">
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">Akordeon Görünümü</label>
+                                <select
+                                  aria-label="Akordeon Görünümü"
+                                  value={String(selectedBlock.props.accordionStyle ?? (selectedBlock.type === "faq_accordion" ? "" : "classic"))}
+                                  onChange={(e) => updateSelectedBlockProps({ accordionStyle: e.target.value })}
+                                  className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+                                >
+                                  {selectedBlock.type === "faq_accordion" ? <option value="">Varsayılan</option> : null}
+                                  <option value="classic">Klasik (kutulu)</option>
+                                  <option value="cards">Gölgeli Kartlar</option>
+                                  <option value="flush">Çizgili (sade)</option>
+                                  <option value="filled">Dolgulu</option>
+                                  <option value="accent">Sol Vurgulu</option>
+                                  <option value="numbered">Numaralı</option>
+                                  <option value="pills">Kapsül Başlık</option>
+                                  <option value="bold">Büyük Başlık</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">Simge</label>
+                                <select
+                                  aria-label="Akordeon simgesi"
+                                  value={String(selectedBlock.props.icon ?? "chevron")}
+                                  onChange={(e) => updateSelectedBlockProps({ icon: e.target.value })}
+                                  className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+                                >
+                                  <option value="chevron">Ok</option>
+                                  <option value="plus">Artı / eksi</option>
+                                  <option value="none">Yok</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-semibold mb-1">Açılışta</label>
+                                <select
+                                  aria-label="Akordeon açılış durumu"
+                                  value={String(selectedBlock.props.openMode ?? (selectedBlock.props.openFirst === false ? "none" : "first"))}
+                                  onChange={(e) => updateSelectedBlockProps({ openMode: e.target.value })}
+                                  className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+                                >
+                                  <option value="first">İlk madde açık</option>
+                                  <option value="none">Hepsi kapalı</option>
+                                  <option value="all">Hepsi açık</option>
+                                </select>
+                              </div>
+                              <label className="flex items-center gap-2 text-[11px] font-semibold">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedBlock.props.exclusive === true}
+                                  onChange={(e) => updateSelectedBlockProps({ exclusive: e.target.checked })}
+                                />
+                                Biri açılınca diğerleri kapansın
+                              </label>
+                            </div>
+                          )}
                           {selectedBlock.type === "tabs" && (
                             <div className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-2.5">
                               <div>
@@ -787,6 +862,10 @@ export function BlockGeneralTab() {
                                   <option value="pills">Kapsül Butonlar (Pills)</option>
                                   <option value="underline">Alt Çizgili (Underline)</option>
                                   <option value="boxed">Kutu Sekmeler (Boxed)</option>
+                                  <option value="segmented">Segment (iOS tipi)</option>
+                                  <option value="vertical">Dikey (yan menü)</option>
+                                  <option value="cards">Kart Sekmeler</option>
+                                  <option value="steps">Numaralı Adımlar</option>
                                 </select>
                               </div>
                               <div>

@@ -26,6 +26,7 @@ export * from "./plugin-routes";
 export * from "./plugin-actions";
 export * from "./translation";
 export * from "./locale-path";
+export * from "./library-categories";
 export * from "./lifecycle";
 export * from "./system-health";
 export * from "./forms";

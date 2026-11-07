@@ -1,6 +1,6 @@
 import type { BlockNode } from "@nexpress/core";
 import type { DesignLibraryItem } from "./library-types";
-import { GRAD, art, avatar, band, button, cardStyle, col, cols, heading, image, itemFactory, n, para } from "./library-kit";
+import { GRAD, art, avatar, band, box, button, cardStyle, col, cols, heading, image, itemFactory, n, para } from "./library-kit";
 
 /**
  * Modern görsel bölümler: degrade bantlar, cam kartlar, mozaik, kayan şeritler, zaman çizgisi.
@@ -39,7 +39,7 @@ export const MODERN_LIBRARY_ITEMS: DesignLibraryItem[] = [
     band({ backgroundColor: "#eef2ff", textAlign: "center", textColor: "#3730a3" }, [para("Yeni: Çoklu şube raporları yayında →", { style: { fontWeight: "600", textAlign: "center" } })], 14)),
   item("logo_cloud", "Güvenen markalar (kayan logo şeridi)", "social", "Marka adlarının sonsuz kayan şeridi. Adları kendi müşterilerinizle değiştirin.", "stats-4",
     band({ backgroundColor: "#ffffff" }, [para("Binlerce ekibin tercihi", { style: { textAlign: "center", fontSize: "13px", letterSpacing: "0.12em", textTransform: "uppercase" } }),
-      n("marquee", { items: ["ACME", "NORDIC", "BLUEWAVE", "PIXELFORM", "ORBIT", "LUMEN", "KARDELEN", "ATLAS"], speed: 40, direction: "left" })], 48), "Sosyal kanıt"),
+      n("marquee", { items: ["ACME", "NORDIC", "BLUEWAVE", "PIXELFORM", "ORBIT", "LUMEN", "KARDELEN", "ATLAS"], speed: 40, direction: "left" }, { style: { fontSize: "28px", fontWeight: "800", textColor: "#94a3b8" } })], 48), "Sosyal kanıt"),
   item("testimonials", "Müşteri yorumları (3 kart)", "social", "Alıntı, ad ve unvan içeren üç kart. Metinler örnektir; gerçek yorumlarla değiştirin.", "bento-3",
     band({ backgroundGradient: GRAD.soft }, [heading("Müşterilerimiz ne diyor?", "h2", { style: { textAlign: "center" } }),
       cols("4+4+4", ["Kurulum bir günde bitti, ekip hemen alıştı.|Aylin K.|Operasyon Müdürü", "Raporlar artık dakikalar içinde hazır.|Mert D.|Finans Direktörü", "Destek ekibi her seferinde çok hızlı döndü.|Selin T.|Kurucu"].map((s, i) => {
@@ -54,7 +54,7 @@ export const MODERN_LIBRARY_ITEMS: DesignLibraryItem[] = [
     band({ backgroundColor: "#f8fafc" }, [
       cols("8+4", [
         col([para("Öne çıkan", { style: { fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase" } }), heading("Tek panelde tüm operasyon", "h3", { style: { fontSize: "30px" } }), image(art("dashboard", "#4f46e5", "#06b6d4"), "Panel", { aspectRatio: "3:2" })], { backgroundGradient: GRAD.night, textColor: "#f8fafc", borderRadius: "28px", paddingTop: "32px", paddingBottom: "32px", paddingLeft: "32px", paddingRight: "32px" }),
-        col([col([heading("Mobil uyumlu", "h3"), image(art("phone", "#ec4899", "#8b5cf6"), "Mobil", { aspectRatio: "3:2" })], cardStyle()), col([heading("Bulut yedek", "h3"), para("Verileriniz her gün şifreli yedeklenir.")], cardStyle({ backgroundGradient: GRAD.ocean, textColor: "#fff", borderWidth: "0px" }))]),
+        col([box([heading("Mobil uyumlu", "h3"), image(art("phone", "#ec4899", "#8b5cf6"), "Mobil", { aspectRatio: "3:2" })], cardStyle()), box([heading("Bulut yedek", "h3"), para("Verileriniz her gün şifreli yedeklenir.")], cardStyle({ backgroundGradient: GRAD.ocean, textColor: "#fff", borderWidth: "0px" }))]),
       ], { verticalAlign: "stretch" }),
       cols("4+4+4", [["Hızlı kurulum", "Dakikalar içinde hazır."], ["Güvenli", "Rol bazlı yetki ve kayıt."], ["Entegre", "Mevcut araçlarla bağlanır."]].map(([t, s]) => col([heading(t!, "h3"), para(s!)], cardStyle()))),
     ], 72), "Bento"),

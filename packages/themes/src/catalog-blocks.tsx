@@ -5,6 +5,7 @@ import { ICON_PATHS, normalizeFormSpec, safeBlockDomId, type BlockNode, type Des
 import type { FormRenderContext } from "./block-context";
 import { RscForm } from "./rsc-form";
 import { renderMotionBlock } from "./blocks-motion";
+import { AccordionView, TabsView } from "./blocks-disclosure";
 
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" && value.trim() ? value : fallback;
@@ -105,142 +106,19 @@ export function renderStudioCatalogBlock(
         </ul>
       );
 
-    case "tabs": {
-      const name = `nx-tabs-${safeBlockDomId(block.id)}`;
-      const panes = Array.isArray(block.children) ? block.children : [];
-      const tabCount = Math.max(items.length, panes.length);
-      const tabStyle = String(p.tabStyle ?? "pills");
-      const align = String(p.align ?? "left");
-      const tabList = Array.from({ length: tabCount }, (_, index) => {
-        const pane = panes[index];
-        const item = items[index] ?? {};
-        const label = text(pane?.props?.label, text(item.label, `Sekme ${index + 1}`));
-        const iconName = text(pane?.props?.icon, text(item.icon));
-        const subtitle = text(pane?.props?.subtitle, text(item.subtitle));
-        const itemTitle = text(pane?.props?.title, text(item.title));
-        const body = text(pane?.props?.body, text(item.body));
-        const children = Array.isArray(pane?.children) ? pane.children : [];
-        return { index, pane, label, iconName, subtitle, itemTitle, body, children };
-      });
-
-      const justifyClass =
-        align === "center"
-          ? "justify-center"
-          : align === "stretch"
-            ? "grid grid-cols-2 sm:grid-cols-3 md:flex"
-            : "justify-start";
-
-      return (
-        <div className={`${name} space-y-4`}>
-          {text(p.title) ? (
-            <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-xl font-bold text-nx-fg">
-              {text(p.title)}
-            </h3>
-          ) : null}
-          {tabList.map(({ index }) => (
-            <input
-              key={`input-${index}`}
-              id={`${name}-${index}`}
-              name={name}
-              type="radio"
-              defaultChecked={index === 0}
-              className="sr-only"
-            />
-          ))}
-          <div
-            className={`nx-tabbar flex flex-wrap gap-2 ${justifyClass} ${
-              tabStyle === "underline"
-                ? "border-b pb-0"
-                : tabStyle === "boxed"
-                  ? "rounded-xl bg-nx-subtle p-1.5"
-                  : ""
-            }`}
-            style={{ borderColor: tokens.colors.border }}
-          >
-            {tabList.map(({ index, label, iconName, subtitle }) => {
-              const iconPath = iconName ? ICON_PATHS[iconName] : undefined;
-              return (
-                <label
-                  key={`tab-${index}`}
-                  htmlFor={`${name}-${index}`}
-                  className={`${name}-tab-${index} inline-flex cursor-pointer items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition select-none ${
-                    align === "stretch" ? "flex-1 text-center" : ""
-                  } ${
-                    tabStyle === "underline"
-                      ? "-mb-px border-b-2 border-transparent"
-                      : "rounded-lg border"
-                  }`}
-                  style={tabStyle === "underline" ? undefined : box}
-                >
-                  {iconPath ? (
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d={iconPath} />
-                    </svg>
-                  ) : null}
-                  <span>{label}</span>
-                  {subtitle ? (
-                    <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-medium opacity-80">
-                      {subtitle}
-                    </span>
-                  ) : null}
-                </label>
-              );
-            })}
-          </div>
-          {tabList.map(({ index, itemTitle, body, children }) => (
-            <div
-              key={`panel-${index}`}
-              style={box}
-              className={`${name}-panel-${index} rounded-xl border bg-nx-card p-6 text-sm leading-relaxed text-nx-soft`}
-            >
-              {children.length > 0 && renderChild ? (
-                <div className="space-y-4">
-                  {children.map((child) => (
-                    <React.Fragment key={child.id}>{renderChild(child)}</React.Fragment>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {itemTitle ? <h4 className="text-base font-bold text-nx-fg">{itemTitle}</h4> : null}
-                  {body ? <p className="whitespace-pre-line">{body}</p> : null}
-                </div>
-              )}
-            </div>
-          ))}
-          <style>{`
-            .${name} [class*="${name}-panel-"] { display: none; }
-            ${tabList
-              .map(
-                ({ index }) => `
-              .${name} input:nth-of-type(${index + 1}):checked ~ .${name}-panel-${index} { display: block; }
-              .${name} input:nth-of-type(${index + 1}):checked ~ .nx-tabbar .${name}-tab-${index} {
-                ${
-                  tabStyle === "underline"
-                    ? `border-bottom-color: ${tokens.colors.primary}; color: ${tokens.colors.primary};`
-                    : `background-color: ${tokens.colors.primary}; color: ${tokens.colors.primaryForeground}; border-color: ${tokens.colors.primary};`
-                }
-              }
-            `
-              )
-              .join("")}
-          `}</style>
-        </div>
-      );
-    }
+    case "tabs":
+      return <TabsView block={block} tokens={tokens} renderChild={renderChild} />;
 
     case "accordion":
       return (
-        <div className="space-y-2">
-          {text(p.title) ? <h3 className="text-lg font-bold text-nx-fg">{text(p.title)}</h3> : null}
-          {items.map((item, index) => (
-            <details key={index} open={index === 0} className="border bg-nx-card px-4 py-3" style={box}>
-              <summary className="cursor-pointer text-sm font-semibold text-nx-fg">
-                {text(item.question, text(item.title, `${t("blocks.section")} ${index + 1}`))}
-              </summary>
-              <p className="mt-2 text-sm leading-relaxed text-nx-soft">{text(item.answer, text(item.body))}</p>
-            </details>
-          ))}
-        </div>
+        <AccordionView
+          block={block}
+          tokens={tokens}
+          items={items.map((item, index) => ({
+            q: text(item.question, text(item.title, `${t("blocks.section")} ${index + 1}`)),
+            a: text(item.answer, text(item.body)),
+          }))}
+        />
       );
 
     case "toc":

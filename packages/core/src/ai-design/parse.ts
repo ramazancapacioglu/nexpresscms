@@ -1,3 +1,4 @@
+import { normalizeLibraryCategory } from "../library-categories";
 import { lintDesign, type DesignContext, type DesignLintResult } from "./lint";
 import type { DesignMode } from "./knowledge";
 
@@ -25,7 +26,7 @@ export function extractJson(text: string): { ok: true; value: unknown } | { ok: 
 }
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, max) : "");
-const CATEGORIES = new Set(["hero", "text", "cards", "bento", "social", "pricing", "forms", "data", "editorial", "layout", "media"]);
+
 const SCHEMA_TYPES = new Set(["WebPage", "AboutPage", "FAQPage", "Product"]);
 
 export function slugifyTr(input: string): string {
@@ -39,7 +40,7 @@ export function lintDesignOutput(mode: Exclude<DesignMode, "theme">, raw: unknow
   const lint = lintDesign(o.blocks, mode, ctx);
   const warnings = lint.warnings;
   if (mode === "section") {
-    const category = typeof o.category === "string" && CATEGORIES.has(o.category) ? o.category : "text";
+    const category = normalizeLibraryCategory(o.category);
     if (lint.blocks.length > 3) warnings.push("bölüm en çok 3 blok içermeli");
     lint.score = Math.max(0, 100 - lint.errors.length * 25 - warnings.length * 5);
     return { mode, name: str(o.name, 60) || "AI bölümü", description: str(o.description, 200), category, lint };

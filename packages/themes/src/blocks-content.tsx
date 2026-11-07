@@ -3,6 +3,7 @@ import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkFaq } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
+import { AccordionView } from "./blocks-disclosure";
 
 /** Bilgi blokları: adımlar, SSS, kutular, kod, alıntı, liste, video, tablo, inceleme. Tanımsız dönerse sıradaki grup denenir. */
 export function renderContentBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -107,6 +108,17 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
     case "faq_accordion": {
       if (themeId === INK_GRID_ID) return renderInkFaq(p, tokens);
       const items = Array.isArray(p.items) ? p.items : [];
+      const openMode = p.openMode === "none" || p.openMode === "all" ? p.openMode : "first";
+      const exclusive = p.exclusive === true && openMode !== "all";
+      if (typeof p.accordionStyle === "string" && p.accordionStyle) {
+        return (
+          <AccordionView
+            block={block}
+            tokens={tokens}
+            items={items.map((item: any) => ({ q: String(item?.question ?? ""), a: String(item?.answer ?? "") }))}
+          />
+        );
+      }
       return (
         <section className="space-y-6">
           <h2
@@ -119,7 +131,8 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             {items.map((item: any, idx: number) => (
               <details
                 key={idx}
-                open={idx === 0}
+                open={openMode === "all" || (openMode === "first" && idx === 0)}
+                {...(exclusive ? ({ name: `nx-faq-${block.id}` } as Record<string, string>) : {})}
                 style={{
                   borderRadius: tokens.geometry.borderRadius,
                   borderColor: tokens.colors.border,

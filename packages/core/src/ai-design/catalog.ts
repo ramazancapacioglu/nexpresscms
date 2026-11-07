@@ -108,7 +108,7 @@ export const AI_BLOCK_CATALOG: Record<string, BlockSpec> = {
     usage: "Aynı konunun 2–5 yüzü. İçerik gizli kalır: önemli metni sekmeye koyma.",
     props: {
       title: t(90),
-      tabStyle: { kind: "enum", values: ["pills", "underline", "boxed"] },
+      tabStyle: { kind: "enum", values: ["pills", "underline", "boxed", "segmented", "vertical", "cards", "steps"] },
       align: { kind: "enum", values: ["left", "center", "stretch"] },
       items: {
         kind: "list",

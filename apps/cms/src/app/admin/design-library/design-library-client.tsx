@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Layers, LayoutTemplate, Palette, Sparkles } from "lucide-react";
-import type { BlockNode } from "@nexpress/core";
+import { libraryCategoryLabel, type BlockNode } from "@nexpress/core";
 import type { DesignPreview } from "@/lib/design-library";
 import { createPageFromDesignAction, deleteDesignAction, installThemeDesignAction, renameDesignAction } from "./actions";
 import { DesignPreviewView } from "./design-preview";
@@ -52,7 +52,7 @@ function Card({ item, onChanged }: { item: LibraryItem; onChanged: () => void })
         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#1D5ED8] dark:text-[#7AA7FF]" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-medium">{item.name}</p>
-          <p className="text-[#5F6570] dark:text-[#8C9099]">{label}{item.kind === "section" ? ` · ${item.category}` : ""} · {item.source === "ai" ? "AI" : "elle"} · {new Date(item.createdAt).toLocaleDateString("tr-TR")} · skor {item.score}</p>
+          <p className="text-[#5F6570] dark:text-[#8C9099]">{label}{item.kind === "section" ? ` · ${libraryCategoryLabel(item.category)}` : ""} · {item.source === "ai" ? "AI" : "elle"} · {new Date(item.createdAt).toLocaleDateString("tr-TR")} · skor {item.score}</p>
         </div>
         {item.placeholderData && <span className="shrink-0 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:text-amber-300">Gerçek veri gerekli</span>}
       </div>

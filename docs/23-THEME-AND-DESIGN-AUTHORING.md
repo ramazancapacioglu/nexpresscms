@@ -272,7 +272,7 @@ Kayıt türü `section` (bölüm) veya `page` (sayfa). Tema jetonu bu kayda girm
 
 ### 3.1. Bölüm
 
-En çok 3 blok. Kategori: `hero` | `text` | `cards` | `bento` | `social` | `pricing` | `forms` | `data` | `editorial` | `layout` | `media`.
+En çok 3 blok. Kategori (`LIBRARY_CATEGORIES`, `packages/core/src/library-categories.ts`): içerik — `text` | `hero` | `page_title` | `accordion` | `location` | `subscribe` | `testimonials` | `stats` | `list` | `people` | `product` | `cards` | `contact` | `posts` | `pricing` | `cta` | `timeline` | `data_table` | `comparison` | `menu` | `tabs`; medya — `image_text` | `gallery` | `video_text` | `logos`. Eski adlar (`layout`, `media`, `bento`, `social`, `commerce`, `forms`, `data`, `aio_sge`, `editorial`) `normalizeLibraryCategory` ile yeni kimliğe çevrilir. Her örnek tasarım tam bir kategoriye aittir.
 
 ```json
 {
@@ -323,15 +323,30 @@ Kütüphane doğrulaması katalog dışı türü reddeder. Bölümde `slider`, `
 
 Form kategorisindeki hazır bloklar `form_block` kullanır. `props.appearance` şunları taşır: `columns` `1|2|4`, `labels` `top|side`, `density` `compact|comfortable`, `buttonAlign` `left|center|full|beside`, `surface` `inline|dialog`, `triggerLabel`, `stepped`. Alan `width` `full|half|quarter`, `step` 1–6. `formId` yoksa alanlar `props.fields` içindedir ve gönderim gelen kutusuna düşer. Var olan bir forma bağlamak için `formId` yazılır; o zaman görünüm form tanımından gelir.
 
-### 3.3. Modern bölümler ve form tasarımları (`lib_mod_*`)
+### 3.3. Modern ve yaratıcı bölümler (`lib_mod_*`, `lib_cr_*`)
 
-`packages/editor/src/library-modern.ts` (19 bölüm) ve `library-forms-modern.ts` (9 form tasarımı) insan editörün kütüphanesidir; AI doğrulayıcısına girmez, bu yüzden `section`, `columns`, `column` ve stil anahtarları (`backgroundGradient`, `hover`, `animation`, `mobile`) kullanabilir. Ortak kurucular `library-kit.ts` içindedir (`band`, `cardStyle`, `art`, `avatar`). Kurallar: görseller satır içi SVG (`art()`), ek dosya yok; koyu bantlarda metin rengi kapsayıcıdaki `textColor` ile verilir ve içteki başlık/paragrafa kalıtılır (`compileBlockStylesToCss`); metin bloğunda `fontSize`/`fontWeight`/`lineHeight`/`letterSpacing` içteki öğeye geçer. `icon_list` kendi rengini taşır, koyu zeminde kullanma (satır metni kullan). Kategoriler mevcut gruplara bağlıdır (vitrin, sosyal kanıt, kartlar, bento, veri, ticaret, medya, formlar). `form_block` alanları satır içidir; `beside` düğme yalnız birden çok sütunda alanın yanına gelir.
+Kütüphane (108 öğe) insan editörün kütüphanesidir; AI doğrulayıcısına girmez, bu yüzden `section`, `columns`, `column` ve stil anahtarları (`background`, `backgroundGradient`, `hover`, `animation`, `mobile`) kullanabilir. Kaynaklar: `packages/editor/src/library-creative.ts` (13 yaratıcı bölüm: cam kartlı vitrin, kayan slogan, poster başlık, görsel üstü kartlar, sayaç vitrini, zaman çizelgesi, sohbet SSS, ödül şeridi, uygulama bandı, ikili çağrı, kaynak kartları, etkinlik, video vitrini), `library-modern.ts` (19), `library-forms-modern.ts` (9 form tasarımı), ortak kurucular `library-kit.ts` (`band`, `box`, `cardStyle`, `art`, `avatar`), kısa kart adları `library-names.ts` (en çok 24 karakter; tek satıra sığar).
+
+Kurallar:
+- **`column` yalnızca `columns` içinde** (ve sekme panelinde) geçerlidir. Sütun olmayan yerde stilli kutu gerekiyorsa `box()` (`section`, `containerMode: "full"`) kullanılır. Tuval iç içe sütunu düzenleyemez; bu yüzden `repairBlockNesting` (çekirdek) editör yüklenirken ve her yazmada eski kayıtları onarır (dışarıdaki sütun bölüme, `columns` içindeki sütun olmayan çocuk sütuna sarılır). Kütüphane sözleşme testi kuralı zorlar.
+- Görseller satır içi SVG'dir (`art()`); adres `data:image/svg+xml,...` biçimindedir (`;` yok: CSS `background-image` değerlerinde `;` temizlenir).
+- Koyu bantlarda metin rengi kapsayıcıdaki `textColor` ile verilir ve içteki başlık/paragrafa kalıtılır; çok katmanlı degrade `background` alanına yazılır (`backgroundGradient` yalnızca tek `linear/radial-gradient` içindir). `icon_list` kendi rengini taşır, koyu zeminde kullanma.
+- `hero` bloğunun denetçisi birincil ve ikincil düğmeyi (yazı + adres) düzenler. Satır içi düzenleme `plaintext-only` desteklenmiyorsa `true` ile çalışır.
+- Kütüphane penceresindeki küçük resimler bloğun **gerçek çıktısıdır** (`library-preview.tsx`, 820 px genişlikte çizilip küçültülür, kart görününce yüklenir).
+- Yinelenen kütüphane öğeleri kaldırıldı (ERP/yazılım firması varyantları, yatay/dörtlü/adımlı eski formlar, temaya bağlı `lib_yf_*`); tam sayfa paketleri eşdeğer öğelere bağlandı.
 
 Form şablonları (`core/form-templates.ts`): `reservation`, `waitlist`, `webinar`, `catalog-download` eklendi (toplam 17).
 
 Header ve footer şablonları (`themes/src/chrome-library-modern.ts`, grup **Modern**): header — `header-modern-glass`, `header-two-tier`, `header-center-brand`, `header-app-search`, `header-shop-categories`, `header-landing-minimal`; her birinde tasarlanmış mobil dizi vardır (logo solda kalır, menü sağda `<details>`). Footer — `footer-cta-brand`, `footer-centered-brand`, `footer-newsletter-split`, `footer-trust-three`, `footer-local-business`; telefonda tek sütuna iner (marka ve çağrı bandı üstte). Blok tabanlı başlangıç şablonları (`core/templates.ts`): `header-glass-search`, `header-centered-announce`, `header-landing-cta`, `footer-cta-band`, `footer-newsletter-form`, `footer-centered-links`.
 
 ---
+
+### 3.4. Kategoriler, akordeon/sekme görünümleri ve sayfa türleri
+
+- Kütüphane kenar çubuğu üç başlıkta gruplanır: **İçerik**, **Medya**, **Gelişmiş** (şablon yuvaları, şema kartları, "Benim tasarımlarım"). Etiketler Türkçedir; `LIBRARY_CATEGORIES` tek kaynaktır, AI istemi ve ayrıştırıcı da bunu kullanır. Kayıtlı özel tasarımların eski kategorisi okunurken çevrilir.
+- `accordion` bloğu `props.accordionStyle` alır: `classic` | `cards` | `flush` | `filled` | `accent` | `numbered` | `pills` | `bold`; `icon`: `chevron` | `plus` | `none`; `openMode`: `first` (varsayılan) | `none` (hepsi kapalı) | `all`; `exclusive` (true ise biri açılınca diğerleri kapanır; `<details name>` ile, JS yok). Eski `openFirst: false` `none` sayılır. `faq_accordion` aynı `openMode`/`exclusive` alanlarını okur; `accordionStyle` yazılırsa aynı görünümlerle çizilir. `tabs` için `tabStyle` 7 değer alır (yukarıdaki satır). İkisi de yalnız CSS ile çalışır (`<details>` ve radyo düğmesi), istemci JS'i yoktur. Kaynak: `packages/themes/src/blocks-disclosure.tsx`. Editör tuvalindeki sekme çubuğu yeni görünümleri kapsül olarak gösterir; gerçek görünüm önizleme ve ön yüzdedir.
+- Yeni kütüphane dosyaları: `library-disclosure.ts` (8 akordeon, 6 sekme; `lib_dc_*`), `library-sections.ts` (sayfa başlığı, konum, abonelik, kişiler, ürün, yazılar, fiyat, tablo, menü; `lib_sx_*`), `library-fresh.ts` (27 özgün bölüm; `lib_fr_*`), `library-extras.ts` (yorum, sayaç, logo, liste, galeri, video, karşılaştırma, metin; `lib_ex_*`), `library-category-map.ts` (eski öğelerin yeni kategoriye eşlemesi).
+- **Tam sayfa paketleri** `pageCategory` taşır: `home` (Ana sayfa) | `about` (Hakkında) | `contact` (İletişim) | `services` (Hizmetler) | `portfolio` (Portfolyo) | `team` (Ekip) | `gallery` (Galeri). Pencerede "Tam Sayfa Paketleri" sekmesinde Tümü + bu türlerle süzülür; türü olmayan paketler yalnız Tümü'nde görünür (`PAGE_PACK_CATEGORIES`).
 
 ## 4. Blok düğümü (`BlockNode`)
 
@@ -396,7 +411,7 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 | `info_box` | Kısa kart + bağlantı | — | `icon`; `kicker` ≤40; `title` ≤70 zorunlu; `text` ≤260; `linkLabel` ≤40; `href` |
 | `cta_banner` | Sonda tek eylem | sayfada en çok 2. variant: `dark-contrast` | `title` ≤90 zorunlu; `subtitle` ≤200; `buttonLabel` ≤40 zorunlu; `buttonHref` zorunlu |
 | `button_row` | 1–3 düğme | — | `align`: `left` \| `center` \| `right`; `buttons[]` 1–3: `label` ≤40 zorunlu, `href` zorunlu, `variant`: `primary` \| `secondary` \| `outline` |
-| `tabs` | Aynı konunun 2–5 yüzü | Önemli metni sekmeye gizleme | `title` ≤90; `tabStyle`: `pills` \| `underline` \| `boxed`; `align`: `left` \| `center` \| `stretch`; `items[]` 2–5: `label` ≤40 zorunlu, `icon`, `subtitle` ≤40, `title` ≤80, `body` ≤500 zorunlu |
+| `tabs` | Aynı konunun 2–5 yüzü | Önemli metni sekmeye gizleme | `title` ≤90; `tabStyle`: `pills` \| `underline` \| `boxed` \| `segmented` \| `vertical` \| `cards` \| `steps`; `align`: `left` \| `center` \| `stretch`; `items[]` 2–5: `label` ≤40 zorunlu, `icon`, `subtitle` ≤40, `title` ≤80, `body` ≤500 zorunlu |
 | `toc` | Uzun sayfada bölüm bağlantısı | — | `items[]` 2–10: `label` ≤60 zorunlu, `href` zorunlu (`/#bolum`) |
 | `anchor_nav` | Hero altı yatay bölüm gezgini | sayfada en çok 2 | `title` ≤40; `sticky` boolean; `styleVariant`: `underline` \| `pills` \| `boxed`; `ctaLabel` ≤36; `ctaHref`; `items[]` 2–10: `label` ≤45 zorunlu, `href` zorunlu, `icon`, `badge` ≤20 |
 | `data_table` | Gerçek tablo | en çok 8 sütun | `title` ≤90 zorunlu; `headers` ≤8; `rows` ≤40×8, hücre ≤80; `striped`, `firstColumnHeader`, `stickyHeader`, `compact`, `alignNumbers` boolean |

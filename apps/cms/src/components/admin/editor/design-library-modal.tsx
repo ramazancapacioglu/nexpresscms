@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { normalizeImportedBlock, type BlockNode } from "@nexpress/core";
 import {
   LIBRARY_GROUPS,
+  PAGE_PACK_CATEGORIES,
   NEXPRESS_AI_DESIGN_SYSTEM_PROMPT,
   NEXPRESS_DESIGN_LIBRARY,
   NEXPRESS_STARTER_PAGE_PACKS,
   type StarterPagePack,
 } from "@nexpress/editor";
 import { Check, Layers, LayoutTemplate, Plus, Search, Sparkles, X } from "lucide-react";
-import { LibraryWireframe } from "./library-wireframe";
+import { LIBRARY_PREVIEW_CSS, LibraryLivePreview } from "./library-preview";
 import { BLOCK_TYPE_LABELS } from "./studio-model";
 import { exportPromptAction, validateDesignJsonAction } from "@/app/admin/design-library/actions";
 import { listPatternsAction } from "@/app/admin/appearance/templates/actions";
@@ -52,6 +53,7 @@ export function DesignLibraryModal({
 }: DesignLibraryModalProps) {
   const [tab, setTab] = useState<LibraryTab>("sections");
   const [groupId, setGroupId] = useState("all");
+  const [pageCat, setPageCat] = useState("all");
   const [query, setQuery] = useState("");
   const [aiJson, setAiJson] = useState("");
   const [saved, setSaved] = useState<SavedDesign[] | null>(null);
@@ -189,9 +191,12 @@ export function DesignLibraryModal({
                 const count = groupCounts[group.id] ?? 0;
                 if (group.id !== "all" && count === 0) return null;
                 const active = groupId === group.id;
+                const prev = LIBRARY_GROUPS[LIBRARY_GROUPS.indexOf(group) - 1];
+                const heading = group.section && group.section !== prev?.section ? group.section : null;
                 return (
+                  <Fragment key={group.id}>
+                  {heading ? <div className="px-2.5 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{heading}</div> : null}
                   <button
-                    key={group.id}
                     type="button"
                     onClick={() => setGroupId(group.id)}
                     className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs transition ${
@@ -211,6 +216,7 @@ export function DesignLibraryModal({
                       {count}
                     </span>
                   </button>
+                  </Fragment>
                 );
               })}
             </aside>
@@ -221,6 +227,7 @@ export function DesignLibraryModal({
               role="region"
               aria-label="Hazır bölümler listesi"
             >
+              <style>{LIBRARY_PREVIEW_CSS}</style>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => {
                   const childCount = Array.isArray(item.block.children)
@@ -229,20 +236,27 @@ export function DesignLibraryModal({
                   const typeLabel =
                     BLOCK_TYPE_LABELS[item.block.type] ?? item.block.type;
                   return (
-                    <button
+                    <div
                       key={item.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => onInsert(item.block)}
-                      className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-3.5 text-left shadow-2xs transition hover:-translate-y-0.5 hover:border-blue-500 hover:shadow-md"
+                      onKeyDown={(e) => {
+                        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                          e.preventDefault();
+                          onInsert(item.block);
+                        }
+                      }}
+                      className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-border bg-card p-3.5 text-left shadow-2xs transition hover:-translate-y-0.5 hover:border-blue-500 hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600"
                     >
                       <div>
-                        <LibraryWireframe kind={item.previewKind} />
+                        <LibraryLivePreview block={item.block} />
                         <div className="mt-3 flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-bold leading-snug group-hover:text-blue-600">
+                          <h3 className="truncate text-[12.5px] font-bold leading-snug group-hover:text-blue-600" title={item.name}>
                             {item.name}
                           </h3>
                           {item.badge ? (
-                            <span className="shrink-0 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                            <span className="shrink-0 rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300">
                               {item.badge}
                             </span>
                           ) : null}
@@ -262,7 +276,7 @@ export function DesignLibraryModal({
                           <Plus className="h-3 w-3" /> Kanvasa Ekle
                         </span>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -283,7 +297,21 @@ export function DesignLibraryModal({
             role="region"
             aria-label="Tam sayfa başlangıç paketleri"
           >
-            {NEXPRESS_STARTER_PAGE_PACKS.map((pack) => (
+            <div className="col-span-full flex flex-wrap gap-1.5" role="tablist" aria-label="Sayfa türü">
+              {[{ id: "all", label: "Tümü" }, ...PAGE_PACK_CATEGORIES].map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={pageCat === c.id}
+                  onClick={() => setPageCat(c.id)}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${pageCat === c.id ? "border-blue-600 bg-blue-600 text-white" : "border-border bg-card hover:bg-muted"}`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            {NEXPRESS_STARTER_PAGE_PACKS.filter((pack) => pageCat === "all" || pack.pageCategory === pageCat).map((pack) => (
               <div
                 key={pack.id}
                 className="flex flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-2xs transition hover:border-blue-500/60"
