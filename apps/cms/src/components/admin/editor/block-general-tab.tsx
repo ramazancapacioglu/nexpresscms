@@ -6,7 +6,7 @@ import { CatalogFields } from "./catalog-fields";
 import { DynamicListFields } from "./dynamic-list-fields";
 import { IconPickerField } from "./icon-picker-modal";
 import { SchemaFields } from "./schema-fields";
-import { QuickAnchorIdField, SectionFields } from "./section-fields";
+import { SectionFields } from "./section-fields";
 import { SchemaCardFields } from "./schema-card-fields";
 import { CampaignShowcaseFields } from "./campaign-showcase-fields";
 
@@ -41,10 +41,6 @@ export function BlockGeneralTab() {
                           {selectedBlock.type === "schema_card" && <SchemaCardFields />}
                           {selectedBlock.type === "section" && <SectionFields />}
                           {selectedBlock.type === "anchor_nav" && <AnchorNavFields />}
-                          {selectedBlock.type !== "section" &&
-                            selectedBlock.type !== "column" &&
-                            selectedBlock.type !== "anchor_nav" &&
-                            selectedBlock.type !== "divider_spacer" && <QuickAnchorIdField />}
 
                           {selectedBlock.type === "column" && (
                             <div className="space-y-4">

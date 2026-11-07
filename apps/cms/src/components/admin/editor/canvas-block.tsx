@@ -320,7 +320,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
                         flexBasis: `${widthPct}%`,
                         flexGrow: 1,
                       }}
-                      className={`group/col relative flex min-h-[72px] flex-col rounded-lg transition-all ${
+                      className={`group/col relative flex min-h-[72px] min-w-0 flex-col rounded-lg transition-colors ${
                         overColId === col.id
                           ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
                           : colSelected
@@ -722,6 +722,8 @@ function CanvasImageScaler({
     e.stopPropagation();
     setIsDragging(true);
 
+    // Tuval bir iframe içindedir: fare olayları iframe penceresine düşer, üst pencereye değil
+    const win = (e.currentTarget as HTMLElement).ownerDocument.defaultView ?? window;
     const startX = e.clientX;
     const parent = containerRef.current?.parentElement;
     const parentWidth = parent ? parent.getBoundingClientRect().width : 800;
@@ -738,8 +740,8 @@ function CanvasImageScaler({
     };
 
     const onMouseUp = (upEvent: MouseEvent) => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      win.removeEventListener("mousemove", onMouseMove);
+      win.removeEventListener("mouseup", onMouseUp);
       setIsDragging(false);
 
       const deltaX = upEvent.clientX - startX;
@@ -751,8 +753,8 @@ function CanvasImageScaler({
       onCommitHistory();
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    win.addEventListener("mousemove", onMouseMove);
+    win.addEventListener("mouseup", onMouseUp);
   };
 
   const previewBlock = dragWidth
@@ -926,6 +928,8 @@ function ColumnSplitterHandle({
     e.stopPropagation();
     setIsDragging(true);
 
+    // Tuval bir iframe içindedir: fare olayları iframe penceresine düşer, üst pencereye değil
+    const win = (e.currentTarget as HTMLElement).ownerDocument.defaultView ?? window;
     const startX = e.clientX;
     const rowEl = rowRef.current;
     const rowWidth = rowEl ? rowEl.getBoundingClientRect().width : 800;
@@ -951,14 +955,14 @@ function ColumnSplitterHandle({
     };
 
     const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      win.removeEventListener("mousemove", onMouseMove);
+      win.removeEventListener("mouseup", onMouseUp);
       setIsDragging(false);
       onResizeEnd(leftColId, finalLeft, rightColId, finalRight);
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    win.addEventListener("mousemove", onMouseMove);
+    win.addEventListener("mouseup", onMouseUp);
   };
 
   return (

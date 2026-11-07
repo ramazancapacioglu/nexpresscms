@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-07] — Editör: çapa alanı tek yerde, sütun/görsel sürükleme düzeltmesi
+- HTML çapa kimliği artık yalnızca **Gelişmiş** sekmesinde; Genel sekmesindeki yinelenen alan (bölüm ve diğer bloklar) kaldırıldı. Çapa gezgininin önerileri (`ANCHOR_ID_PRESETS`) duruyor.
+- 🐞 **Sütun ayırıcı ve görsel ölçekleme sürüklemesi:** tuval bir iframe içindedir; fare olayları üst pencereye değil iframe penceresine düşer, dinleyiciler `window`'a bağlı olduğundan sürükleme canlı güncellenmiyor, bırakma kaçıyor ve genişlik sonradan/yanlış oturuyordu. Dinleyiciler artık tutamacın `ownerDocument.defaultView` penceresine bağlanır. Sütunlara `min-w-0` ve `transition-all` yerine `transition-colors` verildi (genişlik animasyonu gecikme yaratıyordu). Tarayıcıda doğrulandı: sürükleme sırasında anında, bırakınca kalıcı.
+
 ### [2026-11-07] — Tek dilli sitede `/tr` ön eki yok
 - İstek: ikinci dil yoksa adreslerde dil ön eki olmasın. `AGENTS.md` kural 8 güncellendi (ön ek yalnızca birden çok dilde).
 - **Ara katman:** tek dilde `/tr/x` → 308 `/x`; `/x` içeride `/tr/x` olarak yeniden yazılır; kök `/` yeniden yazılır. Dil kipi `/api/locale-mode` ile okunur (15 sn bellek, başarısızlıkta eski davranış). Birden çok dilde ön eksiz eski adresler `/{varsayılan}/...` adresine 308 olur (elle yönlendirme önce).
