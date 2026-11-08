@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-08] — Köprü görseli ve yapışık başlığı onarır
+- Göreli `/wp-content/uploads` yolu kaynak siteye bağlanıp indirilir. Boşluksuz yapışmış kart başlığı başlık ve paragrafa ayrılır. Bölümü olmayan sayfayı AI yerleştirir; görseli veya bölümü olan sayfa durur. Site eklentisi 0.2.1.
+
 ### [2026-11-08] — WordPress köprüsü aktarıyor
 - Eşleştirme kodu panelde üretilir, 30 dakika ve tek kullanımlık. WordPress `0.2.0` bu kodla sayfa, yazı, yorum, form, menü, SEO, yönlendirme ve görseli gönderir. E-ticaret yok. Yakında modülleri hazır.
 

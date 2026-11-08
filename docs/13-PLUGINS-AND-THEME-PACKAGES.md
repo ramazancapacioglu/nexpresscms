@@ -4,7 +4,7 @@
 
 ## 0. Bugün ne var?
 
-- **WordPress Köprüsü (`/admin/wp-bridge`) — 0.2.0 (2026-11-08):** kod panelde üretilir, site eklentisi paketi yazar. E-ticaret yok. Plan: `docs/24`.
+- **WordPress Köprüsü (`/admin/wp-bridge`) — 0.2.1 (2026-11-08):** kod panelde üretilir, site eklentisi paketi yazar. Göreli görsel ve yapışık başlık onarılır. E-ticaret yok. Plan: `docs/24`.
 - **Eklentiler (`/admin/plugins`) — v1 yapıldı (2026-10-28):** `pluginRegistry` manifestleri (`packages/core/src/plugins.ts`), `site_plugins` tablosu (migrasyon `0002`, kiracı başına `enabled` + modül anahtarları + `settings` JSON), çalışma zamanı kapısı `isPluginModuleEnabled`, çekirdek uç noktalar için `pluginRoutes`, manifestten üretilen **ayar formu**. Sayfa: eklenti listesi, modül anahtarları (Hazır/Yakında), arama ve filtre, Ayarlar sekmesi, Geliştirici sekmesi (kancalar/yuvalar). `requireAdmin` + denetim kaydı (`plugins.toggle|module|settings`). Henüz **yok**: Pro lisans anahtarı, eklenti göçleri (`plugin_migrations`), "eklenti ekle" sihirbazı. Modül kataloğu: `docs/15`.
 - **Temalar — v1 yapıldı (2026-10-28):** resmi temalar kodda (`OFFICIAL_THEME_STORE`); **veri temaları** `.nxtheme` paketiyle yüklenir (`/admin/themes/packages`): doğrulama raporu, önizleme (`?nx_preview=<tema>`, yalnızca oturumlu), etkinleştirme (üst/alt şablon ve başlangıç sayfaları isteğe bağlı, sayfalar taslak ve asla ezmez), dışa aktarma (yüklenen tema veya **mevcut tasarım**), silme (etkin tema silinemez). Kalan: yazı tipi dosyaları (`woff2`), tema ayarı sürüm geçmişi/geri al, güncelleme rozeti, kod temaları (CLI).
 

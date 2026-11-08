@@ -90,9 +90,28 @@ export async function pairBridge(siteId: string, code: string, origin: string): 
   await patch(siteId, {
     pairBox: "",
     tokenBox: encryptSecret(JSON.stringify({ token, exp: tokenExp, origin: host.origin })),
+    origin: host.origin,
     report: emptyReport(),
   });
   return { token, expiresAt: new Date(tokenExp).toISOString() };
+}
+
+/** Kaynak sitenin adresi. Eşleşme sırasında düz yazılır; sır değildir. */
+export async function bridgeDrawn(siteId: string): Promise<string[]> {
+  const ids = (await settings(siteId)).aiDone;
+  return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+}
+
+export async function rememberBridgeDrawn(siteId: string, ids: string[]): Promise<void> {
+  const prev = await bridgeDrawn(siteId);
+  await patch(siteId, { aiDone: [...new Set([...prev, ...ids])].slice(-200) });
+}
+
+export async function bridgeOrigin(siteId: string): Promise<string> {
+  const current = await settings(siteId);
+  if (typeof current.origin === "string" && current.origin.startsWith("https://")) return current.origin;
+  const box = openBox(current.tokenBox);
+  return typeof box?.origin === "string" ? box.origin : "";
 }
 
 export async function bridgeSession(siteId: string, token: string): Promise<{ origin: string } | null> {

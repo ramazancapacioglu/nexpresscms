@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { drawLayout } from "../src/bridge-draw";
+import { drawLayout, splitGluedTitle } from "../src/bridge-draw";
+import { resolveAssetUrl } from "../src/links";
+import { repairImportedBlocks } from "../src/bridge-repair";
 import { parseBridgePush } from "../src/bridge-parse";
 
 test("satır tam genişlik ve sütun olarak çizilir; tanınmayan düğüm metne düşer", () => {
@@ -29,6 +31,26 @@ test("satır tam genişlik ve sütun olarak çizilir; tanınmayan düğüm metne
   assert.equal(columns?.children?.length, 2);
   assert.equal(drawn.unknown, 2);
   assert.deepEqual(drawn.images, ["https://cdn.ornek.test/a.jpg"]);
+});
+
+test("göreli görsel kaynak siteye bağlanır, yapışık başlık ayrılır", () => {
+  assert.equal(resolveAssetUrl("/wp-content/uploads/a.webp", "https://www.ornek.test"), "https://www.ornek.test/wp-content/uploads/a.webp");
+  assert.deepEqual(splitGluedTitle("Muhasebe ProgramıÖn muhasebe ve genel muhasebe çözümleri"), {
+    title: "Muhasebe Programı",
+    body: "Ön muhasebe ve genel muhasebe çözümleri",
+  });
+  assert.equal(splitGluedTitle("AKINSOFT, Türkiye'nin yerli yazılım markasıdır."), null);
+  const drawn = drawLayout([{ type: "image", url: "/wp-content/uploads/a.webp", alt: "Simge" }], { baseUrl: "https://www.ornek.test" });
+  assert.equal(drawn.blocks[0]?.props.url, "https://www.ornek.test/wp-content/uploads/a.webp");
+  const images = new Set<string>();
+  const repaired = repairImportedBlocks(
+    [{ id: "p1", type: "paragraph", props: { text: "Muhasebe ProgramıÖn muhasebe ve genel muhasebe çözümleri" }, children: [{ id: "i1", type: "image_figure", props: { url: "/wp-content/uploads/a.webp" } }] }],
+    "https://www.ornek.test",
+    images,
+  );
+  assert.equal(repaired.split, 1);
+  assert.equal(repaired.blocks[0]?.type, "heading");
+  assert.equal(images.has("https://www.ornek.test/wp-content/uploads/a.webp"), true);
 });
 
 test("ürün paketi yazılmaz, sayfa kalır", () => {

@@ -1,5 +1,16 @@
 import type { BlockNode } from "@nexpress/core";
 import { convertWpHtml } from "./html";
+import { resolveAssetUrl } from "./links";
+
+/** Başlık ile gövde boşluksuz yapışmışsa ayırır. Normal cümleye dokunmaz. */
+export function splitGluedTitle(text: string): { title: string; body: string } | null {
+  const match = text.match(/^(.{4,70}?)([a-zçğıöşü])([A-ZÇĞİÖŞÜ].{8,})$/);
+  if (!match) return null;
+  const title = `${match[1]}${match[2]}`.trim();
+  const body = match[3]!.trim();
+  if (title.length < 4 || body.length < 8 || /[.!?:]$/.test(title)) return null;
+  return { title, body };
+}
 
 /** WordPress eklentisinin gönderdiği yerleşim düğümü. Ürün adı taşımaz. */
 export interface LayoutNode {
@@ -59,9 +70,11 @@ export function drawLayout(nodes: LayoutNode[], opts: { baseUrl?: string } = {})
   let budget = 400;
   const id = () => `br_${++n}`;
   const addImage = (url: string) => {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      if (!images.includes(url)) images.push(url);
+    const abs = opts.baseUrl ? resolveAssetUrl(url, opts.baseUrl) : url;
+    if (abs.startsWith("http://") || abs.startsWith("https://")) {
+      if (!images.includes(abs)) images.push(abs);
     }
+    return abs;
   };
 
   const walk = (node: LayoutNode, depth: number): BlockNode[] => {
@@ -124,14 +137,21 @@ export function drawLayout(nodes: LayoutNode[], opts: { baseUrl?: string } = {})
     if (type === "paragraph" || type === "text") {
       const html = clip(node.html, 8000);
       const text = clip(node.text, 4000);
+      const plain = text || html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const glued = plain && !html.includes("<img") ? splitGluedTitle(plain) : null;
+      if (glued) {
+        return [
+          { id: id(), type: "heading", props: { text: glued.title, level: "3" } },
+          { id: id(), type: "paragraph", props: { text: glued.body } },
+        ];
+      }
       if (!html && !text) return [];
       return [{ id: id(), type: "paragraph", props: html ? { html } : { text } }];
     }
 
     if (type === "image") {
-      const url = clip(node.url, 500);
+      const url = addImage(clip(node.url, 500));
       if (!url) return [];
-      addImage(url);
       return [{ id: id(), type: "image_figure", props: { url, altText: clip(node.alt, 180) } }];
     }
 
@@ -164,9 +184,8 @@ export function drawLayout(nodes: LayoutNode[], opts: { baseUrl?: string } = {})
 
     if (type === "card") {
       const blocks: BlockNode[] = [];
-      const url = clip(node.url, 500);
+      const url = addImage(clip(node.url, 500));
       if (url) {
-        addImage(url);
         blocks.push({ id: id(), type: "image_figure", props: { url, altText: clip(node.alt, 180) } });
       }
       blocks.push({

@@ -180,7 +180,7 @@ final class Nexpress_Bridge_Transfer {
       "date" => (string) $post->post_date_gmt,
       "author" => (string) get_the_author_meta("display_name", (int) $post->post_author),
       "link" => (string) get_permalink($post),
-      "featured" => (string) get_the_post_thumbnail_url($post, "full"),
+      "featured" => self::abs_url((string) get_the_post_thumbnail_url($post, "full")),
       "front" => $front === (int) $post->ID,
       "categories" => self::terms(is_array($cats) ? $cats : []),
       "tags" => self::terms(is_array($tags) ? $tags : []),
@@ -256,7 +256,7 @@ final class Nexpress_Bridge_Transfer {
         continue;
       }
       if (self::has($name, "image")) {
-        $out[] = ["type" => "image", "url" => (string) ($attrs["url"] ?? self::src($html)), "alt" => (string) ($attrs["alt"] ?? "")];
+        $out[] = ["type" => "image", "url" => self::abs_url((string) ($attrs["url"] ?? self::src($html))), "alt" => (string) ($attrs["alt"] ?? "")];
         continue;
       }
       if (self::has($name, "button")) {
@@ -344,7 +344,7 @@ final class Nexpress_Bridge_Transfer {
     }
     if (self::has($name, "image")) {
       $url = is_array($settings["image"] ?? null) ? (string) ($settings["image"]["url"] ?? "") : (string) ($settings["url"] ?? "");
-      return ["type" => "image", "url" => $url, "alt" => (string) ($settings["image_alt"] ?? $settings["alt"] ?? "")];
+      return ["type" => "image", "url" => self::abs_url($url), "alt" => (string) ($settings["image_alt"] ?? $settings["alt"] ?? "")];
     }
     if (self::has($name, "button")) {
       return ["type" => "button", "label" => (string) ($settings["text"] ?? $settings["title"] ?? ""), "href" => (string) ($settings["link"]["url"] ?? $settings["url"] ?? "")];
@@ -365,7 +365,7 @@ final class Nexpress_Bridge_Transfer {
         "text" => (string) ($settings["title_text"] ?? $settings["title"] ?? ""),
         "html" => wp_strip_all_tags((string) ($settings["description_text"] ?? $settings["description"] ?? "")),
         "href" => (string) ($settings["link"]["url"] ?? ""),
-        "url" => is_array($settings["image"] ?? null) ? (string) ($settings["image"]["url"] ?? "") : "",
+        "url" => self::abs_url(is_array($settings["image"] ?? null) ? (string) ($settings["image"]["url"] ?? "") : ""),
       ];
     }
     return [];
@@ -415,6 +415,18 @@ final class Nexpress_Bridge_Transfer {
       foreach ($posts as $post) {
         $fields = self::form_fields((string) $post->post_content);
         if ($fields === []) {
+          foreach (get_post_meta($post->ID) as $values) {
+            $raw = is_array($values) ? (string) ($values[0] ?? "") : (string) $values;
+            if ($raw === "" || ($raw[0] !== "{" && $raw[0] !== "[")) {
+              continue;
+            }
+            $fields = self::form_fields($raw);
+            if ($fields !== []) {
+              break;
+            }
+          }
+        }
+        if ($fields === []) {
           continue;
         }
         $out[] = ["wpId" => (string) $post->ID, "name" => html_entity_decode(get_the_title($post), ENT_QUOTES, "UTF-8"), "fields" => $fields];
@@ -426,7 +438,7 @@ final class Nexpress_Bridge_Transfer {
   /** @return array<int, array<string, mixed>> */
   private static function form_fields(string $raw): array {
     $json = json_decode($raw, true);
-    $source = is_array($json["fields"] ?? null) ? $json["fields"] : (is_array($json) ? $json : []);
+    $source = is_array($json["fields"] ?? null) ? $json["fields"] : (is_array($json["form_fields"] ?? null) ? $json["form_fields"] : (is_array($json) ? $json : []));
     $fields = [];
     foreach ($source as $field) {
       if (!is_array($field) || empty($field["label"])) {
@@ -554,8 +566,25 @@ final class Nexpress_Bridge_Transfer {
     return (string) ($color["background"] ?? $attrs["backgroundColor"] ?? "");
   }
 
+  private static function abs_url(string $url): string {
+    $url = trim($url);
+    if ($url === "" || str_starts_with($url, "data:")) {
+      return $url;
+    }
+    if (str_starts_with($url, "http://") || str_starts_with($url, "https://")) {
+      return $url;
+    }
+    if (str_starts_with($url, "//")) {
+      return "https:" . $url;
+    }
+    if (str_starts_with($url, "/")) {
+      return home_url($url);
+    }
+    return $url;
+  }
+
   private static function src(string $html): string {
-    return preg_match('/src=["\']([^"\']+)["\']/', $html, $m) ? $m[1] : "";
+    return preg_match('/src=["\']([^"\']+)["\']/', $html, $m) ? self::abs_url($m[1]) : "";
   }
 
   private static function href(string $html): string {

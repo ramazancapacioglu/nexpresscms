@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { wipeContentAction } from "@/app/admin/settings/actions";
-import { issueBridgeCodeAction } from "./actions";
+import { issueBridgeCodeAction, repairBridgeAction } from "./actions";
 
 type BridgeReportView = {
   at: string;
@@ -26,6 +26,7 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
   const [code, setCode] = useState<string | null>(null);
   const [expires, setExpires] = useState<string | null>(null);
   const [issuing, setIssuing] = useState(false);
+  const [repairing, setRepairing] = useState(false);
 
   const issue = async () => {
     setIssuing(true);
@@ -42,6 +43,24 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
       setError("Kod üretilemedi.");
     } finally {
       setIssuing(false);
+    }
+  };
+
+  const repair = async () => {
+    setRepairing(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await repairBridgeAction();
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setMessage(`Sayfa ${result.pages}, ayrılan başlık ${result.split}, indirilen görsel ${result.downloaded}, AI yerleşim ${result.drawn}.${result.note ? ` ${result.note}` : ""}`);
+    } catch {
+      setError("Tamamlama yarım kaldı. Bir kez daha deneyin.");
+    } finally {
+      setRepairing(false);
     }
   };
 
@@ -90,6 +109,18 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
             <span className="ml-3 font-sans text-[12px] tracking-normal text-[#5F6570]">{expires ? `Geçerlilik: ${new Date(expires).toLocaleString("tr-TR")}` : ""}</span>
           </p>
         ) : null}
+      </section>
+
+      <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
+        <h2 className="text-[15px] font-semibold">Eksikleri tamamla</h2>
+        <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
+          Göreli görseller kaynak siteden indirilir. Yapışık kart başlığı ayrılır. Bölümü olmayan sayfaları AI yerleştirir; görseli veya bölümü olan sayfa olduğu gibi kalır.
+        </p>
+        <button type="button" onClick={repair} disabled={repairing || !pluginOn} className="mt-3 rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]">
+          {repairing ? "Tamamlanıyor…" : "Eksikleri tamamla"}
+        </button>
+        {message ? <p className="mt-2 text-[13px]">{message}</p> : null}
+        {error ? <p className="mt-2 text-[13px] text-amber-700">{error}</p> : null}
       </section>
 
       {report ? (

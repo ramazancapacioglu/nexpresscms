@@ -3,7 +3,7 @@ import type { BlockNode, NavigationMenuItem, SiteMenuRecord } from "@nexpress/co
 import { isPluginModuleEnabled } from "@nexpress/core";
 import { getFormDefinitionRepository, getRedirectRepository, getScopedRepository } from "@nexpress/database";
 import { slugify } from "@nexpress/seo-core";
-import { drawLayout, parseBridgePush, rewriteAbsoluteUrl, rewriteBlockLinks, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
+import { drawLayout, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { WP_BRIDGE_PLUGIN_ID } from "@/plugins/wp-bridge";
 import { ingestImages, remapContentImages } from "./media";
@@ -90,10 +90,11 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
         blocks = rewritten.blocks;
         delta.links += rewritten.count;
       }
-      for (const url of [item.featured, ...drawn.images]) {
-        if (url && !map[url] && !imageQueue.some((image) => image.url === url)) imageQueue.push({ url, alt: "" });
+      const featuredAbs = item.featured ? resolveAssetUrl(item.featured, origin) : "";
+      for (const url of [featuredAbs, ...drawn.images]) {
+        if (url.startsWith("http") && !map[url] && !imageQueue.some((image) => image.url === url)) imageQueue.push({ url, alt: "" });
       }
-      const featured = item.featured ? map[item.featured] ?? item.featured : null;
+      const featured = featuredAbs ? map[featuredAbs] ?? featuredAbs : null;
       const published = item.status === "publish" || item.status === "private";
       const schemaType = SCHEMA.has(item.seo.schemaType) ? item.seo.schemaType : type === "post" ? "Article" : "WebPage";
       const date = item.date ? new Date(item.date.replace(" ", "T")) : null;

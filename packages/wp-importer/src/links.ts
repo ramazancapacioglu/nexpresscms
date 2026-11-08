@@ -13,6 +13,20 @@ function sameSite(host: string, originHost: string): boolean {
   return bareHost(host) === bareHost(originHost);
 }
 
+/** Göreli medya yolunu kaynak sitenin adresine bağlar. `http` adres ve `data:` olduğu gibi kalır. */
+export function resolveAssetUrl(url: string, origin: string): string {
+  const trimmed = url.trim();
+  if (!trimmed || /^(data:|mailto:|tel:|javascript:|#)/i.test(trimmed)) return url;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  try {
+    const base = origin.endsWith("/") ? origin : `${origin}/`;
+    const abs = new URL(trimmed.startsWith("//") ? `https:${trimmed}` : trimmed, base);
+    return abs.protocol === "http:" || abs.protocol === "https:" ? abs.toString() : url;
+  } catch {
+    return url;
+  }
+}
+
 /** Tek bir adres. Değişmiyorsa aynı dizge döner. */
 export function rewriteAbsoluteUrl(value: string, origin: string, base: string): string {
   const trimmed = value.trim();
