@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { NextResponse } from "next/server";
-import { strToU8, zipSync } from "fflate";
+import { zipSync } from "fflate";
 import { recordAudit } from "@/lib/audit";
 import { requireAdminApi } from "@/lib/admin-api";
 import { WP_BRIDGE_VERSION } from "@/plugins/wp-bridge";
@@ -30,7 +30,10 @@ async function collect(dir: string, prefix: string, out: Record<string, Uint8Arr
     const abs = path.join(dir, entry.name);
     const rel = `${prefix}${entry.name}`;
     if (entry.isDirectory()) await collect(abs, `${rel}/`, out);
-    else out[rel] = strToU8(await readFile(abs));
+    else {
+      const buf = await readFile(abs);
+      out[rel] = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+    }
   }
 }
 
