@@ -96,7 +96,11 @@ export async function invalidateSite(siteId?: string): Promise<void> {
   const id = siteId ?? (await headers()).get("x-nexpress-site-id") ?? "default";
   epochs.set(id, (epochs.get(id) ?? 0) + 1);
   oversizeCache.clear();
-  revalidateTag(siteTag(id));
+  try {
+    revalidateTag(siteTag(id));
+  } catch {
+    // İstek dışında (bakım betiği) etiket düşmez; bellek kuşağı yine ilerler.
+  }
 }
 
 /**
