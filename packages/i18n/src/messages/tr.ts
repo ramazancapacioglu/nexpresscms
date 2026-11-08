@@ -67,6 +67,7 @@ export const tr = {
       footer: "Footer",
       sidebar: "Kenar çubuğu",
       migration: "WordPress Göç Aracı",
+      wpBridge: "WordPress Köprüsü",
       settings: "Ayarlar",
       users: "Kullanıcılar & Roller",
       audit: "Denetim Günlüğü",

@@ -262,6 +262,13 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: ArrowRightLeft,
         shortcut: "G M",
       },
+      {
+        href: "/admin/wp-bridge",
+        label: "WordPress Köprüsü",
+        icon: Plug,
+        shortcut: "G J",
+        adminOnly: true,
+      },
     ],
   },  {
     label: "Sistem",
@@ -362,7 +369,7 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
       ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
-  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/system", "/admin/audit", "/admin/help"]) },
+  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/audit", "/admin/help"]) },
 ];
 
 export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
@@ -402,6 +409,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/appearance/footer": "admin.nav.footer",
   "/admin/appearance/sidebar": "admin.nav.sidebar",
   "/admin/migration": "admin.nav.migration",
+  "/admin/wp-bridge": "admin.nav.wpBridge",
   "/admin/settings": "admin.nav.settings",
   "/admin/users": "admin.nav.users",
   "/admin/audit": "admin.nav.audit",

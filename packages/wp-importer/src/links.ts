@@ -1,0 +1,76 @@
+import type { BlockNode } from "@nexpress/core";
+
+/** Kaynak sitenin mutlak adresini yerel yola çevirir. Başka alan adı, mailto ve tel durur. */
+export function siteOrigin(siteUrl: string): string {
+  const raw = siteUrl.trim();
+  const u = new URL(raw.includes("://") ? raw : `https://${raw}`);
+  return u.origin;
+}
+
+const bareHost = (host: string) => host.toLowerCase().replace(/^www\./, "");
+
+function sameSite(host: string, originHost: string): boolean {
+  return bareHost(host) === bareHost(originHost);
+}
+
+/** Tek bir adres. Değişmiyorsa aynı dizge döner. */
+export function rewriteAbsoluteUrl(value: string, origin: string, base: string): string {
+  const trimmed = value.trim();
+  if (!trimmed || /^(mailto:|tel:|#|javascript:)/i.test(trimmed)) return value;
+  let url: URL;
+  try {
+    url = new URL(trimmed, origin);
+  } catch {
+    return value;
+  }
+  const originUrl = new URL(origin);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return value;
+  if (!sameSite(url.host, originUrl.host)) return value;
+  const prefix = base.endsWith("/") ? base.slice(0, -1) : base;
+  const path = `${url.pathname || "/"}${url.search}${url.hash}`;
+  if (path === "/" || path === "") return prefix || "/";
+  return `${prefix}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function escapeReg(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Metin ve HTML içindeki kaynak site adreslerini sayar ve çevirir. */
+export function rewriteTextLinks(text: string, origin: string, base: string): { text: string; count: number } {
+  const host = escapeReg(bareHost(new URL(origin).host));
+  const re = new RegExp(`https?:\\/\\/(?:www\\.)?${host}[^\\s"'<>]*`, "gi");
+  let count = 0;
+  const next = text.replace(re, (match) => {
+    const rewritten = rewriteAbsoluteUrl(match, origin, base);
+    if (rewritten !== match) count += 1;
+    return rewritten;
+  });
+  return { text: next, count };
+}
+
+function rewriteValue(value: unknown, origin: string, base: string, tally: { count: number }): unknown {
+  if (typeof value === "string") {
+    const result = rewriteTextLinks(value, origin, base);
+    tally.count += result.count;
+    return result.text;
+  }
+  if (Array.isArray(value)) return value.map((item) => rewriteValue(item, origin, base, tally));
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) out[key] = rewriteValue(item, origin, base, tally);
+    return out;
+  }
+  return value;
+}
+
+/** Blok ağacındaki adresleri çevirir. Ağaç kopyalanır; gelen düğüm değişmez. */
+export function rewriteBlockLinks(blocks: BlockNode[], origin: string, base: string): { blocks: BlockNode[]; count: number } {
+  const tally = { count: 0 };
+  const walk = (block: BlockNode): BlockNode => ({
+    ...block,
+    props: rewriteValue(block.props ?? {}, origin, base, tally) as BlockNode["props"],
+    children: block.children?.map(walk),
+  });
+  return { blocks: blocks.map(walk), count: tally.count };
+}

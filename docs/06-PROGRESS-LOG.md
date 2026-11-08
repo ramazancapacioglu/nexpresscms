@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-08] — WordPress köprüsü başladı
+- Panel eklentisi `@nexpress/plugin-wp-bridge` (`/admin/wp-bridge`). WordPress eklentisi `0.1.0` aynı sürümle indirilir. E-ticaret kapsam dışı.
+- Aktarım öncesi sıfırlama: şablon ve tasarım kütüphanesi kalır; sayfa, yazı, diğer içerik, yorum ve medya silinir.
+- İç bağlantı tarama fonksiyonu yazıldı (`rewriteBlockLinks`). Aktarım yazmasına sonraki dilimde bağlanır. Plan: `docs/24`.
+
 ### [2026-11-07] — Vitrin kütüphanesi ve tema arama penceresi
 - Tasarım kütüphanesine on vitrin yerleşimi eklendi: çözüm kartları, demo çağrı bandı, görsel-liste, mint bant, geri arama formu, modül kartları, örtülü görsel, kanal şeridi, kurulum formu, kapak başlık.
 - Kapak başlık sayfanın başlığını, kısa açıklamasını ve öne çıkan görselini çeker (`tpl_post_title` + `showTldr`).

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Blocks, Check, ExternalLink, Search, Sparkles } from "lucide-react";
+import { Blocks, Check, ExternalLink, Plug, Search, Sparkles } from "lucide-react";
 import type { PluginSettingField } from "@nexpress/core";
 import { SiteDnaCard } from "./site-dna-card";
 import { PluginSettingsForm } from "./plugin-settings-form";
@@ -33,7 +33,7 @@ export interface PluginCardData {
   }>;
 }
 
-const ICONS: Record<string, typeof Blocks> = { Sparkles, Search, Blocks };
+const ICONS: Record<string, typeof Blocks> = { Sparkles, Search, Blocks, Plug };
 type Filter = "all" | "ready" | "planned";
 
 const FILTERS: Array<{ id: Filter; label: string }> = [

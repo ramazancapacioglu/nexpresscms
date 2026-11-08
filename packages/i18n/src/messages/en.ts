@@ -64,6 +64,7 @@ export const en: Messages = {
       footer: "Footer",
       sidebar: "Sidebar",
       migration: "WordPress Migration Tool",
+      wpBridge: "WordPress Bridge",
       settings: "Settings",
       users: "Users & Roles",
       audit: "Audit Log",

@@ -1,5 +1,7 @@
 # 17 — WordPress İçe Aktarma
 
+Dosya (WXR) aktarımı bu sayfadadır. Sayfa düzeni, yorum, form, şema, menü ve medya dosyasını da taşıyan köprü `docs/24-WP-BRIDGE.md` içindedir. E-ticaret her iki yolda da yoktur.
+
 Yönetim: `/admin/migration` (yalnızca admin). API: `POST /api/admin/wp-import` (`mode=analyze|run`), `POST /api/admin/wp-shell` (tek sayfa, yazmaz). Paket: `packages/wp-importer` (saf mantık); yazma: `apps/cms/src/lib/wp-import.ts`.
 
 ## Akış
