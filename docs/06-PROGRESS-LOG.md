@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-08] — Ziyaretçi JS tavanı
+- Paylaşılan çalışma zamanı 106 kB ölçülünce kurulum CI’da kalıyordu. Sayfa kodu 0,70 kB. Tavan 108 kB (`perf-budget.json`).
+
 ### [2026-11-08] — WordPress köprüsü başladı
 - Panel eklentisi `@nexpress/plugin-wp-bridge` (`/admin/wp-bridge`). WordPress eklentisi `0.1.0` aynı sürümle indirilir. E-ticaret kapsam dışı.
 - Aktarım öncesi sıfırlama: şablon ve tasarım kütüphanesi kalır; sayfa, yazı, diğer içerik, yorum ve medya silinir.

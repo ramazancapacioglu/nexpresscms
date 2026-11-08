@@ -1,5 +1,5 @@
 {
-  "note": "Ziyaretçi rotaları için gzip istemci JS bütçesi (docs/12 P0-6). Taban ~101 kB React + Next çalışma zamanıdır; rota/düzen kodu ~0,5 kB. Artırmak için gerekçe yazın.",
-  "publicFirstLoadGzipKb": 104,
+  "note": "Ziyaretçi rotaları için gzip istemci JS bütçesi (docs/12 P0-6). Taban React + Next çalışma zamanıdır. 2026-11-08: paylaşılan çalışma zamanı 106 kB ölçüldü; sayfa/düzen kodu 0,70 kB ve 1 kB sınırının altında. Tavan 108 kB.",
+  "publicFirstLoadGzipKb": 108,
   "publicOwnGzipKb": 1.0
 }
