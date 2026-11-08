@@ -2,13 +2,48 @@
 
 import React, { useState } from "react";
 import { wipeContentAction } from "@/app/admin/settings/actions";
+import { issueBridgeCodeAction } from "./actions";
 
-/** İndirme bağlantısı ve aktarım öncesi sıfırlama. Şablon ile kütüphane bu kapının dışında. */
-export function BridgePanel({ version }: { version: string }) {
+type BridgeReportView = {
+  at: string;
+  created: number;
+  updated: number;
+  failed: number;
+  links: number;
+  images: number;
+  forms: number;
+  redirects: number;
+  unknown: number;
+  menus: number;
+};
+
+/** İndirme, eşleştirme kodu, son aktarım sayıları ve sıfırlama. */
+export function BridgePanel({ version, report, pluginOn }: { version: string; report: BridgeReportView | null; pluginOn: boolean }) {
   const [phrase, setPhrase] = useState("");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
+  const [expires, setExpires] = useState<string | null>(null);
+  const [issuing, setIssuing] = useState(false);
+
+  const issue = async () => {
+    setIssuing(true);
+    setError(null);
+    try {
+      const result = await issueBridgeCodeAction();
+      if (!result.ok) {
+        setError(result.error ?? "Kod üretilemedi.");
+        return;
+      }
+      setCode(result.code);
+      setExpires(result.expiresAt);
+    } catch {
+      setError("Kod üretilemedi.");
+    } finally {
+      setIssuing(false);
+    }
+  };
 
   const reset = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -30,7 +65,7 @@ export function BridgePanel({ version }: { version: string }) {
       <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
         <h2 className="text-[15px] font-semibold">Site eklentisi {version}</h2>
         <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
-          Zip’i WordPress’e kurun. Araçlar menüsünde NexPress Aktarım açılır. E-ticaret bu pakette yoktur.
+          Zip’i WordPress’e kurun. Menü: Araçlar → NexPress Aktarım. Eski 0.1.0 kuruluysa bu sürümü yükleyin.
         </p>
         <a
           href="/api/admin/wp-bridge/plugin"
@@ -39,6 +74,41 @@ export function BridgePanel({ version }: { version: string }) {
           nexpress-bridge-{version}.zip indir
         </a>
       </section>
+
+      <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
+        <h2 className="text-[15px] font-semibold">Eşleştirme kodu</h2>
+        <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
+          Kod burada üretilir, WordPress’teki kutuya yapıştırılır. Adres bu sitenin https adresi olsun. Kod 30 dakika ve tek kullanımlıktır. Aktarım WordPress’te “Aktarımı başlat” ile gider.
+        </p>
+        <button type="button" onClick={issue} disabled={issuing || !pluginOn} className="mt-3 rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]">
+          {issuing ? "Üretiliyor…" : "Kod üret"}
+        </button>
+        {!pluginOn ? <p className="mt-2 text-[13px] text-amber-700">Eklenti kapalı. Eklentiler sayfasından açın.</p> : null}
+        {code ? (
+          <p className="mt-3 font-mono text-[18px] tracking-widest text-[#14151A] dark:text-[#F3F4F6]">
+            {code.slice(0, 4)}-{code.slice(4)}
+            <span className="ml-3 font-sans text-[12px] tracking-normal text-[#5F6570]">{expires ? `Geçerlilik: ${new Date(expires).toLocaleString("tr-TR")}` : ""}</span>
+          </p>
+        ) : null}
+      </section>
+
+      {report ? (
+        <section className="rounded-lg border border-[#E6E7EA] p-4 text-[13px] dark:border-[#23262E]">
+          <h2 className="text-[15px] font-semibold">Son aktarım</h2>
+          <p className="mt-1 text-[#5F6570] dark:text-[#8C9099]">{new Date(report.at).toLocaleString("tr-TR")}</p>
+          <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+            <li>Yeni içerik: {report.created}</li>
+            <li>Güncellenen: {report.updated}</li>
+            <li>Hata: {report.failed}</li>
+            <li>Çevrilen bağlantı: {report.links}</li>
+            <li>İndirilen görsel: {report.images}</li>
+            <li>Form: {report.forms}</li>
+            <li>Yönlendirme: {report.redirects}</li>
+            <li>Menü: {report.menus}</li>
+            <li>Düz metne düşen blok: {report.unknown}</li>
+          </ul>
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
         <h2 className="text-[15px] font-semibold">Aktarım öncesi sıfırlama</h2>

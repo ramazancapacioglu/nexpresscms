@@ -4,3 +4,5 @@ export * from "./shell";
 export * from "./plan";
 export * from "./ip";
 export * from "./links";
+export * from "./bridge-draw";
+export * from "./bridge-parse";

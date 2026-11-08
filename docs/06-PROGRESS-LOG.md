@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-08] — WordPress köprüsü aktarıyor
+- Eşleştirme kodu panelde üretilir, 30 dakika ve tek kullanımlık. WordPress `0.2.0` bu kodla sayfa, yazı, yorum, form, menü, SEO, yönlendirme ve görseli gönderir. E-ticaret yok. Yakında modülleri hazır.
+
 ### [2026-11-08] — Ziyaretçi JS tavanı
 - Paylaşılan çalışma zamanı 106 kB ölçülünce kurulum CI’da kalıyordu. Sayfa kodu 0,70 kB. Tavan 108 kB (`perf-budget.json`).
 

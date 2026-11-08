@@ -1,6 +1,6 @@
 # 24 — WordPress Köprüsü (panel eklentisi + site eklentisi)
 
-> Durum: **başladı (2026-11-08).** Panel eklentisi `@nexpress/plugin-wp-bridge` kayıtlı. WordPress eklentisi `0.1.0` panelden indirilir. Eşleştirme, içerik yazma ve yerleşim çizimi sonraki dilimler. E-ticaret (ürün, stok, sipariş, varyasyon) bu köprünün dışındadır. Eski dosya aktarımı durur: `docs/17`.
+> Durum: **0.2.0 (2026-11-08).** Panel kod üretir. WordPress eklentisi paketi iter: sayfa, yazı, yorum, form, menü, SEO, yönlendirme, görsel. E-ticaret dışarıda. Eski dosya aktarımı durur: `docs/17`.
 
 ## 1. Neden ayrı eklenti
 
@@ -66,10 +66,10 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 
 | Dilim | İş | Durum |
 | :--- | :--- | :--- |
-| 0 | Panel eklentisi, sürüm, indirme, sıfırlama kapısı, iç bağlantı fonksiyonu, bu plan | **Bu tur** |
-| 1 | Eşleştirme kodu, sayfa/yazı/taksonomi/SEO/yorum/medya yazma, iç bağlantı tarama | Sırada |
-| 2 | Satır ve sütun çizimi, kapak bandı, menü, palet, üst/alt şerit | Sırada |
-| 3 | Form tanımları, şema şablonları, site geneli SEO, 301 | Sırada |
+| 0 | Panel eklentisi, sürüm, indirme, sıfırlama kapısı, iç bağlantı fonksiyonu, bu plan | Bitti |
+| 1 | Eşleştirme kodu, sayfa/yazı/taksonomi/SEO/yorum/medya yazma, iç bağlantı tarama | **0.2.0** |
+| 2 | Satır ve sütun çizimi, kapak bandı, menü, üst şerit telefonu ve alt kart | **0.2.0** |
+| 3 | Form tanımları, sayfa ve site SEO'su, 301 | **0.2.0** |
 
 ## 6. Güvenlik
 

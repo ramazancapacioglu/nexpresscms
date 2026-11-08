@@ -1,6 +1,6 @@
 === NexPress Aktarım ===
 Contributors: nexpress
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 8.0
@@ -12,9 +12,12 @@ Sayfa, yazı, yorum, form, şema, medya ve yerleşimi NexPress sitesine hazırla
 
 NexPress panelindeki WordPress Köprüsü ile aynı sürümü kullanın. Eklentiyi panelden indirin; elle kopyalamayın.
 
-Bu sürüm site adresini ve eşleştirme kodunu kaydeder. Paket gönderimi sonraki sürümde açılır.
+Kodu NexPress panelinden üretip bu ekrana yapıştırın. Aktarımı başlat, sayfa, yazı, yorum, form, menü, SEO ve görseli gönderir. E-ticaret gitmez.
 
 == Changelog ==
+
+= 0.2.0 =
+* Eşleştirme kodu panelden gelir. Aktarımı başlat paketi gönderir.
 
 = 0.1.0 =
 * Ayar ekranı: NexPress adresi ve eşleştirme kodu.

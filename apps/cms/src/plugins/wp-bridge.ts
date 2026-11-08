@@ -1,7 +1,7 @@
 import type { PluginManifest } from "@nexpress/core";
 
 /** Panel eklentisi ile WordPress eklenti başlığı aynı sürümü taşır. */
-export const WP_BRIDGE_VERSION = "0.1.0";
+export const WP_BRIDGE_VERSION = "0.2.0";
 
 export const WP_BRIDGE_PLUGIN_ID = "@nexpress/plugin-wp-bridge";
 
@@ -20,7 +20,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
   description:
     "WordPress sitesindeki sayfa, yazı, yorum, form, şema, medya ve yerleşimi bağlar. E-ticaret aktarılmaz. Site eklentisi buradan, sürümüyle indirilir.",
   settingsHref: "/admin/wp-bridge",
-  endpoints: ["/api/admin/wp-bridge/plugin"],
+  endpoints: ["/api/admin/wp-bridge/plugin", "/api/wp-bridge/v1/pair", "/api/wp-bridge/v1/push"],
   modules: [
     {
       id: "package",
@@ -45,7 +45,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "Bağlantı",
       label: "Eşleştirme",
       description: "Tek kullanımlık kod ile WordPress eklentisini bu siteye bağlar.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -53,7 +53,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "İçerik",
       label: "Sayfa, yazı ve yorum",
       description: "İçerik, taksonomi ve yorumları kimliğe göre yazar. Ürün ve sipariş yok.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -61,7 +61,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "İçerik",
       label: "İç bağlantı tarama",
       description: "Kaynak sitenin mutlak adreslerini yerel yola çevirir.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -69,7 +69,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "İçerik",
       label: "Medya dosyaları",
       description: "Görselleri eski adreste bırakmadan medya kitaplığına alır.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -77,7 +77,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "Görünüm",
       label: "Yerleşim çizimi",
       description: "Satır, sütun, kart, kapak bandı, menü ve üst/alt şeridi blok stiline çizer.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -85,7 +85,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "SEO",
       label: "SEO ve şema",
       description: "Sayfa SEO'su, site geneli ayarlar ve şema şablonları.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
     {
@@ -93,7 +93,7 @@ export const WP_BRIDGE_MANIFEST: PluginManifest = {
       group: "İçerik",
       label: "Form tanımları",
       description: "Alan, zorunluluk, seçenek ve bildirimi form kaydına çevirir.",
-      status: "planned",
+      status: "ready",
       defaultEnabled: true,
     },
   ],
