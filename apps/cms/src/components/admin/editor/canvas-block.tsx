@@ -41,6 +41,12 @@ const PROSE_TEXT_KEY: Partial<Record<BlockNode["type"], string>> = {
   tldr_box: "summary",
 };
 
+function containsBlockId(node: BlockNode, targetId: string | null): boolean {
+  if (!targetId) return false;
+  if (node.id === targetId) return true;
+  return (node.children ?? []).some((child) => containsBlockId(child, targetId));
+}
+
 export interface CanvasBlockProps {
   block: BlockNode;
   index: number;
@@ -112,6 +118,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
   const pageSchema = usePageSchema();
 
   const isSelected = selectedId === block.id;
+  const hasSelectedDescendant =
+    !isSelected && Boolean(selectedId && containsBlockId(block, selectedId));
   const span = block.gridSpan?.[deviceViewport] ?? block.gridSpan?.desktop ?? 12;
   const spanClass = SPAN_CLASSES[span] || "col-span-12";
   const rawHide = block.style?.hideOn;
@@ -171,10 +179,12 @@ export function CanvasBlock(props: CanvasBlockProps) {
         if (payload.kind === "move" && payload.id === block.id) return;
         drop(payload, parentId, side === "before" ? index : index + 1);
       }}
-      className={`${spanClass} group/blk relative rounded-lg transition-all ${
+      className={`${spanClass} nx-blk relative rounded-lg transition-all ${
         isSelected
-          ? "z-10 bg-blue-500/[0.05] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.14)]"
-          : "hover:outline-1 hover:outline-dashed hover:outline-blue-400/75"
+          ? "z-50 bg-blue-500/[0.05] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.14)]"
+          : hasSelectedDescendant
+            ? "z-40"
+            : "z-0 hover:z-10 hover:[&:not(:has(.nx-blk:hover))]:outline-1 hover:[&:not(:has(.nx-blk:hover))]:outline-dashed hover:[&:not(:has(.nx-blk:hover))]:outline-blue-400/75"
       } ${
         dropSide === "before"
           ? "before:pointer-events-none before:absolute before:-top-1 before:right-0 before:left-0 before:z-30 before:h-1 before:rounded-full before:bg-blue-600"
@@ -184,7 +194,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
       } ${hiddenNow ? "opacity-40" : ""}`}
     >
       {/* Seçili Olmayan Bloklar İçin Doğrudan Sürükle-Taşı ve Hızlı Seçim Rozeti */}
-      {!isSelected && (
+      {!isSelected && !hasSelectedDescendant && (
         <div
           draggable
           onDragStart={(e) => {
@@ -196,7 +206,7 @@ export function CanvasBlock(props: CanvasBlockProps) {
             onSelect(block.id);
           }}
           title="Sürükleyip başka bir satır veya sütuna taşıyın"
-          className="absolute -top-5 left-2 z-20 hidden h-5 cursor-grab items-center gap-1 rounded-t bg-slate-800/90 px-2 text-[10px] font-semibold text-white opacity-0 shadow-xs transition select-none group-hover/blk:flex group-hover/blk:opacity-100 active:cursor-grabbing hover:bg-blue-600"
+          className="absolute -top-5 left-2 z-20 hidden h-5 cursor-grab items-center gap-1 rounded-t bg-slate-800/90 px-2 text-[10px] font-semibold text-white opacity-0 shadow-xs transition select-none [.nx-blk:hover:not(:has(.nx-blk:hover))_>_&]:flex [.nx-blk:hover:not(:has(.nx-blk:hover))_>_&]:opacity-100 active:cursor-grabbing hover:bg-blue-600"
         >
           <GripVertical className="h-3 w-3 opacity-80" />
           <span>
@@ -293,6 +303,8 @@ export function CanvasBlock(props: CanvasBlockProps) {
                     col.props?.widthPct ?? Math.round(100 / (block.children?.length || 1))
                   );
                 const colSelected = selectedId === col.id;
+                const colHasSelectedChild =
+                  !colSelected && Boolean(selectedId && containsBlockId(col, selectedId));
                 const colChildren = col.children ?? [];
                 return (
                   <React.Fragment key={col.id}>
@@ -324,16 +336,18 @@ export function CanvasBlock(props: CanvasBlockProps) {
                         flexBasis: `${widthPct}%`,
                         flexGrow: 1,
                       }}
-                      className={`group/col relative flex min-h-[72px] min-w-0 flex-col rounded-lg transition-colors ${
+                      className={`nx-col relative flex min-h-[72px] min-w-0 flex-col rounded-lg transition-colors ${
                         overColId === col.id
-                          ? "bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
+                          ? "z-30 bg-blue-50/40 outline-2 outline-dashed outline-blue-600"
                           : colSelected
-                            ? "z-10 bg-blue-500/[0.06] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.16)]"
-                            : "hover:outline-1 hover:outline-dashed hover:outline-slate-300"
+                            ? "z-50 bg-blue-500/[0.06] outline-[3px] outline-offset-2 outline-blue-600 shadow-[0_0_0_8px_rgba(37,99,235,0.16)]"
+                            : colHasSelectedChild
+                              ? "z-40"
+                              : "z-0 hover:outline-1 hover:outline-dashed hover:outline-slate-300"
                       }`}
                     >
                       {colSelected && (
-                        <span className="pointer-events-none absolute -top-3 left-3 z-30 rounded-md bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+                        <span className="pointer-events-none absolute -top-3 right-3 z-30 rounded-md bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
                           Seçili sütun {colIdx + 1} · %{Math.round(widthPct)}
                         </span>
                       )}
@@ -354,15 +368,15 @@ export function CanvasBlock(props: CanvasBlockProps) {
                         />
                       )}
 
-                      {/* Sütun Üzerine Gelindiğinde Küçük Sütun Seçim Rozeti */}
-                      {!colSelected && (
+                      {/* Sütun Üzerine Gelindiğinde Küçük Sütun Seçim Rozeti (İçerideki bir blok seçili veya hedeflenmişken gizlenir) */}
+                      {!colSelected && !colHasSelectedChild && (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onSelect(col.id);
                           }}
-                          className="absolute right-1.5 top-1.5 z-10 hidden h-5 items-center rounded bg-slate-900/75 px-1.5 text-[9px] font-semibold text-white opacity-0 transition group-hover/col:inline-flex group-hover/col:opacity-100 hover:bg-blue-600"
+                          className="absolute right-1.5 -top-5 z-10 hidden h-5 items-center rounded-t bg-slate-900/80 px-1.5 text-[9px] font-semibold text-white opacity-0 transition [.nx-col:hover:not(:has(.nx-blk:hover))_>_&]:inline-flex [.nx-col:hover:not(:has(.nx-blk:hover))_>_&]:opacity-100 hover:bg-blue-600"
                         >
                           {colIdx + 1}. Sütun (%{Math.round(widthPct)})
                         </button>

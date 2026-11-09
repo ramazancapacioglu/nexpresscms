@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import {
   canAppendRepeaterItem,
@@ -91,11 +91,52 @@ export function FloatingToolbar({
     block.type === "paragraph_element" ||
     block.type === "text_div";
 
+  const barRef = useRef<HTMLDivElement>(null);
+  const [shiftX, setShiftX] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const updatePosition = () => {
+      const doc = el.ownerDocument;
+      const win = doc.defaultView;
+      if (!win) return;
+      const parentEl = el.parentElement;
+      if (!parentEl) return;
+      const parentRect = parentEl.getBoundingClientRect();
+      const barWidth = el.offsetWidth;
+      const viewportW = doc.documentElement.clientWidth || win.innerWidth;
+      const margin = 12;
+      const naturalLeft = parentRect.left;
+      const naturalRight = naturalLeft + barWidth;
+      let nextShift = 0;
+      if (naturalRight > viewportW - margin) {
+        nextShift = Math.round(viewportW - margin - naturalRight);
+      }
+      if (naturalLeft + nextShift < margin) {
+        nextShift = Math.round(margin - naturalLeft);
+      }
+      setShiftX((prev) => (prev === nextShift ? prev : nextShift));
+    };
+    updatePosition();
+    const win = el.ownerDocument.defaultView;
+    win?.addEventListener("resize", updatePosition);
+    return () => win?.removeEventListener("resize", updatePosition);
+  }, [block.id, block.type, Boolean(editor)]);
+
   return (
     <div
+      ref={barRef}
       onClick={(e) => e.stopPropagation()}
+      onMouseOver={(e) => e.stopPropagation()}
       data-nx-toolbar="block"
-      className="absolute -top-10 left-2 z-30 flex max-w-[94vw] flex-wrap items-center gap-0.5 rounded-lg border border-slate-700/85 bg-slate-900/95 px-1.5 py-1 text-[11px] text-white shadow-xl backdrop-blur-md select-none"
+      style={{ left: `${shiftX}px` }}
+      className="
+        absolute -top-10 z-50 flex w-max max-w-[calc(100vw-24px)]
+        flex-nowrap items-center gap-0.5 overflow-visible rounded-lg
+        border border-slate-700/90 bg-slate-900/98 px-1.5 py-1
+        text-[11px] whitespace-nowrap text-white shadow-2xl backdrop-blur-md select-none
+      "
     >
       {/* Üst Bloğu Seç (Parent Jump) */}
       {parentId && onSelectParent && (
@@ -456,10 +497,10 @@ export function FloatingToolbar({
             onClick={() => onOpenCreatePattern(block.id)}
             aria-label="Bu bloğu ortak senkronize model olarak kaydet"
             title="Model Oluştur (Birden fazla sayfada ortak kullanın, tek yerden güncelleyin)"
-            className="inline-flex h-6 items-center gap-1 rounded bg-purple-600/80 px-2 text-[10px] font-semibold text-white hover:bg-purple-600"
+            className="inline-flex h-6 items-center gap-1 rounded bg-purple-600/80 px-1.5 text-[10px] font-semibold text-white hover:bg-purple-600"
           >
             <Sparkles className="h-3 w-3 text-purple-200" />
-            Model Oluştur
+            <span>{isText ? "Model" : "Model Oluştur"}</span>
           </button>
         )
       )}
