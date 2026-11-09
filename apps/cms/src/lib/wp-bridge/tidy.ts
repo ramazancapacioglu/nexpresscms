@@ -7,7 +7,7 @@ import { bridgeOrigin } from "./store";
 
 function decode(value: string): string {
   return value
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<[^>]+>/g, "")
     .replace(/&#8217;|&#x27;|&#039;|&apos;/gi, "'")
     .replace(/&#8211;|&ndash;/gi, "–")
     .replace(/&quot;/gi, '"')

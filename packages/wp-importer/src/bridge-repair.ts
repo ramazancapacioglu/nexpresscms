@@ -117,9 +117,10 @@ export function extendClippedText(blocks: BlockNode[], sources: string[]): { blo
     const children = node.children?.map(walk);
     const text = typeof node.props?.text === "string" ? node.props.text : "";
     const norm = text.replace(/\s+/g, " ").trim();
+    const fold = (value: string) => value.replace(/[^\p{L}\p{N}]+/gu, "").toLocaleLowerCase("tr");
     if ((node.type === "paragraph" || node.type === "heading") && norm.length >= 250) {
-      const head = norm.slice(0, 80);
-      const hit = sources.find((source) => source.startsWith(head) && source.length > norm.length + 15);
+      const head = fold(norm).slice(0, 70);
+      const hit = sources.find((source) => fold(source).startsWith(head) && source.length > norm.length + 15);
       if (hit) {
         extended += 1;
         return { ...node, ...(children ? { children } : {}), props: { ...node.props, text: hit } };
