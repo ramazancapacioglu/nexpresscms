@@ -35,6 +35,8 @@ interface AdminShellClientProps {
   role?: "admin" | "editor";
   /** Panel arayüz dili (menü metinleri) */
   uiLocale?: string;
+  /** Kapalı eklentilerin menü adresleri */
+  hiddenHrefs?: string[];
 }
 
 export function AdminShellClient({
@@ -47,6 +49,7 @@ export function AdminShellClient({
   accountSlot,
   role,
   uiLocale = "tr",
+  hiddenHrefs = [],
 }: AdminShellClientProps) {
   const t = createTranslator(uiLocale);
   const pathname = usePathname();
@@ -187,7 +190,7 @@ export function AdminShellClient({
               {WORKSPACE_SECTIONS.map((section) => ({
                 ...section,
                 items: section.items.filter(
-                  (item) => item.sidebar !== false && (!item.adminOnly || role === "admin")
+                  (item) => item.sidebar !== false && (!item.adminOnly || role === "admin") && !hiddenHrefs.includes(item.href)
                 ),
               }))
                 .filter((section) => section.items.length > 0)
@@ -367,7 +370,7 @@ export function AdminShellClient({
         <main id="main-content" tabIndex={-1} className="flex-1 p-3 w-full outline-none">{children}</main>
       </div>
 
-      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} role={role} />
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} role={role} hiddenHrefs={hiddenHrefs} />
     </div>
   );
 }

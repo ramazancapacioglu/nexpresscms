@@ -12,7 +12,7 @@ const GROUP_LABEL: Record<AdminSearchGroup, string> = { content: "İçerik", for
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 
 /** ⌘K komut paleti: panel sayfaları (anında) + veri araması (içerik, form, medya…). Klavyeyle tam kullanılır (combobox/listbox). */
-export function CommandPalette({ open, onClose, role }: { open: boolean; onClose: () => void; role?: "admin" | "editor" }) {
+export function CommandPalette({ open, onClose, role, hiddenHrefs = [] }: { open: boolean; onClose: () => void; role?: "admin" | "editor"; hiddenHrefs?: string[] }) {
   const router = useRouter();
   const uid = useId();
   const listId = `${uid}-list`;
@@ -24,8 +24,8 @@ export function CommandPalette({ open, onClose, role }: { open: boolean; onClose
   const [active, setActive] = useState(0);
 
   const pages = useMemo<Entry[]>(
-    () => WORKSPACE_SECTIONS.flatMap((s) => s.items).filter((i) => !i.adminOnly || role === "admin").map((i) => ({ key: `p:${i.href}`, group: "Sayfalar", title: i.label, subtitle: i.href, href: i.href, hint: i.shortcut })),
-    [role]
+    () => WORKSPACE_SECTIONS.flatMap((s) => s.items).filter((i) => (!i.adminOnly || role === "admin") && !hiddenHrefs.includes(i.href)).map((i) => ({ key: `p:${i.href}`, group: "Sayfalar", title: i.label, subtitle: i.href, href: i.href, hint: i.shortcut })),
+    [role, hiddenHrefs]
   );
   const q = normalizeSearch(query);
   const pageMatches = q ? pages.filter((p) => normalizeSearch(`${p.title} ${p.subtitle}`).includes(q)) : pages.slice(0, 8);

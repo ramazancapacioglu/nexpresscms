@@ -11,7 +11,7 @@ import {
   pushMarketplaceStockAction,
   saveMarketplaceChannelAction,
   testMarketplaceChannelAction,
-} from "@/app/admin/commerce/marketplace-actions";
+} from "@/app/admin/marketplaces/actions";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
 
 export function MarketplaceChannelEditor({
@@ -179,7 +179,7 @@ export function MarketplaceChannelEditor({
             start(async () => {
               if (!confirm("Kanal silinsin mi?")) return;
               await deleteMarketplaceChannelAction(channel.id);
-              router.push("/admin/commerce/marketplaces");
+              router.push("/admin/marketplaces");
             })
           }
         >

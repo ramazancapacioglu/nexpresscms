@@ -4,6 +4,7 @@ export * from "./client";
 export * from "./commerce-ops-repository";
 export * from "./commerce-repository";
 export * from "./marketplace-repository";
+export * from "./performance-repository";
 export * from "./media-admin-repository";
 export * from "./bot-stats-repository";
 export * from "./agent-requests-repository";

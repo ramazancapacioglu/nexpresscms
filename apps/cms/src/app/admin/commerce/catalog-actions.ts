@@ -1,6 +1,7 @@
 "use server";
 
 import { requireUser } from "@/lib/auth/session";
+import { assertPlugin, COMMERCE_PLUGIN_ID } from "@/lib/plugin-gate";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getCommerceOpsRepository } from "@nexpress/database";
@@ -15,6 +16,7 @@ function touch() {
 }
 
 export async function saveCategoryAction(input: { id?: string; parentId?: string; name: string; slug: string }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCategory" });
   const id = await getCommerceOpsRepository(await siteId()).saveCategory(input);
   touch();
@@ -22,12 +24,14 @@ export async function saveCategoryAction(input: { id?: string; parentId?: string
 }
 
 export async function deleteCategoryAction(id: string) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.deleteCategory" });
   await getCommerceOpsRepository(await siteId()).deleteCategory(id);
   touch();
 }
 
 export async function saveAttributeAction(input: { id?: string; name: string; slug: string; labels: string }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveAttribute" });
   const id = await getCommerceOpsRepository(await siteId()).saveAttribute({
     ...input,
@@ -41,6 +45,7 @@ export async function saveVariantsAction(input: {
   productId: string;
   variants: Array<{ sku: string; priceInput: string; stockQuantity: number; valueIds: string[] }>;
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveVariants" });
   await getCommerceOpsRepository(await siteId()).replaceVariants(
     input.productId,
@@ -57,12 +62,14 @@ export async function saveVariantsAction(input: {
 }
 
 export async function setProductCategoriesAction(productId: string, categoryIds: string[]) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.setProductCategories" });
   await getCommerceOpsRepository(await siteId()).setProductCategories(productId, categoryIds);
   touch();
 }
 
 export async function saveCustomerGroupAction(input: { id?: string; name: string; description?: string }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCustomerGroup" });
   const id = await getCommerceOpsRepository(await siteId()).saveGroup(input);
   touch();
@@ -77,6 +84,7 @@ export async function saveCustomerAction(input: {
   groupId?: string;
   source: "site" | "marketplace";
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCustomer" });
   const id = await getCommerceOpsRepository(await siteId()).saveCustomer(input);
   touch();
@@ -84,6 +92,7 @@ export async function saveCustomerAction(input: {
 }
 
 export async function addLoyaltyAction(customerId: string, points: number, reason: string) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.addLoyalty" });
   await getCommerceOpsRepository(await siteId()).addLoyalty(customerId, points, reason);
   touch();
@@ -99,6 +108,7 @@ export async function saveCampaignAction(input: {
   customerId?: string;
   active: boolean;
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCampaign" });
   const id = await getCommerceOpsRepository(await siteId()).saveCampaign({
     ...input,
@@ -120,6 +130,7 @@ export async function saveCouponAction(input: {
   usageLimit?: number;
   active: boolean;
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCoupon" });
   const id = await getCommerceOpsRepository(await siteId()).saveCoupon({
     campaignId: null,
@@ -142,6 +153,7 @@ export async function saveReturnAction(input: {
   kind: CommerceReturnKind;
   reason: string;
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveReturn" });
   const id = await getCommerceOpsRepository(await siteId()).saveReturn({
     ...input,
@@ -153,6 +165,7 @@ export async function saveReturnAction(input: {
 }
 
 export async function updateReturnStatusAction(id: string, status: CommerceReturnStatus) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.updateReturnStatus" });
   await getCommerceOpsRepository(await siteId()).updateReturnStatus(id, status);
   touch();
@@ -166,6 +179,7 @@ export async function saveShippingAction(input: {
   freeThresholdInput: string;
   enabled: boolean;
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveShipping" });
   const id = await getCommerceOpsRepository(await siteId()).saveShipping({
     name: input.name,

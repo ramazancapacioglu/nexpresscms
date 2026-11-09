@@ -10,8 +10,8 @@ import {
   type DynamicCandidate,
   type DynamicDataMap,
 } from "@nexpress/core";
-import { getCommerceRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
+import { listStorefrontProducts } from "./plugin-gate";
 import { getPublicSite, listPublishedContents } from "./public-data";
 
 const money = (cents: number, currency: string, locale: string) => {
@@ -27,7 +27,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
   const [site, contents, products] = await Promise.all([
     getPublicSite(siteId),
     listPublishedContents(siteId, locale),
-    getCommerceRepository(siteId).listProducts({ status: "published" }).catch(() => []),
+    listStorefrontProducts(siteId, "published"),
   ]);
   const base = localeBase(site, locale);
   const out: DynamicCandidate[] = [];

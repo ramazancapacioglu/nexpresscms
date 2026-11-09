@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Perfornext
+- Performans eklentisi `/admin/perfornext`. Önbellek süresi 30–600 saniye, site önbelleği düşürülür. Veritabanında satır sayısı ve `ANALYZE` (SQLite’da `PRAGMA optimize`). Yayınlar uzun metin, blok sayısı, eksik alt ve boş metaya göre listelenir. Ziyaretçi sayfasına betik eklenmez.
+
+### [2026-11-09] — E-ticaret ve sanal mağaza eklentileri
+- Mağaza `@nexpress/plugin-commerce` oldu. Panel `/admin/commerce`, vitrin `/{locale}/magaza`. Kapatılınca menü gizlenir, vitrin 404 olur.
+- Kanal entegrasyonu `@nexpress/plugin-marketplaces` oldu. Adres `/admin/marketplaces`. Eski adres 308 ile döner. Tablolar ve mevcut satırlar durur.
+
 ### [2026-11-09] — Yazar, yorum, şema kuralı ve sütun sayfa
 - Yazar arşivi `/yazar/{ad}` yazıları listeler. Yorum yanıtlanır ve etiketlenebilir; ziyaretçi yanıtı onay bekler, yıldıza dönmez. SEO şemalar sekmesi kuralı sayfa, blog veya kategoriye bağlar. Sayfa ayarı üst sayfa, sütun içerik ve öne çıkan görseli gövdede gösterme seçeneğini tutar.
 

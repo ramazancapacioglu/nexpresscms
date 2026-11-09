@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { MarketplaceDriverMeta } from "@nexpress/marketplace";
 import type { MarketplaceChannelDto } from "@nexpress/database";
-import { saveMarketplaceChannelAction } from "@/app/admin/commerce/marketplace-actions";
+import { saveMarketplaceChannelAction } from "@/app/admin/marketplaces/actions";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
 
 export function MarketplaceStudio({
@@ -74,7 +74,7 @@ export function MarketplaceStudio({
                   environment: "sandbox",
                   credentials: {},
                 });
-                router.push(`/admin/commerce/marketplaces/${id}`);
+                router.push(`/admin/marketplaces/${id}`);
               })
             }
           >
@@ -92,7 +92,7 @@ export function MarketplaceStudio({
             {channels.map((channel) => (
               <li key={channel.id} className="flex items-center justify-between gap-3 px-3 py-2 text-[12px]">
                 <div>
-                  <Link href={`/admin/commerce/marketplaces/${channel.id}`} className="font-medium hover:underline">
+                  <Link href={`/admin/marketplaces/${channel.id}`} className="font-medium hover:underline">
                     {channel.label}
                   </Link>
                   <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">

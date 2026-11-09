@@ -12,6 +12,9 @@ import { SEO_BASIC_MANIFEST } from "./seo-basic";
 import { CAMPAIGNS_PLUGIN_MANIFEST } from "./campaigns";
 import { DESIGN_STUDIO_PLUGIN_MANIFEST } from "./design-studio";
 import { WP_BRIDGE_MANIFEST } from "./wp-bridge";
+import { COMMERCE_PLUGIN_MANIFEST } from "./commerce";
+import { MARKETPLACE_PLUGIN_MANIFEST } from "./marketplaces";
+import { PERFORNEXT_MANIFEST } from "./perfornext";
 
 /**
  * Açık çekirdeğin tek kompozisyon kökü (çekirdek IndexNow dahil).
@@ -42,6 +45,9 @@ export function registerWorkspacePlugins(): void {
   pluginRegistry.register(CAMPAIGNS_PLUGIN_MANIFEST);
   pluginRegistry.register(DESIGN_STUDIO_PLUGIN_MANIFEST);
   pluginRegistry.register(WP_BRIDGE_MANIFEST);
+  pluginRegistry.register(COMMERCE_PLUGIN_MANIFEST);
+  pluginRegistry.register(MARKETPLACE_PLUGIN_MANIFEST);
+  pluginRegistry.register(PERFORNEXT_MANIFEST);
   installPluginGate();
   registerIndexNow();
   // Yayında içeriği dizinler; gömme çağrısı yanıttan sonra çalışır (kayıt akışını bekletmez)

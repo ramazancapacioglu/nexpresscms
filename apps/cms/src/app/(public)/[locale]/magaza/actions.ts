@@ -14,6 +14,8 @@ import {
   readCartFromCookies,
   writeCartToCookies,
 } from "@/lib/commerce/cart-server";
+import { COMMERCE_PLUGIN_ID } from "@/lib/plugin-gate";
+import { isPluginModuleEnabled } from "@nexpress/core";
 
 async function siteIdFromHeaders(): Promise<string> {
   const reqHeaders = await headers();
@@ -25,7 +27,12 @@ async function pubPath(locale: string, path: string): Promise<string> {
   return `${await siteLocaleBase(await siteIdFromHeaders(), locale)}${path}`;
 }
 
+async function shopOpen(): Promise<boolean> {
+  return isPluginModuleEnabled(await siteIdFromHeaders(), COMMERCE_PLUGIN_ID, "storefront");
+}
+
 export async function addToCartAction(formData: FormData) {
+  if (!(await shopOpen())) return;
   const productId = String(formData.get("productId") ?? "");
   const locale = String(formData.get("locale") ?? "tr");
   const qty = Math.min(99, Math.max(1, Number(formData.get("quantity") ?? 1)));
@@ -38,6 +45,7 @@ export async function addToCartAction(formData: FormData) {
 }
 
 export async function updateCartLineAction(formData: FormData) {
+  if (!(await shopOpen())) return;
   const productId = String(formData.get("productId") ?? "");
   const locale = String(formData.get("locale") ?? "tr");
   const qty = Math.floor(Number(formData.get("quantity") ?? 0));
@@ -50,6 +58,7 @@ export async function updateCartLineAction(formData: FormData) {
 }
 
 export async function checkoutAction(formData: FormData) {
+  if (!(await shopOpen())) return;
   const locale = String(formData.get("locale") ?? "tr");
   const repo = getCommerceRepository(await siteIdFromHeaders());
   const settings = await repo.getCommerceSettings();

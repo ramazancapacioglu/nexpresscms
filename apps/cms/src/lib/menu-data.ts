@@ -1,7 +1,8 @@
 import "server-only";
 import { localeBase, menuLibraryFrom, resolveMenuTree, type MenuLookup, type NavigationLink, type NavigationMenuItem } from "@nexpress/core";
-import { getCommerceRepository, getScopedRepository } from "@nexpress/database";
+import { getScopedRepository } from "@nexpress/database";
 import { cachedRead } from "./cache";
+import { listStorefrontProducts } from "./plugin-gate";
 import { getPublicNavigation, getPublicSite, listPublishedContents } from "./public-data";
 
 /** Menü bağlantılarını çözmek için kimlik → slug eşlemeleri (ziyaretçi; yönetim kaydında düşer). */
@@ -11,7 +12,7 @@ export const getMenuLookup = cachedRead("menu-lookup", async (siteId: string, lo
     getPublicSite(siteId),
     listPublishedContents(siteId, locale),
     repo.listTaxonomies(),
-    getCommerceRepository(siteId).listProducts({ status: "published" }).catch(() => []),
+    listStorefrontProducts(siteId, "published"),
   ]);
   return {
     locale,

@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/session";
+import { assertPlugin, MARKETPLACE_PLUGIN_ID } from "@/lib/plugin-gate";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getCommerceOpsRepository, getCommerceRepository, getMarketplaceRepository } from "@nexpress/database";
@@ -16,8 +17,8 @@ async function siteIdFromHeaders(): Promise<string> {
 }
 
 function revalidateMarketplace(id?: string) {
-  revalidatePath("/admin/commerce/marketplaces");
-  if (id) revalidatePath(`/admin/commerce/marketplaces/${id}`);
+  revalidatePath("/admin/marketplaces");
+  if (id) revalidatePath(`/admin/marketplaces/${id}`);
 }
 
 export async function saveMarketplaceChannelAction(input: {
@@ -28,6 +29,7 @@ export async function saveMarketplaceChannelAction(input: {
   environment: MarketplaceEnvironment;
   credentials: Record<string, string>;
 }) {
+  await assertPlugin(MARKETPLACE_PLUGIN_ID);
   await requireAdmin("marketplace.saveMarketplaceChannel");
   registerBuiltinMarketplaceDrivers();
   if (!getMarketplaceDriver(input.driverId)) {
@@ -40,6 +42,7 @@ export async function saveMarketplaceChannelAction(input: {
 }
 
 export async function deleteMarketplaceChannelAction(id: string) {
+  await assertPlugin(MARKETPLACE_PLUGIN_ID);
   await requireAdmin("marketplace.deleteMarketplaceChannel");
   const repo = getMarketplaceRepository(await siteIdFromHeaders());
   await repo.deleteChannel(id);
@@ -47,6 +50,7 @@ export async function deleteMarketplaceChannelAction(id: string) {
 }
 
 export async function testMarketplaceChannelAction(id: string) {
+  await assertPlugin(MARKETPLACE_PLUGIN_ID);
   await requireAdmin("marketplace.testMarketplaceChannel");
   registerBuiltinMarketplaceDrivers();
   const repo = getMarketplaceRepository(await siteIdFromHeaders());
@@ -62,6 +66,7 @@ export async function testMarketplaceChannelAction(id: string) {
 }
 
 export async function pushMarketplaceStockAction(id: string) {
+  await assertPlugin(MARKETPLACE_PLUGIN_ID);
   await requireAdmin("marketplace.pushMarketplaceStock");
   registerBuiltinMarketplaceDrivers();
   const siteId = await siteIdFromHeaders();
@@ -85,6 +90,7 @@ export async function pushMarketplaceStockAction(id: string) {
 }
 
 export async function pullMarketplaceOrdersAction(id: string) {
+  await assertPlugin(MARKETPLACE_PLUGIN_ID);
   await requireAdmin("marketplace.pullMarketplaceOrders");
   registerBuiltinMarketplaceDrivers();
   const repo = getMarketplaceRepository(await siteIdFromHeaders());

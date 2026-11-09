@@ -87,6 +87,13 @@ export async function middleware(request: NextRequest) {
   if (utm) requestHeaders.set("x-nexpress-utm-source", utm.slice(0, 60));
   else requestHeaders.delete("x-nexpress-utm-source");
 
+  // Eski pazar yeri adresi sanal mağaza eklentisine taşındı
+  if (pathname === "/admin/commerce/marketplaces" || pathname.startsWith("/admin/commerce/marketplaces/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace("/admin/commerce/marketplaces", "/admin/marketplaces");
+    return NextResponse.redirect(url, 308);
+  }
+
   // /admin yalnızca bu siteye ait geçerli oturumla açılır
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const session = await verifySessionToken(

@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin, requireUser } from "@/lib/auth/session";
+import { assertPlugin, COMMERCE_PLUGIN_ID } from "@/lib/plugin-gate";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getCommerceOpsRepository, getCommerceRepository } from "@nexpress/database";
@@ -18,6 +19,7 @@ async function siteIdFromHeaders(): Promise<string> {
 }
 
 export async function saveCommerceSettingsAction(input: Partial<CommerceSettings>) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireAdmin("commerce.saveCommerceSettings");
   const repo = getCommerceRepository(await siteIdFromHeaders());
   await repo.saveCommerceSettings(input);
@@ -42,6 +44,7 @@ export async function saveCommerceProductAction(input: {
   productKind?: "simple" | "variable";
   categoryIds?: string[];
 }) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.saveCommerceProduct" });
   const repo = getCommerceRepository(await siteIdFromHeaders());
   const product = await repo.saveProduct({
@@ -75,6 +78,7 @@ export async function saveCommerceProductAction(input: {
 }
 
 export async function deleteCommerceProductAction(id: string) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.deleteCommerceProduct" });
   const repo = getCommerceRepository(await siteIdFromHeaders());
   await repo.deleteProduct(id);
@@ -83,6 +87,7 @@ export async function deleteCommerceProductAction(id: string) {
 }
 
 export async function updateCommerceOrderStatusAction(id: string, status: CommerceOrderStatus) {
+  await assertPlugin(COMMERCE_PLUGIN_ID);
   await requireUser({ audit: "commerce.updateCommerceOrderStatus" });
   const repo = getCommerceRepository(await siteIdFromHeaders());
   await repo.updateOrderStatus(id, status);

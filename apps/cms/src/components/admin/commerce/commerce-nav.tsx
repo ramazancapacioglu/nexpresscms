@@ -10,7 +10,6 @@ const LINKS = [
   { href: "/admin/commerce/attributes", label: "Nitelikler" },
   { href: "/admin/commerce/campaigns", label: "Kupon ve indirim" },
   { href: "/admin/commerce/shipping", label: "Kargo" },
-  { href: "/admin/commerce/marketplaces", label: "Pazar yerleri" },
 ];
 
 export function CommerceNav({ pathname }: { pathname: string }) {

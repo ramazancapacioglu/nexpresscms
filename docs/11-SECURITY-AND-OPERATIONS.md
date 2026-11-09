@@ -65,6 +65,10 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 | `MEDIA_DIR` | yüklenen görseller ve türevleri (kalıcı birim; varsayılan `./data/media`) |
 | `PUBLIC_CACHE_SECONDS` | ziyaretçi HTML'i için CDN `s-maxage` (0 = kapalı; derlemede okunur) |
 
+## 7a. Perfornext
+
+`/admin/perfornext` (`@nexpress/plugin-perfornext`) yöneticiye üç rapor verir: önbellek süresi ve dönem sayacı, kiracı satır sayıları, yayındaki içeriklerin ağırlığı. Süre eklenti ayarında durur ve süreç açılışında uygulanır. "İstatistiği güncelle" PostgreSQL’de `ANALYZE`, SQLite’ta `ANALYZE` ve `PRAGMA optimize` çalıştırır; tabloyu kilitleyen sıkıştırma yoktur. Ağırlık hesabı `packages/core/src/content-weight.ts` içindedir. Ziyaretçi paketine kod eklemez.
+
 ## 7. CI ve performans bütçesi
 
 - **Çalışma akışı (`.github/workflows/ci.yml`):** `verify` (kilitli kurulum → `pnpm typecheck` → `pnpm test` → `next build` → `pnpm --filter @nexpress/cms budget`), `pgvector` (RAG testleri `pgvector/pgvector:pg16` servisinde, `RAG_TEST_PG_URL`) ve `audit` (`pnpm audit --prod`, uyarı verir, engellemez). Aynı komutlar yerelde çalıştırıldı (12 paket tip kontrolü, 63 test); iş akışının kendisi GitHub'da henüz çalıştırılmadı.

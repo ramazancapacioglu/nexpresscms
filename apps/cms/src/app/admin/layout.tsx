@@ -9,6 +9,8 @@ import { getSession, mustSetUpTwoFactor } from "@/lib/auth/session";
 import { ThemeBoundary } from "@/components/admin/theme-boundary";
 import { createTranslator } from "@nexpress/i18n";
 import { AdminShellClient } from "@/components/admin/admin-shell-client";
+import { COMMERCE_PLUGIN_ID, MARKETPLACE_PLUGIN_ID, pluginEnabled } from "@/lib/plugin-gate";
+import { PERFORNEXT_PLUGIN_ID } from "@/plugins/perfornext";
 
 export default async function AdminLayout({
   children,
@@ -26,6 +28,16 @@ export default async function AdminLayout({
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
   const t = createTranslator(session.uiLocale);
+  const [shopOn, channelsOn, speedOn] = await Promise.all([
+    pluginEnabled(siteId, COMMERCE_PLUGIN_ID),
+    pluginEnabled(siteId, MARKETPLACE_PLUGIN_ID),
+    pluginEnabled(siteId, PERFORNEXT_PLUGIN_ID),
+  ]);
+  const hiddenHrefs = [
+    ...(shopOn ? [] : ["/admin/commerce"]),
+    ...(channelsOn ? [] : ["/admin/marketplaces"]),
+    ...(speedOn ? [] : ["/admin/perfornext"]),
+  ];
 
   return (
     <ThemeBoundary>
@@ -59,6 +71,7 @@ export default async function AdminLayout({
       }
       role={session.role}
       uiLocale={session.uiLocale}
+      hiddenHrefs={hiddenHrefs}
       sidebarSlot={
         <PluginSlot
           name="admin.sidebar.nav"

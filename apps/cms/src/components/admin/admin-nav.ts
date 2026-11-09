@@ -27,6 +27,7 @@ import {
   CalendarClock,
   Route,
   Activity,
+  Gauge,
   FormInput,
   Bell,
   Wand2,
@@ -154,8 +155,8 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G C",
       },
       {
-        href: "/admin/commerce/marketplaces",
-        label: "Pazar yerleri",
+        href: "/admin/marketplaces",
+        label: "Sanal mağaza",
         icon: Store,
         count: "Kanal",
         shortcut: "G P",
@@ -322,6 +323,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/perfornext",
+        label: "Perfornext",
+        icon: Gauge,
+        count: "Hız",
+        shortcut: "G 4",
+        adminOnly: true,
+      },
+      {
         href: "/admin/audit",
         label: "Denetim Günlüğü",
         icon: ScrollText,
@@ -341,7 +350,7 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
   { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
-  { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/commerce/marketplaces"]) },
+  { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {
     label: "Görünüm",
     items: pick(
@@ -369,7 +378,7 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
       ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
-  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/audit", "/admin/help"]) },
+  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
 ];
 
 export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
@@ -388,6 +397,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/trash": "admin.nav.trash",
   "/admin/redirects": "admin.nav.redirects",
   "/admin/system": "admin.nav.system",
+  "/admin/perfornext": "admin.nav.perfornext",
   "/admin/notifications": "admin.nav.notifications",
   "/admin/studio": "admin.nav.designStudio",
   "/admin/appearance/templates": "admin.nav.templates",
@@ -399,7 +409,7 @@ export const NAV_LABEL_KEYS: Record<string, MessageKey> = {
   "/admin/requests": "admin.nav.requests",
   "/admin/forms": "admin.nav.forms",
   "/admin/commerce": "admin.nav.commerce",
-  "/admin/commerce/marketplaces": "admin.nav.marketplaces",
+  "/admin/marketplaces": "admin.nav.marketplaces",
   // "/admin/themes" etiketi yeniden adlandırıldı (kategori anahtarı kullanılmaz)
   "__/admin/themes": "admin.nav.themes",
   // "/admin/seo" etiketi yeniden adlandırıldı (kategori anahtarı kullanılmaz)
@@ -460,9 +470,9 @@ export const QUICK_COMMANDS = [
     href: "/admin/commerce",
   },
   {
-    title: "Pazar yerleri (/admin/commerce/marketplaces)",
+    title: "Sanal mağaza (/admin/marketplaces)",
     subtitle: "Trendyol, Hepsiburada, n11, Amazon ve Çiçeksepeti kanalları",
-    href: "/admin/commerce/marketplaces",
+    href: "/admin/marketplaces",
   },
   {
     title: "Tema Mağazası & Tasarım Tokenları",

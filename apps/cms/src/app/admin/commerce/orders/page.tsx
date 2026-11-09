@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { formatMoney } from "@nexpress/commerce";
 import { getCommerceRepository, getMarketplaceRepository } from "@nexpress/database";
+import { MARKETPLACE_PLUGIN_ID, pluginEnabled } from "@/lib/plugin-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,10 @@ export default async function AdminCommerceOrdersPage({
   const { source } = await searchParams;
   const filter = source === "site" || source === "marketplace" ? source : "all";
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const channelsOn = await pluginEnabled(siteId, MARKETPLACE_PLUGIN_ID);
   const [siteOrders, channels] = await Promise.all([
     getCommerceRepository(siteId).listOrders(100),
-    getMarketplaceRepository(siteId).listChannels(),
+    channelsOn ? getMarketplaceRepository(siteId).listChannels() : Promise.resolve([]),
   ]);
   const marketLists = await Promise.all(
     channels.map(async (channel) => ({
@@ -38,7 +40,7 @@ export default async function AdminCommerceOrdersPage({
     ...marketLists.flatMap(({ channel, orders }) =>
       orders.map((order) => ({
         id: order.id,
-        href: `/admin/commerce/marketplaces/${channel.id}`,
+        href: `/admin/marketplaces/${channel.id}`,
         number: order.externalId,
         customer: order.buyerName,
         total: formatMoney(order.totalCents, order.currency),

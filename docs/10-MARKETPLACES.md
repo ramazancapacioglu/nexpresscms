@@ -1,6 +1,6 @@
-# 10 — Pazar Yeri Entegrasyonu (`@nexpress/marketplace`)
+# 10 — Sanal Mağaza Eklentisi (`@nexpress/plugin-marketplaces`)
 
-Modüler kanal katmanı. Yeni bir pazar yeri, çekirdek ekranı değiştirmeden `registerMarketplaceDriver()` ile eklenir. Yerleşik sürücüler: Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti.
+Kanal katmanı e-ticaretten ayrı bir eklentidir. Sürücü kodu `@nexpress/marketplace` paketinde kalır. Panel `/admin/marketplaces`. Eski `/admin/commerce/marketplaces` adresi 308 ile buraya döner. Yeni bir pazar yeri `registerMarketplaceDriver()` ile eklenir. Yerleşik sürücüler: Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti. E-ticaret kapalıyken kanal ekranı durur; stok itmek için katalog SKU’su gerekir.
 
 ## Sözleşme
 
@@ -46,8 +46,8 @@ Gizli alanlar güncellemede boş gönderilirse önceki değer korunur. Liste ekr
 
 ## Admin
 
-- `/admin/commerce/marketplaces` — sürücü kartları ve kanal oluşturma
-- `/admin/commerce/marketplaces/[id]` — kimlik, bağlantı testi, katalog stok/fiyat gönderimi, son 14 gün sipariş çekimi
+- `/admin/marketplaces` — sürücü kartları ve kanal oluşturma
+- `/admin/marketplaces/[id]` — kimlik, bağlantı testi, katalog stok/fiyat gönderimi, son 14 gün sipariş çekimi
 
 ## Sınır
 

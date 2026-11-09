@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { resolvePublishing } from "@nexpress/core";
-import { getCommerceRepository, getScopedRepository } from "@nexpress/database";
+import { getScopedRepository } from "@nexpress/database";
+import { listStorefrontProducts } from "@/lib/plugin-gate";
 import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -13,7 +14,7 @@ export async function GET() {
   const repo = getScopedRepository(session.siteId);
   const site = await repo.getSite();
   const locale = site?.defaultLocale ?? "tr";
-  const [contents, taxonomies, products] = await Promise.all([repo.listContents({ locale, status: "published" }), repo.listTaxonomies(), getCommerceRepository(session.siteId).listProducts({ status: "published" }).catch(() => [])]);
+  const [contents, taxonomies, products] = await Promise.all([repo.listContents({ locale, status: "published" }), repo.listTaxonomies(), listStorefrontProducts(session.siteId, "published")]);
   const items = [
     ...contents.filter((c) => c.type !== "product" && resolvePublishing(c.schemaAttributes).visibility !== "private").map((c) => ({ group: c.type === "page" ? "Sayfalar" : "Yazılar", title: c.title, href: c.slug === "ana-sayfa" ? `/${locale}` : `/${locale}/${c.slug}` })),
     ...taxonomies.filter((t) => t.taxonomyType === "category" || t.taxonomyType === "tag").map((t) => ({ group: t.taxonomyType === "category" ? "Kategoriler" : "Etiketler", title: t.name, href: `/${locale}/${t.taxonomyType === "category" ? "kategori" : "etiket"}/${t.slug}` })),

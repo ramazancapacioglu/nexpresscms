@@ -4,8 +4,10 @@ import { revalidatePath as nextRevalidatePath, revalidateTag, unstable_cache } f
 import { headers } from "next/headers";
 import { parseWithDates, stringifyWithDates } from "@nexpress/core";
 
-/** Ön yüz okumaları için en uzun bayatlama; zamanlanmış yayınları da bu sürede yakalar. */
+/** Ön yüz okumaları için varsayılan bayatlama; zamanlanmış yayınları da bu sürede yakalar. */
 const FALLBACK_TTL_SECONDS = 120;
+const MIN_TTL_SECONDS = 30;
+const MAX_TTL_SECONDS = 600;
 /**
  * Next.js `unstable_cache` tek girdi için 2 MB (2.097.152 bayt) sınırına sahiptir.
  * Çok sayıda içerik/blok içeren sorgularda (ör. WordPress içe aktarımı sonrası tüm yayındaki içerikler)
@@ -27,6 +29,7 @@ export const siteTag = (siteId: string) => `site:${siteId}`;
 const g = globalThis as unknown as {
   __nxCacheBoot?: number;
   __nxCacheEpoch?: Map<string, number>;
+  __nxCacheTtl?: number;
   __nxOversizeCache?: Map<string, { exp: number; raw: string }>;
 };
 const boot = (g.__nxCacheBoot ??= Date.now());
@@ -34,13 +37,35 @@ const epochs = (g.__nxCacheEpoch ??= new Map<string, number>());
 const oversizeCache = (g.__nxOversizeCache ??= new Map<string, { exp: number; raw: string }>());
 const epochOf = (siteId: string) => `${boot}.${epochs.get(siteId) ?? 0}`;
 
+/** Kayıtlı önbellek süresi. Sınır 30–600 saniye. */
+export function cacheTtlSeconds(): number {
+  return g.__nxCacheTtl ?? FALLBACK_TTL_SECONDS;
+}
+
+/** Perfornext ayarı süreci günceller. Aralık dışındaki değer kenara çekilir. */
+export function setCacheTtlSeconds(seconds: number): number {
+  const next = Math.min(MAX_TTL_SECONDS, Math.max(MIN_TTL_SECONDS, Math.round(seconds)));
+  g.__nxCacheTtl = next;
+  return next;
+}
+
+/** Panel raporu: süre, dönem sayacı ve büyük yüklerin bellek adedi. */
+export function cacheSnapshot(siteId: string): { ttlSeconds: number; epoch: number; oversizeEntries: number; startedAt: string } {
+  return {
+    ttlSeconds: cacheTtlSeconds(),
+    epoch: epochs.get(siteId) ?? 0,
+    oversizeEntries: oversizeCache.size,
+    startedAt: new Date(boot).toISOString(),
+  };
+}
+
 function setOversizeEntry(key: string, raw: string) {
   if (oversizeCache.size >= 32) {
     const oldestKey = oversizeCache.keys().next().value;
     if (oldestKey) oversizeCache.delete(oldestKey);
   }
   oversizeCache.set(key, {
-    exp: Date.now() + FALLBACK_TTL_SECONDS * 1000,
+    exp: Date.now() + cacheTtlSeconds() * 1000,
     raw,
   });
 }
@@ -75,7 +100,7 @@ export function cachedRead<A extends [siteId: string, ...rest: string[]], R>(
       keyParts,
       {
         tags: [siteTag(args[0])],
-        revalidate: FALLBACK_TTL_SECONDS,
+        revalidate: cacheTtlSeconds(),
       }
     )();
 

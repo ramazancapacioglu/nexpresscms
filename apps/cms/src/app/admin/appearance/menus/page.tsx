@@ -1,7 +1,8 @@
 import React from "react";
 import { headers } from "next/headers";
 import { resolvePublishing } from "@nexpress/core";
-import { getCommerceRepository, getScopedRepository } from "@nexpress/database";
+import { getScopedRepository } from "@nexpress/database";
+import { listStorefrontProducts } from "@/lib/plugin-gate";
 import { MenuEditor } from "@/components/admin/appearance/menu-editor";
 import type { MenuSourceLists } from "@/components/admin/appearance/menu/menu-sources";
 import { requireUser } from "@/lib/auth/session";
@@ -18,7 +19,7 @@ export default async function MenuAppearancePage({ searchParams }: { searchParam
   const [contents, taxonomies, products] = await Promise.all([
     repo.listContents({ locale: chrome.locale }),
     repo.listTaxonomies(),
-    getCommerceRepository(siteId).listProducts().catch(() => []),
+    listStorefrontProducts(siteId),
   ]);
   const lists: MenuSourceLists = {
     contents: contents
