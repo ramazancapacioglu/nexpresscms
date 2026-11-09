@@ -49,6 +49,8 @@ export interface StudioInspectorApi {
     recordHistory?: boolean
   ) => void;
   updateSelectedBlockProps: (patch: Record<string, unknown>) => void;
+  /** Metin/başlık/div bloğunu başka bir metin etiketine dönüştürür */
+  convertTextBlock: (id: string, kind: "paragraph" | "heading" | "div", level?: number) => void;
   /** Bloğa dışarıdan metin yazıldığında metin editörünü yeniden eşler */
   bumpProseSync: () => void;
   updateSelectedBlockStyle: (patch: Partial<BlockStyle>) => void;

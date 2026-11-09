@@ -149,6 +149,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setSelectedBlockId,
     setBlocks,
     updateSelectedBlockProps,
+    convertTextBlock: p.convertTextBlock,
     bumpProseSync: () => p.setProseSyncToken((v: number) => v + 1),
     contentType: lockedType,
     templateKind: lockedType === "template" ? (((initialDoc?.schemaAttributes as { template?: { kind?: string } } | undefined)?.template?.kind) ?? null) : null,

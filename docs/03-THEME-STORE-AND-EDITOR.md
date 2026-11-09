@@ -57,7 +57,7 @@ Sayfa yerleşimi NexPress blok ağacıdır. Metin alanlarının motoru **TipTap*
 
 ### Mod A: Doküman
 - Yazılar (`post`), teknik rehberler (`kb_tech`) ve sorular (`ai_prompt`) için.
-- Başlık, paragraf, div, kısa yanıt ve alıntı TipTap ile düzenlenir. Biçim çubuğu metin seçilince açılır: blok türü (paragraf, başlık 2–4, div), kalın, italik, altı çizili, üstü çizili, kod, liste ve bağlantı. Bağlantıda iç veya dış adres, yeni sekme ve nofollow seçilir.
+- Başlık, paragraf, div, kısa yanıt ve alıntı TipTap ile düzenlenir. İki ayrı araç çubuğu yerine seçili bloğun üstündeki **tek birleşik kayan araç çubuğu** (`FloatingToolbar` + `ToolbarProseAndAi`) üzerinden etiket/başlık dönüşümü (`P | H1 | H2 | H3 | H4 | Div`), hizalama, zengin metin biçimleri (kalın, italik, altı çizili, üstü çizili, kod, liste, biçimi temizle), satır içi bağlantı açılır penceresi (iç/dış adres, yeni sekme, dofollow/nofollow) ve **`✨ AI Yaz / Düzenle`** açılır penceresi (`AiComposePanel`) tek noktadan yönetilir.
 - Answer-First özet, adım adım prosedür, ürün kartı, SSS ve karşılaştırma blokları aynı tuvalde durur.
 
 ### Mod B: Görsel kanvas
@@ -170,9 +170,10 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 - **Kanvas Üstü Görsel Sütun Düzeni Seçici (`editor/row-layout-picker.tsx`):**
   - Boş bir satır (`buildEmptyRow`) eklendiğinde veya seçili satırda `Düzen` düğmesine tıklandığında kanvas üzerinde SVG sütun oran kartları (`12`, `6+6`, `4+8`, `8+4`, `4+4+4`, `3+6+3`, `3+3+3+3`) ve `Tasarım Kütüphanesinden Hazır Bölüm Seç` aksiyonu belirir.
   - Dolu satır, sütun ve kapsayıcı bölümler kalıcı gri çerçeveler yerine gerçek sayfa görünümüyle çizilir; kesikli sınır ve hızlı seçim etiketleri yalnızca üzerine gelindiğinde veya seçildiğinde görünür.
-- **Zengin Bağlamsal Yüzen Araç Çubuğu (`editor/floating-toolbar.tsx`):**
+- **Zengin Bağlamsal Yüzen Araç Çubuğu (`editor/floating-toolbar.tsx`, `editor/toolbar-prose-ai.tsx`):**
+  - Tüm bloklarda bloğun üst kenarında (`-top-10`) tek ve birleşik bir araç çubuğu olarak konumlanır; metin veya görsel bloklarında ikinci bir yüzen çubuk açılmaz.
   - Üst kapsayıcıya tek tıkla çıkış (`↑ Üst`), sürükle tutamacı, yukarı/aşağı taşıma.
-  - Blok türüne özel hızlı kontroller: satırlarda sütun oranı geçişi (`12`..`3+3+3+3`), bölümlerde genişlik (`Dar`, `Kutu`, `Tam`), başlıklarda `H1`–`H4`, metin/butonlarda hizalama ve tür dönüştürme, görsel bloklarında `Görsel Seç`, çok öğeli bloklarda (`canAppendRepeaterItem` / `appendRepeaterItem`) tek tıkla `+ Öğe Ekle`.
+  - Blok türüne özel hızlı kontroller: satırlarda sütun oranı geçişi (`12`..`3+3+3+3`), bölümlerde genişlik (`Dar`, `Kutu`, `Tam`), metin/başlık/alıntı/özet bloklarında birleşik etiket dönüştürücü (`P | H1 | H2 | H3 | H4 | Div`), satır içi TipTap biçimlendirme düğmeleri, bağlantı düzenleyici ve **`✨ AI Yaz / Düzenle`** açılır penceresi (`AiComposePanel`), görsel bloklarında hizalama + ölçek (`25%..100%`) + `Görsel Seç` (alt kenardaki yinelenen ölçek çubuğu kaldırıldı, sürükleme tutamaçları korundu), çok öğeli bloklarda (`canAppendRepeaterItem` / `appendRepeaterItem`) tek tıkla `+ Öğe Ekle`.
 - **İki Modlu Sağ Denetçi, Tema Paleti Renk Seçicisi ve Bağlı Boşluk Ön-Ayarları (`editor/block-inspector.tsx`, `editor/style-controls.tsx`, `editor/block-style-tab.tsx`):**
   - Sağ panel üst başlığı **`Blok`** (`Genel & Düzen | Stil | Gelişmiş` + üst kapsayıcı yolu) ve **`Sayfa Ayarları`** (`Yayın | SEO | Medya & Etk.`) olarak iki ana çalışma moduna ayrılır.
   - `ColorInput`, aktif temanın `siteTokens.colors` paletini (`Birincil`, `İkincil`, `Vurgu`, `Ön Plan`, `Yumuşak`, `Arka Plan`, `Kenarlık`) tıklanabilir renk yuvarlakları olarak sunar.

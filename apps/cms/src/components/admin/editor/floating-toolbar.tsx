@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import type { Editor } from "@tiptap/react";
 import {
   canAppendRepeaterItem,
   type BlockNode,
@@ -24,12 +25,14 @@ import {
   Sparkles,
   Maximize2,
 } from "lucide-react";
+import { ToolbarProseAndAi } from "./toolbar-prose-ai";
 
 export interface FloatingToolbarProps {
   block: BlockNode;
   index: number;
   total: number;
   parentId: string | null;
+  editor?: Editor | null;
   onDragStart?: (e: React.DragEvent<HTMLElement>) => void;
   onSelectParent?: () => void;
   onMove: (id: string, dir: "up" | "down") => void;
@@ -48,15 +51,16 @@ export interface FloatingToolbarProps {
 }
 
 /**
- * Seçili bloğun sol-üst köşesinde yüzen bağlamsal kontrol çubuğu.
- * Blok türüne göre (Satır, Bölüm, Başlık, Paragraf, Görsel, Buton, Çok Öğeli Bloklar)
- * özel hızlı aksiyonlar ve üst bloğa tek tıkla geçiş düğmesi sunar.
+ * Seçili bloğun üst kısmında yer alan birleşik bağlamsal kontrol ve biçimlendirme çubuğu.
+ * Yapısal blok kontrollerini, TipTap zengin metin biçimlendirmesini ve AI yazım/düzenleme
+ * aracını tek bir çubukta birleştirir.
  */
 export function FloatingToolbar({
   block,
   index,
   total,
   parentId,
+  editor,
   onDragStart,
   onSelectParent,
   onMove,
@@ -91,7 +95,7 @@ export function FloatingToolbar({
     <div
       onClick={(e) => e.stopPropagation()}
       data-nx-toolbar="block"
-      className={`absolute left-2 z-30 flex max-w-[94vw] flex-wrap items-center gap-0.5 rounded-lg border border-slate-700/80 bg-slate-900/95 px-1.5 py-1 text-[11px] text-white shadow-xl backdrop-blur-md select-none ${isText ? "top-full mt-1.5" : "-top-10"}`}
+      className="absolute -top-10 left-2 z-30 flex max-w-[94vw] flex-wrap items-center gap-0.5 rounded-lg border border-slate-700/85 bg-slate-900/95 px-1.5 py-1 text-[11px] text-white shadow-xl backdrop-blur-md select-none"
     >
       {/* Üst Bloğu Seç (Parent Jump) */}
       {parentId && onSelectParent && (
@@ -251,28 +255,6 @@ export function FloatingToolbar({
         </>
       )}
 
-      {/* BAŞLIK (heading): H1 - H4 */}
-      {(block.type === "heading" || block.type === "heading_element") && (
-        <>
-          <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
-          {([1, 2, 3, 4] as const).map((lvl) => (
-            <button
-              key={lvl}
-              type="button"
-              onClick={() => onUpdateProp(block.id, "level", lvl)}
-              aria-label={`Başlık seviyesi H${lvl}`}
-              className={`h-6 min-w-6 rounded px-1.5 text-[10px] font-bold ${
-                Number(block.props.level ?? 2) === lvl
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              H{lvl}
-            </button>
-          ))}
-        </>
-      )}
-
       {/* METİN & BUTON HİZALAMA */}
       {(isText || block.type === "button_element") && (
         <>
@@ -305,6 +287,14 @@ export function FloatingToolbar({
         </>
       )}
 
+      {/* BİRLEŞİK METİN ETİKETİ, ZENGİN METİN VE AI YAZ/DÜZENLE ÇUBUĞU */}
+      <ToolbarProseAndAi
+        block={block}
+        editor={editor}
+        onUpdateProp={onUpdateProp}
+        onConvertText={onConvertText}
+      />
+
       {/* BUTON STİL VARYANTI */}
       {block.type === "button_element" && (
         <>
@@ -333,43 +323,10 @@ export function FloatingToolbar({
         </>
       )}
 
-      {/* METİN DÖNÜŞTÜRME */}
-      {isText && onConvertText && (
-        <>
-          <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
-          <select
-            aria-label="Metin blok türünü dönüştür"
-            value={
-              block.type === "heading" || block.type === "heading_element"
-                ? Number(block.props.level ?? 2) === 3
-                  ? "h3"
-                  : "h2"
-                : block.type === "text_div"
-                  ? "div"
-                  : "p"
-            }
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v === "h2") onConvertText("heading", 2);
-              else if (v === "h3") onConvertText("heading", 3);
-              else if (v === "div") onConvertText("div");
-              else onConvertText("paragraph");
-            }}
-            className="h-6 rounded bg-slate-800 px-1.5 text-[10px] text-slate-200 focus:outline-none"
-          >
-            <option value="p">→ Paragraf</option>
-            <option value="h2">→ H2 Başlık</option>
-            <option value="h3">→ H3 Alt Başlık</option>
-            <option value="div">→ Div</option>
-          </select>
-        </>
-      )}
-
-      {/* GÖRSEL ÖLÇEKLENDİRME & BOYUT (Kadence Tarzı Hızlı Genişlik & Hizalama) */}
+      {/* GÖRSEL ÖLÇEKLENDİRME & BOYUT */}
       {block.type === "image_figure" && (
         <>
           <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
-          {/* Hızlı Yüzde Ölçekleme */}
           <div className="flex items-center gap-0.5 rounded bg-slate-800/80 p-0.5">
             {(["25%", "50%", "75%", "100%"] as const).map((pct) => {
               const currentWidth = String(block.props.width ?? "100%");
@@ -394,7 +351,6 @@ export function FloatingToolbar({
           </div>
 
           <span className="mx-0.5 h-3.5 w-px bg-slate-700" />
-          {/* Hizalama */}
           <div className="flex items-center gap-0.5">
             {(
               [

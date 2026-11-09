@@ -21,6 +21,16 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Görsel Editör v4: Birleşik Tek Araç Çubuğu, Entegre TipTap Biçimlendirme ve Araç Çubuğunda AI Yaz / Düzenle
+- **Birleşik Tek Kayan Araç Çubuğu (`apps/cms/src/components/admin/editor/floating-toolbar.tsx`, `toolbar-prose-ai.tsx`, `prose-field.tsx`):**
+  - Metin bloğu seçildiğinde hem bloğun altında (`FloatingToolbar`) hem de metnin üstünde (`ProseToolbar`) iki ayrı araç çubuğu çıkması kaldırıldı; tüm kontroller bloğun üst kenarında (`-top-10`) tek ve birleşik bir üst çubukta toplandı.
+  - `ToolbarProseAndAi` bileşeni ile metin/başlık/alıntı/özet bloklarında yapısal etiket seçici (`P | H1 | H2 | H3 | H4 | Div`), canlı TipTap biçimlendirme düğmeleri (`Kalın`, `İtalik`, `Altı Çizili`, `Üstü Çizili`, `Kod`, `Bağlantı`, `Madde İşaretli Liste`, `Numaralı Liste`, `Biçimi Temizle`) ve satır içi bağlantı baloncuğu (`İç bağlantı` / `Dış bağlantı`, yeni sekme, `dofollow`/`nofollow`) tek şeritte birleştirildi.
+- **Araç Çubuğunda `✨ AI Yaz / Düzenle` (`apps/cms/src/components/admin/editor/ai-compose-panel.tsx`, `toolbar-prose-ai.tsx`):**
+  - `AiComposePanel` hem yüzen araç çubuğundaki **`✨ AI Yaz / Düzenle`** açılır penceresinden hem de sağ denetçiden (`BlockGeneralTab`) çalışacak şekilde genişletildi; `paragraph`, `heading`, `paragraph_element`, `heading_element`, `text_div`, `quote` (`props.quote`) ve `tldr_box` (`props.summary`) bloklarını doğrudan destekler.
+- **Görsel Bloğu Çift Çubuk Temizliği ve Modül Bölme (`canvas-block.tsx`, `canvas-block-helpers.tsx`, `block-general-tab.tsx`, `block-general-image-fields.tsx`):**
+  - Görsel bloklarında (`image_figure`) hem üstte hem altta çıkan yinelenen ölçek/hizalama çubuğu tek üst `FloatingToolbar` içinde birleştirildi; `CanvasImageScaler` üzerinde canlı sürükleme kulpları ve genişlik rozeti korundu.
+  - Sağ denetçi `Genel` sekmesine metin blokları için hızlı etiket/başlık seviyesi (`P | H1..H4 | Div`) ve hizalama kartı eklendi; büyük editör dosyaları (`canvas-block.tsx`, `block-general-tab.tsx`) yardımcı modüllere bölündü.
+
 ### [2026-11-09] — Topluluk Tartışması, Çok Seviyeli Yorum Ağacı ve 5 Yıldızlı İnceleme Stüdyosu (0-KB RSC)
 - **Çekirdek Tartışma ve Puanlama Motoru (`packages/core/src/comments-discussion.ts` + `packages/core/test/comments-discussion.test.ts`):**
   - `parseCommentTags`, `serializeCommentTags` ve `incrementCommentUpvoteTag` ile şema göçüne gerek kalmadan `tags` dizisi üzerinde `_pinned` (Sabitlendi), `_official` (Ekip / Yazar rozeti) ve `_up:N` (Faydalı oy sayacı) kodlaması eklendi.
