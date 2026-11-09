@@ -60,3 +60,4 @@ export * from "./header-layout";
 export * from "./content-access";
 export * from "./plugin-license";
 export * from "./internal-links";
+export * from "./comments-discussion";

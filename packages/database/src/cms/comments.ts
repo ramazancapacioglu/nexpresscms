@@ -1,5 +1,6 @@
 import type { CommentReviewDto } from "./types";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
+import { incrementCommentUpvoteTag, parseCommentTags } from "@nexpress/core";
 import { CmsMediaRepository } from "./media";
 
 export class CmsCommentsRepository extends CmsMediaRepository {
@@ -42,10 +43,11 @@ export class CmsCommentsRepository extends CmsMediaRepository {
     pros?: string[];
     cons?: string[];
     status?: string;
+    isVerified?: boolean;
     parentId?: string | null;
     tags?: string[];
   }): Promise<CommentReviewDto> {
-    const id = input.id ?? `rev_${Date.now()}`;
+    const id = input.id ?? `rev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date();
     const record = {
       id,
@@ -61,9 +63,9 @@ export class CmsCommentsRepository extends CmsMediaRepository {
       pros: input.pros ?? [],
       cons: input.cons ?? [],
       status: input.status ?? "approved",
-      isVerified: true,
+      isVerified: input.isVerified ?? true,
       parentId: input.parentId || null,
-      tags: (input.tags ?? []).slice(0, 8),
+      tags: (input.tags ?? []).slice(0, 12),
       createdAt: now,
     };
 
@@ -75,15 +77,52 @@ export class CmsCommentsRepository extends CmsMediaRepository {
         target: t.commentsReviews.id,
         setWhere: eq(t.commentsReviews.siteId, this.siteId),
         set: {
+          authorName: record.authorName,
           status: record.status,
           rating: record.rating,
           title: record.title,
           body: record.body,
+          pros: record.pros,
+          cons: record.cons,
+          ...(input.isVerified !== undefined ? { isVerified: record.isVerified } : {}),
           ...(input.parentId !== undefined ? { parentId: input.parentId || null } : {}),
           ...(input.tags ? { tags: record.tags } : {}),
         },
       });
-  
+
     return record;
+  }
+
+  /**
+   * Seçilen yorum veya incelemeleri kalıcı olarak siler (`siteId` korumalı).
+   */
+  public async deleteCommentReviews(ids: string[]): Promise<number> {
+    const cleanIds = ids.map((id) => id.trim()).filter(Boolean);
+    if (cleanIds.length === 0) return 0;
+    const { db, t } = this.backend;
+    await db
+      .delete(t.commentsReviews)
+      .where(and(eq(t.commentsReviews.siteId, this.siteId), inArray(t.commentsReviews.id, cleanIds)));
+    return cleanIds.length;
+  }
+
+  /**
+   * Yorum veya incelemenin "Faydalı" (`_up:N`) sayacını 1 artırır (`siteId` korumalı).
+   */
+  public async voteCommentHelpful(id: string): Promise<number | null> {
+    const { db, t } = this.backend;
+    const rows = await db
+      .select()
+      .from(t.commentsReviews)
+      .where(and(eq(t.commentsReviews.siteId, this.siteId), eq(t.commentsReviews.id, id)))
+      .limit(1);
+    const existing = rows[0];
+    if (!existing || existing.status !== "approved") return null;
+    const nextTags = incrementCommentUpvoteTag(existing.tags ?? []);
+    await db
+      .update(t.commentsReviews)
+      .set({ tags: nextTags })
+      .where(and(eq(t.commentsReviews.siteId, this.siteId), eq(t.commentsReviews.id, id)));
+    return parseCommentTags(nextTags).upvotes;
   }
 }

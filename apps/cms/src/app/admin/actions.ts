@@ -369,6 +369,7 @@ export async function saveCommentReviewAction(input: {
   pros?: string[];
   cons?: string[];
   status?: string;
+  isVerified?: boolean;
   parentId?: string | null;
   tags?: string[];
 }) {
@@ -380,6 +381,53 @@ export async function saveCommentReviewAction(input: {
   await revalidatePath("/admin/comments");
   await revalidatePath("/tr");
   return { ok: true, item: saved };
+}
+
+export async function deleteCommentReviewsAction(input: { ids: string[] }) {
+  await requireUser({ audit: "cms.deleteCommentReviews" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const deleted = await repo.deleteCommentReviews(input.ids);
+  await revalidatePath("/admin/comments");
+  await revalidatePath("/tr");
+  return { ok: true, deleted };
+}
+
+export async function bulkCommentStatusAction(input: {
+  ids: string[];
+  status: "approved" | "pending" | "spam";
+}) {
+  await requireUser({ audit: "cms.bulkCommentStatus" });
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const all = await repo.listCommentsReviews();
+  const idSet = new Set(input.ids);
+  let updated = 0;
+  for (const item of all) {
+    if (!idSet.has(item.id)) continue;
+    await repo.saveCommentReview({
+      id: item.id,
+      contentId: item.contentId,
+      authorName: item.authorName,
+      authorEmail: item.authorEmail ?? undefined,
+      entryType: (item.entryType === "comment" ? "comment" : "review"),
+      rating: item.rating,
+      title: item.title ?? undefined,
+      body: item.body,
+      pros: item.pros,
+      cons: item.cons,
+      status: input.status,
+      isVerified: item.isVerified,
+      parentId: item.parentId,
+      tags: item.tags,
+    });
+    updated++;
+  }
+  await revalidatePath("/admin/comments");
+  await revalidatePath("/tr");
+  return { ok: true, updated };
 }
 
 export async function saveChromeAction(input: {

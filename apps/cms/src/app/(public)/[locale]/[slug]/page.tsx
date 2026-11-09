@@ -113,7 +113,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string }>;
+  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
 }) {
   const { locale, slug } = await params;
   const sp = await searchParams;
@@ -266,17 +266,55 @@ export default async function PublicDynamicContentPage({
     </section>
   ) : null;
   const when = (value: Date) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(value);
-  const discussion = (allowComments || allowReviews) && (commentEntries.length > 0 || reviewEntries.length > 0 || (content.type === "post" && authorName) || sp.yorum === "bekliyor") ? (
+  const sortOrder = sp.c_sort === "newest" || sp.c_sort === "oldest" ? sp.c_sort : "popular";
+  const isDiscussionContentType = content.type === "post" || content.type === "product" || content.type === "kb_tech" || content.type === "ai_prompt";
+  const shouldRenderDiscussion =
+    (allowComments || allowReviews) &&
+    (isDiscussionContentType || commentEntries.length > 0 || reviewEntries.length > 0 || sp.yorum === "bekliyor");
+  const discussion = shouldRenderDiscussion ? (
     <PostDiscussion
       t={t}
       headingFont={tokens.typography.headingFont}
       radius={tokens.geometry.borderRadius}
       authorName={tpl && content.type === "post" && authorName && !treeHas(tpl.blocks, "tpl_post_meta") ? authorName : null}
       authorHref={authorHref}
-      comments={allowComments ? commentEntries.map((entry) => ({ id: entry.id, parentId: entry.parentId, authorName: entry.authorName, body: entry.body, dateLabel: entry.createdAt ? when(entry.createdAt) : undefined, tags: entry.tags })) : []}
-      reviews={allowReviews ? reviewEntries.map((entry) => ({ id: entry.id, authorName: entry.authorName, body: entry.body, title: entry.title, rating: entry.rating })) : []}
+      comments={
+        allowComments
+          ? commentEntries.map((entry) => ({
+              id: entry.id,
+              parentId: entry.parentId,
+              authorName: entry.authorName,
+              body: entry.body,
+              isVerified: entry.isVerified,
+              dateLabel: entry.createdAt ? when(entry.createdAt) : undefined,
+              createdAtMs: entry.createdAt ? new Date(entry.createdAt).getTime() : 0,
+              tags: entry.tags,
+            }))
+          : []
+      }
+      reviews={
+        allowReviews
+          ? reviewEntries.map((entry) => ({
+              id: entry.id,
+              authorName: entry.authorName,
+              body: entry.body,
+              title: entry.title,
+              rating: entry.rating,
+              pros: entry.pros,
+              cons: entry.cons,
+              isVerified: entry.isVerified,
+              dateLabel: entry.createdAt ? when(entry.createdAt) : undefined,
+              createdAtMs: entry.createdAt ? new Date(entry.createdAt).getTime() : 0,
+              tags: entry.tags,
+            }))
+          : []
+      }
       avgRating={avgRating}
-      reply={allowComments ? { contentId: content.id, locale, slug: content.slug } : null}
+      reply={allowComments || allowReviews ? { contentId: content.id, locale, slug: content.slug } : null}
+      allowComments={allowComments}
+      allowReviews={allowReviews && (content.type === "product" || reviewEntries.length > 0 || pub.allowReviews === true)}
+      sort={sortOrder}
+      pagePath={`${lb}/${content.slug}`}
       notice={sp.yorum === "bekliyor" ? t("content.replySent") : null}
     />
   ) : null;

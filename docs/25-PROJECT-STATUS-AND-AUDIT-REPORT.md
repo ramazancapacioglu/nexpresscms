@@ -89,3 +89,4 @@ NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100
    - **CLI Yedekleme (`pnpm db:export` / `pnpm db:import`):** `packages/database/src/scripts/backup-cli.ts`.
    - **SEO İç Bağlantı Önericisi (`suggestInternalLinks`):** `packages/core/src/internal-links.ts` ve `/admin/seo/audit` entegrasyonu.
    - **Kaynak Atıflı 0-KB RSC Arama Özeti (`synthesizeSearchAnswer`):** `packages/core/src/search.ts` ve `/[locale]/ara` entegrasyonu.
+   - **Topluluk Tartışması & 5 Yıldızlı İnceleme Motoru v2 (`@nexpress/core/comments-discussion`, `/admin/comments`):** 3 seviyeli yanıt ağacı (`buildCommentTree`), 5★–1★ puan dağılım histogramı (`computeRatingSummary`), `_pinned` / `_official` / `_up:N` etiket rozetleri, 0-KB RSC kök yorum + inceleme + `<details>` yanıt çekmeceleri, çerez korumalı `👍 Faydalı` oylaması ve toplu moderasyon stüdyosu.

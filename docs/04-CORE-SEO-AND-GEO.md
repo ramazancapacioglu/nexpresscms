@@ -180,3 +180,26 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
    - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
 
 Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+
+---
+
+## 12. Topluluk Tartışması, Çok Seviyeli Yorum Ağacı ve 5 Yıldızlı İnceleme Motoru (0-KB RSC)
+
+Ziyaretçi sayfalarının altındaki tartışma ve değerlendirme bölümü (`PostDiscussion` ve `PostReviewsSection`), **0 KB İstemci JS** kuralını bozmadan zengin etkileşim ve Schema.org `AggregateRating` / `Review` sinyali üretir:
+
+1. **Çok Seviyeli Yorum Ağacı (`packages/core/src/comments-discussion.ts` — `buildCommentTree`):**
+   - Kök yorumlar ve yanıtlar `parentId` üzerinden 3 görsel derinliğe kadar iç içe dizilir; 4. seviye ve sonrası mobil taşmayı önlemek için 3. seviyede `@Yazar` (`replyToAuthor`) atfıyla düzleştirilir.
+   - **Sıralama Sekmeleri (`?c_sort=popular|newest|oldest`):** Sabitlenen (`_pinned`) kök yorumlar her zaman en üstte yer alır; ardından **En Faydalı** (`upvotes * 2 + totalReplies`), **En Yeni** veya **En Eski** sırasıyla listelenir.
+2. **Etiket Tabanlı Zengin Meta (`parseCommentTags` & `serializeCommentTags`):**
+   - Veritabanı şeması değiştirmeden `comments_reviews.tags` JSON dizisi içinde `_pinned` (Sabitlendi), `_official` (Ekip / Yazar rozeti), `_up:N` (Faydalı oy sayacı) ve görünür konu etiketleri (`#kurulum`, `#performans`) taşınır.
+   - Her yazar adı için deterministik baş harf ve erişilebilir renk paleti (`commentAvatarProps`) üretilir.
+3. **5 Yıldızlı Değerlendirme Dağılımı (`computeRatingSummary`):**
+   - Onaylı incelemelerden ortalama puan, doğrulanmış deneyim sayısı (`isVerified`) ve 5★–1★ yüzdelik histogram çubukları hesaplanır.
+   - İnceleme kartlarında yan yana **+ Artılar (`pros`)** ve **− Eksiler (`cons`)** kutuları gösterilir.
+4. **0-KB RSC Formlar, Spam Koruması ve Faydalı Oylaması (`apps/cms/src/app/(public)/comment-reply.ts`):**
+   - Ziyaretçiler hem kök yorum/soru hem de (açılır `<details>` çekmecesiyle) 5 yıldızlı artı/eksi değerlendirmesi gönderebilir; her yorum kartındaki **Yanıtla** çekmecesi yalnızca tıklandığında `<details>` ile açılır.
+   - Gönderimler IP başına hız sınırından (`createRateLimiter`), honeypot (`company`) kontrolünden, HTML temizliğinden ve bağlantı spam süzgecinden (>2 URL reddi — `validatePublicCommentSubmission`) geçer; `status: "pending"` ve `isVerified: false` olarak kaydedilir.
+   - **Faydalı (`👍`) Oyu (`voteCommentHelpfulAction`):** `HttpOnly` çerez (`nx_helpful_votes`) ile mükerrer oylamayı engeller ve `_up:N` sayacını atomik artırır.
+5. **Yönetim Moderasyon Stüdyosu (`/admin/comments`):**
+   - Durum sekmeleri (`Tümü`, `Beklemede`, `Onaylı`, `Spam`), içerik/etiket/metin arama süzgeci ve toplu işlem çubuğu (`Seçilenleri Onayla`, `Beklemeye Al`, `Spam İşaretle`, `Kalıcı Sil`).
+   - Kart üzerinde tek tıkla **Sabitle (`_pinned`)**, **Ekip Rozeti (`_official`)**, **Doğrulanmış (`isVerified`)**, **Hemen Onayla**, **Sil** ve doğrudan kartın altında açılan **Resmi Ekip Yanıtı** çekmecesi.

@@ -21,6 +21,18 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Topluluk Tartışması, Çok Seviyeli Yorum Ağacı ve 5 Yıldızlı İnceleme Stüdyosu (0-KB RSC)
+- **Çekirdek Tartışma ve Puanlama Motoru (`packages/core/src/comments-discussion.ts` + `packages/core/test/comments-discussion.test.ts`):**
+  - `parseCommentTags`, `serializeCommentTags` ve `incrementCommentUpvoteTag` ile şema göçüne gerek kalmadan `tags` dizisi üzerinde `_pinned` (Sabitlendi), `_official` (Ekip / Yazar rozeti) ve `_up:N` (Faydalı oy sayacı) kodlaması eklendi.
+  - `buildCommentTree` ile 3 seviyeli iç içe yanıt ağacı (4+ seviyede `@Yazar` atfıyla düzleştirme) ve `popular` / `newest` / `oldest` sıralaması; `computeRatingSummary` ile 5★–1★ yüzdelik dağılım histogramı; `commentAvatarProps` ile deterministik renkli avatar baş harfleri; `validatePublicCommentSubmission` ile honeypot, HTML temizliği ve >2 bağlantı spam filtresi eklendi.
+- **Veritabanı ve Sunucu Eylemleri (`packages/database/src/cms/comments.ts`, `apps/cms/src/app/(public)/comment-reply.ts`, `apps/cms/src/app/admin/actions.ts`):**
+  - `CmsCommentsRepository` içine `deleteCommentReviews(ids)` ve `voteCommentHelpful(id)` (`siteId` korumalı) eklendi; `saveCommentReview` üzerinde `isVerified`, `pros` ve `cons` güncellemesi tamamlandı.
+  - Ziyaretçi kök yorum, yanıt ve 5 yıldızlı inceleme gönderimi (`submitPublicDiscussionAction`) ile çerez korumalı "Faydalı (👍)" oylaması (`voteCommentHelpfulAction`) devreye alındı.
+- **0-KB RSC Ziyaretçi Tartışma ve İnceleme Arayüzü (`apps/cms/src/components/public/post-discussion.tsx`, `post-reviews-section.tsx`):**
+  - 5★–1★ ilerleme çubuklu özet kartı, açılır `<details>` 5 yıldızlı değerlendirme formu, artılar/eksiler (`pros`/`cons`) kartları, sıralama sekmeleri (`En Faydalı`, `En Yeni`, `En Eski`), kök yorum formu ve yalnızca tıklandığında açılan `<details>` yanıt çekmeceleri eklendi.
+- **Admin Moderasyon Stüdyosu (`apps/cms/src/components/admin/comments-reviews-client.tsx`, `comment-moderation-card.tsx`):**
+  - Durum sekmeleri (`Tümü`, `Beklemede`, `Onaylı`, `Spam`), arama ve içerik filtresi, toplu onay/spam/silme işlemleri, tek tıkla Sabitle / Ekip Rozeti / Doğrulanmış anahtarları ve satır içi resmi ekip yanıtı çekmecesi eklendi.
+
 ### [2026-11-09] — Perfornext v1.2.0 Kapsamlı Performans Merkezi ve Aşama 4 Tamamlayıcı Araçlar
 - **Perfornext v1.2.0 (`@nexpress/plugin-perfornext`, `/admin/perfornext`):**
   - **5 Modüllü Mimari (`apps/cms/src/plugins/perfornext.ts`):** `budget` (0-KB RSC & Bütçe Denetimi), `cache` (Önbellek & Ön Isıtma), `database` (Veritabanı & Şişkinlik Bakımı), `media` (Medya & Görsel Hattı) ve `content` (İçerik Ağırlığı & Core Web Vitals) modülleri ile `keepRevisionsCount` ayarı eklendi.
