@@ -93,3 +93,44 @@ export function makeSnippet(body: string, query: string, radius = 110): string {
   const end = Math.min(clean.length, at + radius);
   return `${start > 0 ? "…" : ""}${clean.slice(start, end)}${end < clean.length ? "…" : ""}`;
 }
+
+export interface DirectAnswerSource {
+  id: string;
+  title: string;
+  slug: string;
+  tldr?: string | null;
+  body: string;
+}
+
+export interface SynthesizedSearchAnswer {
+  summary: string;
+  citations: Array<{ index: number; title: string; slug: string }>;
+}
+
+/**
+ * "Bu Siteye Sor" — en yüksek puanlı arama eşleşmelerinin TL;DR ve ilgili kesitlerinden
+ * kaynak numaralı (`[1]`, `[2]`) doğrudan yanıt sentezler (0-KB RSC, harici LLM anahtarı gerektirmez).
+ */
+export function synthesizeSearchAnswer(
+  topDocs: DirectAnswerSource[],
+  query: string
+): SynthesizedSearchAnswer | null {
+  if (!query.trim() || topDocs.length === 0) return null;
+  const picked = topDocs.slice(0, 3);
+  const sentences: string[] = [];
+  const citations: Array<{ index: number; title: string; slug: string }> = [];
+
+  picked.forEach((doc, idx) => {
+    const raw = (doc.tldr && doc.tldr.trim().length > 20 ? doc.tldr.trim() : makeSnippet(doc.body, query, 95)).trim();
+    if (!raw) return;
+    const refIndex = citations.length + 1;
+    citations.push({ index: refIndex, title: doc.title, slug: doc.slug });
+    sentences.push(`${raw} [${refIndex}]`);
+  });
+
+  if (sentences.length === 0) return null;
+  return {
+    summary: sentences.join(" "),
+    citations,
+  };
+}

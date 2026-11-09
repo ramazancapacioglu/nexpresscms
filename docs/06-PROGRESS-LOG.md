@@ -21,6 +21,17 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Perfornext v1.2.0 Kapsamlı Performans Merkezi ve Aşama 4 Tamamlayıcı Araçlar
+- **Perfornext v1.2.0 (`@nexpress/plugin-perfornext`, `/admin/perfornext`):**
+  - **5 Modüllü Mimari (`apps/cms/src/plugins/perfornext.ts`):** `budget` (0-KB RSC & Bütçe Denetimi), `cache` (Önbellek & Ön Isıtma), `database` (Veritabanı & Şişkinlik Bakımı), `media` (Medya & Görsel Hattı) ve `content` (İçerik Ağırlığı & Core Web Vitals) modülleri ile `keepRevisionsCount` ayarı eklendi.
+  - **Core Web Vitals & Customizer Denetimi (`packages/core/src/content-weight.ts`):** `inspectBlocks` ve `weighContent` fonksiyonlarına CLS riski (`imagesMissingDimensions` — boyutsuz görsel tespiti), LCP ilk ekran ağır blok tespiti (`firstFoldHeavy` — ilk 2 blokta video/harita/3+ slayt), üçüncü parti `embedCount`, DOM `maxDepth`, tahmini RSC HTML boyutu (`estimatedHtmlKb`) ve `auditCustomizerPerformance` (özel CSS >32 KB ve `headerScripts`/`footerScripts` sıfır-KB uyarısı) eklendi (`packages/core/test/content-weight.test.ts`).
+  - **Veritabanı Şişkinlik İzleme ve Temizlik (`packages/database/src/performance-repository.ts`):** `bloatCounts()` (`contentRevisions`, `notFoundLog`, `contentChunks`, `auditLog`, `mcpRequestLog`, `formSubmissions`, `botDailyStats`), `mediaStats()`, `pruneRevisions(keepPerContent)`, `clearNotFoundLogs()`, `recompileMarkdownCache()` ve SQLite `PRAGMA wal_checkpoint(PASSIVE)` desteği eklendi.
+  - **Yönetim Eylemleri ve Arayüz (`apps/cms/src/app/admin/perfornext/actions.ts`, `page.tsx`, `report.ts`):** Tüm desteklenen dillerde önbellek ön ısıtma (`warmCacheAction` + ms ölçümü), eski revizyonları budama (`pruneRevisionsAction`), 404 ve süresi dolmuş çöpleri temizleme (`clearLogsAndTrashAction`), tüm çevirilerde `markdownCache` yeniden derleme (`recompileMarkdownAction`) ve ağır yayınlar listesinde doğrudan **Stüdyoda Düzenle** + **Canlı ↗** bağlantıları devreye alındı.
+- **Aşama 4 Tamamlayıcı Araçlar:**
+  - **CLI Yedekleme (`pnpm db:export` / `pnpm db:import`):** `packages/database/src/scripts/backup-cli.ts` eklendi.
+  - **SEO İç Bağlantı Fırsatları (`suggestInternalLinks`):** `packages/core/src/internal-links.ts` (+ birim testi) ve `/admin/seo/audit` ekranında otomatik iç bağlantı öneri kartı eklendi.
+  - **0-KB RSC Kaynak Atıflı Arama Özeti (`synthesizeSearchAnswer`):** `packages/core/src/search.ts` (+ birim testi) ve `/[locale]/ara` sayfasında `[1]`, `[2]` kaynak bağlantılı doğrudan yanıt özeti eklendi.
+
 ### [2026-11-09] — Tam Proje Denetimi (`docs/25`), Doküman Senkronizasyonu, Dosya Boyutu Borcu, Parola/Üye Kapısı, Ed25519 Eklenti Lisansı ve Dil Başına Site Kimliği
 - **Durum ve Denetim Raporu (`docs/25-PROJECT-STATUS-AND-AUDIT-REPORT.md`):** Tüm monorepo (`apps/cms`, `packages/*`, `plugins-pro/*`) ve `docs/01`–`docs/24` satır satır kıyaslandı.
 - **Aşama 1 — Doküman ↔ Kod Senkronizasyonu (`AGENTS.md` Kural 1):** `docs/01` monorepo ağacına `packages/i18n`, `packages/commerce`, `packages/marketplace` eklendi; `docs/02` şema ve göç tablosuna `0020` (`comments_reviews.parent_id`, `tags`, `author_email`) işlendi; `docs/03` renk paleti sayısı `6` olarak güncellendi; `docs/05` `nexpress_create_lead` kalıcı `agent_requests` kaydıyla eşitlendi; `docs/23` kütüphane öğe sayısı (`194`) ve `vector_mark` bloğuyla güncellendi; `pnpm-workspace.yaml` içinden kullanılmayan `themes/*` kaldırıldı.

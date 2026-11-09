@@ -16,7 +16,9 @@
     "db:migrate-engine": "pnpm --filter @nexpress/database db:migrate-engine",
     "test": "turbo run test",
     "db:generate": "pnpm --filter @nexpress/database db:generate",
-    "db:migrate": "pnpm --filter @nexpress/database db:migrate"
+    "db:migrate": "pnpm --filter @nexpress/database db:migrate",
+    "db:export": "pnpm --filter @nexpress/database db:export",
+    "db:import": "pnpm --filter @nexpress/database db:import"
   },
   "devDependencies": {
     "turbo": "^2.4.0",

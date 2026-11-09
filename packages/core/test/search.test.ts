@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { bm25Rank, foldTr, makeSnippet, rrfFuse, searchTokens } from "../src";
+import { bm25Rank, foldTr, makeSnippet, rrfFuse, searchTokens, synthesizeSearchAnswer } from "../src";
 
 test("Türkçe katlama: aksanlar ve ı/İ eşleşir", () => {
   assert.equal(foldTr("ŞEKER Sıcak ÇİĞ"), "seker sicak cig");
@@ -31,4 +31,19 @@ test("özet: eşleşen terimin çevresini verir", () => {
   const s = makeSnippet("# Başlık\n" + "alfa ".repeat(60) + "kahve burada " + "beta ".repeat(60), "KAHVE", 30);
   assert.match(s, /kahve burada/);
   assert.ok(s.startsWith("…") && s.endsWith("…"));
+});
+
+test("synthesizeSearchAnswer: en iyi eşleşmelerden kaynak numaralı ([1], [2]) doğrudan yanıt üretir", () => {
+  const ans = synthesizeSearchAnswer(
+    [
+      { id: "a", title: "Kahve Rehberi", slug: "kahve-rehberi", tldr: "Filtre kahve 92-96 derece su ile 4 dakikada demlenir.", body: "" },
+      { id: "b", title: "Espresso", slug: "espresso", tldr: "Espresso 9 bar basınç altında 25-30 saniyede çekilir.", body: "" },
+    ],
+    "kahve demleme"
+  );
+  assert.ok(ans);
+  assert.match(ans.summary, /\[1\]/);
+  assert.match(ans.summary, /\[2\]/);
+  assert.equal(ans.citations.length, 2);
+  assert.equal(ans.citations[0]!.slug, "kahve-rehberi");
 });

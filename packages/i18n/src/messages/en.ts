@@ -15,6 +15,8 @@ export const en: Messages = {
     placeholder: "Words you want to search for",
     button: "Search",
     noResults: "No results for “{q}”.",
+    directAnswer: "Direct answer summary",
+    sources: "Sources",
   },
   content: {
     restricted: "Restricted content",

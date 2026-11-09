@@ -15,7 +15,9 @@
     "db:seed": "tsx src/scripts/seed.ts",
     "test": "tsx --test test/*.test.ts",
     "db:generate": "drizzle-kit generate --config drizzle.config.sqlite.ts && drizzle-kit generate --config drizzle.config.pg.ts",
-    "db:migrate": "tsx src/scripts/migrate.ts"
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:export": "tsx src/scripts/backup-cli.ts export",
+    "db:import": "tsx src/scripts/backup-cli.ts import"
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",

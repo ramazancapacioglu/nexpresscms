@@ -2,7 +2,7 @@ import React from "react";
 import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { bm25Rank, makeSnippet, resolvePublishing, templateHasBlock } from "@nexpress/core";
+import { bm25Rank, makeSnippet, resolvePublishing, synthesizeSearchAnswer, templateHasBlock } from "@nexpress/core";
 import { createTranslator } from "@nexpress/i18n";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 import { Link } from "@/components/public/link";
@@ -33,7 +33,7 @@ export default async function SearchPage({
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const lb = await siteLocaleBase(siteId, locale);
 
-  let results: Array<{ id: string; slug: string; title: string; snippet: string }> = [];
+  let results: Array<{ id: string; slug: string; title: string; snippet: string; tldr?: string | null; body: string }> = [];
   if (q) {
     const contents = (await listPublishedContents(siteId, locale)).filter(
       (c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public"
@@ -42,7 +42,9 @@ export default async function SearchPage({
     const hits = bm25Rank(contents.map((c) => ({ id: c.contentId, title: c.title, body: c.markdownCache })), q, 20);
     results = hits.flatMap((h) => {
       const c = byId.get(h.id);
-      return c ? [{ id: c.contentId, slug: c.slug, title: c.title, snippet: c.tldr || makeSnippet(c.markdownCache, q) }] : [];
+      return c
+        ? [{ id: c.contentId, slug: c.slug, title: c.title, snippet: c.tldr || makeSnippet(c.markdownCache, q), tldr: c.tldr, body: c.markdownCache }]
+        : [];
     });
     if (results.length === 0) {
       try {
@@ -52,6 +54,7 @@ export default async function SearchPage({
       }
     }
   }
+  const directAnswer = q && results.length > 0 ? synthesizeSearchAnswer(results, q) : null;
 
   const tpl = await templateFor(siteId, "search", null, { locale, slug: "ara" });
   if (tpl && templateHasBlock(tpl.blocks, "tpl_archive_list")) {
@@ -101,6 +104,20 @@ export default async function SearchPage({
         </button>
       </form>
       {q && results.length === 0 && <p>{t("search.noResults", { q })}</p>}
+      {directAnswer && (
+        <aside className="rounded-lg border p-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{t("search.directAnswer")}</p>
+          <p className="text-sm leading-relaxed">{directAnswer.summary}</p>
+          <div className="flex flex-wrap gap-2 pt-1 text-xs">
+            <span className="opacity-70">{t("search.sources")}:</span>
+            {directAnswer.citations.map((c) => (
+              <Link key={c.slug} href={`${lb}/${c.slug === "ana-sayfa" ? "" : c.slug}`.replace(/\/$/, "")} className="underline underline-offset-2">
+                [{c.index}] {c.title}
+              </Link>
+            ))}
+          </div>
+        </aside>
+      )}
       {results.length > 0 && (
         <ol className="space-y-5">
           {results.map((r) => (

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, type SeoIssueId } from "@nexpress/core";
+import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, suggestInternalLinks, type SeoIssueId } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireUser } from "@/lib/auth/session";
 import { SeoTabs } from "@/components/admin/section-tabs";
@@ -26,6 +26,17 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
   );
   const issue = sp.issue && sp.issue in SEO_ISSUE_LABELS ? (sp.issue as SeoIssueId) : null;
   const rows = report.rows.filter((r) => (issue ? r.issues.some((i) => i.id === issue) : r.issues.some((i) => i.level !== "info")));
+  const linkSuggestions = suggestInternalLinks(
+    contents.map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      title: c.title,
+      locale,
+      focusKeyword: resolvePublishing(c.schemaAttributes).focusKeyword ?? "",
+      markdown: c.markdownCache ?? "",
+    })),
+    { maxSuggestions: 12 }
+  );
   const s = report.summary;
   const q = (extra: string) => `/admin/seo/audit?locale=${locale}${extra}`;
 
@@ -74,6 +85,38 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
             </li>
           ))}
         </ul>
+      )}
+
+      {linkSuggestions.length > 0 && (
+        <section className="space-y-2 pt-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570]">İç Bağlantı Fırsatları (Topic Cluster)</h2>
+          <ul className={`divide-y rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
+            {linkSuggestions.map((item) => (
+              <li key={`${item.fromId}:${item.toId}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[12px]">
+                <div>
+                  <Link href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`} className="font-medium hover:underline">
+                    {item.fromTitle}
+                  </Link>
+                  <span className="text-[#5F6570]"> içinde </span>
+                  <span className="rounded bg-[#266DF0]/10 px-1.5 py-0.5 font-mono text-[11px] text-[#1D5ED8] dark:text-[#7AA7FF]">
+                    “{item.matchedPhrase}”
+                  </span>
+                  <span className="text-[#5F6570]"> geçiyor ancak </span>
+                  <Link href={`/admin/contents?id=${encodeURIComponent(item.toId)}&locale=${locale}`} className="font-medium hover:underline">
+                    /{item.toSlug}
+                  </Link>
+                  <span className="text-[#5F6570]"> sayfasına bağlantı verilmemiş.</span>
+                </div>
+                <Link
+                  href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`}
+                  className={`rounded border ${border} px-2.5 py-1 text-[11px] hover:bg-black/5 dark:hover:bg-white/5`}
+                >
+                  Stüdyoda Bağla →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

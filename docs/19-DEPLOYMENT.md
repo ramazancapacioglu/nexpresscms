@@ -117,7 +117,7 @@ Ziyaretçi trafiği dakikada bir zamanlayıcıyı tetikler; trafiksiz sitede yay
 Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne depolama, sağlayıcı anlık görüntüsü). Aşağıdakiler de geçerli:
 
 - Panel: **Yedek** → `.nxbackup` (içerik, çeviri, taksonomi, menü, ayarlar, tema, görsel özgünleri). **Belge/video/ses dosyaları, kullanıcılar, parolalar, oturumlar, denetim günlüğü ve ticaret yedeğe girmez.**
-- Bu yüzden ayrıca **veritabanı** (SQLite dosyası ya da `pg_dump`) ve **`MEDIA_DIR` klasörü** sunucu düzeyinde yedeklenmeli. Komut satırı (`db:export`) yedeği yoktur; geri yükleme panelden yapılır.
+- Bu yüzden ayrıca **veritabanı** (SQLite dosyası ya da `pg_dump`) ve **`MEDIA_DIR` klasörü** sunucu düzeyinde yedeklenmeli. Komut satırından kiracı JSON yedeği almak ve geri yüklemek için `pnpm db:export -- --site=default --out=./backup.json` ve `pnpm db:import -- --site=default --in=./backup.json` komutları da kullanılabilir.
 
 ## 7. Güvenlik denetim listesi
 
