@@ -30,11 +30,11 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 > Panel arayüzü eksikleri, eklenti ve tema yükleme/etkinleştirme planı: `docs/13`. Çok dilli altyapı: `docs/14`.
 
 - ~~Kullanıcı yönetimi, profil/parola, rol, denetim günlüğü, oturum iptali~~ yapıldı (F9, `docs/11` §1, §8). ~~e-posta ile davet / parola sıfırlama~~ yapıldı (`docs/11` §1). ~~2FA (TOTP) ve kurtarma kodları~~ yapıldı (`docs/11` §1; QR kodu ve yönetici için zorunlu kılma (`REQUIRE_ADMIN_2FA`) eklendi). Kalanlar: (c) giriş denemesi sınırının Redis'e taşınması; (d) denetim günlüğünde eylem **sonucu** (başarı/hata) ve içerik başlığı gibi hedef ayrıntısı — bugün çoğu `cms.*` kaydı yalnızca yetkilendirilmiş çağrıdır; (e) ~~denetim günlüğü dışa aktarma ve elle temizleme~~ yapıldı (kalan: otomatik/zamanlanmış saklama süresi); (f) kullanıcı silme ve hesap devri; (g) `author`/`shop-manager` rolleri ve izin matrisi.
-- ~~Yorum / inceleme spam koruması~~ gerekmiyor: ziyaretçiden yorum/inceleme alan herkese açık uç YOKTUR (`comments_reviews` yalnızca panelden yönetilir ve onaylananlar gösterilir). Herkese açık tek yazma ucu form gönderimidir ve bal küpü + IP başına hız sınırı + bağlantı sezgisiyle korunur. Yorum gönderimi eklenirse aynı korumalar ve `pending` varsayılanı zorunludur (`saveCommentReview` bugün varsayılanı `approved`, doğrulanmış=true yazar — açık uca bağlanmadan önce değiştirilmeli).
+- ~~Yorum / inceleme spam koruması~~ **Yapıldı (2026-11-09).** Ziyaretçi yorum, yanıt ve 5 yıldızlı inceleme gönderimi (`submitPublicDiscussionAction`, `docs/04` §12) bal küpü (`company`), IP başına hız sınırı (`createRateLimiter`), HTML temizliği ve bağlantı spam süzgeci (`validatePublicCommentSubmission`, >2 dış URL reddi) ile korunur; tüm ziyaretçi gönderimleri `status: "pending"` ve `isVerified: false` olarak kaydedilir. Faydalı oyu (`voteCommentHelpfulAction`) `HttpOnly` çerez ve hız sınırıyla korunur.
 - ~~Giriş akışı için otomatik uçtan uca test~~ yapıldı (`auth:e2e`, CI'da; davet, parola, sıfırlama yanıtı, 2FA — bkz. doc 11). Kalan: e-postayla gelen sıfırlama bağlantısının SMTP sahte sunucusuyla CI'da denenmesi.
 - Admin sayfalarının tarayıcıda (görsel) regresyon testi: bölünen denetçi sekmeleri yalnızca tip kontrolü ve SSR 200 ile doğrulandı.
 - ~~GitHub Actions~~ yapıldı (`.github/workflows/ci.yml`; GitHub'da ilk çalıştırma ve dal koruma kuralı sizde).
-- Yedekleme / geri yükleme komutu (`db:export`, `db:import`), kiracı bazında. (Arayüzü `/admin/backup` yapıldı; CLI ve zamanlanmış yedek kaldı.)
+- ~~Yedekleme / geri yükleme komutu (`db:export`, `db:import`), kiracı bazında~~ **Yapıldı (2026-11-09).** Hem `/admin/backup` arayüzü hem de `pnpm db:export` / `pnpm db:import` CLI (`packages/database/src/scripts/backup-cli.ts`) ve `/api/cron/backup` devrede.
 - Kullanıcı kaydından önce çerez/KVKK ayarı (analitik eklenirse).
 
 ## P2 — GEO / SEO derinliği
@@ -42,7 +42,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - ~~`Link` başlığı~~ yapıldı; ~~dile göre `llms.txt`/`ai-sitemap.json`/`llms-full.txt`~~ yapıldı.
 - ~~RSS / Atom~~ yapıldı; ~~kategori/etiket bazlı beslemeler~~ yapıldı (`/feed.xml?category=ad`, `?tag=ad`, `/atom.xml` için de); kalan: tam içerik (`content:encoded`), Google Haberler/Discover görsel şartları.
 - ~~Şema doğrulayıcı~~ yapıldı (editörde canlı); kalan: kayıtta engelleme/uyarı eşiği, `Speakable`, `Person` yazar varlıkları, `sameAs`.
-- İç bağlantı önerisi: vektörsüz ilk sürüm (başlık / varlık eşleşmesi).
+- ~~İç bağlantı önerisi: vektörsüz ilk sürüm (başlık / varlık eşleşmesi)~~ **Yapıldı (2026-11-09).** `suggestInternalLinks` (`packages/core/src/internal-links.ts`, birim testli) ve `/admin/seo/audit` ekranında otomatik iç bağlantı fırsatları kartı devrede.
 - 404 ve yönlendirme zincirleri raporu; ~~kırık iç bağlantı denetimi~~ yapıldı (iç bağlantılar); ~~dış bağlantı denetimi~~ yapıldı (2026-11-04, SSRF kapılı, yönetici isteği, en çok 30 adres). Kalan: 404 günlüğü ayrı bir rapor olarak iç denetimle birleşmedi (yönlendirme sayfasındaki kayıt duruyor).
 - Core Web Vitals alan verisi (CrUX / `web-vitals` ile hafif toplayıcı, yalnızca onaylı izleme).
 
