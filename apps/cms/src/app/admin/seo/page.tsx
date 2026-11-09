@@ -16,6 +16,7 @@ const links = [
   { href: "/admin/seo/integrations", label: "Webmaster", detail: "Search Console, Bing, Yandex" },
   { href: "/admin/seo/audit", label: "Site denetimi", detail: "Yayın öncesi kontrol" },
   { href: "/admin/redirects", label: "Yönlendirmeler", detail: "301 ve 404" },
+  { href: "/admin/seo/schemas", label: "Şemalar", detail: "Tür, sayfa, blog ve kategori" },
   { href: "/admin/seo/settings", label: "Ayarlar", detail: "Marka, yorum ve yazım kuralları" },
 ];
 

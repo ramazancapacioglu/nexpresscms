@@ -28,6 +28,9 @@ export function useDualModeEditorDirty(p: ReturnType<typeof useDualModeEditorBlo
     allowComments: p.allowComments,
     allowReviews: p.allowReviews,
     showShareButtons: p.showShareButtons,
+    showFeaturedImage: p.showFeaturedImage,
+    parentId: p.parentId,
+    pillar: p.pillar,
   };
   const docSignature = draftSignature(fields);
   const [savedSignature, setSavedSignature] = useState(docSignature);

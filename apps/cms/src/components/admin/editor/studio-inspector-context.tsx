@@ -115,6 +115,13 @@ export interface StudioInspectorApi {
   setAllowReviews: Dispatch<SetStateAction<boolean>>;
   showShareButtons: boolean;
   setShowShareButtons: Dispatch<SetStateAction<boolean>>;
+  showFeaturedImage: boolean;
+  setShowFeaturedImage: Dispatch<SetStateAction<boolean>>;
+  parentId: string;
+  setParentId: Dispatch<SetStateAction<string>>;
+  pillar: boolean;
+  setPillar: Dispatch<SetStateAction<boolean>>;
+  pageChoices: Array<{ id: string; title: string }>;
   scheduledAt: string;
   setScheduledAt: Dispatch<SetStateAction<string>>;
   contentId: string | undefined;

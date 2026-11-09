@@ -141,6 +141,13 @@
       "when": 1793811433068,
       "tag": "0019_superb_leech",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1794225562906,
+      "tag": "0020_silent_jackal",
+      "breakpoints": true
     }
   ]
 }

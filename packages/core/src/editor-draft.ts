@@ -28,6 +28,9 @@ export interface EditorDraftFields {
   allowComments: boolean;
   allowReviews: boolean;
   showShareButtons: boolean;
+  showFeaturedImage?: boolean;
+  parentId?: string;
+  pillar?: boolean;
   /** Pro eklentinin zengin şema alanları (yoksa boş) */
   richSchema?: Record<string, unknown>;
   /** Seçilen görünüm şablonu ("" varsayılan, "none" yerleşik) */
@@ -42,6 +45,7 @@ export function draftSignature(fields: EditorDraftFields): string {
       fields.noIndex, fields.schemaType, fields.importanceScore, fields.featuredImageUrl, fields.featuredImageAlt,
       fields.featuredImageCaption, fields.focusKeyword, fields.visibility, fields.scheduledAt, fields.categories,
       fields.tags, fields.allowComments, fields.allowReviews, fields.showShareButtons,
+      fields.showFeaturedImage !== false, fields.parentId || null, fields.pillar === true,
       fields.richSchema && Object.keys(fields.richSchema).length > 0 ? fields.richSchema : null,
       fields.templateId || null,
     ])
@@ -133,5 +137,8 @@ export function snapshotToDraftFields(s: SnapshotLike): EditorDraftFields {
     allowComments: pub.allowComments,
     allowReviews: pub.allowReviews,
     showShareButtons: pub.showShareButtons,
+    showFeaturedImage: pub.showFeaturedImage,
+    parentId: pub.parentId ?? "",
+    pillar: pub.pillar,
   };
 }

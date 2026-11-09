@@ -121,6 +121,8 @@ export interface CommentReviewDto {
   cons: string[];
   status: string; // 'approved' | 'pending' | 'spam'
   isVerified: boolean;
+  parentId: string | null;
+  tags: string[];
   createdAt: Date;
 }
 

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, resolvePublishing, termSlug } from "@nexpress/core";
+import { contentWidthStyle, hasDynamicQueryParams, resolvePublishing, resolveSiteSettings, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -23,6 +23,7 @@ import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
+import { authorSlug } from "@/lib/author-slug";
 
 function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
   for (const node of nodes) {
@@ -110,7 +111,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string }>;
+  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string }>;
 }) {
   const { locale, slug } = await params;
   const sp = await searchParams;
@@ -151,7 +152,7 @@ export default async function PublicDynamicContentPage({
     pub.categories;
   const tags: string[] =
     pub.tags;
-  const featuredImageUrl = content.featuredImage ?? pub.featuredImageUrl ?? null;
+  const featuredImageUrl = pub.showFeaturedImage === false ? null : content.featuredImage ?? pub.featuredImageUrl ?? null;
   const featuredAlt = String(pub.featuredImageAlt ?? content.title);
   const featuredTitle = String(pub.featuredImageAlt ?? content.title);
   const featuredCaption = String(pub.featuredImageCaption ?? "");
@@ -164,6 +165,11 @@ export default async function PublicDynamicContentPage({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}${lb}/${content.slug}`;
 
+  const placement = schemaPlacementFor(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
+    type: content.type,
+    schemaType: content.schemaType,
+    categories: pub.categories,
+  });
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: site?.name ?? "NexPress CMS",
@@ -182,7 +188,7 @@ export default async function PublicDynamicContentPage({
       id: content.id,
       title: content.title,
       tldr: content.tldr,
-      schemaType: content.schemaType,
+      schemaType: placement?.schemaType ?? content.schemaType,
       schemaAttributes: content.schemaAttributes,
       authorName: pub.authorName || content.authorName,
       updatedAt: content.updatedAt,
@@ -215,16 +221,31 @@ export default async function PublicDynamicContentPage({
   const syncedPatterns = await getSyncedPatternsMap(siteId);
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
   const authorName = pub.authorName || content.authorName;
+  const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
+  const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
+  const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
+  const children = pub.pillar ? family.filter((item) => item.id !== content.id && item.status === "published" && resolvePublishing(item.schemaAttributes).parentId === content.id) : [];
+  const pillarList = children.length > 0 ? (
+    <section className="mx-auto max-w-4xl space-y-3 px-4 py-6">
+      <h2 style={{ fontFamily: tokens.typography.headingFont }} className="text-xl font-bold">{t("content.pillarHeading")}</h2>
+      <ul className="space-y-2 text-sm">
+        {children.map((item) => <li key={item.id}><a className="hover:underline" href={`${lb}/${item.slug}`}>{item.title}</a></li>)}
+      </ul>
+    </section>
+  ) : null;
   const when = (value: Date) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(value);
-  const discussion = (allowComments || allowReviews) && (commentEntries.length > 0 || reviewEntries.length > 0 || (content.type === "post" && authorName)) ? (
+  const discussion = (allowComments || allowReviews) && (commentEntries.length > 0 || reviewEntries.length > 0 || (content.type === "post" && authorName) || sp.yorum === "bekliyor") ? (
     <PostDiscussion
       t={t}
       headingFont={tokens.typography.headingFont}
       radius={tokens.geometry.borderRadius}
-      authorLine={tpl && content.type === "post" && authorName && !treeHas(tpl.blocks, "tpl_post_meta") ? t("content.authorBy", { name: authorName }) : null}
-      comments={allowComments ? commentEntries.map((entry) => ({ id: entry.id, authorName: entry.authorName, body: entry.body, dateLabel: entry.createdAt ? when(entry.createdAt) : undefined })) : []}
+      authorName={tpl && content.type === "post" && authorName && !treeHas(tpl.blocks, "tpl_post_meta") ? authorName : null}
+      authorHref={authorHref}
+      comments={allowComments ? commentEntries.map((entry) => ({ id: entry.id, parentId: entry.parentId, authorName: entry.authorName, body: entry.body, dateLabel: entry.createdAt ? when(entry.createdAt) : undefined, tags: entry.tags })) : []}
       reviews={allowReviews ? reviewEntries.map((entry) => ({ id: entry.id, authorName: entry.authorName, body: entry.body, title: entry.title, rating: entry.rating })) : []}
       avgRating={avgRating}
+      reply={allowComments ? { contentId: content.id, locale, slug: content.slug } : null}
+      notice={sp.yorum === "bekliyor" ? t("content.replySent") : null}
     />
   ) : null;
   if (tpl) {
@@ -235,7 +256,7 @@ export default async function PublicDynamicContentPage({
       menu,
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: content.title, href: `${lb}/${content.slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
         content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
@@ -254,6 +275,7 @@ export default async function PublicDynamicContentPage({
         <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}>
           <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} patterns={syncedPatterns} />
         </div>
+        {pillarList}
         {discussion}
       </>
     );
@@ -323,7 +345,8 @@ export default async function PublicDynamicContentPage({
         >
           {content.title}
         </h1>
-        {content.type === "post" && authorName ? <p className="text-sm text-nx-soft">{t("content.authorBy", { name: authorName })}</p> : null}
+        {content.type === "post" && authorName ? <p className="text-sm text-nx-soft"><a href={authorHref ?? "#"} className="hover:underline">{t("content.authorBy", { name: authorName })}</a></p> : null}
+        {parent ? <p className="text-sm"><a className="hover:underline" href={`${lb}/${parent.slug}`}>{t("content.parentPage")}: {parent.title}</a></p> : null}
 
         {/* Kategori, Etiket ve AggregateRating Özet Şeridi */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -455,6 +478,7 @@ export default async function PublicDynamicContentPage({
         </section>
       )}
 
+      {pillarList}
       {discussion}
     </article>
   );

@@ -317,11 +317,14 @@ export const sqliteCommentsReviews = sqliteTable(
     cons: text("cons", { mode: "json" }).$type<string[]>().default([]),
     status: text("status").default("approved").notNull(),
     isVerified: integer("is_verified", { mode: "boolean" }).default(true).notNull(),
+    parentId: text("parent_id"),
+    tags: text("tags", { mode: "json" }).$type<string[]>().default([]).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [
     index("comments_reviews_site_id_idx").on(t.siteId),
     index("comments_reviews_content_idx").on(t.siteId, t.contentId),
+    index("comments_reviews_parent_idx").on(t.siteId, t.parentId),
   ]
 );
 

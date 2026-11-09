@@ -324,11 +324,16 @@ export const pgCommentsReviews = pgTable(
     cons: jsonb("cons").$type<string[]>().default([]),
     status: text("status").default("approved").notNull(), // 'approved' | 'pending' | 'spam'
     isVerified: boolean("is_verified").default(true).notNull(),
+    /** Yanıtlanan yorum. Boşsa kök kayıttır. */
+    parentId: text("parent_id"),
+    /** Panel etiketleri (konu, spam adayı, müşteri). Ziyaretçi yazamaz. */
+    tags: jsonb("tags").$type<string[]>().default([]).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [
     index("comments_reviews_site_id_idx").on(t.siteId),
     index("comments_reviews_content_idx").on(t.siteId, t.contentId),
+    index("comments_reviews_parent_idx").on(t.siteId, t.parentId),
   ]
 );
 

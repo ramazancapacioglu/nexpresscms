@@ -31,20 +31,17 @@ export function CommentsReviewsClient({
   const [body, setBody] = useState("");
   const [prosText, setProsText] = useState("");
   const [consText, setConsText] = useState("");
+  const [tagsText, setTagsText] = useState("");
+  const [parentId, setParentId] = useState<string | null>(null);
+  const [tagFilter, setTagFilter] = useState("");
   const [banner, setBanner] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const filtered =
-    filterType === "all"
-      ? items
-      : items.filter((r) => r.entryType === filterType);
-
-  const avgRating =
-    items.length > 0
-      ? (
-          items.reduce((acc, r) => acc + r.rating, 0) / items.length
-        ).toFixed(2)
-      : "5.00";
+  const filtered = (filterType === "all" ? items : items.filter((r) => r.entryType === filterType)).filter((item) =>
+    tagFilter ? (item.tags ?? []).some((tag) => tag.toLocaleLowerCase("tr").includes(tagFilter.toLocaleLowerCase("tr"))) : true
+  );
+  const rated = items.filter((item) => item.entryType === "review" && item.rating > 0);
+  const avgRating = rated.length > 0 ? (rated.reduce((acc, item) => acc + item.rating, 0) / rated.length).toFixed(2) : "–";
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +63,8 @@ export function CommentsReviewsClient({
           .map((s) => s.trim())
           .filter(Boolean),
         status: "approved",
+        parentId,
+        tags: tagsText.split(",").map((tag) => tag.trim()).filter(Boolean).slice(0, 8),
       });
       if (res.ok) {
         setItems((prev) => [res.item, ...prev]);
@@ -74,6 +73,8 @@ export function CommentsReviewsClient({
         setBody("");
         setProsText("");
         setConsText("");
+        setTagsText("");
+        setParentId(null);
         setBanner("Yeni değerlendirme / yorum kaydedildi ve Schema.org AggregateRating güncellendi.");
       }
     });
@@ -117,7 +118,7 @@ export function CommentsReviewsClient({
         <div className="flex items-center gap-2">
           <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-mono text-amber-800 font-bold flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-            <span>AggregateRating: {avgRating} / 5.00 ({items.length} onaylı)</span>
+            <span>AggregateRating: {avgRating} / 5.00 ({rated.length} inceleme)</span>
           </div>
 
           <div className="inline-flex rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] p-0.5 text-[11px]">
@@ -237,6 +238,15 @@ export function CommentsReviewsClient({
             className="w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
           />
 
+          <input
+            type="text"
+            value={tagsText}
+            onChange={(e) => setTagsText(e.target.value)}
+            placeholder="Etiketler, virgülle (müşteri, kurulum)"
+            className="w-full rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1.5 outline-none"
+          />
+          {parentId ? <p className="text-[11px] text-[#1D5ED8]">Bu kayıt bir yoruma yanıttır. <button type="button" className="underline" onClick={() => setParentId(null)}>Kök yorum yap</button></p> : null}
+
           <textarea
             rows={3}
             required
@@ -294,15 +304,32 @@ export function CommentsReviewsClient({
                         Doğrulanmış
                       </span>
                     )}
-                    <span className="text-amber-800 font-mono text-[11px] font-bold">
-                      {"★".repeat(item.rating)} ({item.rating}/5)
-                    </span>
+                    {item.entryType === "review" && item.rating > 0 ? (
+                      <span className="text-amber-800 font-mono text-[11px] font-bold">
+                        {"★".repeat(item.rating)} ({item.rating}/5)
+                      </span>
+                    ) : null}
+                    {(item.tags ?? []).map((tag) => (
+                      <button key={tag} type="button" onClick={() => setTagFilter(tag)} className="rounded bg-[#F3F4F6] px-1.5 py-0.5 text-[10px] dark:bg-[#23262E]">{tag}</button>
+                    ))}
                   </div>
 
                   <div className="flex items-center gap-1.5">
                     <span className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2 py-0.5 font-mono text-[10px] text-[#5C5F66]">
                       İçerik: {targetContent?.title ?? item.contentId}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setParentId(item.id);
+                        setContentId(item.contentId);
+                        setEntryType("comment");
+                        setBanner(`${item.authorName} yorumuna yanıt yazılıyor.`);
+                      }}
+                      className="rounded border border-[#E6E7EA] px-2 py-0.5 text-[10px] dark:border-[#23262E]"
+                    >
+                      Yanıtla
+                    </button>
                     <select
                       aria-label={`Durum: ${item.authorName}`}
                       value={item.status}

@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Yazar, yorum, şema kuralı ve sütun sayfa
+- Yazar arşivi `/yazar/{ad}` yazıları listeler. Yorum yanıtlanır ve etiketlenebilir; ziyaretçi yanıtı onay bekler, yıldıza dönmez. SEO şemalar sekmesi kuralı sayfa, blog veya kategoriye bağlar. Sayfa ayarı üst sayfa, sütun içerik ve öne çıkan görseli gövdede gösterme seçeneğini tutar.
+
 ### [2026-11-09] — Köprü görsel SEO, şema, yazar ve yorumu tamamlar
 - Görsel alt, başlık, alt yazı ve açıklama kaynak kayıttan yazılır. SEO başlığındaki `%title%` ve `%sep%` açılır; yüzde indirim metni durur. Rank Math şeması sayfa türüne ve gelişmiş şema kartına bağlanır. Yazılar BlogPosting olur. Yazar satırı ve onaylı yorumlar yazıda görünür. Yorum yıldıza çevrilmez. WordPress kullanıcıları parola özeti kopyalanmadan, girişe kapalı editör olarak eklenir. Tanınmayan yönetici hesabı alınmaz. Site eklentisi 0.2.3.
 

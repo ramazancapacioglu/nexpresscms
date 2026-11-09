@@ -22,6 +22,8 @@ export class CmsCommentsRepository extends CmsMediaRepository {
       ...r,
       pros: r.pros ?? [],
       cons: r.cons ?? [],
+      tags: r.tags ?? [],
+      parentId: r.parentId ?? null,
     }));
   }
 
@@ -40,6 +42,8 @@ export class CmsCommentsRepository extends CmsMediaRepository {
     pros?: string[];
     cons?: string[];
     status?: string;
+    parentId?: string | null;
+    tags?: string[];
   }): Promise<CommentReviewDto> {
     const id = input.id ?? `rev_${Date.now()}`;
     const now = new Date();
@@ -58,6 +62,8 @@ export class CmsCommentsRepository extends CmsMediaRepository {
       cons: input.cons ?? [],
       status: input.status ?? "approved",
       isVerified: true,
+      parentId: input.parentId || null,
+      tags: (input.tags ?? []).slice(0, 8),
       createdAt: now,
     };
 
@@ -73,6 +79,8 @@ export class CmsCommentsRepository extends CmsMediaRepository {
           rating: record.rating,
           title: record.title,
           body: record.body,
+          ...(input.parentId !== undefined ? { parentId: input.parentId || null } : {}),
+          ...(input.tags ? { tags: record.tags } : {}),
         },
       });
   

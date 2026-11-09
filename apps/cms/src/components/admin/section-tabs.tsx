@@ -50,6 +50,7 @@ export const SEO_TABS: SectionTab[] = [
   { href: "/admin/seo/integrations", label: "Webmaster & Analitik" },
   { href: "/admin/seo/audit", label: "Site denetimi" },
   { href: "/admin/redirects", label: "Yönlendirmeler & 404" },
+  { href: "/admin/seo/schemas", label: "Şemalar" },
   { href: "/admin/seo/settings", label: "Ayarlar" },
 ];
 

@@ -16,6 +16,13 @@ export function EngageTab() {
     setAllowReviews,
     showShareButtons,
     setShowShareButtons,
+    showFeaturedImage,
+    setShowFeaturedImage,
+    parentId,
+    setParentId,
+    pillar,
+    setPillar,
+    pageChoices,
   } = useStudioInspector();
 
   return (
@@ -52,6 +59,25 @@ export function EngageTab() {
                       placeholder="Görsel Alt Metni (Alt Text — SEO Zorunlu)..."
                       className="h-8 w-full rounded border border-border bg-background px-2 text-[11px]"
                     />
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <span>Sayfa içinde göster</span>
+                      <input type="checkbox" checked={showFeaturedImage} onChange={(e) => setShowFeaturedImage(e.target.checked)} />
+                    </label>
+                  </div>
+
+                  <div className="rounded-lg border border-border p-3 space-y-2.5">
+                    <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">Üst sayfa ve sütun</div>
+                    <label className="block text-[11px]">
+                      Üst sayfa
+                      <select value={parentId} onChange={(e) => setParentId(e.target.value)} className="mt-1 h-8 w-full rounded border border-border bg-background px-2 text-[11px]">
+                        <option value="">Yok</option>
+                        {pageChoices.map((page) => <option key={page.id} value={page.id}>{page.title}</option>)}
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <span>Sütun içerik (alt sayfalar listelenir)</span>
+                      <input type="checkbox" checked={pillar} onChange={(e) => setPillar(e.target.checked)} />
+                    </label>
                   </div>
 
                   <div className="rounded-lg border border-border p-3 space-y-2.5">

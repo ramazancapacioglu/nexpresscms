@@ -1,6 +1,50 @@
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 
+/** SEO sekmesinde tutulan şema kuralı. Kategori kuralı tür kuralından önce gelir. */
+export interface SchemaPlacement {
+  id: string;
+  name: string;
+  schemaType: string;
+  scope: "page" | "post" | "category";
+  category: string;
+  enabled: boolean;
+}
+
+const SCHEMA_TYPES = new Set(["WebPage", "Article", "BlogPosting", "NewsArticle", "FAQPage", "QAPage", "AboutPage", "ContactPage", "Organization", "SoftwareApplication", "Service", "Product", "HowTo"]);
+
+export function sanitizeSchemaPlacements(value: unknown): SchemaPlacement[] {
+  if (!Array.isArray(value)) return [];
+  const out: SchemaPlacement[] = [];
+  for (const item of value.slice(0, 40)) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    const id = typeof row.id === "string" ? row.id.replace(/[^a-z0-9_-]/gi, "").slice(0, 40) : "";
+    const name = typeof row.name === "string" ? row.name.trim().slice(0, 80) : "";
+    const schemaType = typeof row.schemaType === "string" && SCHEMA_TYPES.has(row.schemaType) ? row.schemaType : "";
+    const scope = row.scope === "post" || row.scope === "category" || row.scope === "page" ? row.scope : "";
+    const category = typeof row.category === "string" ? row.category.trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80) : "";
+    if (!id || !name || !schemaType || !scope) continue;
+    if (scope === "category" && !category) continue;
+    out.push({ id, name, schemaType, scope, category, enabled: row.enabled !== false });
+  }
+  return out;
+}
+
+/** İçeriğe uygulanacak şema kuralı. Özel şema türü (SSS, yazılım, hakkımızda) ezilmez. */
+export function schemaPlacementFor(
+  rules: SchemaPlacement[] | undefined,
+  input: { type: string; schemaType: string; categories: string[] }
+): SchemaPlacement | null {
+  const generic = input.schemaType === "WebPage" || input.schemaType === "Article" || input.schemaType === "BlogPosting";
+  if (!generic) return null;
+  const list = rules ?? [];
+  const byCategory = list.find((rule) => rule.enabled && rule.scope === "category" && input.categories.includes(rule.category));
+  if (byCategory) return byCategory;
+  const scope = input.type === "post" ? "post" : input.type === "page" ? "page" : "";
+  return list.find((rule) => rule.enabled && rule.scope === scope) ?? null;
+}
+
 /**
  * SEO MOTORU AYARLARI — SEO bir eklenti değil, her kayıtta ve her render'da çalışan çekirdek motordur.
  * Bu ayarlar motorun otomatik üretim (meta, canonical, schema, yönlendirme) davranışını yönetir.
@@ -24,6 +68,8 @@ export interface SeoEngineSettings {
    * Kayıt yoksa açık sayılır.
    */
   searchIndexing?: boolean;
+  /** Şema türünün hangi yüzeye uygulanacağı. İçeriğin kendi özel şeması durur. */
+  schemaPlacements?: SchemaPlacement[];
   /** Bot kimliği (`KNOWN_BOTS[].id`) → robots.txt kararı. Kayıt yoksa `allow`. */
   botPolicy?: Record<string, "allow" | "block">;
   /** Arama konsolu site sahipliği doğrulama kodları (yalnızca içerik değeri, etiket değil) */
@@ -223,6 +269,7 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   sameAs: [],
   robotsTxtExtra: "",
   searchIndexing: true,
+  schemaPlacements: [],
   botPolicy: {},
   verification: {},
   integrations: {
@@ -357,8 +404,9 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
     unknown
   >;
   const d = DEFAULT_CUSTOMIZER_SETTINGS;
+  const seoRaw = (r.seo && typeof r.seo === "object" ? r.seo : {}) as Record<string, unknown>;
   return {
-    seo: mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
+    seo: { ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo), schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements) },
     general: mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {
@@ -396,6 +444,12 @@ export interface ResolvedPublishing {
   allowReviews: boolean;
   showShareBar: boolean;
   showShareButtons: boolean;
+  /** Sayfa gövdesinde öne çıkan görsel. Kayıt yoksa gösterilir. */
+  showFeaturedImage: boolean;
+  /** Üst sayfa (`contents.id`). */
+  parentId?: string;
+  /** Bu sayfa bir sütun sayfasıdır; alt sayfalar altında listelenir. */
+  pillar: boolean;
   featuredImageUrl?: string;
   featuredImageAlt?: string;
   featuredImageCaption?: string;
@@ -444,6 +498,9 @@ export function resolvePublishing(
     allowReviews: pub.allowReviews !== false,
     showShareBar: share,
     showShareButtons: share,
+    showFeaturedImage: pub.showFeaturedImage !== false,
+    parentId: typeof pub.parentId === "string" && pub.parentId.startsWith("cnt_") ? pub.parentId : undefined,
+    pillar: pub.pillar === true,
     featuredImageUrl: imgUrl || undefined,
     featuredImageAlt: imgAlt || undefined,
     featuredImageCaption: imgCaption || undefined,

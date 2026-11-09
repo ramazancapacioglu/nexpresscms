@@ -369,6 +369,8 @@ export async function saveCommentReviewAction(input: {
   pros?: string[];
   cons?: string[];
   status?: string;
+  parentId?: string | null;
+  tags?: string[];
 }) {
   await requireUser({ audit: "cms.saveCommentReview" });
   const reqHeaders = await headers();

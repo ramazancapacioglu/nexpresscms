@@ -46,6 +46,9 @@ export function useDualModeEditorSafety(p: ReturnType<typeof useDualModeEditorSa
     p.setAllowComments(f.allowComments);
     p.setAllowReviews(f.allowReviews);
     p.setShowShareButtons(f.showShareButtons);
+    p.setShowFeaturedImage(f.showFeaturedImage !== false);
+    p.setParentId(f.parentId ?? "");
+    p.setPillar(f.pillar === true);
   };
 
   // Açılışta: kaydedilmemiş yerel taslak var mı?

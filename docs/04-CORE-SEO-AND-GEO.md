@@ -40,6 +40,7 @@ Bu modül **açık kaynaklı çekirdeğin (Free Core)** bir parçasıdır ve her
    - Herhangi bir sayfa URL'sine `?format=md` eklendiğinde veya HTTP başlığında `Accept: text/markdown` istendiğinde, veritabanındaki `markdownCache` sütunu 0ms CPU maliyetiyle doğrudan döndürülür. Ara katman isteği `/api/markdown-negotiation` rotasına yazar ve sayfa yolunu `x-nexpress-target-path` başlığında taşır.
 3. **Temel Schema.org (JSON-LD) & Otomatik Blok Şema Türetimi (`deriveAutoSchemaNodes`):**
    - `WebSite`, `Organization`, `BreadcrumbList` ve temel `Article` / `WebPage` şemaları otomatik üretilir.
+   - `/admin/seo/schemas` şema kuralını sayfa, blog veya kategoriye bağlar. İçeriğin kendi özel türü (SSS, yazılım, hakkımızda) kuraldan etkilenmez.
    - İçerikteki `faq_accordion` bloklarından `FAQPage`, `howto_steps` bloklarından `HowTo`, `review_box` bloklarından `Review` ve `video_embed` bloklarından `VideoObject` düğümleri `@graph` içine otomatik eklenir.
 
 ---

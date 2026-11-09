@@ -49,6 +49,9 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
   const [showShareButtons, setShowShareButtons] = useState<boolean>(
     initialPub.showShareButtons
   );
+  const [showFeaturedImage, setShowFeaturedImage] = useState<boolean>(initialPub.showFeaturedImage);
+  const [parentId, setParentId] = useState<string>(initialPub.parentId ?? "");
+  const [pillar, setPillar] = useState<boolean>(initialPub.pillar);
 
   // SEO Meta Alanları
   const [metaTitle, setMetaTitle] = useState<string>(
@@ -77,5 +80,5 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
   const [quickCatParentId, setQuickCatParentId] = useState<string>("");
   const [quickTagName, setQuickTagName] = useState("");
 
-  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, templateId, setTemplateId, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
+  return { ...p, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, showFeaturedImage, setShowFeaturedImage, parentId, setParentId, pillar, setPillar, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, templateId, setTemplateId, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
 }
