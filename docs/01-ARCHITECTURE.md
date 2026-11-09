@@ -60,7 +60,10 @@ nexpresscms/
 │   ├── editor/                      # Blok kütüphanesi ve AI sayfa şeması (metin motoru admin'de TipTap)
 │   ├── seo-core/                    # Ücretsiz teknik SEO, GEO/Hreflang, Sitemap, temel llms.txt
 │   ├── rag/                         # Arama dizini: gömme sağlayıcıları, dizinleme, vektör arama, benzerlik raporu
-│   └── wp-importer/                 # WordPress dışa aktarmasını (WXR) NexPress içeriğine çeviren saf mantık: okuyucu, HTML→blok, plan, SSRF IP denetimi
+│   ├── i18n/                        # Tip güvenli sunucu mesaj kataloğu (tr kaynak, en)
+│   ├── commerce/                    # Katalog, varyasyon, sepet, sipariş ve para birimi tipleri/hesapları
+│   ├── marketplace/                 # Pazar yeri sürücü sözleşmesi (Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti)
+│   └── wp-importer/                 # WordPress dışa aktarmasını (WXR) ve köprü paketini NexPress içeriğine çeviren saf mantık
 ├── plugins-pro/                     # Pro eklentiler. Çekirdeğe yalnızca apps/cms/src/plugins/register.ts bağlar
 │   ├── agentic-seo-pro/             # GEO, ajan API ve içerik operasyonları (src/content-ops)
 │   └── ai-design/                   # AI Tasarım Pro

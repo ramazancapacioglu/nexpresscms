@@ -1,7 +1,7 @@
 import React from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { pluginRegistry, pluginSummary } from "@nexpress/core";
+import { pluginRegistry, pluginSummary, verifyPluginLicenseKey } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
 import { getPluginState } from "@/lib/plugin-state";
@@ -15,13 +15,21 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
   await requireAdminPage();
   const sp = searchParams ? await searchParams : {};
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
-  const siteDna = (await getScopedRepository(siteId).getSite())?.siteDna ?? "";
+  const site = await getScopedRepository(siteId).getSite();
+  const siteDna = site?.siteDna ?? "";
   const tab = sp.tab === "dev" ? "dev" : "installed";
 
   const manifests = pluginRegistry.list();
   const cards: PluginCardData[] = await Promise.all(
     manifests.map(async (m) => {
       const state = await getPluginState(siteId, m);
+      const licenseVerification =
+        m.license === "pro"
+          ? await verifyPluginLicenseKey(state.licenseKey, {
+              pluginId: m.id,
+              siteDomain: site?.domain ?? undefined,
+            })
+          : undefined;
       return {
         id: m.id,
         name: m.name,
@@ -36,6 +44,10 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
         settingFields: m.settings ?? [],
         settingValues: state.settings,
         enabled: state.enabled,
+        licenseKey: state.licenseKey ?? "",
+        licenseStatus: licenseVerification?.status,
+        licenseDaysRemaining: licenseVerification?.daysRemaining ?? null,
+        licenseHolder: licenseVerification?.payload?.holder ?? null,
         modules: m.modules.map((mod) => ({
           id: mod.id,
           label: mod.label,

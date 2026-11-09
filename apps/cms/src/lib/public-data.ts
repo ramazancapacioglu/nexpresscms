@@ -33,10 +33,10 @@ export const getPublicContentBySlug = cachedRead("by-slug", async (siteId: strin
   forVisitor(siteId, locale, await getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true }))
 );
 
-/** Yayındaki içerikler; `private` görünürlüklü içerik hiçbir ziyaretçi/bot yüzeyine (llms, besleme, arama) girmez. */
+/** Yayındaki içerikler; `private`, `password` ve `members_only` görünürlüklü içerik toplu beslemelere (llms, besleme, arama) girmez. */
 export const listPublishedContents = cachedRead("published", async (siteId: string, locale: string) =>
   (await getScopedRepository(siteId).listContents({ locale, status: "published" })).filter(
-    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility !== "private"
+    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility === "public"
   )
 );
 

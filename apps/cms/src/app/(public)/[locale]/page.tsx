@@ -1,4 +1,4 @@
-import { hasDynamicQueryParams, resolvePublishing } from "@nexpress/core";
+import { hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
 import { siteLocaleBase } from "@/lib/locale-url";
 import React from "react";
 import { headers } from "next/headers";
@@ -35,12 +35,13 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const lb = await siteLocaleBase(siteId, locale);
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const site = await getPublicSite(siteId);
+  const localizedSite = resolveLocalizedSiteIdentity(site, locale);
   const themeId = site?.activeThemeId ?? "corporate-aurora";
   const home = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, themeId, locale), locale);
   const seoMeta = home
     ? resolveSeoMeta({
-        siteName: site?.name ?? "NexPress CMS",
-        tagline: site?.tagline,
+        siteName: localizedSite.name,
+        tagline: localizedSite.tagline,
         baseUrl,
         locale,
         path: lb || "/",
@@ -52,7 +53,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         metaDescription: home.metaDescription,
         canonicalUrl: home.canonicalUrl,
         noIndex: home.noIndex,
-        settings: site?.settings?.seo,
+        settings: localizedSite.seo,
       })
     : null;
   return {
@@ -98,6 +99,7 @@ export default async function PublicHomePage({
   await trackAiReferral();
 
   const site = await getPublicSite(siteId);
+  const localizedSite = resolveLocalizedSiteIdentity(site, locale);
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const isInk = activeTheme.id === INK_GRID_ID;
   const isYf = activeTheme.id === YF_THEME_ID;
@@ -111,7 +113,7 @@ export default async function PublicHomePage({
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
-    siteName: site?.name ?? "NexPress CMS",
+    siteName: localizedSite.name,
     siteUrl: baseUrl,
     locale,
     pageUrl: `${baseUrl}${lb}`,
@@ -147,7 +149,7 @@ export default async function PublicHomePage({
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
           form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
           tpl={coverTemplateContext({
-            site: site ? { name: site.name, tagline: site.tagline } : null,
+            site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
             locale,
             lb,
             tokens,

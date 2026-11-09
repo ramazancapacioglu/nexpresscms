@@ -6,7 +6,7 @@ import type { PluginSettingField } from "@nexpress/core";
 import { SiteDnaCard } from "./site-dna-card";
 import { PluginSettingsForm } from "./plugin-settings-form";
 import { PluginSwitch } from "./plugin-switch";
-import { setPluginEnabledAction, setPluginModuleAction } from "./actions";
+import { savePluginLicenseAction, setPluginEnabledAction, setPluginModuleAction } from "./actions";
 
 export interface PluginCardData {
   id: string;
@@ -22,6 +22,10 @@ export interface PluginCardData {
   settingFields: PluginSettingField[];
   settingValues: Record<string, unknown>;
   enabled: boolean;
+  licenseKey?: string;
+  licenseStatus?: "unlicensed" | "valid" | "expired" | "invalid";
+  licenseDaysRemaining?: number | null;
+  licenseHolder?: string | null;
   modules: Array<{
     id: string;
     label: string;
@@ -195,6 +199,69 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
           <p role="status" className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-[12px] text-amber-800 dark:text-amber-300">
             Eklenti kapalı: tüm modülleri bu sitede devre dışıdır. Verileriniz silinmez, tekrar açınca kaldığı yerden devam eder.
           </p>
+        )}
+
+        {plugin.license === "pro" && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-4 py-2.5 text-[12px]">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-[#14151A] dark:text-[#F3F4F6]">Pro Lisans (Ed25519):</span>
+              {plugin.licenseStatus === "valid" ? (
+                <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                  Aktif{plugin.licenseDaysRemaining != null ? ` · ${plugin.licenseDaysRemaining} gün kaldı` : ""}{plugin.licenseHolder ? ` (${plugin.licenseHolder})` : ""}
+                </span>
+              ) : plugin.licenseStatus === "expired" ? (
+                <span className="rounded bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                  Süresi doldu — özellikler duraklatıldı, verileriniz güvende
+                </span>
+              ) : (
+                <span className="rounded bg-[#F4F5F7] dark:bg-[#1C1E24] px-2 py-0.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+                  Geliştirici / Deneme Kipi
+                </span>
+              )}
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                const key = String(fd.get("licenseKey") ?? "");
+                setBusy("license");
+                start(async () => {
+                  try {
+                    const res = await savePluginLicenseAction({ pluginId: plugin.id, licenseKey: key });
+                    if (!res.ok) flash("err", res.error);
+                    else {
+                      patch((p) => ({
+                        ...p,
+                        licenseKey: key.trim(),
+                        licenseStatus: res.verification.status,
+                        licenseDaysRemaining: res.verification.daysRemaining,
+                        licenseHolder: res.verification.payload?.holder ?? null,
+                      }));
+                      flash("ok", key.trim() ? "Lisans anahtarı doğrulandı ve kaydedildi." : "Lisans anahtarı kaldırıldı.");
+                    }
+                  } finally {
+                    setBusy(null);
+                  }
+                });
+              }}
+              className="flex items-center gap-1.5"
+            >
+              <input
+                name="licenseKey"
+                defaultValue={plugin.licenseKey ?? ""}
+                placeholder="nxlic_v1..."
+                aria-label="Pro lisans anahtarı"
+                className="h-7 w-52 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 font-mono text-[11px] outline-none focus:border-[#266DF0]"
+              />
+              <button
+                type="submit"
+                disabled={busy === "license"}
+                className="h-7 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 text-[11px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]"
+              >
+                Kaydet
+              </button>
+            </form>
+          </div>
         )}
 
         {plugin.settingFields.length > 0 && (!plugin.settingsHref || plugin.settingsHref === "/admin/plugins") && (

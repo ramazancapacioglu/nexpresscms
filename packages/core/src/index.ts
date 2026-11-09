@@ -57,3 +57,5 @@ export * from "./widgets";
 export * from "./campaigns";
 export * from "./content-weight";
 export * from "./header-layout";
+export * from "./content-access";
+export * from "./plugin-license";

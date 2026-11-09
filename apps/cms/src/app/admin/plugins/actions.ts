@@ -1,6 +1,6 @@
 "use server";
 
-import { normalizePluginSettings, pluginRegistry } from "@nexpress/core";
+import { normalizePluginSettings, pluginRegistry, verifyPluginLicenseKey, type PluginLicenseVerification } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
@@ -53,4 +53,37 @@ export async function savePluginSettingsAction(input: {
   await recordAudit({ id: admin.sub, email: admin.email }, "plugins.settings", { detail: `${manifest.name}: ayarlar kaydedildi` });
   await commit();
   return { ok: true };
+}
+
+/** Pro eklenti çevrimdışı Ed25519 lisans anahtarını doğrular ve kaydeder (boşsa kaldırır). */
+export async function savePluginLicenseAction(input: {
+  pluginId: string;
+  licenseKey: string;
+}): Promise<{ ok: true; verification: PluginLicenseVerification } | { ok: false; error: string }> {
+  const admin = await requireAdmin("plugins.license");
+  const manifest = pluginRegistry.get(input.pluginId);
+  if (!manifest) return { ok: false, error: "Eklenti bulunamadı." };
+  const cleaned = input.licenseKey.trim();
+  if (!cleaned) {
+    await getScopedRepository(admin.siteId).saveSitePlugin(manifest.id, { licenseKey: null });
+    await recordAudit({ id: admin.sub, email: admin.email }, "plugins.license", { detail: `${manifest.name}: lisans anahtarı kaldırıldı` });
+    await commit();
+    return { ok: true, verification: { status: "unlicensed", payload: null, daysRemaining: null } };
+  }
+  const site = await getScopedRepository(admin.siteId).getSite();
+  const verification = await verifyPluginLicenseKey(cleaned, {
+    pluginId: manifest.id,
+    siteDomain: site?.domain ?? undefined,
+  });
+  if (verification.status === "invalid") {
+    return { ok: false, error: verification.error ?? "Lisans anahtarı doğrulanamadı." };
+  }
+  await getScopedRepository(admin.siteId).saveSitePlugin(manifest.id, { licenseKey: cleaned });
+  await recordAudit(
+    { id: admin.sub, email: admin.email },
+    "plugins.license",
+    { detail: `${manifest.name}: lisans kaydedildi (${verification.status})` }
+  );
+  await commit();
+  return { ok: true, verification };
 }

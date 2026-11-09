@@ -45,7 +45,7 @@ Ayrı `@nexpress-pro/content-ops` paketi yok. 2026-10-28'de `agentic-seo` içine
 | Yetenek | Durum |
 | :--- | :--- |
 | WebMCP okuma araçları, `llms-full.txt`, `ai-sitemap.json`, entity graph kancası | Çalışır, veritabanından beslenir |
-| `nexpress_create_lead` | Anahtar korumalı (`MCP_AGENT_KEY`, bkz. doc 11); kayıt henüz kalıcı değil |
+| `nexpress_create_lead` | Anahtar korumalı (`MCP_AGENT_KEY`, bkz. doc 11); `agent_requests` tablosuna kalıcı yazılır (`/admin/requests`), saatte 30 sınırı ve e-posta bildirimi vardır |
 | AI bot paneli (Bot Tarama Günlüğü) | **Gerçek veri** (`bot_daily_stats`, son 30 gün; bkz. `docs/04` §7) |
 | Kanibalizasyon / benzer içerik / iç bağlantı (Co-Pilot) | **Gerçek veri** (`@nexpress/rag` dizini, bkz. `docs/04` §9) |
 | Soru havuzu (GSC/Bing/Yandex/Serper) | **Canlı kayıt** kümelenir ve taslak açar. Tohum yazılmaz. Gömme kümesi yok |

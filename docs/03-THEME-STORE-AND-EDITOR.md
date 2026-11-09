@@ -108,7 +108,7 @@ Bu dört parça sayfa bloklarından ayrıdır. Kayıt `navigation_layouts` satı
 2. **Bağlam Kilitli (Context-Locked) Editör (`/admin/contents`):**
    - Editör üst barında karışık tür değiştiriciler veya "+ Yeni Sayfa / + Yeni Blog" düğmeleri yer almaz; kullanıcı Sayfalardan geldiyse editör **Sayfa Düzenleyici** (`← Sayfalara Dön`), Bloglardan geldiyse **Blog Yazısı Düzenleyici** (`← Blog Yazılarına Dön`) olarak kilitlenir.
 3. **Tema özelleştirici (`/admin/themes`):**
-   - 5 adet tek tıkla Global Renk Paleti (`GLOBAL_COLOR_PALETTES`), 4 adet Global Tipografi Çifti (`GLOBAL_TYPOGRAPHY_PAIRS`), kapsayıcı/makale genişliği, buton geometrisi, yapışkan header/breadcrumb kontrolleri ve canlı önizleme kanvası içerir.
+   - 6 adet tek tıkla Global Renk Paleti (`GLOBAL_COLOR_PALETTES`), 4 adet Global Tipografi Çifti (`GLOBAL_TYPOGRAPHY_PAIRS`), kapsayıcı/makale genişliği, buton geometrisi, yapışkan header/breadcrumb kontrolleri ve canlı önizleme kanvası içerir.
 
 ## Ek (2026-11-02): Medya kitaplığı, medya seçici ve elle meta alanları
 

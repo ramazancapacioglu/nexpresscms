@@ -9,7 +9,7 @@
 | **L1** `@nexpress/i18n`: tip güvenli katalog (`tr` kaynak, `en`), `{değişken}` + çoğul (`Intl.PluralRules`), bölge ve Türkçe yedeği, "kataloglar aynı anahtarlara sahip" testi | ✅ Ziyaretçi sayfaları (içerik, arama, mağaza, ana sayfa, üstbar/altbilgi sabitleri) ve **tema blok metinleri** (`RscBlockRenderer locale`) anahtara taşındı |
 | **L2** `<head>`: dil başına canonical, karşılıklı `hreflang` + `x-default` (yalnızca yayındaki çeviriler), `<html lang dir>` (RTL tespiti), `inLanguage`, sitemap hreflang (bölgesiz `en`) | ✅ |
 | **L2** `slugify(text, locale)` (tr, de, es, fr, pt, nl, pl, da, sv, no + NFKD yedeği) | ✅ |
-| **L2** **SEO dil profilleri** (`seoLanguageProfile`: küçük harf kuralı yalnızca tr/az'da, dil başına okunabilirlik eşiği; analiz editörde ve kayıtta dili kullanır) | ✅ Dil başına site adı/slogan/SEO şablonu hâlâ tek (kalan) |
+| **L2** **SEO dil profilleri** (`seoLanguageProfile`: küçük harf kuralı yalnızca tr/az'da, dil başına okunabilirlik eşiği; analiz editörde ve kayıtta dili kullanır) ve **dil başına site kimliği** (`resolveLocalizedSiteIdentity`: `sites.settings.general.locales[locale]` altında dil başına site adı, slogan, `titleTemplate` ve `homeTitleTemplate`) | ✅ |
 | **L3** Çeviri yaşam döngüsü: `content_translations.translation_status / source_locale / source_hash` (göç `0004`), kaynaktan çeviri (taslak), durumlar yok/taslak/yayında/kaynak değişti, çeviri silme; ikincil dil kaydı içerik satırını ezmez | ✅ Editör › Yayın & Kat. › **Diller** şeridi; Ayarlar › **Site dilleri** |
 | **L3** **Eksik çeviri raporu** `/admin/translations` (içerik × dil matrisi, dil başına toplamlar, tek tıkla oluştur) | ✅ |
 | **L3** **Çeviriye özgü öznitelikler** (`content_translations.attributes`, göç `0005`): öne çıkan görsel alt/alt yazı, odak anahtar kelime, **slug geçmişi** dil başınadır (eskiden tek paylaşılan slug geçmişi diller arası karışıyordu) | ✅ |
@@ -26,7 +26,7 @@
 
 **Çıkış ölçütü durumu:** `en` örnek verisiyle uçtan uca doğrulandı (dil ekle → çeviri oluştur → taslak ziyaretçiye 404 → yayınla → hreflang her iki yönde, `lang="en"`, `/zzz` 404). Kataloğu eksik anahtarla **derleme** hatası: `Messages` tipi (`en`'de eksik anahtar tsc'yi kırar) + test.
 
-**Bu fazda bulunan ve düzeltilen güvenlik açığı:** ziyaretçi sayfaları taslak/zamanlanmış/arşivlenmiş ve `private` içeriği adresini bilene gösteriyordu (yalnızca sitemap süzüyordu). `resolveContentBySlug/getContentBySlug` `publicOnly` seçeneği, `listPublishedContents` `private` süzgeci ve MCP `fetch_markdown` düzeltildi (testli). **Açık:** `password` / `members_only` görünürlük için erişim denetimi (oturum/parola formu) hâlâ yok.
+**Bu fazda bulunan ve düzeltilen güvenlik açığı:** ziyaretçi sayfaları taslak/zamanlanmış/arşivlenmiş ve `private` içeriği adresini bilene gösteriyordu (yalnızca sitemap süzüyordu). `resolveContentBySlug/getContentBySlug` `publicOnly` seçeneği, `listPublishedContents` `private` süzgeci ve MCP `fetch_markdown` düzeltildi (testli). **2026-11-09 güncellemesi:** `password` ve `members_only` görünürlük için 0-KB RSC erişim kapısı (`<ContentAccessGate>`, `/api/content-access`, `HttpOnly` HMAC çerezi ve `?format=md` 403 koruması) tamamlandı (`packages/core/src/content-access.ts`).
 
 
 ## 1. Bugün ne var, ne yok?

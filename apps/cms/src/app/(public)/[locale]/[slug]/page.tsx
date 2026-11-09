@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, resolvePublishing, resolveSiteSettings, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentWidthStyle, hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -23,6 +23,7 @@ import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
+import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
 import { authorSlug } from "@/lib/author-slug";
 
 function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
@@ -59,10 +60,11 @@ export async function generateMetadata({
   const content = resolved.content;
   const pub = resolvePublishing(content.schemaAttributes);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
   const seoMeta = resolveSeoMeta({
-    siteName: site?.name ?? "NexPress CMS",
-    tagline: site?.tagline,
+    siteName: localizedSite.name,
+    tagline: localizedSite.tagline,
     baseUrl,
     locale,
     path: `${lb}/${content.slug}`,
@@ -76,8 +78,8 @@ export async function generateMetadata({
     imageUrl:
       content.featuredImage ??
       pub.featuredImageUrl ??
-      `/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(site?.name ?? "")}`,
-    settings: site?.settings?.seo,
+      `/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
+    settings: localizedSite.seo,
   });
 
   return {
@@ -111,7 +113,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string }>;
+  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string }>;
 }) {
   const { locale, slug } = await params;
   const sp = await searchParams;
@@ -164,6 +166,7 @@ export default async function PublicDynamicContentPage({
   const tokens = (await getPreviewTheme(siteId))?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}${lb}/${content.slug}`;
+  const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
   const placement = schemaPlacementFor(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
     type: content.type,
@@ -172,11 +175,11 @@ export default async function PublicDynamicContentPage({
   });
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
-    siteName: site?.name ?? "NexPress CMS",
+    siteName: localizedSite.name,
     siteUrl: baseUrl,
     locale,
     pageUrl,
-    autoSchema: site?.settings?.seo?.autoSchema !== false,
+    autoSchema: localizedSite.seo.autoSchema !== false,
     aggregateRating:
       reviewEntries.length > 0
         ? {
@@ -199,7 +202,7 @@ export default async function PublicDynamicContentPage({
 
   const t = createTranslator(locale);
   const cover = coverTemplateContext({
-    site: site ? { name: site.name, tagline: site.tagline } : null,
+    site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
     locale,
     lb,
     tokens,
@@ -210,11 +213,40 @@ export default async function PublicDynamicContentPage({
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
   const canEdit = Boolean(await getSession());
+  const access = await checkVisitorContentAccess({
+    siteId,
+    contentId: content.id,
+    status: content.status,
+    visibility: pub.visibility,
+    accessPassword: pub.accessPassword,
+    hasSession: canEdit,
+    isDraftPreview: Boolean(draft),
+  });
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
   const formCtx = { forms: pageForms, path: `${lb}/${content.slug}`, token: createFormToken(`${lb}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
+
+  if (!access.allowed && access.gate !== "none") {
+    return (
+      <>
+        {banner}
+        {switcher}
+        <ContentAccessGate
+          gate={access.gate}
+          contentId={content.id}
+          locale={locale}
+          slug={content.slug}
+          pagePath={`${lb}/${content.slug}`}
+          title={content.title}
+          tokens={tokens}
+          t={t}
+          hasError={sp.pwd === "error"}
+        />
+      </>
+    );
+  }
 
   // Tema oluşturucu şablonu (sayfa / yazı / ürün): tam genişlik tuval tasarımlarında uygulanmaz; sayfada "none" seçilmişse yerleşik görünüm
   const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
@@ -431,51 +463,13 @@ export default async function PublicDynamicContentPage({
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}
       {showShareBar && (
-        <section
-          style={{ borderRadius: tokens.geometry.borderRadius }}
-          className="border border-nx-line bg-nx-subtle p-5 flex flex-wrap items-center justify-between gap-4"
-        >
-          <div className="space-y-0.5">
-            <div className="text-xs font-bold uppercase tracking-wider text-nx-muted">
-              {t("content.shareHeading")}
-            </div>
-            <div className="text-sm font-semibold text-nx-fg">
-              {content.title}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(content.title)}&url=${encodeURIComponent(pageUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
-            >
-              𝕏 (Twitter)
-            </a>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
-            >
-              LinkedIn
-            </a>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(content.title + " " + pageUrl)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
-            >
-              WhatsApp
-            </a>
-            <Link
-              href={`${lb}/${content.slug}?format=md`}
-              className="rounded-lg bg-slate-900 px-3.5 py-2 text-white hover:bg-slate-800 font-mono"
-            >
-              Markdown (.md)
-            </Link>
-          </div>
-        </section>
+        <ContentShareBar
+          title={content.title}
+          pageUrl={pageUrl}
+          markdownHref={`${lb}/${content.slug}?format=md`}
+          borderRadius={tokens.geometry.borderRadius}
+          shareHeading={t("content.shareHeading")}
+        />
       )}
 
       {pillarList}

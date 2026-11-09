@@ -1,6 +1,7 @@
 "use server";
 
 import { getThemeManifest } from "@nexpress/themes";
+import { resolveSiteSettings, type LocalizedSiteIdentity } from "@nexpress/core";
 import { revalidatePath } from "@/lib/cache";
 import { getScopedRepository, getSiteIdentityRepository, getSiteResetRepository, type ContentWipe } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
@@ -40,6 +41,36 @@ export async function saveSettingsAction(input: {
   await recordAudit({ id: admin.sub, email: admin.email }, "settings.saved", { detail: `site adı: ${name}` });
   await revalidatePath("/admin/settings");
   await revalidatePath("/tr");
+  return { ok: true };
+}
+
+/** İkincil diller için site adı, slogan ve SEO başlık şablonunu kaydeder. */
+export async function saveLocalizedIdentitiesAction(input: {
+  locales: Record<string, LocalizedSiteIdentity>;
+}): Promise<SettingsResult> {
+  const admin = await requireAdmin("settings.locales");
+  const repo = getScopedRepository(admin.siteId);
+  const site = await repo.getSite();
+  const currentGeneral = resolveSiteSettings(site?.settings).general;
+  const cleaned: Record<string, LocalizedSiteIdentity> = {};
+  for (const [code, val] of Object.entries(input.locales ?? {})) {
+    const key = code.trim().toLowerCase().slice(0, 12);
+    if (!key) continue;
+    cleaned[key] = {
+      name: (val.name ?? "").trim().slice(0, 80),
+      tagline: (val.tagline ?? "").trim().slice(0, 160),
+      titleTemplate: (val.titleTemplate ?? "").trim().slice(0, 120),
+      homeTitleTemplate: (val.homeTitleTemplate ?? "").trim().slice(0, 120),
+    };
+  }
+  await repo.saveSiteSettings({
+    general: { ...currentGeneral, locales: cleaned },
+  });
+  await recordAudit({ id: admin.sub, email: admin.email }, "settings.locales", {
+    detail: `dil kimlikleri güncellendi (${Object.keys(cleaned).join(", ") || "varsayılan"})`,
+  });
+  await revalidatePath("/admin/settings");
+  await revalidatePath("/tr", "layout");
   return { ok: true };
 }
 

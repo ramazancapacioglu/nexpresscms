@@ -16,6 +16,8 @@ export interface SitePluginPatch {
   modules?: Record<string, boolean>;
   /** Verilen ayarlar mevcutla birleştirilir */
   settings?: Record<string, unknown>;
+  /** Çevrimdışı Ed25519 lisans belirteci (`null` ise kaldırılır) */
+  licenseKey?: string | null;
 }
 
 /** Kiracı başına eklenti durumu. Satır yoksa çağıran manifest varsayılanını kullanır. */
@@ -48,7 +50,7 @@ export class CmsPluginRepository extends CmsLifecycleRepository {
       enabled: patch.enabled ?? current?.enabled ?? true,
       modules: { ...(current?.modules ?? {}), ...(patch.modules ?? {}) },
       settings: { ...(current?.settings ?? {}), ...(patch.settings ?? {}) },
-      licenseKey: current?.licenseKey ?? null,
+      licenseKey: patch.licenseKey !== undefined ? patch.licenseKey : (current?.licenseKey ?? null),
       createdAt: now,
       updatedAt: now,
     };

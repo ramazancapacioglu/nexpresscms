@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   resolveCommerceSettings,
-  type CommerceAddress,
   type CommerceOrderDto,
   type CommerceOrderItemDto,
   type CommerceOrderStatus,
@@ -14,73 +13,8 @@ import {
 import { getCmsContext, resolveSiteSettings } from "@nexpress/core";
 import type { DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
-import { backendFor, type Tables } from "./dialect";
-
-function mapProduct(row: Tables["commerceProducts"]["$inferSelect"]): CommerceProductDto {
-  return {
-    id: row.id,
-    siteId: row.siteId,
-    contentId: row.contentId,
-    sku: row.sku,
-    slug: row.slug,
-    name: row.name,
-    shortDescription: row.shortDescription,
-    descriptionHtml: row.descriptionHtml,
-    priceCents: row.priceCents,
-    compareAtCents: row.compareAtCents,
-    currency: row.currency,
-    stockQuantity: row.stockQuantity,
-    stockStatus: row.stockStatus as CommerceProductDto["stockStatus"],
-    status: row.status as CommerceProductDto["status"],
-    imageUrl: row.imageUrl,
-    galleryUrls: row.galleryUrls ?? [],
-    productKind: row.productKind === "variable" ? "variable" : "simple",
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
-
-function mapOrder(row: Tables["commerceOrders"]["$inferSelect"]): CommerceOrderDto {
-  return {
-    id: row.id,
-    siteId: row.siteId,
-    orderNumber: row.orderNumber,
-    status: row.status as CommerceOrderStatus,
-    customerName: row.customerName,
-    customerEmail: row.customerEmail,
-    customerPhone: row.customerPhone,
-    shippingAddress: row.shippingAddress as unknown as CommerceAddress,
-    billingAddress: (row.billingAddress as unknown as CommerceAddress | null) ?? null,
-    subtotalCents: row.subtotalCents,
-    shippingCents: row.shippingCents,
-    taxCents: row.taxCents,
-    totalCents: row.totalCents,
-    currency: row.currency,
-    customerNote: row.customerNote,
-    source: row.source === "marketplace" ? "marketplace" : "site",
-    channelId: row.channelId,
-    customerId: row.customerId,
-    couponCode: row.couponCode,
-    discountCents: row.discountCents,
-    shippingMethodId: row.shippingMethodId,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
-
-function mapOrderItem(row: Tables["commerceOrderItems"]["$inferSelect"]): CommerceOrderItemDto {
-  return {
-    id: row.id,
-    siteId: row.siteId,
-    orderId: row.orderId,
-    productId: row.productId,
-    sku: row.sku,
-    title: row.title,
-    quantity: row.quantity,
-    unitPriceCents: row.unitPriceCents,
-    lineTotalCents: row.lineTotalCents,
-  };
-}
+import { mapOrder, mapOrderItem, mapProduct } from "./commerce-mappers";
+import { backendFor } from "./dialect";
 
 export class CommerceRepository {
   public readonly siteId: string;

@@ -1,3 +1,5 @@
+import { isLicenseKeyExpiredOrInvalid } from "./plugin-license";
+
 /**
  * Eklenti manifestleri ve çalışma zamanı kapısı (saf mantık + küçük kayıt defteri).
  * Çekirdek "Pro" kavramını bilmez: `license` yalnızca etikettir (AGENTS.md kural 4).
@@ -60,25 +62,37 @@ export interface PluginRow {
   enabled: boolean;
   modules: Record<string, boolean>;
   settings?: Record<string, unknown>;
+  licenseKey?: string | null;
 }
 
 export interface PluginState {
   enabled: boolean;
   modules: Record<string, boolean>;
   settings: Record<string, unknown>;
+  licenseKey?: string | null;
+  licenseBlocked?: boolean;
 }
 
 /** Kayıt yoksa manifest varsayılanları geçerlidir: mevcut kurulumlar davranış değiştirmez. */
 export function resolvePluginState(manifest: PluginManifest, row?: PluginRow | null): PluginState {
   const modules: Record<string, boolean> = {};
   for (const m of manifest.modules) modules[m.id] = row?.modules?.[m.id] ?? m.defaultEnabled;
-  return { enabled: manifest.builtin ? true : (row?.enabled ?? true), modules, settings: row?.settings ?? {} };
+  const licenseKey = row?.licenseKey ?? null;
+  const licenseBlocked = isLicenseKeyExpiredOrInvalid(licenseKey, manifest.id);
+  return {
+    enabled: manifest.builtin ? true : (row?.enabled ?? true),
+    modules,
+    settings: row?.settings ?? {},
+    licenseKey,
+    licenseBlocked,
+  };
 }
 
-/** Eklenti açık, modül açık ve modül gerçekten taşınmış mı? */
+/** Eklenti açık, lisans engeli yok, modül açık ve modül gerçekten taşınmış mı? */
 export function isModuleActive(manifest: PluginManifest, state: PluginState, moduleId: string): boolean {
   const def = manifest.modules.find((m) => m.id === moduleId);
   if (!def || def.status !== "ready") return false;
+  if (state.licenseBlocked) return false;
   return state.enabled && state.modules[moduleId] === true;
 }
 

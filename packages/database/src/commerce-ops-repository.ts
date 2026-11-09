@@ -18,6 +18,7 @@ import type {
 } from "@nexpress/commerce";
 import { getCmsContext, type DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
+import { evaluateCouponQuote } from "./commerce-mappers";
 import { backendFor, upsertScoped } from "./dialect";
 
 export class CommerceOpsRepository {
@@ -326,27 +327,9 @@ export class CommerceOpsRepository {
   }
 
   public async quoteCoupon(code: string, subtotalCents: number, customerId?: string | null) {
-    const coupon = (await this.listCoupons()).find((row) => row.active && row.code === code.trim().toUpperCase());
-    if (!coupon) return { discountCents: 0, coupon: null as CommerceCouponDto | null, message: "Kupon bulunamadı." };
-    if (coupon.usageLimit != null && coupon.usedCount >= coupon.usageLimit) {
-      return { discountCents: 0, coupon, message: "Kupon kullanım limiti doldu." };
-    }
-    if (coupon.customerId && coupon.customerId !== customerId) {
-      return { discountCents: 0, coupon, message: "Kupon bu müşteriye tanımlı değil." };
-    }
-    if (coupon.groupId && customerId) {
-      const customer = await this.getCustomer(customerId);
-      if (customer?.groupId !== coupon.groupId) {
-        return { discountCents: 0, coupon, message: "Kupon bu müşteri grubuna tanımlı değil." };
-      }
-    }
-    const discountCents =
-      coupon.discountType === "percent"
-        ? Math.round((subtotalCents * coupon.value) / 100)
-        : coupon.discountType === "fixed"
-          ? coupon.value
-          : 0;
-    return { discountCents: Math.min(subtotalCents, discountCents), coupon, message: "Kupon uygulandı." };
+    const coupon = (await this.listCoupons()).find((row) => row.active && row.code === code.trim().toUpperCase()) ?? null;
+    const customer = coupon?.groupId && customerId ? await this.getCustomer(customerId) : null;
+    return evaluateCouponQuote(coupon, subtotalCents, customerId, customer?.groupId ?? null);
   }
 
   public async consumeCoupon(code: string) {

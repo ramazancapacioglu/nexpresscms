@@ -34,7 +34,11 @@ export default async function AdminSettingsPage() {
         mediaDir: mediaRoot(),
       }}
     />
-    <LocalesCard initial={site?.supportedLocales ?? ["tr"]} defaultLocale={site?.defaultLocale ?? "tr"} />
+    <LocalesCard
+      initial={site?.supportedLocales ?? ["tr"]}
+      defaultLocale={site?.defaultLocale ?? "tr"}
+      initialIdentities={general.locales ?? {}}
+    />
     <SiteOps maintenance={{ enabled: general.maintenanceEnabled, message: general.maintenanceMessage }} />
     </div>
   );
