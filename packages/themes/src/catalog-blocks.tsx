@@ -19,7 +19,15 @@ function rows(value: unknown): Array<Record<string, unknown>> {
 function safeUrl(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const url = value.trim();
-  if (url.startsWith("/") || url.startsWith("#") || url.startsWith("data:image/")) return url;
+  if (
+    (url.startsWith("/") && !url.startsWith("//")) ||
+    url.startsWith("#") ||
+    url.startsWith("data:image/") ||
+    url.startsWith("tel:") ||
+    url.startsWith("mailto:")
+  ) {
+    return url;
+  }
   try {
     const parsed = new URL(url);
     if (parsed.protocol === "http:" || parsed.protocol === "https:") return url;
@@ -52,9 +60,17 @@ export function renderStudioCatalogBlock(
   switch (block.type) {
     case "info_box": {
       const iconPath = typeof p.icon === "string" ? ICON_PATHS[p.icon] : undefined;
-      return (
-        <article style={box} className="border bg-nx-card p-5">
-          {iconPath ? (
+      const imgUrl = safeUrl(p.image);
+      const href = safeUrl(p.href);
+      const kicker = text(p.kicker);
+      const bodyText = text(p.text, text(p.description));
+      const cardContent = (
+        <>
+          {imgUrl ? (
+            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-nx-subtle p-1.5">
+              <img src={imgUrl} alt={text(p.title)} loading="lazy" className="h-full w-full object-contain" />
+            </div>
+          ) : iconPath ? (
             <div
               style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }}
               className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg"
@@ -64,47 +80,90 @@ export function renderStudioCatalogBlock(
               </svg>
             </div>
           ) : null}
-          <div className="text-[11px] font-bold uppercase tracking-wider text-nx-link">
-            {text(p.kicker, "Bilgi")}
-          </div>
-          <h3 className="mt-1 text-lg font-bold text-nx-fg">{text(p.title, "Bilgi kutusu")}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-nx-soft">{text(p.text)}</p>
-          {safeUrl(p.href) ? (
-            <a href={safeUrl(p.href)!} className="mt-3 inline-block text-sm font-semibold text-nx-link">
-              {text(p.linkLabel, t("blocks.readMore"))}
-            </a>
+          {kicker ? (
+            <div className="text-[11px] font-bold uppercase tracking-wider text-nx-link">
+              {kicker}
+            </div>
           ) : null}
+          <h3 className="mt-1 text-base md:text-lg font-bold text-nx-fg">{text(p.title, "Bilgi kutusu")}</h3>
+          {bodyText ? <p className="mt-1.5 text-sm leading-relaxed text-nx-soft">{bodyText}</p> : null}
+          {href && text(p.linkLabel) ? (
+            <span className="mt-3 inline-block text-sm font-semibold text-nx-link">
+              {text(p.linkLabel)}
+            </span>
+          ) : null}
+        </>
+      );
+      return href ? (
+        <a href={href} style={box} className="block h-full border bg-nx-card p-5 transition hover:-translate-y-0.5 hover:shadow-md no-underline">
+          {cardContent}
+        </a>
+      ) : (
+        <article style={box} className="h-full border bg-nx-card p-5">
+          {cardContent}
         </article>
       );
     }
 
-    case "icon_list":
+    case "icon_list": {
+      const colCount = typeof p.columns === "number" ? p.columns : 1;
+      const listGridClass =
+        colCount === 3
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
+          : colCount === 2
+            ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5"
+            : "space-y-2.5";
       return (
-        <ul className="space-y-2.5">
+        <ul className={listGridClass}>
           {items.map((item, index) => {
             const iconPath = typeof item.icon === "string" ? ICON_PATHS[item.icon] : undefined;
+            const href = safeUrl(item.href);
+            const label = text(item.title, text(item.text));
+            const sub = text(item.text, text(item.description));
+            const hasSub = Boolean(sub && text(item.title) && sub !== label);
+            const badge = (
+              <span
+                style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }}
+                className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+              >
+                {iconPath ? (
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d={iconPath} />
+                  </svg>
+                ) : (
+                  text(item.mark, "✓")
+                )}
+              </span>
+            );
             return (
-              <li key={index} className="flex gap-3 text-sm text-nx-soft">
-                <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
-                  {iconPath ? (
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d={iconPath} />
-                    </svg>
-                  ) : (
-                    text(item.mark, "✓")
-                  )}
-                </span>
-                <span>
-                  <strong className="text-nx-fg">{text(item.title, text(item.text))}</strong>
-                  {text(item.text, text(item.description)) && text(item.title) ? (
-                    <span className="block text-nx-soft">{text(item.text, text(item.description))}</span>
-                  ) : null}
-                </span>
+              <li key={index} className="list-none">
+                {href ? (
+                  <a
+                    href={href}
+                    style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+                    className="group flex items-center gap-2.5 border bg-nx-card px-3.5 py-2.5 text-sm text-nx-fg transition hover:shadow-xs no-underline"
+                  >
+                    {badge}
+                    <span className="min-w-0 flex-1">
+                      <strong className="font-semibold text-nx-fg group-hover:text-nx-link transition-colors">{label}</strong>
+                      {hasSub ? <span className="block text-xs text-nx-soft">{sub}</span> : null}
+                    </span>
+                  </a>
+                ) : (
+                  <div className="flex items-start gap-2.5 text-sm text-nx-soft">
+                    {badge}
+                    <span className="min-w-0 flex-1">
+                      <strong className="font-semibold text-nx-fg">{label}</strong>
+                      {hasSub ? <span className="block text-nx-soft">{sub}</span> : null}
+                    </span>
+                  </div>
+                )}
               </li>
             );
           })}
         </ul>
       );
+    }
 
     case "tabs":
       return <TabsView block={block} tokens={tokens} renderChild={renderChild} />;
@@ -297,9 +356,35 @@ export function renderStudioCatalogBlock(
         </div>
       );
 
-    case "gallery":
+    case "gallery": {
+      if (p.variant === "collage" && items.length === 3) {
+        const first = items[0]!;
+        const second = items[1]!;
+        const third = items[2]!;
+        return (
+          <div className="grid grid-cols-2 gap-3.5 items-center">
+            <figure style={box} className="overflow-hidden border bg-nx-subtle shadow-sm">
+              {safeUrl(first.url) ? (
+                <ResponsiveImage focal={focal} src={safeUrl(first.url)!} alt={text(first.alt)} sizes="(min-width: 768px) 25vw, 50vw" className="w-full h-auto object-cover" />
+              ) : null}
+            </figure>
+            <div className="space-y-3.5">
+              {[second, third].map((item, idx) => {
+                const src = safeUrl(item.url);
+                return (
+                  <figure key={idx} style={box} className="overflow-hidden border bg-nx-subtle shadow-sm">
+                    {src ? (
+                      <ResponsiveImage focal={focal} src={src} alt={text(item.alt)} sizes="(min-width: 768px) 25vw, 50vw" className="w-full h-auto object-cover" />
+                    ) : null}
+                  </figure>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
       return (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <div className={`grid grid-cols-2 gap-3 ${items.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
           {items.map((item, index) => {
             const src = safeUrl(item.url);
             return (
@@ -313,6 +398,7 @@ export function renderStudioCatalogBlock(
           })}
         </div>
       );
+    }
 
     case "image_overlay": {
       const src = safeUrl(p.url);
@@ -454,8 +540,23 @@ export function renderStudioCatalogBlock(
     }
 
     case "map_embed": {
-      const query = text(p.query, "İstanbul");
+      const query = text(p.query, "İzmir");
+      const rawEmbed = typeof p.embedUrl === "string" ? p.embedUrl.trim() : "";
+      const isSafeMapEmbed = /^https:\/\/(?:www\.)?google\.com\/maps|^https:\/\/maps\.google\.com\/maps/i.test(rawEmbed);
       const href = `https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`;
+      if (isSafeMapEmbed) {
+        return (
+          <figure style={box} className="overflow-hidden border bg-nx-subtle shadow-xs">
+            <iframe
+              src={rawEmbed}
+              title={text(p.title, query)}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-80 w-full border-0"
+            />
+          </figure>
+        );
+      }
       return (
         <a href={href} style={box} className="block border bg-nx-subtle p-5">
           <div className="text-[11px] font-bold uppercase tracking-wider text-nx-muted">Konum</div>

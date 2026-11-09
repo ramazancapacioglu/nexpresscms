@@ -1,7 +1,7 @@
 import type { PluginManifest } from "@nexpress/core";
 
 /** Panel eklentisi ile WordPress eklenti başlığı aynı sürümü taşır. */
-export const WP_BRIDGE_VERSION = "0.2.3";
+export const WP_BRIDGE_VERSION = "0.3.0";
 
 export const WP_BRIDGE_PLUGIN_ID = "@nexpress/plugin-wp-bridge";
 

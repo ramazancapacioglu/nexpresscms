@@ -36,8 +36,8 @@ export async function redrawFlatPages(siteId: string, limit = 4): Promise<{ draw
   let note = "";
   const remembered: string[] = [];
   for (const row of targets.slice(0, limit)) {
-    const prompt = `Sayfa başlığı: ${row.title}\nMevcut metni koru. Yeni ürün, fiyat veya iddia ekleme. Metni bölüm, sütun ve kart olarak yerleştir.\n\n${textOf(row.blocks ?? []).slice(0, 1600)}`;
-    const result = await pluginActions.run("ai-design.generate", { siteId, userId: "wp-bridge", input: { mode: "section", prompt } });
+    const prompt = `Sayfa başlığı: ${row.title}\nMevcut metni ve ürün/modül adlarını koru. Yeni ürün, fiyat veya iddia ekleme. İçeriği taşma ve kayma olmayacak şekilde dengeli bölümlere (hero, tldr_box, bento_features, icon_list, faq_accordion, cta_banner) yerleştir.\n\n${textOf(row.blocks ?? []).slice(0, 2400)}`;
+    const result = await pluginActions.run("ai-design.generate", { siteId, userId: "wp-bridge", input: { mode: "page", prompt } });
     if (!result.ok) {
       note = result.error;
       break;

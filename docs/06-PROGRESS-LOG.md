@@ -21,6 +21,24 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — WordPress Köprüsü v0.3.0: Zengin Blok & Satır İçi CSS Derleyicisi, Birleşik Kart/Kolaj/Liste Sentezi ve Tam Veri Kümesi Yeniden Derleyici
+- **Zengin Blok ve Satır İçi `<style>` Derleyicisi (`packages/wp-importer/src/rich-layout.ts`, `rich-layout-styles.ts`, `html.ts`, `bridge-parse.ts`, `bridge-draw.ts`):**
+  - `extractRichStyles` ile satır içi `<style>` blokları DOM ayrıştırmasından önce okunur; `@media (max-width: ...)` kuralları ayıklanarak masaüstü ızgara oranları (`65%/35%` → `8+4`, `35%/65%` → `4+8`, `repeat(2, ...)` → `6+6`, `repeat(3, ...)` → `4+4+4`, `repeat(4, ...)` → `3+3+3+3`, `minmax(0, 1fr)` → tek sütun dikey akış) doğru tespit edilir.
+  - `--global-palette1..9` değişkenleri gerçek hex renklerine çevrilir; koyu zeminli satırlarda (`isDarkColor`) otomatik `textColor: "#ffffff"` atanır; sütun içindeki `background-image: url(...)` tanımları doğrudan `image_figure` bloğuna dönüştürülür.
+  - Tek sütunlu dış sarmalayıcı satırlar (`kt-has-1-columns`, `kt-row-layout-row`, `singleColumn: true`) iç içe sütun (`column` içinde `columns`) kırılmasına yol açmamak için düz `section` olarak açılır; çift sarılmış sütun divleri düzleştirilir.
+  - Çoklu bilgi kutusu satırları (2–12 kart) görsel, başlık, açıklama ve bağlantılarıyla tek bir `bento_features` (`columns: 2 | 3 | 4`) bloğuna; ikonlu kontrol listeleri çok sütunlu ve bağlantılı `icon_list` (`columns: 1 | 2 | 3`) bloğuna; 3'lü asimetrik görsel grupları `gallery` (`variant: "collage"`) bloğuna; akordeon panelleri `faq_accordion` bloğuna; gelişmiş formlar `form_block` bloğuna; harita kapsayıcıları `map_embed` (`embedUrl`) bloğuna; senkronize alt çağrı bantları `cta_banner` bloğuna dönüştürülür.
+  - `bridge-parse.ts` içindeki `html` alanı sınırı `100.000` karakterden `350.000` karaktere çıkarılarak uzun ürün sayfalarının (182 KB+) kesilmesi önlendi; `html.ts` içinde blok eleman (`h1-h6`, `p`, `div`) saran `<a>` etiketlerinin başlık ve paragrafı tek satırda yapıştırması giderildi (`packages/wp-importer/test/rich-layout.test.ts` — 22/22 test geçti).
+- **0-KB RSC Tema Blok Görünümleri (`packages/themes/src/blocks-marketing.tsx`, `catalog-blocks.tsx`):**
+  - `bento_features`: `columns: 2 | 3 | 4`, `subtitle`, kart görseli (`item.image`) ve tıklanabilir kart bağlantısı (`item.href`) eklendi.
+  - `info_box`: `image` desteği, boş `kicker` gizleme ve `tel:`/`mailto:` dahil tıklanabilir kart bağlantısı eklendi.
+  - `icon_list`: `columns: 1 | 2 | 3` ızgara dizilimi ve `item.href` bağlantı desteği eklendi.
+  - `gallery`: `variant: "collage"` (2 sütunlu asimetrik 3'lü görsel kolajı) eklendi.
+  - `map_embed`: `embedUrl` ile doğrudan duyarlı `<iframe>` harita gösterimi eklendi.
+- **WordPress Köprü Eklentisi v0.3.0 & Tam Veri Kümesi Yeniden Derleyici (`plugins/wp-bridge`, `apps/cms/src/lib/wp-bridge/reconstruct.ts`, `apply.ts`, `redraw.ts`, `packages/core/src/ai-design`):**
+  - `nexpress-bridge` PHP eklentisi `0.3.0` sürümüne yükseltildi; her içerik paketinde `layout` ile birlikte tam render edilmiş `html` (`do_blocks`) gönderilir ve `infobox`/`accordion` blokları doğrudan tanınır.
+  - `/admin/wp-bridge` ekranına **Tüm sayfaları zengin yerleşimle derle** (`reconstructRichSiteDataset`) eklendi; 69 sayfa, 51 yazı, 12 AI prompt, 4 kategori, 17 yerel `.webp` görsel, iletişim/demo formu (`frm_wp_1`), marka renk paleti (`#0c644e`, `#09589a`, `#0f4c81`, `1290px`) ve çok seviyeli üst menü tek tıkla sıfır taşma ile derlenir.
+  - `AI_BLOCK_CATALOG` ve `knowledge.ts` kuralları taşma önleme ve yapısal sadakat kurallarıyla güncellendi.
+
 ### [2026-11-09] — Görsel Editör v4: Birleşik Tek Araç Çubuğu, Entegre TipTap Biçimlendirme ve Araç Çubuğunda AI Yaz / Düzenle
 - **Birleşik Tek Kayan Araç Çubuğu (`apps/cms/src/components/admin/editor/floating-toolbar.tsx`, `toolbar-prose-ai.tsx`, `prose-field.tsx`):**
   - Metin bloğu seçildiğinde hem bloğun altında (`FloatingToolbar`) hem de metnin üstünde (`ProseToolbar`) iki ayrı araç çubuğu çıkması kaldırıldı; tüm kontroller bloğun üst kenarında (`-top-10`) tek ve birleşik bir üst çubukta toplandı.

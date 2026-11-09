@@ -189,49 +189,106 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
         );
       }
       const items = Array.isArray(p.items) ? p.items : [];
+      const colCount =
+        typeof p.columns === "number"
+          ? p.columns
+          : items.length === 4 || items.length === 8
+            ? 4
+            : items.length >= 3 && items.length % 3 === 0
+              ? 3
+              : 2;
+      const gridColsClass =
+        colCount === 4
+          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+          : colCount === 3
+            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            : "grid-cols-1 md:grid-cols-2 gap-6";
       return (
         <section className="space-y-6">
-          {typeof p.title === "string" && (
-            <h2
-              style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-2xl md:text-3xl font-bold tracking-tight text-nx-fg"
-            >
-              {p.title}
-            </h2>
-          )}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {items.map((item: any, idx: number) => (
-              <div
-                key={idx}
-                style={{
-                  borderRadius: tokens.geometry.borderRadius,
-                  borderColor: tokens.colors.border,
-                }}
-                className="border bg-nx-card p-6 shadow-xs transition hover:shadow-md"
-              >
-                <div
-                  style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }}
-                  className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold"
-                >
-                  {typeof item?.icon === "string" && ICON_PATHS[item.icon] ? (
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d={ICON_PATHS[item.icon]} />
-                    </svg>
-                  ) : (
-                    `0${idx + 1}`
-                  )}
-                </div>
-                <h3
+          {(typeof p.title === "string" && p.title.trim()) || (typeof p.subtitle === "string" && p.subtitle.trim()) ? (
+            <div className="space-y-2">
+              {typeof p.title === "string" && p.title.trim() ? (
+                <h2
                   style={{ fontFamily: tokens.typography.headingFont }}
-                  className="text-lg font-semibold text-nx-fg mb-2"
+                  className="text-2xl md:text-3xl font-bold tracking-tight text-nx-fg"
                 >
-                  {String(item?.title ?? "")}
-                </h3>
-                <p className="text-sm text-nx-soft leading-relaxed">
-                  {String(item?.description ?? "")}
+                  {p.title}
+                </h2>
+              ) : null}
+              {typeof p.subtitle === "string" && p.subtitle.trim() ? (
+                <p className="text-base text-nx-soft leading-relaxed max-w-3xl">
+                  {p.subtitle}
                 </p>
-              </div>
-            ))}
+              ) : null}
+            </div>
+          ) : null}
+          <div className={`grid ${gridColsClass}`}>
+            {items.map((item: any, idx: number) => {
+              const rawImg = typeof item?.image === "string" ? item.image.trim() : "";
+              const imgUrl = /^(\/(?!\/)|https?:\/\/)/i.test(rawImg) ? rawImg : "";
+              const rawHref = typeof item?.href === "string" ? item.href.trim() : "";
+              const href = /^(\/(?!\/)|https?:\/\/|tel:|mailto:|#)/i.test(rawHref) ? rawHref : "";
+              const cardInner = (
+                <>
+                  {imgUrl ? (
+                    <div className="mb-3.5 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-nx-subtle p-2">
+                      <img
+                        src={imgUrl}
+                        alt={String(item?.title ?? "")}
+                        loading="lazy"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{ backgroundColor: tokens.colors.muted, color: tokens.colors.primary }}
+                      className="mb-3.5 inline-flex h-10 w-10 items-center justify-center rounded-lg text-xs font-bold"
+                    >
+                      {typeof item?.icon === "string" && ICON_PATHS[item.icon] ? (
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d={ICON_PATHS[item.icon]} />
+                        </svg>
+                      ) : (
+                        String(idx + 1).padStart(2, "0")
+                      )}
+                    </div>
+                  )}
+                  <h3
+                    style={{ fontFamily: tokens.typography.headingFont }}
+                    className="text-base md:text-lg font-bold text-nx-fg mb-1.5 group-hover:text-nx-primary transition-colors"
+                  >
+                    {String(item?.title ?? "")}
+                  </h3>
+                  {typeof item?.description === "string" && item.description.trim() ? (
+                    <p className="text-sm text-nx-soft leading-relaxed">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </>
+              );
+              const cardStyle = {
+                borderRadius: tokens.geometry.borderRadius,
+                borderColor: tokens.colors.border,
+              };
+              return href ? (
+                <a
+                  key={idx}
+                  href={href}
+                  style={cardStyle}
+                  className="group flex flex-col justify-between border bg-nx-card p-5 shadow-xs transition duration-200 hover:-translate-y-0.5 hover:shadow-md no-underline"
+                >
+                  <div>{cardInner}</div>
+                </a>
+              ) : (
+                <div
+                  key={idx}
+                  style={cardStyle}
+                  className="flex flex-col justify-between border bg-nx-card p-5 shadow-xs transition hover:shadow-md"
+                >
+                  <div>{cardInner}</div>
+                </div>
+              );
+            })}
           </div>
         </section>
       );

@@ -76,7 +76,12 @@ const SEO_RULES = `SEO/GEO KURALLARI (ihlal doğrulamada reddedilir veya puan d�
 - Görsel yalnızca "Medya kitaplığı" listesindeki kimliklerle ve anlamlı alt metinle; listede yoksa görsel kullanma.
 - Sayı, fiyat, yorum, puan, müşteri adı UYDURMA. Kullanıcı vermediyse stats_strip/pricing_table kullanma ya da açıkça makul ve genel ifade kullan.
 - Metin düz metindir: HTML, markdown, emoji dizileri, betik yok. Dil: sitenin dili.
-- Yapay zeka klişelerinden kaçın ("dijital dünyada", "sınırları zorlayan", "devrim niteliğinde").`;
+- Yapay zeka klişelerinden kaçın ("dijital dünyada", "sınırları zorlayan", "devrim niteliğinde").
+- YERLEŞİM VE TAŞMA ÖNLEME KURALLARI:
+  * Kart ızgaralarında (bento_features) öğe sayısına göre dengeli sütun seç (3, 6, 9 öğe için columns: 3; 4, 8 öğe için columns: 4; 2, 4 öğe için columns: 2).
+  * Madde veya modül bağlantı listelerinde 6+ öğe varsa icon_list içinde columns: 2 veya columns: 3 kullanarak dikey uzamayı ve boşluğu önle.
+  * Başlık ile paragraf metnini asla tek alanda birleştirme; her kartın başlığı ≤70, açıklaması ≤240 karakter olsun.
+  * Koyu arka plan renklerinde (#0b4b8a, #09589a, #0c644e, #060a0d) metin rengini daima #ffffff olarak ayarla.`;
 
 const THEME_SPEC = `TEMA JETONLARI (tokens):
 { "colors": { "primary","primaryForeground","secondary","secondaryForeground","accent","accentForeground","background","foreground","muted","mutedForeground","border" (hepsi #rrggbb) },

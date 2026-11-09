@@ -1,6 +1,7 @@
 import { DomUtils, parseDocument } from "htmlparser2";
 import type { AnyNode, Element } from "domhandler";
 import { sanitizeInlineHtml, type BlockNode } from "@nexpress/core";
+import { compileRichWpHtml, hasRichBlockMarkup } from "./rich-layout";
 
 /**
  * WordPress HTML'ini (klasik editör, Gutenberg, sayfa oluşturucu kalıntıları) NexPress blok AST'sine çevirir.
@@ -64,6 +65,9 @@ function absolute(url: string, base: string): string | null {
 }
 
 export function convertWpHtml(rawHtml: string, opts: { baseUrl?: string } = {}): ConvertResult {
+  if (hasRichBlockMarkup(rawHtml)) {
+    return compileRichWpHtml(rawHtml, opts);
+  }
   const base = opts.baseUrl ?? "";
   const warnings: string[] = [];
   const unknown = new Set<string>();
@@ -135,6 +139,12 @@ export function convertWpHtml(rawHtml: string, opts: { baseUrl?: string } = {}):
       const el = node as Element;
       const tag = el.name.toLowerCase();
       if (SKIP_TAGS.has(tag)) continue;
+      if (tag === "a" && DomUtils.findOne((e) => BLOCK_TAGS.has(e.name.toLowerCase()) || CONTAINER_TAGS.has(e.name.toLowerCase()), el.children)) {
+        flush();
+        walk(el.children);
+        flush();
+        continue;
+      }
       if (!BLOCK_TAGS.has(tag) && !CONTAINER_TAGS.has(tag)) { run.push(el); continue; } // satır içi (a, strong, span…)
       flush();
       if (CONTAINER_TAGS.has(tag)) { walk(el.children); flush(); continue; }

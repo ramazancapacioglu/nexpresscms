@@ -400,15 +400,15 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 | `heading` | Bölüm başlığı | düzey 2–4, atlama yok | `level` 2–4; `text` ≤110 zorunlu |
 | `paragraph` | Düz paragraf, 2–4 cümle | — | `text` ≤900 zorunlu |
 | `stats_strip` | 2–4 ölçülebilir kanıt | yer tutucu. variant: `metrics-bar` | `stats[]` 2–4: `value` ≤16 zorunlu, `label` ≤48 zorunlu |
-| `bento_features` | 3–6 fayda kartı | variant: `bento-2x2` | `title` ≤90 zorunlu; `items[]` 3–6: `icon`, `title` ≤60 zorunlu, `description` ≤200 zorunlu |
-| `icon_list` | 3–8 kısa madde | — | `items[]` 2–8: `icon`, `mark` ≤4, `title` ≤70 zorunlu, `text` ≤180 |
+| `bento_features` | 2–12 fayda veya modül kartı | variant: `bento-2x2` | `title` ≤90; `subtitle` ≤240; `columns` 2–4; `items[]` 2–12: `icon`, `image`, `title` ≤60 zorunlu, `description` ≤200 zorunlu, `href` |
+| `icon_list` | 2–24 kısa madde / kontrol listesi | — | `columns` 1–3; `items[]` 2–24: `icon`, `mark` ≤4, `title` ≤70 zorunlu, `text` ≤180, `href` |
 | `split_content` | Metin yanında görsel | görsel kitaplıktan | `title` ≤90 zorunlu; `text` ≤500 zorunlu; `image`; `alt` ≤125 |
 | `howto_steps` | Sıralı yönerge, HowTo şeması | 3–8 adım. variant: `numbered-steps` | `title` ≤90 zorunlu; `steps[]` 3–8: `title` ≤70 zorunlu, `description` ≤260 zorunlu |
 | `faq_accordion` | Gerçek sorular, FAQPage | sayfada 1, 3–8 soru. variant: `clean-border` | `title` ≤90 zorunlu; `items[]` 2–8: `question` ≤140 zorunlu, `answer` ≤420 zorunlu |
 | `comparison_table` | Seçenek karşılaştırması | en çok 6 sütun | `title` ≤90 zorunlu; `headers` ≤6, hücre ≤40; `rows` ≤24×6, hücre ≤80 |
 | `pricing_table` | 2–4 plan | sayfada 1, yer tutucu. variant: `tiers-3` | `title` ≤90 zorunlu; `plans[]` 2–4: `name` ≤40 zorunlu, `price` ≤30 zorunlu, `description` ≤180, `ctaLabel` ≤36, `featured` boolean |
 | `callout` | Tek not | variant: `info-border` | `tone`: `TIP` \| `NOTE` \| `IMPORTANT` \| `WARNING`; `title` ≤60; `text` ≤320 zorunlu |
-| `info_box` | Kısa kart + bağlantı | — | `icon`; `kicker` ≤40; `title` ≤70 zorunlu; `text` ≤260; `linkLabel` ≤40; `href` |
+| `info_box` | Kısa kart + görsel/bağlantı | — | `icon`; `image`; `kicker` ≤40; `title` ≤70 zorunlu; `text` ≤260; `linkLabel` ≤40; `href` (`mailto:` ve `tel:` dahil) |
 | `cta_banner` | Sonda tek eylem | sayfada en çok 2. variant: `dark-contrast` | `title` ≤90 zorunlu; `subtitle` ≤200; `buttonLabel` ≤40 zorunlu; `buttonHref` zorunlu |
 | `button_row` | 1–3 düğme | — | `align`: `left` \| `center` \| `right`; `buttons[]` 1–3: `label` ≤40 zorunlu, `href` zorunlu, `variant`: `primary` \| `secondary` \| `outline` |
 | `tabs` | Aynı konunun 2–5 yüzü | Önemli metni sekmeye gizleme | `title` ≤90; `tabStyle`: `pills` \| `underline` \| `boxed` \| `segmented` \| `vertical` \| `cards` \| `steps`; `align`: `left` \| `center` \| `stretch`; `items[]` 2–5: `label` ≤40 zorunlu, `icon`, `subtitle` ≤40, `title` ≤80, `body` ≤500 zorunlu |

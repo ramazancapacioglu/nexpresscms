@@ -62,11 +62,44 @@ export const AI_BLOCK_CATALOG: Record<string, BlockSpec> = {
   },
   bento_features: {
     label: "Özellik ızgarası",
-    usage: "3–6 özellik/fayda kartı. Her kart tek fikir.",
+    usage: "2–12 özellik/fayda kartı. Her kart tek fikir; 2, 3 veya 4 sütunlu dengeli ızgara.",
     variants: ["bento-2x2"],
-    props: { title: title(90), items: { kind: "list", minItems: 3, maxItems: 6, item: { icon: { kind: "enum", values: ICON_NAMES }, title: t(60, true), description: t(200, true) } } },
+    props: {
+      title: t(90),
+      subtitle: t(220),
+      columns: { kind: "number", min: 2, max: 4 },
+      items: {
+        kind: "list",
+        minItems: 2,
+        maxItems: 12,
+        item: {
+          icon: { kind: "enum", values: ICON_NAMES },
+          title: t(70, true),
+          description: t(240, true),
+          href,
+        },
+      },
+    },
   },
-  icon_list: { label: "İkonlu liste", usage: "Kısa maddeler (3–8).", props: { items: { kind: "list", minItems: 2, maxItems: 8, item: { icon: { kind: "enum", values: ICON_NAMES }, mark: t(4), title: t(70, true), text: t(180) } } } },
+  icon_list: {
+    label: "İkonlu liste",
+    usage: "Kısa maddeler veya bağlantılı kontrol listesi (2–18 öğe, 1–3 sütun).",
+    props: {
+      columns: { kind: "number", min: 1, max: 3 },
+      items: {
+        kind: "list",
+        minItems: 2,
+        maxItems: 18,
+        item: {
+          icon: { kind: "enum", values: ICON_NAMES },
+          mark: t(4),
+          title: t(80, true),
+          text: t(180),
+          href,
+        },
+      },
+    },
+  },
   split_content: { label: "Metin + görsel", usage: "Bir fikri yanında görselle anlatır. Görsel yalnızca medya kitaplığından.", props: { title: title(90), text: t(500, true), image: { kind: "image" }, alt: t(125) } },
   howto_steps: {
     label: "Adım adım (HowTo)",

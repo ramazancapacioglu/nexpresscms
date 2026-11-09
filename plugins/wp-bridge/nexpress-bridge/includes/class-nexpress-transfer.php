@@ -194,7 +194,7 @@ final class Nexpress_Bridge_Transfer {
       ],
       "schema" => self::schema_of((int) $post->ID),
       "layout" => $layout,
-      "html" => $layout === [] ? (string) $post->post_content : "",
+      "html" => function_exists("do_blocks") ? (string) do_blocks((string) $post->post_content) : (string) $post->post_content,
       "comments" => array_map(static function ($comment) {
         return [
           "wpId" => (string) $comment->comment_ID,
@@ -326,6 +326,53 @@ final class Nexpress_Bridge_Transfer {
       if (self::has($name, "columns") || self::has($name, "row")) {
         $out[] = ["type" => "columns", "children" => self::blocks_to_layout($inner)];
         continue;
+      }
+      if (self::has($name, "infobox") || self::has($name, "info-box") || self::has($name, "iconbox")) {
+        $title = (string) ($attrs["title"] ?? "");
+        if ($title === "" && preg_match('/class=["\'][^"\']*kt-blocks-info-box-title[^"\']*["\'][^>]*>(.*?)<\//si', $html, $tm)) {
+          $title = trim(wp_strip_all_tags($tm[1]));
+        }
+        $desc = (string) ($attrs["text"] ?? "");
+        if ($desc === "" && preg_match('/class=["\'][^"\']*kt-blocks-info-box-text[^"\']*["\'][^>]*>(.*?)<\//si', $html, $dm)) {
+          $desc = trim(wp_strip_all_tags($dm[1]));
+        }
+        $out[] = [
+          "type" => "card",
+          "text" => $title !== "" ? $title : self::plain($attrs, $html),
+          "html" => $desc,
+          "href" => (string) ($attrs["link"] ?? self::href($html)),
+          "url" => self::src($html),
+        ];
+        continue;
+      }
+      if (self::has($name, "accordion")) {
+        $items = [];
+        foreach ($inner as $pane) {
+          if (!is_array($pane)) {
+            continue;
+          }
+          $pHtml = (string) ($pane["innerHTML"] ?? "");
+          $q = "";
+          if (preg_match('/class=["\'][^"\']*kt-blocks-accordion-title[^"\']*["\'][^>]*>(.*?)<\//si', $pHtml, $qm)) {
+            $q = trim(wp_strip_all_tags($qm[1]));
+          }
+          $paneChildren = self::blocks_to_layout(is_array($pane["innerBlocks"] ?? null) ? $pane["innerBlocks"] : []);
+          $ansParts = [];
+          foreach ($paneChildren as $pc) {
+            $t = trim(wp_strip_all_tags((string) ($pc["text"] ?? $pc["html"] ?? "")));
+            if ($t !== "") {
+              $ansParts[] = $t;
+            }
+          }
+          $a = implode("\n\n", $ansParts);
+          if ($q !== "" && $a !== "") {
+            $items[] = ["title" => $q, "text" => $a];
+          }
+        }
+        if ($items !== []) {
+          $out[] = ["type" => "accordion", "items" => $items];
+          continue;
+        }
       }
       if (self::has($name, "heading")) {
         $text = self::plain($attrs, $html);

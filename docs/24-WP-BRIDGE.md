@@ -1,6 +1,6 @@
 # 24 — WordPress Köprüsü (panel eklentisi + site eklentisi)
 
-> Durum: **0.2.3 (2026-11-09).** Görsel alt, başlık ve açıklama; SEO değişkenleri; şema türü; yazar ve yorum. Uzun gövde başlık sanılmaz. Panel kod üretir. WordPress eklentisi paketi iter: sayfa, yazı, yorum, form, menü, SEO, yönlendirme, görsel. Göreli görsel kaynak siteye bağlanır. Yapışık başlık ayrılır. Yapısız sayfayı AI yerleştirir. E-ticaret dışarıda. Eski dosya aktarımı durur: `docs/17`.
+> Durum: **0.3.0 (2026-11-09).** Zengin blok ve satır içi `<style>` derleyicisi (`compileRichWpHtml`), 350 KB HTML sınırı, iç içe sütun düzleştirme (`kt-has-1-columns` / tek sütunlu dış sarmalayıcıları soyma), masaüstü/mobil CSS ızgara ayrımı (`8+4`, `4+8`, `6+6`, `4+4+4`, `3+3+3+3`), çoklu bilgi kartlarından `bento_features` (2/3/4 sütun, görsel ve bağlantı destekli), çok sütunlu `icon_list`, 3'lü asimetrik görsel kolajı (`gallery` `variant: "collage"`), `faq_accordion`, `form_block`, `map_embed` (`embedUrl`), `cta_banner` ve kategori vitrini (`dynamic_list`) sentezi. Panelde `/admin/wp-bridge` altında tek tıkla **Tüm sayfaları zengin yerleşimle derle** (`reconstructRichSiteDataset`) eklendi.
 
 ## 1. Neden ayrı eklenti
 
@@ -53,12 +53,19 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 
 | Kaynak | NexPress |
 | :--- | :--- |
-| Satır, eşit / sol altın / sağ altın | `section` + `columns`, sütun yüzdesi |
-| Tam genişlik bant | `blockWidth: full` |
-| Zemin, örtü, boşluk | bloğun kendi stili |
-| Bilgi kutusu | kart (görsel, başlık, metin, bağlantı) |
-| Başlık, paragraf, düğme, görsel, akordeon | aynı tür |
-| Form alan listesi | `form_block` |
+| Satır, eşit / sol altın (`65%/35%`) / sağ altın (`35%/65%`) | `section` + `columns` (`6+6`, `8+4`, `4+8`, `4+4+4`, `3+3+3+3`) |
+| Tek sütunlu dış satır sarmalayıcı (`1-column` veya `minmax(0, 1fr)`) | İç içe sütun kırılmasını önlemek için düz `section` olarak açılır |
+| Tam genişlik bant / koyu zemin (`--global-palette*`) | `blockWidth: full`, koyu zeminde otomatik `textColor: "#ffffff"` |
+| Sütun arka plan görseli (`background-image: url(...)`) | Doğrudan `image_figure` bloğuna dönüştürülür |
+| Çoklu bilgi kutusu ızgarası (2–12 kart) | `bento_features` (`columns: 2\|3\|4`, `image`, `title`, `description`, `href`) |
+| Tekil bilgi kutusu | `info_box` (`image`, `title`, `text`, `href`, `tel:` / `mailto:` dahil) |
+| İkonlu kontrol listesi | `icon_list` (`columns: 1\|2\|3`, `title`, `href`) |
+| 3'lü iç içe görsel kolajı | `gallery` (`variant: "collage"`) |
+| Akordeon / SSS panelleri | `faq_accordion` (iki sütunlu akordeonlar tek blokta birleştirilir) |
+| Gelişmiş form bloğu | `form_block` (`formId: "frm_wp_1"`) |
+| Harita bloğu | `map_embed` (`embedUrl`, Google Maps `<iframe>`) |
+| Senkronize alt çağrı bandı | `cta_banner` (`variant: "dark-contrast"`) |
+| Başlık, paragraf, düğme, görsel | aynı tür |
 | Kapak (başlık, kısa açıklama, öne çıkan görsel) | `tpl_post_title` (`showTldr`) + `tpl_featured_image` |
 | Üst / alt şerit | header ve footer yapılandırması |
 
@@ -70,6 +77,7 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 | 1 | Eşleştirme kodu, sayfa/yazı/taksonomi/SEO/yorum/medya yazma, iç bağlantı tarama | **0.2.0** |
 | 2 | Satır ve sütun çizimi, kapak bandı, menü, üst şerit telefonu ve alt kart | **0.2.0** |
 | 3 | Form tanımları, sayfa ve site SEO'su, 301 | **0.2.0** |
+| 4 | Zengin HTML + satır içi `<style>` derleyicisi (`compileRichWpHtml`), birleşik kart/kolaj/liste/harita/form sentezi, 350 KB HTML sınırı, tam veri kümesi yeniden derleyici | **0.3.0** |
 
 ## 6. Güvenlik
 

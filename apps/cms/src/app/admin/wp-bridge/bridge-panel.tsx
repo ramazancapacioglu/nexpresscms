@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { wipeContentAction } from "@/app/admin/settings/actions";
-import { issueBridgeCodeAction, repairBridgeAction } from "./actions";
+import { issueBridgeCodeAction, reconstructBridgeDatasetAction, repairBridgeAction } from "./actions";
 
 type BridgeReportView = {
   at: string;
@@ -27,6 +27,27 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
   const [expires, setExpires] = useState<string | null>(null);
   const [issuing, setIssuing] = useState(false);
   const [repairing, setRepairing] = useState(false);
+  const [reconstructing, setReconstructing] = useState(false);
+
+  const reconstruct = async () => {
+    setReconstructing(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await reconstructBridgeDatasetAction();
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setMessage(
+        `${result.pagesUpdated} sayfa, ${result.postsUpdated} yazı, ${result.categoriesUpdated} kategori ve ${result.imagesCopied} yerel görsel zengin blok yerleşimiyle yeniden derlendi.`
+      );
+    } catch {
+      setError("Yeniden derleme sırasında hata oluştu.");
+    } finally {
+      setReconstructing(false);
+    }
+  };
 
   const issue = async () => {
     setIssuing(true);
@@ -112,14 +133,29 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
       </section>
 
       <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
-        <h2 className="text-[15px] font-semibold">Eksikleri tamamla</h2>
+        <h2 className="text-[15px] font-semibold">Zengin yerleşim derleyicisi & Eksikleri tamamla</h2>
         <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
-          Göreli görseller kaynak siteden indirilir. Yapışık kart başlığı ayrılır. Bölümü olmayan sayfaları AI yerleştirir; görseli veya bölümü olan sayfa olduğu gibi kalır.
+          İç içe geçmiş sütunları düzleştirir, satır içi CSS sütun oranlarını (8+4, 4+8, 6+6, 4+4+4) uygular, bilgi kartlarını ve kontrol listelerini birleşik bileşenlere dönüştürür, göreli görselleri indirir ve menü/renk paletini senkronize eder.
         </p>
-        <button type="button" onClick={repair} disabled={repairing || !pluginOn} className="mt-3 rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]">
-          {repairing ? "Tamamlanıyor…" : "Eksikleri tamamla"}
-        </button>
-        {message ? <p className="mt-2 text-[13px]">{message}</p> : null}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={reconstruct}
+            disabled={reconstructing || repairing || !pluginOn}
+            className="rounded-md bg-[#14151A] px-3 py-1.5 text-[13px] font-medium text-white dark:bg-[#F3F4F6] dark:text-[#14151A]"
+          >
+            {reconstructing ? "Derleniyor…" : "Tüm sayfaları zengin yerleşimle derle"}
+          </button>
+          <button
+            type="button"
+            onClick={repair}
+            disabled={repairing || reconstructing || !pluginOn}
+            className="rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]"
+          >
+            {repairing ? "Tamamlanıyor…" : "Eksikleri tamamla & AI ile onar"}
+          </button>
+        </div>
+        {message ? <p className="mt-2 text-[13px] text-emerald-700 dark:text-emerald-400">{message}</p> : null}
         {error ? <p className="mt-2 text-[13px] text-amber-700">{error}</p> : null}
       </section>
 

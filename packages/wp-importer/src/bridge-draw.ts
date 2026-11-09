@@ -185,17 +185,22 @@ export function drawLayout(nodes: LayoutNode[], opts: { baseUrl?: string } = {})
     }
 
     if (type === "card") {
-      const blocks: BlockNode[] = [];
       const url = addImage(clip(node.url, 500));
-      if (url) {
-        blocks.push({ id: id(), type: "image_figure", props: { url, altText: clip(node.alt, 180) } });
-      }
-      blocks.push({
-        id: id(),
-        type: "info_box",
-        props: { title: clip(node.text, 160) || "Bilgi", text: clip(node.html, 500), href: clip(node.href, 500), linkLabel: clip(node.label, 40) },
-      });
-      return blocks;
+      const desc = clip(node.html, 500);
+      return [
+        {
+          id: id(),
+          type: "info_box",
+          props: {
+            title: clip(node.text, 160) || "Bilgi",
+            text: desc,
+            description: desc,
+            ...(url ? { image: url } : {}),
+            href: clip(node.href, 500),
+            linkLabel: clip(node.label, 40),
+          },
+        },
+      ];
     }
 
     if (type === "form") {
@@ -205,7 +210,7 @@ export function drawLayout(nodes: LayoutNode[], opts: { baseUrl?: string } = {})
     }
 
     if (type === "html") {
-      const html = typeof node.html === "string" ? node.html.slice(0, 100_000) : "";
+      const html = typeof node.html === "string" ? node.html.slice(0, 350_000) : "";
       if (!html.trim()) return [];
       const converted = convertWpHtml(html, { baseUrl: opts.baseUrl });
       for (const image of converted.images) addImage(image);

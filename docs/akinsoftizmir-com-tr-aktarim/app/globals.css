@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+:root {
+  --global-palette1: #0c644e;
+  --global-palette2: #09589a;
+  --global-palette3: #1a202c;
+  --global-palette4: #060a0d;
+  --global-palette5: #252424;
+  --global-palette6: #0f4c81;
+  --global-palette7: #fafafa;
+  --global-palette8: #f7fafc;
+  --global-palette9: #ffffff;
+  --global-palette11: #13612e;
+  --global-palette12: #1159af;
+  --global-palette13: #c8102e;
+  --global-palette14: #f7630c;
+  --global-palette15: #f5a524;
+  --global-palette-btn-bg: #0c644e;
+  --global-palette-btn-bg-hover: #0f4c81;
+  --global-palette-btn: #ffffff;
+  --global-palette-btn-hover: #ffffff;
+  --global-content-width: 1290px;
+  --global-content-edge-padding: 1.5rem;
+  --global-kb-spacing-xxs: 0.5rem;
+  --global-kb-spacing-xs: 1rem;
+  --global-kb-spacing-sm: 1.5rem;
+  --global-kb-spacing-md: 2rem;
+  --global-kb-spacing-lg: 3rem;
+  --global-kb-spacing-xl: 4rem;
+  --global-kb-gap-none: 0rem;
+  --global-kb-gap-xs: 0.5rem;
+  --global-kb-gap-sm: 1rem;
+  --global-kb-gap-md: 2rem;
+  --global-kb-gap-lg: 4rem;
+  --global-row-gutter-sm: 1rem;
+  --global-row-gutter-md: 2rem;
+  --global-row-gutter-lg: 4rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--global-palette4);
+  background-color: var(--global-palette9);
+}
+
+/* Kadence Content Area Enhancements & Icon/Infobox Fixes */
+.kadence-content-area {
+  color: #1a202c;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+/* Ensure all Kadence inline SVG icons have explicit 1em dimensions and proper flex alignment */
+.kadence-content-area .kb-svg-icon-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+.kadence-content-area .kb-svg-icon-wrap svg {
+  width: 1em !important;
+  height: 1em !important;
+  display: block !important;
+}
+
+.kadence-content-area .kb-svg-icon-wrap svg:not([fill="none"]) {
+  fill: currentColor;
+}
+
+.kadence-content-area .kb-svg-icon-wrap svg[fill="none"] {
+  fill: none !important;
+  stroke: currentColor;
+}
+
+/* Heading icons spacing & alignment */
+.kadence-content-area .kt-adv-heading-has-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kadence-content-area .kb-adv-heading-icon-side-left {
+  margin-right: 0.45em;
+}
+
+.kadence-content-area .kb-adv-heading-icon-side-right {
+  margin-left: 0.45em;
+}
+
+/* Button icons spacing & alignment */
+.kadence-content-area .kt-btn-has-svg-true {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem;
+}
+
+/* InfoBox layout & icon fixes */
+.kadence-content-area .wp-block-kadence-infobox {
+  height: 100%;
+}
+
+.kadence-content-area .kt-blocks-info-box-link-wrap {
+  height: 100%;
+  box-sizing: border-box;
+  text-decoration: none !important;
+}
+
+.kadence-content-area .kt-blocks-info-box-media-align-left {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.85rem;
+}
+
+.kadence-content-area .kt-blocks-info-box-media-align-left.kb-info-box-vertical-media-align-top {
+  align-items: flex-start !important;
+}
+
+.kadence-content-area .kt-blocks-info-box-media-align-right {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+  gap: 0.85rem;
+}
+
+.kadence-content-area .kt-blocks-info-box-media-container {
+  flex-shrink: 0;
+}
+
+.kadence-content-area .kt-info-svg-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1em !important;
+  min-width: 1em !important;
+}
+
+.kadence-content-area .kadence-info-box-image-intrisic img,
+.kadence-content-area .kt-info-box-image {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* Aspect-ratio image containers inside Kadence blocks */
+.kadence-content-area .kb-is-ratio-image {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.kadence-content-area .kb-image-ratio-land43 {
+  padding-bottom: 75%;
+}
+
+.kadence-content-area .kb-image-ratio-land32 {
+  padding-bottom: 66.66%;
+}
+
+.kadence-content-area .kb-image-ratio-land169 {
+  padding-bottom: 56.25%;
+}
+
+.kadence-content-area .kb-image-ratio-square {
+  padding-bottom: 100%;
+}
+
+.kadence-content-area .kb-image-ratio-port34 {
+  padding-bottom: 133.33%;
+}
+
+.kadence-content-area .kb-is-ratio-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin: 0;
+}
+
+/* Hide raw duplicate WP forms when our interactive React form is shown */
+.kadence-content-area .wp-block-kadence-advanced-form {
+  display: none;
+}

@@ -165,7 +165,7 @@ function contentItem(value: unknown, notes: ParseNotes): BridgeContentItem | nul
     },
     schema: schemaBag(row.schema),
     layout: list(row.layout, 80).map((item) => layoutNode(item, 0)).filter((item): item is LayoutNode => Boolean(item)),
-    html: str(row.html, 100000),
+    html: str(row.html, 350000),
     comments: list(row.comments, 100).map((item) => {
       const comment = obj(item);
       return {

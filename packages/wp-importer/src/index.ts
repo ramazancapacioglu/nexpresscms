@@ -1,5 +1,7 @@
 export * from "./wxr";
 export * from "./html";
+export * from "./rich-layout";
+export * from "./rich-layout-styles";
 export * from "./shell";
 export * from "./plan";
 export * from "./ip";

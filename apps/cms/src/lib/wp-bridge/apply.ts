@@ -3,7 +3,7 @@ import type { BlockNode, NavigationMenuItem, SiteMenuRecord } from "@nexpress/co
 import { isPluginModuleEnabled } from "@nexpress/core";
 import { getFormDefinitionRepository, getRedirectRepository, getScopedRepository } from "@nexpress/database";
 import { slugify } from "@nexpress/seo-core";
-import { drawLayout, expandSeoTemplate, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, schemaFromBridge, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
+import { compileRichWpHtml, drawLayout, expandSeoTemplate, hasRichBlockMarkup, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, schemaFromBridge, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { WP_BRIDGE_PLUGIN_ID } from "@/plugins/wp-bridge";
 import { ingestImages, remapContentImages } from "./media";
@@ -46,8 +46,12 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
   const locale = site?.defaultLocale || "tr";
   const redirects = getRedirectRepository(siteId);
   const map = await readMediaMap(siteId);
-  const existingRows = await repo.listContents({ locale });
-  const slugOwner = new Map(existingRows.map((row) => [`${row.type}:${row.slug}`, row.id]));
+  const existingRows = [
+    ...(await repo.listContents({ locale })),
+    ...(await repo.listContents({ locale, status: "trashed" })),
+    ...(await repo.listContents({ locale, type: "template" })),
+  ];
+  const slugOwner = new Map(existingRows.map((row) => [row.slug, row.id]));
   const delta = { created: 0, updated: 0, failed: 0, links: 0, unknown: 0, images: 0, redirects: 0 };
   const imageQueue: Array<{ url: string; alt: string }> = [];
 
@@ -76,12 +80,15 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
       if (!existing) {
         let n = 2;
         const base = slug;
-        while (slugOwner.has(`${type}:${slug}`) && slugOwner.get(`${type}:${slug}`) !== contentId) slug = `${base.slice(0, 90)}-${n++}`;
-        slugOwner.set(`${type}:${slug}`, contentId);
+        while (slugOwner.has(slug) && slugOwner.get(slug) !== contentId) slug = `${base.slice(0, 90)}-${n++}`;
+        slugOwner.set(slug, contentId);
       } else slug = existing.slug;
-      const drawn = item.layout.length
-        ? drawLayout(item.layout, { baseUrl: origin })
-        : drawLayout(item.html ? [{ type: "html", html: item.html }] : [], { baseUrl: origin });
+      const richHtmlResult = item.html && hasRichBlockMarkup(item.html) ? compileRichWpHtml(item.html, { baseUrl: origin }) : null;
+      const drawn = richHtmlResult
+        ? { blocks: richHtmlResult.blocks, images: richHtmlResult.images, unknown: 0 }
+        : item.layout.length
+          ? drawLayout(item.layout, { baseUrl: origin })
+          : drawLayout(item.html ? [{ type: "html", html: item.html }] : [], { baseUrl: origin });
       delta.unknown += drawn.unknown;
       let blocks = drawn.blocks;
       if (linksOn) {
