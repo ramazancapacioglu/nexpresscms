@@ -3,13 +3,12 @@ import type { BlockNode, NavigationMenuItem, SiteMenuRecord } from "@nexpress/co
 import { isPluginModuleEnabled } from "@nexpress/core";
 import { getFormDefinitionRepository, getRedirectRepository, getScopedRepository } from "@nexpress/database";
 import { slugify } from "@nexpress/seo-core";
-import { drawLayout, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
+import { drawLayout, expandSeoTemplate, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, schemaFromBridge, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { WP_BRIDGE_PLUGIN_ID } from "@/plugins/wp-bridge";
 import { ingestImages, remapContentImages } from "./media";
 import { addBridgeReport, readMediaMap } from "./store";
 
-const SCHEMA = new Set(["WebPage", "Article", "AboutPage", "FAQPage", "ContactPage", "Organization", "SoftwareApplication", "BlogPosting"]);
 const FIELD: Record<string, string> = {
   email: "email",
   tel: "tel",
@@ -96,20 +95,34 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
       }
       const featured = featuredAbs ? map[featuredAbs] ?? featuredAbs : null;
       const published = item.status === "publish" || item.status === "private";
-      const schemaType = SCHEMA.has(item.seo.schemaType) ? item.seo.schemaType : type === "post" ? "Article" : "WebPage";
+      const siteName = (await repo.getSite())?.name ?? "";
+      const mapped = schemaFromBridge({
+        kind: type === "post" ? "post" : "page",
+        schemaType: item.schema.type || item.seo.schemaType,
+        name: item.schema.name,
+        description: item.schema.description,
+        os: item.schema.os,
+        category: item.schema.category || item.categories[0]?.name || "",
+        price: item.schema.price,
+        currency: item.schema.currency,
+        faqs: item.schema.faqs,
+        slug,
+      });
       const date = item.date ? new Date(item.date.replace(" ", "T")) : null;
       await repo.saveContent({
         contentId,
         type,
+        authorName: item.author || undefined,
         status: published ? "published" : "draft",
         importanceScore: type === "page" ? 7 : 6,
-        schemaType,
+        schemaType: mapped.schemaType,
         schemaAttributes: {
           ...(existing?.schemaAttributes ?? {}),
           migratedFrom: "wordpress",
           wpId: item.wpId,
           wpKind: item.kind,
           originalPermalink: item.link,
+          ...(mapped.richSchema ? { richSchema: mapped.richSchema } : {}),
           _publishing: {
             visibility: item.status === "private" ? "private" : "public",
             authorName: item.author || undefined,
@@ -127,8 +140,8 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
         excerpt: item.excerpt || undefined,
         tldr: (item.excerpt || item.title).slice(0, 260),
         blocks: blocks as BlockNode[],
-        metaTitle: item.seo.title || undefined,
-        metaDescription: item.seo.description || undefined,
+        metaTitle: expandSeoTemplate(item.seo.title, { title: item.title, siteName, category: item.categories[0]?.name }) || undefined,
+        metaDescription: expandSeoTemplate(item.seo.description, { title: item.title, siteName, category: item.categories[0]?.name }) || undefined,
         canonicalUrl: item.seo.canonical || undefined,
         noIndex: item.seo.noindex,
         ...(!existing && date && !Number.isNaN(date.getTime()) ? { publishedAt: date } : {}),

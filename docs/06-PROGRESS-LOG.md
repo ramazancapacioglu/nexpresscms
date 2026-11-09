@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Köprü görsel SEO, şema, yazar ve yorumu tamamlar
+- Görsel alt, başlık, alt yazı ve açıklama kaynak kayıttan yazılır. SEO başlığındaki `%title%` ve `%sep%` açılır; yüzde indirim metni durur. Rank Math şeması sayfa türüne ve gelişmiş şema kartına bağlanır. Yazılar BlogPosting olur. Yazar satırı ve onaylı yorumlar yazıda görünür. Yorum yıldıza çevrilmez. WordPress kullanıcıları parola özeti kopyalanmadan, girişe kapalı editör olarak eklenir. Tanınmayan yönetici hesabı alınmaz. Site eklentisi 0.2.3.
+
 ### [2026-11-09] — Köprü gövdeyi başlıktan indirir
 - Paragraf olarak işaretlenmiş uzun metin artık dev puntoda akmaz. Yanlış kesilen marka adı (OctoCloud) yeniden birleşir. Kırpılmış cümle kaynak sayfadan tamamlanır; eşleşme boşluk ve tırnak farkını yok sayar. Site eklentisi 0.2.2.
 

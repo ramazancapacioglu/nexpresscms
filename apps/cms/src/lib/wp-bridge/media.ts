@@ -17,7 +17,10 @@ function swap(value: unknown, map: Record<string, string>): unknown {
 }
 
 /** Genel adresteki görselleri medya kitaplığına alır. Aynı adres ikinci kez indirilmez. */
-export async function ingestImages(siteId: string, items: Array<{ url: string; alt: string }>): Promise<{ downloaded: number; failed: number }> {
+export async function ingestImages(
+  siteId: string,
+  items: Array<{ url: string; alt: string; title?: string; caption?: string; description?: string }>
+): Promise<{ downloaded: number; failed: number }> {
   const map = await readMediaMap(siteId);
   let downloaded = 0;
   let failed = 0;
@@ -31,7 +34,19 @@ export async function ingestImages(siteId: string, items: Array<{ url: string; a
       await putOriginal(siteId, id, data);
       const ref = buildMediaRef({ id, width: info.width, height: info.height, hasAlpha: info.hasAlpha });
       const name = decodeURIComponent(new URL(item.url).pathname.split("/").pop() ?? "gorsel").replace(/[^\p{L}\p{N}._ -]/gu, "").slice(0, 120) || "gorsel";
-      await repo.saveMediaAsset({ id, filename: name, url: ref, mimeType: info.mimeType, width: info.width, height: info.height, sizeBytes: data.length, altText: item.alt });
+      await repo.saveMediaAsset({
+        id,
+        filename: name,
+        url: ref,
+        mimeType: info.mimeType,
+        width: info.width,
+        height: info.height,
+        sizeBytes: data.length,
+        altText: item.alt,
+        titleText: item.title || undefined,
+        caption: item.caption || undefined,
+        description: item.description || undefined,
+      });
       map[item.url] = ref;
       downloaded += 1;
     } catch {

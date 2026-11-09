@@ -169,7 +169,7 @@ final class Nexpress_Bridge_Transfer {
     }
     $cats = get_the_terms($post, "category");
     $tags = get_the_terms($post, "post_tag");
-    $comments = get_comments(["post_id" => $post->ID, "status" => "all", "number" => 20]);
+    $comments = get_comments(["post_id" => $post->ID, "status" => "approve", "number" => 100]);
     return [
       "wpId" => (string) $post->ID,
       "kind" => $post->post_type === "post" ? "post" : ($post->post_type === "page" ? "page" : "other"),
@@ -190,7 +190,9 @@ final class Nexpress_Bridge_Transfer {
         "keyword" => (string) (get_post_meta($post->ID, "rank_math_focus_keyword", true) ?: get_post_meta($post->ID, "_yoast_wpseo_focuskw", true)),
         "canonical" => (string) (get_post_meta($post->ID, "rank_math_canonical_url", true) ?: get_post_meta($post->ID, "_yoast_wpseo_canonical", true)),
         "noindex" => (string) get_post_meta($post->ID, "rank_math_robots", true) === "noindex" || (string) get_post_meta($post->ID, "_yoast_wpseo_meta-robots-noindex", true) === "1",
+        "schemaType" => self::schema_type((int) $post->ID),
       ],
+      "schema" => self::schema_of((int) $post->ID),
       "layout" => $layout,
       "html" => $layout === [] ? (string) $post->post_content : "",
       "comments" => array_map(static function ($comment) {
@@ -205,6 +207,84 @@ final class Nexpress_Bridge_Transfer {
         ];
       }, is_array($comments) ? $comments : []),
     ];
+  }
+
+  /** Rank Math şema anahtarının tür son eki. */
+  private static function schema_type(int $id): string {
+    $all = get_post_meta($id);
+    if (!is_array($all)) {
+      return "";
+    }
+    foreach ($all as $key => $values) {
+      if (is_string($key) && str_starts_with($key, "rank_math_schema_")) {
+        return substr($key, strlen("rank_math_schema_"));
+      }
+    }
+    $snippet = (string) get_post_meta($id, "rank_math_rich_snippet", true);
+    return $snippet;
+  }
+
+  /** @return array<string, mixed> */
+  private static function schema_of(int $id): array {
+    $type = self::schema_type($id);
+    $raw = null;
+    $all = get_post_meta($id);
+    if (is_array($all)) {
+      foreach ($all as $key => $values) {
+        if (is_string($key) && str_starts_with($key, "rank_math_schema_")) {
+          $raw = maybe_unserialize((string) ($values[0] ?? ""));
+          break;
+        }
+      }
+    }
+    $faqs = [];
+    $name = "";
+    $description = "";
+    $os = "";
+    $category = "";
+    $price = "";
+    $currency = "";
+    if (is_array($raw)) {
+      $name = self::schema_text($raw["name"] ?? "");
+      $description = self::schema_text($raw["description"] ?? "");
+      $os = self::schema_text($raw["operatingSystem"] ?? "");
+      $category = self::schema_text($raw["applicationCategory"] ?? "");
+      $offers = is_array($raw["offers"] ?? null) ? $raw["offers"] : [];
+      $price = self::schema_text($offers["price"] ?? "");
+      $currency = self::schema_text($offers["priceCurrency"] ?? "");
+      $entities = $raw["mainEntity"] ?? [];
+      if (is_array($entities) && isset($entities["name"])) {
+        $entities = [$entities];
+      }
+      if (is_array($entities)) {
+        foreach ($entities as $entity) {
+          if (!is_array($entity)) {
+            continue;
+          }
+          $answer = is_array($entity["acceptedAnswer"] ?? null) ? $entity["acceptedAnswer"] : [];
+          $question = self::schema_text($entity["name"] ?? "");
+          $reply = self::schema_text($answer["text"] ?? "");
+          if ($question === "" || $reply === "" || str_contains($question, "%") || str_contains($reply, "%")) {
+            continue;
+          }
+          $faqs[] = ["q" => $question, "a" => $reply];
+        }
+      }
+    }
+    return [
+      "type" => $type,
+      "name" => $name,
+      "description" => $description,
+      "os" => $os,
+      "category" => $category,
+      "price" => $price,
+      "currency" => $currency,
+      "faqs" => $faqs,
+    ];
+  }
+
+  private static function schema_text(mixed $value): string {
+    return is_string($value) ? trim(wp_strip_all_tags($value)) : "";
   }
 
   /** @param WP_Term[] $terms */
@@ -545,7 +625,14 @@ final class Nexpress_Bridge_Transfer {
       if (!is_string($url) || !str_starts_with($url, "http")) {
         continue;
       }
-      $items[] = ["url" => $url, "alt" => (string) get_post_meta((int) $id, "_wp_attachment_image_alt", true)];
+      $attachment = get_post((int) $id);
+      $items[] = [
+        "url" => $url,
+        "alt" => (string) get_post_meta((int) $id, "_wp_attachment_image_alt", true),
+        "title" => $attachment instanceof WP_Post ? html_entity_decode((string) $attachment->post_title, ENT_QUOTES, "UTF-8") : "",
+        "caption" => $attachment instanceof WP_Post ? wp_strip_all_tags((string) $attachment->post_excerpt) : "",
+        "description" => $attachment instanceof WP_Post ? wp_strip_all_tags((string) $attachment->post_content) : "",
+      ];
     }
     return $items;
   }

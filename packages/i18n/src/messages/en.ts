@@ -20,6 +20,8 @@ export const en: Messages = {
     restricted: "Restricted content",
     restrictedBody: "This content is reserved for corporate members or password holders.",
     shareHeading: "Share this content and hand it to AI agents",
+    authorBy: "Author: {name}",
+    commentsHeading: "Comments ({n})",
     reviewsHeading: "Ratings, reviews and comments ({n})",
     reviewsSubheading: "Verified user experiences and Schema.org AggregateRating data.",
     approvedCount: "{n, plural, one {# approved entry} other {# approved entries}}",

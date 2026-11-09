@@ -22,6 +22,15 @@ import { resolveDraftPreview } from "@/lib/draft-preview";
 import { getPreviewTheme } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
+import { PostDiscussion } from "@/components/public/post-discussion";
+
+function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
+  for (const node of nodes) {
+    if (node.type === type) return true;
+    if (Array.isArray(node.children) && treeHas(node.children as Array<{ type: string; children?: unknown[] }>, type)) return true;
+  }
+  return false;
+}
 
 export async function generateMetadata({
   params,
@@ -130,12 +139,11 @@ export default async function PublicDynamicContentPage({
 
   const reviews = await listPublicReviews(siteId, content.id);
   const approvedReviews = reviews.filter((r) => r.status === "approved");
+  const commentEntries = approvedReviews.filter((entry) => entry.entryType === "comment");
+  const reviewEntries = approvedReviews.filter((entry) => entry.entryType !== "comment" && entry.rating > 0);
   const avgRating =
-    approvedReviews.length > 0
-      ? (
-          approvedReviews.reduce((acc, r) => acc + r.rating, 0) /
-          approvedReviews.length
-        ).toFixed(1)
+    reviewEntries.length > 0
+      ? (reviewEntries.reduce((acc, entry) => acc + entry.rating, 0) / reviewEntries.length).toFixed(1)
       : "–";
 
   const pub = resolvePublishing(content.schemaAttributes);
@@ -164,10 +172,10 @@ export default async function PublicDynamicContentPage({
     pageUrl,
     autoSchema: site?.settings?.seo?.autoSchema !== false,
     aggregateRating:
-      approvedReviews.length > 0
+      reviewEntries.length > 0
         ? {
             ratingValue: Number(avgRating),
-            reviewCount: approvedReviews.length,
+            reviewCount: reviewEntries.length,
           }
         : undefined,
     content: {
@@ -176,7 +184,7 @@ export default async function PublicDynamicContentPage({
       tldr: content.tldr,
       schemaType: content.schemaType,
       schemaAttributes: content.schemaAttributes,
-      authorName: content.authorName,
+      authorName: pub.authorName || content.authorName,
       updatedAt: content.updatedAt,
       blocks: content.blocks,
       imageUrl: featuredImageUrl,
@@ -206,6 +214,19 @@ export default async function PublicDynamicContentPage({
   const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
   const syncedPatterns = await getSyncedPatternsMap(siteId);
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
+  const authorName = pub.authorName || content.authorName;
+  const when = (value: Date) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(value);
+  const discussion = (allowComments || allowReviews) && (commentEntries.length > 0 || reviewEntries.length > 0 || (content.type === "post" && authorName)) ? (
+    <PostDiscussion
+      t={t}
+      headingFont={tokens.typography.headingFont}
+      radius={tokens.geometry.borderRadius}
+      authorLine={tpl && content.type === "post" && authorName && !treeHas(tpl.blocks, "tpl_post_meta") ? t("content.authorBy", { name: authorName }) : null}
+      comments={allowComments ? commentEntries.map((entry) => ({ id: entry.id, authorName: entry.authorName, body: entry.body, dateLabel: entry.createdAt ? when(entry.createdAt) : undefined })) : []}
+      reviews={allowReviews ? reviewEntries.map((entry) => ({ id: entry.id, authorName: entry.authorName, body: entry.body, title: entry.title, rating: entry.rating })) : []}
+      avgRating={avgRating}
+    />
+  ) : null;
   if (tpl) {
     const [menu, catIndex] = await Promise.all([getResolvedMenu(siteId, locale), getScopedRepository(siteId).listTaxonomies("category")]);
     const ctx = buildTemplateContext({ lb,
@@ -233,6 +254,7 @@ export default async function PublicDynamicContentPage({
         <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}>
           <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} patterns={syncedPatterns} />
         </div>
+        {discussion}
       </>
     );
   }
@@ -301,6 +323,7 @@ export default async function PublicDynamicContentPage({
         >
           {content.title}
         </h1>
+        {content.type === "post" && authorName ? <p className="text-sm text-nx-soft">{t("content.authorBy", { name: authorName })}</p> : null}
 
         {/* Kategori, Etiket ve AggregateRating Özet Şeridi */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -327,11 +350,11 @@ export default async function PublicDynamicContentPage({
             ))}
           </div>
 
-          {approvedReviews.length > 0 && (
+          {reviewEntries.length > 0 && (
             <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
               <span className="text-amber-500">★★★★★</span>
               <span>
-                {t("content.ratingSummary", { avg: avgRating, n: approvedReviews.length })}
+                {t("content.ratingSummary", { avg: avgRating, n: reviewEntries.length })}
               </span>
             </div>
           )}
@@ -432,90 +455,7 @@ export default async function PublicDynamicContentPage({
         </section>
       )}
 
-      {/* Müşteri İncelemeleri, 5 Yıldızlı Değerlendirme & Yorumlar Bölümü */}
-      {(allowReviews || allowComments) && (
-        <section className="space-y-6 border-t pt-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h2
-                style={{ fontFamily: tokens.typography.headingFont }}
-                className="text-2xl font-bold text-nx-fg"
-              >
-                {t("content.reviewsHeading", { n: approvedReviews.length })}
-              </h2>
-              <p className="text-sm text-nx-soft">
-                {t("content.reviewsSubheading")}
-              </p>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2.5">
-              <div className="text-2xl font-extrabold text-amber-800">
-                {avgRating}
-                <span className="text-xs font-normal text-amber-800"> / 5.0</span>
-              </div>
-              <div className="text-xs text-amber-900 font-semibold">
-                <div className="text-amber-500 tracking-widest">★★★★★</div>
-                <div>{t("content.approvedCount", { n: approvedReviews.length })}</div>
-              </div>
-            </div>
-          </div>
-
-          {approvedReviews.length > 0 ? (
-            <div className="space-y-4">
-              {approvedReviews.map((rev) => (
-                <div
-                  key={rev.id}
-                  style={{ borderRadius: tokens.geometry.borderRadius }}
-                  className="border border-nx-line bg-nx-card p-5 space-y-3 shadow-2xs"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-nx-fg text-sm">
-                        {rev.authorName}
-                      </span>
-                      {rev.isVerified && (
-                        <span className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
-                          ✓ {t("content.verified")}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-amber-500 text-xs font-bold">
-                      {"★".repeat(rev.rating)} ({rev.rating}/5)
-                    </div>
-                  </div>
-                  {rev.title && (
-                    <h3 className="font-bold text-nx-fg text-sm">
-                      {rev.title}
-                    </h3>
-                  )}
-                  <p className="text-sm text-nx-soft leading-relaxed">
-                    {rev.body}
-                  </p>
-                  {(rev.pros.length > 0 || rev.cons.length > 0) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
-                      {rev.pros.length > 0 && (
-                        <div className="rounded bg-emerald-50/70 border border-emerald-200/70 p-2.5 text-emerald-900">
-                          <strong className="text-emerald-800">+ {t("content.pros")}: </strong>
-                          {rev.pros.join(" • ")}
-                        </div>
-                      )}
-                      {rev.cons.length > 0 && (
-                        <div className="rounded bg-rose-50/70 border border-rose-200/70 p-2.5 text-rose-900">
-                          <strong className="text-rose-700">− Eksiler: </strong>
-                          {rev.cons.join(" • ")}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-nx-line p-6 text-center text-sm text-nx-muted">
-              {t("content.noReviews")}
-            </div>
-          )}
-        </section>
-      )}
+      {discussion}
     </article>
   );
 }

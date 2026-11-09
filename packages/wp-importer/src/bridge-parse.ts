@@ -17,6 +17,7 @@ export interface BridgeContentItem {
   categories: Array<{ slug: string; name: string; parent: string }>;
   tags: Array<{ slug: string; name: string }>;
   seo: { title: string; description: string; keyword: string; canonical: string; noindex: boolean; schemaType: string };
+  schema: { type: string; name: string; description: string; os: string; category: string; price: string; currency: string; faqs: Array<{ q: string; a: string }> };
   layout: LayoutNode[];
   html: string;
   comments: Array<{ wpId: string; author: string; email: string; body: string; date: string; status: string; parentWpId: string }>;
@@ -45,7 +46,7 @@ export type BridgePush =
   | { kind: "begin" }
   | { kind: "site"; title: string; tagline: string }
   | { kind: "content"; items: BridgeContentItem[] }
-  | { kind: "media"; items: Array<{ url: string; alt: string }> }
+  | { kind: "media"; items: Array<{ url: string; alt: string; title: string; caption: string; description: string }> }
   | { kind: "forms"; items: BridgeFormItem[] }
   | { kind: "design"; menus: BridgeMenu[]; logoText: string; phone: string; email: string; address: string; container: number }
   | { kind: "seo"; titleTemplate: string; description: string; organizationName: string; organizationLogo: string; sameAs: string[] }
@@ -82,6 +83,26 @@ function layoutNode(value: unknown, depth: number): LayoutNode | null {
     wpId: str(row.wpId, 20),
     items: Array.isArray(row.items) ? row.items.slice(0, 40) : undefined,
     children,
+  };
+}
+
+function schemaBag(value: unknown): BridgeContentItem["schema"] {
+  const row = obj(value);
+  const faqs = list(row.faqs, 20)
+    .map((item) => {
+      const faq = obj(item);
+      return { q: str(faq.q, 240), a: str(faq.a, 2000) };
+    })
+    .filter((item) => item.q && item.a);
+  return {
+    type: str(row.type, 40),
+    name: str(row.name, 180),
+    description: str(row.description, 500),
+    os: str(row.os, 80),
+    category: str(row.category, 80),
+    price: str(row.price, 20),
+    currency: str(row.currency, 8),
+    faqs,
   };
 }
 
@@ -142,9 +163,10 @@ function contentItem(value: unknown, notes: ParseNotes): BridgeContentItem | nul
       noindex: seo.noindex === true,
       schemaType: str(seo.schemaType, 40),
     },
+    schema: schemaBag(row.schema),
     layout: list(row.layout, 80).map((item) => layoutNode(item, 0)).filter((item): item is LayoutNode => Boolean(item)),
     html: str(row.html, 100000),
-    comments: list(row.comments, 30).map((item) => {
+    comments: list(row.comments, 100).map((item) => {
       const comment = obj(item);
       return {
         wpId: str(comment.wpId, 20).replace(/[^0-9]/g, ""),
@@ -172,7 +194,16 @@ export function parseBridgePush(body: unknown): { push: BridgePush; notes: Parse
   }
   if (kind === "media") {
     const items = list(row.items, 8)
-      .map((item) => ({ url: str(obj(item).url, 500), alt: str(obj(item).alt, 180) }))
+      .map((item) => {
+        const row = obj(item);
+        return {
+          url: str(row.url, 500),
+          alt: str(row.alt, 180),
+          title: str(row.title, 180),
+          caption: str(row.caption, 300),
+          description: str(row.description, 2000),
+        };
+      })
       .filter((item) => item.url.startsWith("https://") || item.url.startsWith("http://"));
     return { push: { kind, items }, notes };
   }

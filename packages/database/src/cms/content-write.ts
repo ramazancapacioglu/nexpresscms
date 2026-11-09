@@ -1,6 +1,6 @@
 import type { SaveContentInput } from "./types";
 import { eq, and, inArray, like } from "drizzle-orm";
-import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type ContentStatus } from "@nexpress/core";
+import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type BlockNode, type ContentStatus } from "@nexpress/core";
 import { analyzeSeo, extractContentStats } from "@nexpress/seo-core";
 import { CmsRevisionRepository, type RevisionSnapshot } from "./revisions";
 
@@ -231,6 +231,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         schemaType: input.schemaType ?? "WebPage",
         schemaAttributes,
         featuredImage: input.featuredImage ?? null,
+        ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
         publishedAt: input.publishedAt ?? now,
         createdAt: input.publishedAt ?? now,
         updatedAt: now,
@@ -245,6 +246,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           schemaType: input.schemaType ?? "WebPage",
           schemaAttributes,
           featuredImage: input.featuredImage ?? null,
+          ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
           updatedAt: now,
         },
       });
@@ -350,5 +352,59 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       .from(t.contentTranslations)
       .where(and(eq(t.contentTranslations.siteId, this.siteId), eq(t.contentTranslations.locale, locale), like(t.contentTranslations.slug, `${slug.replace(/[%_\\]/g, "")}%`)));
     return uniqueSlug(slug, new Set(rows.map((r) => r.slug)));
+  }
+
+  /**
+   * Aktarılan SEO, şema ve yazarı blokları yeniden derlemeden yazar.
+   * Yalnızca dolu gelen alanlar değişir.
+   */
+  public async stampImportedMeta(input: {
+    contentId: string;
+    locale: string;
+    authorName?: string;
+    schemaType?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    richSchema?: Record<string, unknown>;
+    featuredImageAlt?: string;
+    featuredImageCaption?: string;
+    blocks?: BlockNode[];
+  }): Promise<boolean> {
+    const { db, t } = this.backend;
+    const [row] = await db
+      .select({ schemaAttributes: t.contents.schemaAttributes })
+      .from(t.contents)
+      .where(and(eq(t.contents.id, input.contentId), eq(t.contents.siteId, this.siteId)))
+      .limit(1);
+    if (!row) return false;
+    const attrs = { ...(row.schemaAttributes ?? {}) } as Record<string, unknown>;
+    if (input.richSchema && Object.keys(input.richSchema).length > 0) {
+      const prev = attrs.richSchema && typeof attrs.richSchema === "object" ? (attrs.richSchema as Record<string, unknown>) : {};
+      attrs.richSchema = { ...prev, ...input.richSchema };
+    }
+    if (input.featuredImageAlt || input.featuredImageCaption) {
+      const pub = attrs._publishing && typeof attrs._publishing === "object" ? { ...(attrs._publishing as Record<string, unknown>) } : {};
+      if (input.featuredImageAlt) pub.featuredImageAlt = input.featuredImageAlt;
+      if (input.featuredImageCaption) pub.featuredImageCaption = input.featuredImageCaption;
+      attrs._publishing = pub;
+    }
+    await db
+      .update(t.contents)
+      .set({
+        ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
+        ...(input.schemaType ? { schemaType: input.schemaType } : {}),
+        schemaAttributes: attrs,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(t.contents.id, input.contentId), eq(t.contents.siteId, this.siteId)));
+    const translation: { metaTitle?: string; metaDescription?: string; blocks?: BlockNode[]; updatedAt: Date } = { updatedAt: new Date() };
+    if (input.metaTitle) translation.metaTitle = input.metaTitle;
+    if (input.metaDescription) translation.metaDescription = input.metaDescription;
+    if (input.blocks) translation.blocks = input.blocks;
+    await db
+      .update(t.contentTranslations)
+      .set(translation)
+      .where(and(eq(t.contentTranslations.contentId, input.contentId), eq(t.contentTranslations.siteId, this.siteId), eq(t.contentTranslations.locale, input.locale)));
+    return true;
   }
 }

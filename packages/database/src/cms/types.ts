@@ -156,6 +156,8 @@ export interface SaveContentInput {
   actor?: { id: string | null; email: string };
   contentId?: string;
   type: ContentType;
+  /** Yazı satırındaki görünen yazar. Boşsa mevcut ad korunur. */
+  authorName?: string;
   status?: ContentStatus;
   importanceScore?: number;
   schemaType?: string;

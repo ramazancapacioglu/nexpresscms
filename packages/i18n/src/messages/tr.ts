@@ -23,6 +23,8 @@ export const tr = {
     restricted: "Kısıtlı içerik",
     restrictedBody: "Bu içerik kurumsal üyelere veya parola sahiplerine özel olarak işaretlenmiştir.",
     shareHeading: "Bu içeriği paylaşın ve yapay zeka ajanlarına aktarın",
+    authorBy: "Yazar: {name}",
+    commentsHeading: "Yorumlar ({n})",
     reviewsHeading: "Değerlendirmeler, incelemeler ve yorumlar ({n})",
     reviewsSubheading: "Doğrulanmış kullanıcı deneyimleri ve Schema.org AggregateRating verileri.",
     approvedCount: "{n, plural, one {# onaylı kayıt} other {# onaylı kayıt}}",

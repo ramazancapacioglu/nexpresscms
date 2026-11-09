@@ -7,3 +7,4 @@ export * from "./links";
 export * from "./bridge-draw";
 export * from "./bridge-parse";
 export * from "./bridge-repair";
+export * from "./seo-vars";

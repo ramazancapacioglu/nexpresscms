@@ -50,7 +50,8 @@ export class CmsCommentsRepository extends CmsMediaRepository {
       authorName: input.authorName,
       authorEmail: input.authorEmail ?? null,
       entryType: input.entryType,
-      rating: Math.min(5, Math.max(1, input.rating ?? 5)),
+      // Yorum yıldız değildir. İnceleme 1–5 aralığında kalır; boş inceleme 5 sayılır.
+      rating: input.entryType === "comment" ? 0 : Math.min(5, Math.max(1, input.rating ?? 5)),
       title: input.title ?? null,
       body: input.body,
       pros: input.pros ?? [],
