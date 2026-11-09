@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { drawLayout, splitGluedTitle } from "../src/bridge-draw";
 import { resolveAssetUrl } from "../src/links";
-import { repairImportedBlocks } from "../src/bridge-repair";
+import { extendClippedText, repairImportedBlocks, tidyImportedBlocks } from "../src/bridge-repair";
 import { parseBridgePush } from "../src/bridge-parse";
 
 test("satır tam genişlik ve sütun olarak çizilir; tanınmayan düğüm metne düşer", () => {
@@ -40,6 +40,23 @@ test("göreli görsel kaynak siteye bağlanır, yapışık başlık ayrılır", 
     body: "Ön muhasebe ve genel muhasebe çözümleri",
   });
   assert.equal(splitGluedTitle("AKINSOFT, Türkiye'nin yerli yazılım markasıdır."), null);
+  assert.equal(splitGluedTitle("Evet. Wolvox ERP, OctoCloud ve tüm sektörel yazılımların deneme sürümü burada."), null);
+  const tidied = tidyImportedBlocks([
+    { id: "h", type: "heading", props: { text: "AKINSOFT, Türkiye'nin öncü yerli yazılım markası olarak işletmelerin verimliliğini artıran uzun bir gövde metnidir ve başlık değildir." } },
+    { id: "a", type: "heading", props: { text: "Evet. Wolvox ERP, Octo" } },
+    { id: "b", type: "paragraph", props: { text: "Cloud ve tüm sektörel yazılımların 30 günlük ücretsiz deneme sürümünü kuruyoruz." } },
+    { id: "c", type: "heading", props: { text: "Muhasebe Programı" } },
+    { id: "d", type: "paragraph", props: { text: "Ön muhasebe ve Genel Muhasebe Çözümleri" } },
+  ]);
+  assert.equal(tidied.blocks[0]?.type, "paragraph");
+  assert.equal(tidied.blocks[1]?.props.text?.startsWith("Evet. Wolvox ERP, OctoCloud"), true);
+  assert.equal(tidied.blocks[2]?.type, "heading");
+  assert.equal(tidied.blocks[2]?.props.text, "Muhasebe Programı");
+  const extended = extendClippedText(
+    [{ id: "p", type: "paragraph", props: { text: "A".repeat(80) + "B".repeat(180) } }],
+    ["A".repeat(80) + "B".repeat(180) + " devamı burada uzuyor."],
+  );
+  assert.equal(extended.extended, 1);
   const drawn = drawLayout([{ type: "image", url: "/wp-content/uploads/a.webp", alt: "Simge" }], { baseUrl: "https://www.ornek.test" });
   assert.equal(drawn.blocks[0]?.props.url, "https://www.ornek.test/wp-content/uploads/a.webp");
   const images = new Set<string>();

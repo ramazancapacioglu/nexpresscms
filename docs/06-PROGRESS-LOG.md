@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-09] — Köprü gövdeyi başlıktan indirir
+- Paragraf olarak işaretlenmiş uzun metin artık dev puntoda akmaz. Yanlış kesilen marka adı (OctoCloud) yeniden birleşir. Kırpılmış cümle kaynak sayfadan tamamlanır. Site eklentisi 0.2.2.
+
 ### [2026-11-08] — Köprü görseli ve yapışık başlığı onarır
 - Göreli `/wp-content/uploads` yolu kaynak siteye bağlanıp indirilir. Boşluksuz yapışmış kart başlığı başlık ve paragrafa ayrılır. Bölümü olmayan sayfayı AI yerleştirir; görseli veya bölümü olan sayfa durur. Site eklentisi 0.2.1. Bakım betiği önbellek etiketi düşüremezse indirme yine sürer.
 

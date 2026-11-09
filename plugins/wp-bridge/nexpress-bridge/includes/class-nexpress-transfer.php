@@ -248,7 +248,14 @@ final class Nexpress_Bridge_Transfer {
         continue;
       }
       if (self::has($name, "heading")) {
-        $out[] = ["type" => "heading", "level" => (int) ($attrs["level"] ?? 2), "text" => self::plain($attrs, $html)];
+        $text = self::plain($attrs, $html);
+        $asParagraph = str_starts_with(ltrim($html), "<p") || mb_strlen($text) > 90;
+        if ($asParagraph) {
+          $safe = wp_kses_post($html);
+          $out[] = ["type" => "paragraph", "html" => $safe !== "" ? $safe : $text];
+        } else {
+          $out[] = ["type" => "heading", "level" => (int) ($attrs["level"] ?? 2), "text" => $text];
+        }
         continue;
       }
       if (self::has($name, "paragraph") || self::has($name, "text")) {

@@ -1,6 +1,6 @@
 # 24 — WordPress Köprüsü (panel eklentisi + site eklentisi)
 
-> Durum: **0.2.1 (2026-11-08).** Panel kod üretir. WordPress eklentisi paketi iter: sayfa, yazı, yorum, form, menü, SEO, yönlendirme, görsel. Göreli görsel kaynak siteye bağlanır. Yapışık başlık ayrılır. Yapısız sayfayı AI yerleştirir. E-ticaret dışarıda. Eski dosya aktarımı durur: `docs/17`.
+> Durum: **0.2.2 (2026-11-09).** Uzun gövde başlık sanılmaz. Panel kod üretir. WordPress eklentisi paketi iter: sayfa, yazı, yorum, form, menü, SEO, yönlendirme, görsel. Göreli görsel kaynak siteye bağlanır. Yapışık başlık ayrılır. Yapısız sayfayı AI yerleştirir. E-ticaret dışarıda. Eski dosya aktarımı durur: `docs/17`.
 
 ## 1. Neden ayrı eklenti
 
