@@ -46,7 +46,7 @@ Her tema kendi klasöründe bağımsız bir pakettir ve şu 4 bileşeni içerir:
    - İçerik verisi (Örn: `HeroBlock`, `PricingBlock`, `ProductGridBlock`, `FaqBlock`) sabit kalır; ancak tema değiştiğinde blokların görsel sunumu anında yeni temanın estetiğine bürünür.
 
 ### 1.2. Admin Tema Mağazası (`/admin/themes`) Deneyimi
-- **Canlı Önizleme (Live Preview):** Mağazadaki **Önizle** yeni sekmede `?nx_preview=<tema>` açar. Oturum gerekir; kayıt yazılmaz. Resmi tema manifestodan, yüklenen tema satırından okunur. Tek dilde adres ön eksizdir (`/?nx_preview=`). Yazılım Firması kapatılıp başka resmi tema açılınca tam genişlik, hap düğme ve o temanın şerit düzeni sade şeride döner; menü ağacı, footer ve sayfalar durur.
+- **Canlı Önizleme (Live Preview):** Mağazadaki **Önizle** yeni sekmede `?nx_preview=<tema>` açar. Oturum gerekir; kayıt yazılmaz. Resmi tema manifestodan, yüklenen tema satırından okunur. Tek dilde adres ön eksizdir (`/?nx_preview=`). Yazılım Firması açılmadan önce menü, üst şerit, alt bilgi ve yerleşim saklanır. Başka temaya geçince bu kabuk geri gelir; renkler yeni temanın jetonudur. Saklanan kabuk yoksa şerit sade düzene, alt bilgi sade telife döner; menü öğeleri ve sayfalar durur. Veri kümesini yeniden derlemek o anki menüyü saklar.
 - **Tek Tıkla Etkinleştirme & Token Özelleştirici:** Temayı etkinleştirdikten sonra sağ çekmeceden temanın ana rengini, font ikilisini ve köşe yuvarlaklığını kod yazmadan değiştirebilir.
 
 ---

@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-10] — Öne çıkan sayfa, blog sayfası ve tema kabuğu
+- **Sayfalar:** Öne çıkan sayfa ana sayfayı, blog sayfası yazı listesini belirler. Tema demosu yalnızca öne çıkan sayfa boşken kullanılır.
+- **Köprü 0.3.1:** WordPress ana sayfa ve yazı sayfası bayrakları okunur. Veri kümesindeki `blog` adresi yazı sayfası olur ve o andaki menü/şerit tema değişince geri gelsin diye saklanır.
+- **Tema:** Yazılım Firması açılmadan önceki kabuk saklanır. Başka temaya geçince menü, alt bilgi ve yerleşim geri gelir; renkler yeni temadandır.
+
 ### [2026-11-10] — Yönetim paneli eski parça hatası
 - Dağıtımdan sonra açık panel eski `/_next/static/chunks/...` adresini ister; sunucu HTML 404 döndüğü için tarayıcı betiği `text/html` diye keser. Yönetim hata sınırı bu durumda belgeyi bir kez yeniler.
 

@@ -4,6 +4,7 @@ import type { ContentStatus } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { compileRichWpHtml, convertWpHtml, hasRichBlockMarkup, rewriteBlockLinks, schemaFromBridge } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
+import { captureChromeSnapshot } from "@/lib/apply-yazilim-firmasi-theme";
 import { applyDatasetChrome, DATASET_ORIGIN, DATASET_PALETTE } from "./dataset-chrome";
 import { appendDatasetLists, remapDatasetAsset, remapDatasetImageUrls } from "./dataset-images";
 import { addBridgeReport } from "./store";
@@ -157,6 +158,7 @@ export async function reconstructRichSiteDataset(siteId: string): Promise<{
     liveById.get(`cnt_wp_${wpId}`) ?? slugs.map((slug) => bySlug.get(slug)).find(Boolean) ?? trashById.get(`cnt_wp_${wpId}`) ?? null;
 
   let pagesUpdated = 0;
+  let blogSlug = "";
   for (const page of dataset.pages ?? []) {
     const rawSlug = page.slug === "home" ? "ana-sayfa" : page.slug;
     const slug = templateSlugs.has(rawSlug) ? `${rawSlug}-sayfa` : rawSlug;
@@ -188,8 +190,10 @@ export async function reconstructRichSiteDataset(siteId: string): Promise<{
       metaTitle: existing?.metaTitle ?? page.title,
       metaDescription: existing?.metaDescription ?? (page.excerpt ? page.excerpt.slice(0, 160) : undefined),
     });
+    if (finalSlug === "blog" || rawSlug === "blog") blogSlug = finalSlug;
     pagesUpdated += 1;
   }
+  if (blogSlug) await repo.saveSiteSettings({ general: { postsPageSlug: blogSlug } });
 
   let postsUpdated = 0;
   for (const post of [...(dataset.posts ?? []), ...(dataset.prompts ?? [])]) {
@@ -232,6 +236,8 @@ export async function reconstructRichSiteDataset(siteId: string): Promise<{
     });
     postsUpdated += 1;
   }
+
+  await captureChromeSnapshot(siteId, site?.activeThemeId || "corporate-aurora", locale);
 
   await addBridgeReport(siteId, {
     updated: pagesUpdated + postsUpdated,

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentWidthStyle, hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -13,6 +13,7 @@ import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
 import { buildTemplateContext, coverTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
+import { PostsIndex } from "@/components/public/posts-index";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
@@ -166,6 +167,10 @@ export default async function PublicDynamicContentPage({
   const preview = await getPreviewTheme(siteId);
   const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
+  const postsPageSlug = sanitizeReadingSlug(resolveSiteSettings(site?.settings).general.postsPageSlug);
+  if (!draft && postsPageSlug && postsPageSlug === content.slug && content.type === "page") {
+    return <PostsIndex siteId={siteId} locale={locale} title={content.title} tokens={tokens} />;
+  }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}${lb}/${content.slug}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);

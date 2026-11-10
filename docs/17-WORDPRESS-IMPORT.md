@@ -23,6 +23,8 @@ Başlık (h1–h2→h2, h3, h4–h6→h4), paragraf (satır içi biçim `props.h
 Canlı köprü bu kısa kod yolunu kullanmaz. WordPress eklentisi işlenmiş HTML gönderir; `compileRichWpHtml` satır, sütun, kart, liste, akordeon, form ve haritayı blok ağacına çevirir. Ayrıntı `docs/24`. Taban adres verilmezse göreli görsel yolu durur.
 
 ## Görseller
+Köprü 0.3.1, WordPress okuma ayarındaki ana sayfayı (`page_on_front`) öne çıkan sayfa, yazı sayfasını (`page_for_posts`) blog sayfası yapar. Blog sayfasının gövdesi boş olsa da ziyaretçi yazı listesini görür. Veri kümesinde ayrı ana sayfa kaydı yoktur; `blog` adresi yazı sayfası olur. Öne çıkan sayfa `/admin/pages` üzerinden seçilir.
+
 Varsayılan: görsel adresleri eski sitede kalır. Seçenek açıksa en çok 400 görsel indirilip medya kitaplığına alınır (bloklarda ve öne çıkan görselde adresler yeniden yazılır); indirilemeyen görselin adresi olduğu gibi kalır. Güvenlik için bkz. `docs/11` §8a.
 
 ## Görünüm (canlı sayfadan yeniden çizim)

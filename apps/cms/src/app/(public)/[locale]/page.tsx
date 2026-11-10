@@ -1,4 +1,4 @@
-import { hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
+import { hasDynamicQueryParams, pickFrontSlug, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
 import { siteLocaleBase } from "@/lib/locale-url";
 import React from "react";
 import { headers } from "next/headers";
@@ -17,14 +17,18 @@ import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 
-/** Tema demosu varsa onu, yoksa klasik ana sayfa adresini kullanır. */
-async function resolveHomeSlug(siteId: string, themeId: string, locale: string) {
-  if (themeId === INK_GRID_ID) return INK_GRID_HOME_SLUG;
-  if (themeId === YF_THEME_ID) {
+/** Seçilmiş öne çıkan sayfa durur. Yoksa tema demosu, o da yoksa `ana-sayfa`. */
+async function resolveHomeSlug(siteId: string, themeId: string, locale: string, settings: unknown) {
+  let fallback = "ana-sayfa";
+  if (themeId === INK_GRID_ID) fallback = INK_GRID_HOME_SLUG;
+  else if (themeId === YF_THEME_ID) {
     const demo = await getPublicContentBySlug(siteId, YF_DEMO_HOME_SLUG, locale);
-    if (demo) return YF_DEMO_HOME_SLUG;
+    if (demo) fallback = YF_DEMO_HOME_SLUG;
   }
-  return "ana-sayfa";
+  const chosen = pickFrontSlug(resolveSiteSettings(settings).general.frontPageSlug, "");
+  if (!chosen) return fallback;
+  const page = await getPublicContentBySlug(siteId, chosen, locale);
+  return page ? chosen : fallback;
 }
 
 /** Ana sayfa: dil başına canonical ve karşılıklı hreflang (yalnızca yayındaki çeviriler). */
@@ -37,7 +41,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const site = await getPublicSite(siteId);
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
   const themeId = site?.activeThemeId ?? "corporate-aurora";
-  const home = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, themeId, locale), locale);
+  const home = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, themeId, locale, site?.settings), locale);
   const seoMeta = home
     ? resolveSeoMeta({
         siteName: localizedSite.name,
@@ -106,7 +110,7 @@ export default async function PublicHomePage({
   const isInk = skinId === INK_GRID_ID;
   const isYf = skinId === YF_THEME_ID;
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
-  const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale), locale);
+  const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale, site?.settings), locale);
   const mediaFocal = await getPublicMediaFocal(siteId);
   const allContents = isInk || isYf ? [] : await listPublishedContents(siteId, locale);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";

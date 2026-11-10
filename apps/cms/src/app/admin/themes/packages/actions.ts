@@ -5,6 +5,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
+import { switchThemeChrome } from "@/lib/apply-yazilim-firmasi-theme";
 
 export type ActivateResult =
   | { ok: true; pagesAdded: number; pagesSkipped: number; chromeApplied: boolean }
@@ -21,8 +22,10 @@ export async function activateUploadedThemeAction(input: { themeId: string; appl
   if (!theme) return { ok: false, error: "Tema bulunamadı." };
   const site = await repo.getSite();
   const defaultLocale = site?.defaultLocale ?? "tr";
+  const previousId = site?.activeThemeId ?? "";
 
   await repo.activateTheme(theme.themeId, theme.tokens as DesignTokens, theme.recommendedProfile as SiteProfile);
+  await switchThemeChrome(admin.siteId, previousId, theme.themeId, defaultLocale);
 
   let chromeApplied = false;
   if (input.applyChrome && (theme.header || theme.footer)) {

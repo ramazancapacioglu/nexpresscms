@@ -53,6 +53,8 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
   ];
   const slugOwner = new Map(existingRows.map((row) => [row.slug, row.id]));
   const delta = { created: 0, updated: 0, failed: 0, links: 0, unknown: 0, images: 0, redirects: 0 };
+  let frontSlug = "";
+  let postsSlug = "";
   const imageQueue: Array<{ url: string; alt: string }> = [];
 
   for (const item of items) {
@@ -153,6 +155,8 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
         noIndex: item.seo.noindex,
         ...(!existing && date && !Number.isNaN(date.getTime()) ? { publishedAt: date } : {}),
       });
+      if (item.front) frontSlug = slug;
+      if (item.postsPage) postsSlug = slug;
       if (existing) delta.updated += 1;
       else delta.created += 1;
       for (const comment of item.comments) {
@@ -187,6 +191,14 @@ async function writeContent(siteId: string, origin: string, items: BridgeContent
   const images = await ingestImages(siteId, imageQueue.slice(0, 8));
   delta.images += images.downloaded;
   if (images.downloaded) await remapContentImages(siteId, locale);
+  if (frontSlug || postsSlug) {
+    await repo.saveSiteSettings({
+      general: {
+        ...(frontSlug ? { frontPageSlug: frontSlug } : {}),
+        ...(postsSlug ? { postsPageSlug: postsSlug } : {}),
+      },
+    });
+  }
   await addBridgeReport(siteId, delta);
   return { ...delta, imageFailed: images.failed, waiting: Math.max(0, imageQueue.length - 8) };
 }

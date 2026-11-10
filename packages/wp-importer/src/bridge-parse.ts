@@ -14,6 +14,7 @@ export interface BridgeContentItem {
   link: string;
   featured: string;
   front: boolean;
+  postsPage: boolean;
   categories: Array<{ slug: string; name: string; parent: string }>;
   tags: Array<{ slug: string; name: string }>;
   seo: { title: string; description: string; keyword: string; canonical: string; noindex: boolean; schemaType: string };
@@ -147,6 +148,7 @@ function contentItem(value: unknown, notes: ParseNotes): BridgeContentItem | nul
     link: str(row.link, 500),
     featured: str(row.featured, 500),
     front: row.front === true,
+    postsPage: row.postsPage === true,
     categories: list(row.categories, 20).map((item) => {
       const term = obj(item);
       return { slug: str(term.slug, 80), name: str(term.name, 120), parent: str(term.parent, 80) };

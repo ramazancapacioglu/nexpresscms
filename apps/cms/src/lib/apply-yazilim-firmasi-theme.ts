@@ -1,4 +1,6 @@
+import { resolveSiteSettings } from "@nexpress/core";
 import {
+  FOOTER_TEMPLATES,
   HEADER_TEMPLATES,
   YF_BRAND,
   YF_FOOTER,
@@ -15,14 +17,58 @@ export function isYazilimFirmasiTheme(themeId: string): boolean {
   return themeId === YF_THEME_ID || themeId === YF_LEGACY_THEME_ID;
 }
 
+/** Yazılım Firması şeridini yazmadan önce mevcut menü, alt bilgi ve yerleşimi saklar. */
+export async function captureChromeSnapshot(siteId: string, themeId: string, locale = "tr") {
+  const repo = getScopedRepository(siteId);
+  const nav = await repo.getNavigationLayout(locale);
+  if (!nav) return;
+  const settings = resolveSiteSettings((await repo.getSite())?.settings);
+  await repo.saveSiteSettings({
+    general: {
+      chromeSnapshot: {
+        capturedFromThemeId: themeId,
+        headerConfig: nav.headerConfig,
+        menuItems: nav.menuItems,
+        menus: nav.footerConfig.menus ?? [],
+        footerConfig: nav.footerConfig,
+        sidebarConfig: nav.sidebarConfig,
+        customizer: {
+          buttons: settings.customizer.buttons,
+          header: settings.customizer.header,
+          footer: settings.customizer.footer,
+          layout: settings.customizer.layout,
+        },
+      },
+    },
+  });
+}
+
+/** Saklanan şeridi geri yazar. Renk jetonlarına dokunmaz; onlar yeni temadan gelir. */
+export async function restoreChromeSnapshot(siteId: string, locale = "tr"): Promise<boolean> {
+  const repo = getScopedRepository(siteId);
+  const snap = resolveSiteSettings((await repo.getSite())?.settings).general.chromeSnapshot;
+  if (!snap) return false;
+  await repo.saveNavigationLayout({
+    locale,
+    headerConfig: snap.headerConfig,
+    menuItems: snap.menuItems,
+    menus: snap.menus,
+    footerConfig: snap.footerConfig,
+    sidebarConfig: snap.sidebarConfig,
+  });
+  await repo.saveSiteSettings({ customizer: snap.customizer });
+  return true;
+}
+
 /**
- * Yazılım Firması kapanınca tam genişlik, hap düğme ve o temanın şerit düzeni kalkar.
- * Menü ağacı ve footer içeriği durur; sayfalar silinmez.
+ * Anlık görüntü yoksa sade şerit ve sade alt bilgiye döner.
+ * Sayfalar silinmez.
  */
 export async function restoreChromeAfterYazilimFirmasi(siteId: string, locale = "tr") {
   const repo = getScopedRepository(siteId);
   const nav = await repo.getNavigationLayout(locale);
   const plain = HEADER_TEMPLATES.find((item) => item.id === "header-plain")?.value;
+  const plainFooter = FOOTER_TEMPLATES.find((item) => item.id === "footer-plain")?.value;
   if (nav && plain) {
     const ctaLabel = nav.headerConfig.mainBar?.ctaLabel || plain.mainBar.ctaLabel;
     const ctaHref = nav.headerConfig.mainBar?.ctaHref || plain.mainBar.ctaHref;
@@ -30,7 +76,7 @@ export async function restoreChromeAfterYazilimFirmasi(siteId: string, locale = 
       locale,
       headerConfig: { ...plain, mainBar: { ...plain.mainBar, ctaLabel, ctaHref } },
       menuItems: nav.menuItems,
-      footerConfig: nav.footerConfig,
+      footerConfig: plainFooter ?? nav.footerConfig,
       sidebarConfig: nav.sidebarConfig,
     });
   }
@@ -41,6 +87,24 @@ export async function restoreChromeAfterYazilimFirmasi(siteId: string, locale = 
       layout: { contentLayout: "boxed", sidebarOnPage: false },
     },
   });
+}
+
+/**
+ * Yazılım Firması açılınca önceki kabuk saklanır, kapanınca o kabuk geri gelir.
+ * Renkler `activateTheme` ile yeni temaya aittir.
+ */
+export async function switchThemeChrome(siteId: string, previousId: string, nextId: string, locale = "tr") {
+  const nextIsYf = isYazilimFirmasiTheme(nextId);
+  const prevIsYf = isYazilimFirmasiTheme(previousId);
+  if (nextIsYf && !prevIsYf) await captureChromeSnapshot(siteId, previousId || "corporate-aurora", locale);
+  if (nextIsYf) {
+    await applyYazilimFirmasiChrome(siteId, locale);
+    return;
+  }
+  if (prevIsYf) {
+    const restored = await restoreChromeSnapshot(siteId, locale);
+    if (!restored) await restoreChromeAfterYazilimFirmasi(siteId, locale);
+  }
 }
 
 /** Temayı seçince şerit, menü, footer, kenar ve demo formu yayına yazılır. Sayfa içerikleri silinmez. */

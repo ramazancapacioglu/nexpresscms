@@ -135,7 +135,7 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
       <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
         <h2 className="text-[15px] font-semibold">Veri kümesinden derle</h2>
         <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
-          Eşleşmiş siteyi okumaz. Depoda aktarım veri kümesi varsa sayfa, yazı, kategori, menü ve üst şeridi o dosyadan yeniden yazar. Dosya yoksa hiçbir kayıt değişmez. Çöp ve taslak yayına alınmaz.
+          Eşleşmiş siteyi okumaz. Depoda aktarım dosyası varsa sayfa, yazı, kategori, menü ve üst şeridi oradan yazar. Dosyada ayrı bir ana sayfa yoksa öne çıkan sayfayı Sayfalar ekranından seçin. `blog` adresi yazı listesi olur. Dosya yoksa hiçbir kayıt değişmez. Çöp ve taslak yayına alınmaz.
         </p>
         <button
           type="button"

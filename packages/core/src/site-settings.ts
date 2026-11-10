@@ -1,3 +1,4 @@
+import { sanitizeChromeSnapshot, sanitizeReadingSlug, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
@@ -239,6 +240,12 @@ export interface GeneralSettings {
   maintenanceMessage: string;
   /** İkincil diller için site adı, slogan ve SEO başlık şablonu */
   locales?: Record<string, LocalizedSiteIdentity>;
+  /** Ziyaretçi ana sayfası. Boşsa tema yedeği (`ana-sayfa` veya tema demosu) kullanılır. */
+  frontPageSlug?: string;
+  /** Yazıların listelendiği sayfa. Boşsa ayrı blog sayfası yoktur. */
+  postsPageSlug?: string;
+  /** Yazılım Firması kabuğu uygulanmadan önceki şerit, menü ve yerleşim. */
+  chromeSnapshot?: ChromeSnapshot | null;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -247,6 +254,9 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   maintenanceEnabled: false,
   maintenanceMessage: "",
   locales: {},
+  frontPageSlug: "",
+  postsPageSlug: "",
+  chromeSnapshot: null,
 };
 
 /** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
@@ -320,13 +330,19 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
   >;
   const d = DEFAULT_CUSTOMIZER_SETTINGS;
   const seoRaw = (r.seo && typeof r.seo === "object" ? r.seo : {}) as Record<string, unknown>;
+  const generalRaw = (r.general && typeof r.general === "object" ? r.general : {}) as Record<string, unknown>;
   return {
     seo: {
       ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
       schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements),
       permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
     },
-    general: mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
+    general: {
+      ...mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
+      frontPageSlug: sanitizeReadingSlug(generalRaw.frontPageSlug),
+      postsPageSlug: sanitizeReadingSlug(generalRaw.postsPageSlug),
+      chromeSnapshot: sanitizeChromeSnapshot(generalRaw.chromeSnapshot),
+    },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {
       ...(typeof c.activePaletteId === "string" ? { activePaletteId: c.activePaletteId } : { activePaletteId: d.activePaletteId }),

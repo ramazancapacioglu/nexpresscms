@@ -151,18 +151,19 @@ final class Nexpress_Bridge_Transfer {
       "no_found_rows" => false,
     ]);
     $front = (int) get_option("page_on_front");
+    $postsPage = (int) get_option("page_for_posts");
     $items = [];
     foreach ($query->posts as $post) {
       if (!$post instanceof WP_Post) {
         continue;
       }
-      $items[] = self::content($post, $front);
+      $items[] = self::content($post, $front, $postsPage);
     }
     return $items;
   }
 
   /** @return array<string, mixed> */
-  private static function content(WP_Post $post, int $front): array {
+  private static function content(WP_Post $post, int $front, int $postsPage): array {
     $layout = self::meta_layout((int) $post->ID);
     if ($layout === [] && function_exists("parse_blocks")) {
       $layout = self::blocks_to_layout(parse_blocks((string) $post->post_content));
@@ -182,6 +183,7 @@ final class Nexpress_Bridge_Transfer {
       "link" => (string) get_permalink($post),
       "featured" => self::abs_url((string) get_the_post_thumbnail_url($post, "full")),
       "front" => $front === (int) $post->ID,
+      "postsPage" => $postsPage === (int) $post->ID,
       "categories" => self::terms(is_array($cats) ? $cats : []),
       "tags" => self::terms(is_array($tags) ? $tags : []),
       "seo" => [

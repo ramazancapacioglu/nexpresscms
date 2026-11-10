@@ -7,8 +7,8 @@ import "@/plugins/register";
 import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
-import { YF_THEME_ID, getThemeManifest } from "@nexpress/themes";
-import { applyYazilimFirmasiChrome, isYazilimFirmasiTheme, restoreChromeAfterYazilimFirmasi } from "@/lib/apply-yazilim-firmasi-theme";
+import { getThemeManifest } from "@nexpress/themes";
+import { switchThemeChrome } from "@/lib/apply-yazilim-firmasi-theme";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
 import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";
@@ -38,7 +38,9 @@ export async function activateThemeAction(input: {
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
-  const previousId = (await repo.getSite())?.activeThemeId ?? "";
+  const site = await repo.getSite();
+  const previousId = site?.activeThemeId ?? "";
+  const locale = site?.defaultLocale ?? "tr";
   const manifest = getThemeManifest(input.themeId);
   const mergedTokens: DesignTokens = {
     ...manifest.tokens,
@@ -57,8 +59,7 @@ export async function activateThemeAction(input: {
     mergedTokens,
     input.siteProfile ?? manifest.recommendedProfile
   );
-  if (manifest.id === YF_THEME_ID) await applyYazilimFirmasiChrome(siteId);
-  else if (isYazilimFirmasiTheme(previousId)) await restoreChromeAfterYazilimFirmasi(siteId);
+  await switchThemeChrome(siteId, previousId, manifest.id, locale);
 
   await revalidatePath("/admin");
   await revalidatePath("/admin/themes");
