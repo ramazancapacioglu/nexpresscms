@@ -6,6 +6,8 @@ Bu modül **açık kaynaklı çekirdeğin (Free Core)** bir parçasıdır ve her
 
 ## 1. Teknik SEO Çekirdeği
 
+0. **Kalıcı bağlantılar** (`/admin/seo/settings` ve motor ayarları): `postname` (varsayılan `/{slug}`), `plain`, `dayname` (`/yıl/ay/gün/slug`), `monthname`, `numeric` (`/arsiv/{sayı}/slug`). Tarih ve sayısal ön ek ara katmanda düşer; asıl sayfa slug adresidir. Kayıt `public/.htaccess` (veya `HTACCESS_PATH`) dosyasını yeniler. Dosyada WordPress `index.php` kuralı yoktur. Nginx bu dosyayı okumaz.
+
 1. **Dinamik Metadata & OpenGraph Şablonları:**
    - Sayfa bazında `metaTitle`, `metaDescription`, `canonicalUrl`, `noIndex` / `noFollow`.
    - Dinamik `@vercel/og` (`ImageResponse`) ile her yazı ve sayfa için otomatik kurumsal OpenGraph görseli üretimi.

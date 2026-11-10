@@ -13,7 +13,7 @@ export async function issueBridgeCodeAction(): Promise<{ ok: true; code: string;
   return { ok: true, ...issued };
 }
 
-/** Zengin blok derleyicisiyle tüm sayfa, yazı, kategori, görsel ve menüleri yeniden derler. */
+/** Zengin blok derleyicisiyle depodaki aktarım veri kümesini yeniden yazar. */
 export async function reconstructBridgeDatasetAction(): Promise<
   | { ok: true; pagesUpdated: number; postsUpdated: number; categoriesUpdated: number; imagesCopied: number }
   | { ok: false; error: string }
@@ -32,25 +32,22 @@ export async function reconstructBridgeDatasetAction(): Promise<
   };
 }
 
-/** Göreli görselleri indirir, yapışık başlıkları ayırır, yapısız sayfaları AI ile yerleştirir. */
+/** Göreli görselleri indirir, yapışık başlıkları ayırır, yapısız sayfaları yerleştirir. Veri kümesini okumaz. */
 export async function repairBridgeAction(): Promise<
   | { ok: true; pages: number; split: number; downloaded: number; failed: number; drawn: number; note: string }
   | { ok: false; error: string }
 > {
   const admin = await requireAdmin("wp-bridge.repair");
-  const reconstructed = await reconstructRichSiteDataset(admin.siteId);
   const repair = await repairImportedAssets(admin.siteId);
-  if (!repair.origin && !reconstructed.ok) return { ok: false, error: "Kaynak site adresi yok. Önce eşleştirin." };
+  if (!repair.origin) return { ok: false, error: "Kaynak site adresi yok. Önce eşleştirin." };
   const draw = await redrawFlatPages(admin.siteId, 4);
   return {
     ok: true,
-    pages: repair.pages + reconstructed.pagesUpdated,
+    pages: repair.pages,
     split: repair.split,
-    downloaded: repair.downloaded + reconstructed.imagesCopied,
+    downloaded: repair.downloaded,
     failed: repair.failed,
     drawn: draw.drawn,
-    note: reconstructed.ok
-      ? `${reconstructed.pagesUpdated} sayfa ve ${reconstructed.postsUpdated} yazı zengin blok ağacıyla yeniden derlendi.${draw.note ? ` ${draw.note}` : ""}`
-      : draw.note,
+    note: draw.note,
   };
 }

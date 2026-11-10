@@ -91,6 +91,40 @@ test("rich-layout: blok oluşturucu satırları, bilgi kartları, ikonlu listele
   assert.equal(items[0]?.href, "/wolvox-erp");
 });
 
+test("rich-layout: taban adres yoksa göreli görsel müşteri alan adına bağlanmaz", () => {
+  const html = `<div class="kb-row-layout-wrap wp-block-kadence-rowlayout"><div class="kt-row-column-wrap kt-has-1-columns"><div class="wp-block-kadence-column"><div class="kt-inside-inner-col"><img src="/wp-content/uploads/ornek.webp" alt="Örnek" /></div></div></div></div>`;
+  const res = compileRichWpHtml(html);
+  const urls = JSON.stringify(res.blocks);
+  assert.equal(urls.includes("akinsoftizmir.com.tr"), false);
+  assert.match(urls, /\/wp-content\/uploads\/ornek\.webp/);
+});
+
+test("rich-layout: tekrarlayan satır kimliği metni silip sabit düğme yazmaz", () => {
+  const html = `
+    <div class="kb-row-layout-wrap kb-row-layout-id6211_ornek has-theme-palette3-background-color wp-block-kadence-rowlayout">
+      <div class="kt-row-column-wrap kt-has-1-columns">
+        <div class="wp-block-kadence-column"><div class="kt-inside-inner-col">
+          <h2>Demo kurulumu</h2>
+          <p>Kısa açıklama metni burada.</p>
+          <a class="kb-button" href="/demo">Demo Talebi</a>
+          <a class="kb-button" href="/destek">Destek Talebi</a>
+        </div></div>
+      </div>
+    </div>`;
+  const res = compileRichWpHtml(html, { baseUrl: "https://ornek.site" });
+  const flat = JSON.stringify(res.blocks);
+  assert.equal(flat.includes("/akinsoft-demo-talebi"), false);
+  assert.match(flat, /Demo Talebi/);
+  assert.match(flat, /Destek Talebi/);
+});
+
+test("rich-layout: harita sorgusu yoksa genel konum metni kalır", () => {
+  const html = `<div class="wp-block-kadence-googlemaps"><iframe src="https://maps.google.com/maps?output=embed"></iframe></div>`;
+  const res = compileRichWpHtml(html);
+  const map = res.blocks.find((block) => block.type === "map_embed");
+  assert.equal(map?.props?.query, "Konum");
+});
+
 test("rich-layout: gerçek wp-content.json veri kümesindeki sayfalar taşmasız ve iç içe sütun kırmadan derlenir", () => {
   const datasetPath = path.resolve(process.cwd(), "../../docs/akinsoftizmir-com-tr-aktarim/public/data/wp-content.json");
   if (!fs.existsSync(datasetPath)) return;

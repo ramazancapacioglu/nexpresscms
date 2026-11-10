@@ -10,7 +10,7 @@ import { getSyncedPatternsMap } from "@/lib/templates";
 import { coverTemplateContext } from "@/lib/template-context";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
-import { getPreviewTheme } from "@/lib/public-theme";
+import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { createFormToken } from "@/lib/form-token";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
@@ -101,9 +101,10 @@ export default async function PublicHomePage({
   const site = await getPublicSite(siteId);
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
-  const isInk = activeTheme.id === INK_GRID_ID;
-  const isYf = activeTheme.id === YF_THEME_ID;
   const preview = await getPreviewTheme(siteId);
+  const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
+  const isInk = skinId === INK_GRID_ID;
+  const isYf = skinId === YF_THEME_ID;
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale), locale);
   const mediaFocal = await getPublicMediaFocal(siteId);
@@ -140,7 +141,7 @@ export default async function PublicHomePage({
       {homeContent ? (
         <RscBlockRenderer
           blocks={homeContent.blocks}
-          themeId={activeTheme.id}
+          themeId={skinId}
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}

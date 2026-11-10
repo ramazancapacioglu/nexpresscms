@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveLocaleMode, type LocaleMode } from "@nexpress/core/locale-path";
+import { sanitizePermalinkStructure, stripPermalinkPrefix, type PermalinkStructure } from "@nexpress/core/permalinks";
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
@@ -8,7 +9,7 @@ import { isReservedPath } from "@/lib/public-paths";
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
 const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations"];
 
-type SiteGate = LocaleMode & { index: boolean };
+type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure };
 
 const modeCache = new Map<string, { mode: SiteGate; at: number }>();
 
@@ -16,7 +17,7 @@ const modeCache = new Map<string, { mode: SiteGate; at: number }>();
 async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate> {
   const hit = modeCache.get(siteId);
   if (hit && Date.now() - hit.at < 15_000) return hit.mode;
-  let fetched: (LocaleMode & { index?: boolean }) | null = null;
+  let fetched: (LocaleMode & { index?: boolean; permalink?: string }) | null = null;
   const port = process.env.PORT || "3000";
   const origins = [...new Set([process.env.INTERNAL_APP_URL, `http://127.0.0.1:${port}`, request.nextUrl.origin].filter((o): o is string => Boolean(o)))];
   for (const origin of origins) {
@@ -27,7 +28,7 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
         cache: "no-store",
       });
       if (!res.ok) continue;
-      fetched = (await res.json()) as LocaleMode & { index?: boolean };
+      fetched = (await res.json()) as LocaleMode & { index?: boolean; permalink?: string };
       break;
     } catch {
       /* sonraki adres */
@@ -35,7 +36,8 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
   }
   const mode = resolveLocaleMode(fetched, hit?.mode ?? null);
   const index = typeof fetched?.index === "boolean" ? fetched.index : hit?.mode.index ?? true;
-  const gate: SiteGate = { ...mode, index };
+  const permalink = sanitizePermalinkStructure(fetched?.permalink ?? hit?.mode.permalink);
+  const gate: SiteGate = { ...mode, index, permalink };
   modeCache.set(siteId, { mode: gate, at: Date.now() });
   return gate;
 }
@@ -48,17 +50,18 @@ export async function middleware(request: NextRequest) {
   // Tek dilli sitede dil ön eki yoktur: `/tr/x` → 308 `/x`; ön eksiz yol içeride `/tr/x` olarak yeniden yazılır.
   const gate = pathname === "/api/locale-mode" ? null : await siteGate(request, siteId);
   const indexing = gate?.index !== false;
+  const publicPath = gate ? stripPermalinkPrefix(pathname, gate.permalink) : pathname;
   const seal = (response: NextResponse) => {
     if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
   };
   const prefixless = Boolean(gate && !isReservedPath(pathname) && gate.single);
-  if (gate && prefixless && (pathname === `/${gate.locale}` || pathname.startsWith(`/${gate.locale}/`))) {
+  if (gate && prefixless && (publicPath === `/${gate.locale}` || publicPath.startsWith(`/${gate.locale}/`))) {
     const url = request.nextUrl.clone();
-    url.pathname = pathname.slice(gate.locale.length + 1) || "/";
+    url.pathname = publicPath.slice(gate.locale.length + 1) || "/";
     return seal(NextResponse.redirect(url, 308));
   }
-  const internalPath = gate && prefixless ? `/${gate.locale}${pathname === "/" ? "" : pathname}` : pathname;
+  const internalPath = gate && prefixless ? `/${gate.locale}${publicPath === "/" ? "" : publicPath}` : publicPath;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nexpress-site-id", siteId);
@@ -146,7 +149,7 @@ export async function middleware(request: NextRequest) {
   }
 
   let response: NextResponse;
-  if (prefixless) {
+  if (prefixless || publicPath !== pathname) {
     const rewriteTo = request.nextUrl.clone();
     rewriteTo.pathname = internalPath;
     response = NextResponse.rewrite(rewriteTo, { request: { headers: requestHeaders } });

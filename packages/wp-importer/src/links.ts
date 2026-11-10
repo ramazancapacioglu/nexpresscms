@@ -13,6 +13,24 @@ function sameSite(host: string, originHost: string): boolean {
   return bareHost(host) === bareHost(originHost);
 }
 
+/**
+ * Taban adres yoksa mutlak adres durur, göreli yol olduğu gibi kalır.
+ * Başka bir sitenin adresi varsayılan olarak eklenmez.
+ */
+export function resolveAgainstBase(raw: string, baseUrl: string): string {
+  const clean = raw.replace(/^['"]|['"]$/g, "").trim();
+  if (!clean || clean.startsWith("data:")) return "";
+  if (/^https?:\/\//i.test(clean)) return clean;
+  if (clean.startsWith("//")) return `https:${clean}`;
+  if (!baseUrl) return clean;
+  try {
+    const abs = new URL(clean, baseUrl);
+    return abs.protocol === "http:" || abs.protocol === "https:" ? abs.toString() : clean;
+  } catch {
+    return clean;
+  }
+}
+
 /** Göreli medya yolunu kaynak sitenin adresine bağlar. `http` adres ve `data:` olduğu gibi kalır. */
 export function resolveAssetUrl(url: string, origin: string): string {
   const trimmed = url.trim();

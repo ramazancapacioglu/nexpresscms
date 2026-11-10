@@ -19,7 +19,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { createFormToken } from "@/lib/form-token";
 import { resolveDraftPreview } from "@/lib/draft-preview";
-import { getPreviewTheme } from "@/lib/public-theme";
+import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
@@ -163,7 +163,9 @@ export default async function PublicDynamicContentPage({
   const allowComments = pub.allowComments !== false;
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
-  const tokens = (await getPreviewTheme(siteId))?.tokens ?? site?.designTokens ?? activeTheme.tokens;
+  const preview = await getPreviewTheme(siteId);
+  const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
+  const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}${lb}/${content.slug}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
@@ -329,7 +331,7 @@ export default async function PublicDynamicContentPage({
       breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={content.blocks} themeId={activeTheme.id} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
+        content: <RscBlockRenderer blocks={content.blocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         excerpt: content.tldr,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
@@ -343,7 +345,7 @@ export default async function PublicDynamicContentPage({
         {banner}
         {switcher}
         <div style={contentWidthStyle(tpl.meta.behavior?.contentWidth)}>
-          <RscBlockRenderer blocks={tpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={ctx} patterns={syncedPatterns} />
+          <RscBlockRenderer blocks={tpl.blocks} themeId={skinId} tokens={tokens} locale={locale} tpl={ctx} patterns={syncedPatterns} />
         </div>
         {pillarList}
         {discussion}
@@ -362,7 +364,7 @@ export default async function PublicDynamicContentPage({
         {switcher}
         <RscBlockRenderer
           blocks={content.blocks}
-          themeId={activeTheme.id}
+          themeId={skinId}
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
@@ -488,7 +490,7 @@ export default async function PublicDynamicContentPage({
 
       <RscBlockRenderer
         blocks={content.blocks}
-        themeId={activeTheme.id}
+        themeId={skinId}
         tokens={tokens}
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}

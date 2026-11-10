@@ -19,10 +19,10 @@ NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100
   6. `@nexpress/rag`: Başlık duyarlı parçalayıcı (`chunker`), yerel sözcüksel + OpenAI anlamsal gömme, BM25 + Vektör **RRF hibrit arama**.
   7. `@nexpress/i18n` (`packages/i18n/src/index.ts`): Derleme zamanı tip güvenli `tr` / `en` mesaj kataloğu (0-KB kuralı gereği yalnızca sunucuda).
   8. `@nexpress/commerce` & `@nexpress/marketplace`: Katalog, varyasyon, sepet, sipariş, kupon, sadakat ve 5 pazaryeri sürücüsü (Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti).
-  9. `@nexpress/wp-importer`: WXR (XML) ayrıştırıcı, canlı HTML kabuk okuyucu (`readPublicShell`) ve WordPress Köprüsü (`0.2.3`) dönüştürücüleri.
+  9. `@nexpress/wp-importer`: WXR (XML) ayrıştırıcı, canlı HTML kabuk okuyucu (`readPublicShell`) ve WordPress Köprüsü (`0.3.0`) dönüştürücüleri.
 - **Kompozisyon Kökü (`apps/cms/src/plugins/register.ts`) — Kayıtlı 9 Eklenti:**
   - **2 Lisanslı Pro Eklenti (`plugins-pro/*`):** `@nexpress-pro/agentic-seo` (v6.0, 33 modül) ve `@nexpress-pro/ai-design`.
-  - **7 Ücretsiz/Yerleşik Eklenti (`apps/cms/src/plugins/*`):** `@nexpress/seo-basic`, `@nexpress/plugin-campaigns`, `@nexpress/plugin-design-studio`, `@nexpress/plugin-wp-bridge` (`0.2.3`), `@nexpress/plugin-commerce`, `@nexpress/plugin-marketplaces`, `@nexpress/plugin-perfornext`.
+  - **7 Ücretsiz/Yerleşik Eklenti (`apps/cms/src/plugins/*`):** `@nexpress/seo-basic`, `@nexpress/plugin-campaigns`, `@nexpress/plugin-design-studio`, `@nexpress/plugin-wp-bridge` (`0.3.0`), `@nexpress/plugin-commerce`, `@nexpress/plugin-marketplaces`, `@nexpress/plugin-perfornext`.
 
 ---
 
@@ -59,7 +59,7 @@ NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100
 | `14-MULTILINGUAL-PLAN.md` | Çok Dilli Altyapı & Ön Eksiz Tek Dil | `packages/i18n`, `locale-path.ts`, `middleware.ts` | ✅ Tam Uyumlu |
 | `15-AGENTIC-PRO-MIGRATION.md` | Agentic Content Ops Taşıma Planı | `plugins-pro/agentic-seo-pro/src/*` | ✅ 33 modül tamamlandı |
 | `16-FORMS.md` | Sürükle-Bırak Form Kurucu, `:has()` Koşullu Alan, Webhook | `forms`, `form_submissions`, `rsc-form.tsx` | ✅ Tam Uyumlu |
-| `17-WORDPRESS-IMPORT.md` & `24-WP-BRIDGE.md` | WXR İçe Aktarma & Canlı WordPress Köprüsü (`0.2.3`) | `packages/wp-importer`, `@nexpress/plugin-wp-bridge` | ✅ Tam Uyumlu |
+| `17-WORDPRESS-IMPORT.md` & `24-WP-BRIDGE.md` | WXR İçe Aktarma & Canlı WordPress Köprüsü (`0.3.0`) | `packages/wp-importer`, `@nexpress/plugin-wp-bridge` | ✅ Tam Uyumlu |
 | `18-PANEL-AND-AI-DESIGN-PLAN.md` & `19-DEPLOYMENT.md` | Tasarım Stüdyosu (`/admin/studio`) & Dağıtım (`ileriseo.com`) | `@nexpress/plugin-design-studio`, `scripts/install-host.sh` | ✅ Tam Uyumlu |
 | `20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md` & `21-EDITOR-DIRECTION.md` | Editör Mimari Kararı & Faz 1–5 Zenginleştirme | `packages/editor`, `apps/cms/src/components/admin/editor/*` | ✅ Tam Uyumlu |
 | `23-THEME-AND-DESIGN-AUTHORING.md` | Modele Verilecek Tema/Kütüphane/Şablon Sözleşmesi | `types.ts`, `catalog.ts`, `library.ts` | ✅ Tam Uyumlu |

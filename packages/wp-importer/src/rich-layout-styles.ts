@@ -3,6 +3,8 @@
  * gradyanları ve sütun arka plan görsellerini çıkaran saf çözümleyici.
  */
 
+import { resolveAgainstBase } from "./links";
+
 export interface RowInlineStyle {
   singleColumn?: boolean;
   colRatios?: number[];
@@ -27,14 +29,14 @@ export interface ParsedInlineStyles {
 }
 
 const DEFAULT_PALETTE: Record<string, string> = {
-  "--global-palette1": "#0c644e",
-  "--global-palette2": "#09589a",
-  "--global-palette3": "#060a0d",
-  "--global-palette4": "#252424",
-  "--global-palette5": "#3182ce",
-  "--global-palette6": "#343433",
-  "--global-palette7": "#edf2f7",
-  "--global-palette8": "#f8fffe",
+  "--global-palette1": "#111827",
+  "--global-palette2": "#1d4ed8",
+  "--global-palette3": "#0f172a",
+  "--global-palette4": "#334155",
+  "--global-palette5": "#2563eb",
+  "--global-palette6": "#475569",
+  "--global-palette7": "#f1f5f9",
+  "--global-palette8": "#f8fafc",
   "--global-palette9": "#ffffff",
 };
 
@@ -98,17 +100,11 @@ function stripMediaQueries(css: string): string {
 }
 
 function resolveAsset(raw: string, baseUrl: string): string {
-  const clean = raw.replace(/^['"]|['"]$/g, "").trim();
-  if (!clean || clean.startsWith("data:")) return "";
-  try {
-    return new URL(clean, baseUrl || "https://www.akinsoftizmir.com.tr").toString();
-  } catch {
-    return clean;
-  }
+  return resolveAgainstBase(raw, baseUrl);
 }
 
-export function parseInlineLayoutStyles(html: string, baseUrl = ""): ParsedInlineStyles {
-  const palette: Record<string, string> = { ...DEFAULT_PALETTE };
+export function parseInlineLayoutStyles(html: string, baseUrl = "", seedPalette?: Record<string, string>): ParsedInlineStyles {
+  const palette: Record<string, string> = { ...DEFAULT_PALETTE, ...(seedPalette ?? {}) };
   for (const m of html.matchAll(/(--global-palette\d)\s*:\s*(#[0-9a-fA-F]{3,8})/g)) {
     palette[m[1]!] = m[2]!.toLowerCase();
   }

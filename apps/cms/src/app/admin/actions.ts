@@ -8,7 +8,9 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { YF_THEME_ID, getThemeManifest } from "@nexpress/themes";
-import { applyYazilimFirmasiChrome } from "@/lib/apply-yazilim-firmasi-theme";
+import { applyYazilimFirmasiChrome, isYazilimFirmasiTheme, restoreChromeAfterYazilimFirmasi } from "@/lib/apply-yazilim-firmasi-theme";
+import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
+import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
 import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
@@ -36,6 +38,7 @@ export async function activateThemeAction(input: {
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
+  const previousId = (await repo.getSite())?.activeThemeId ?? "";
   const manifest = getThemeManifest(input.themeId);
   const mergedTokens: DesignTokens = {
     ...manifest.tokens,
@@ -55,10 +58,12 @@ export async function activateThemeAction(input: {
     input.siteProfile ?? manifest.recommendedProfile
   );
   if (manifest.id === YF_THEME_ID) await applyYazilimFirmasiChrome(siteId);
+  else if (isYazilimFirmasiTheme(previousId)) await restoreChromeAfterYazilimFirmasi(siteId);
 
   await revalidatePath("/admin");
   await revalidatePath("/admin/themes");
-  await revalidatePath("/tr");
+  await revalidatePath("/");
+  await revalidatePath("/tr", "layout");
   return { ok: true, activeThemeId: manifest.id };
 }
 
@@ -99,6 +104,14 @@ export async function saveSeoEngineSettingsAction(input: {
   const settings = await repo.saveSiteSettings({
     seo: input.seo,
   });
+  const structure = sanitizePermalinkStructure(settings.seo.permalinkStructure);
+  let htaccessPath = "";
+  let htaccessError = "";
+  try {
+    htaccessPath = await writePermalinkHtaccess(structure);
+  } catch (error) {
+    htaccessError = error instanceof Error ? error.message : "htaccess yazılamadı";
+  }
 
   await revalidatePath("/admin");
   await revalidatePath("/admin/themes");
@@ -106,11 +119,12 @@ export async function saveSeoEngineSettingsAction(input: {
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
   await revalidatePath("/admin/contents");
-  await revalidatePath("/tr");
+  await revalidatePath("/");
+  await revalidatePath("/tr", "layout");
   await revalidatePath("/llms.txt");
   await revalidatePath("/sitemap.xml");
   await revalidatePath("/robots.txt");
-  return { ok: true, settings };
+  return { ok: true, settings, htaccessPath, htaccessError };
 }
 
 export async function saveContentAction(input: {

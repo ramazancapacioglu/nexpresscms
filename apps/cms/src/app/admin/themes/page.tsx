@@ -87,6 +87,7 @@ export default async function AdminThemesPage() {
         activeTheme={activeThemeItem}
         themes={allThemes}
         defaultLocale={defaultLocale}
+        previewBase={(site?.supportedLocales.length ?? 1) > 1 ? `/${defaultLocale}` : ""}
       />
     </div>
   );

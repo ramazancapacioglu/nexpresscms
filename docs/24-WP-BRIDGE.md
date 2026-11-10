@@ -1,6 +1,8 @@
 # 24 — WordPress Köprüsü (panel eklentisi + site eklentisi)
 
-> Durum: **0.3.0 (2026-11-09).** Zengin blok ve satır içi `<style>` derleyicisi (`compileRichWpHtml`), 350 KB HTML sınırı, iç içe sütun düzleştirme (`kt-has-1-columns` / tek sütunlu dış sarmalayıcıları soyma), masaüstü/mobil CSS ızgara ayrımı (`8+4`, `4+8`, `6+6`, `4+4+4`, `3+3+3+3`), çoklu bilgi kartlarından `bento_features` (2/3/4 sütun, görsel ve bağlantı destekli), çok sütunlu `icon_list`, 3'lü asimetrik görsel kolajı (`gallery` `variant: "collage"`), `faq_accordion`, `form_block`, `map_embed` (`embedUrl`), `cta_banner` ve kategori vitrini (`dynamic_list`) sentezi. Panelde `/admin/wp-bridge` altında tek tıkla **Tüm sayfaları zengin yerleşimle derle** (`reconstructRichSiteDataset`) eklendi.
+> Durum: **0.3.0 (2026-11-10).** Zengin blok derleyicisi (`compileRichWpHtml`) satır içi `<style>` okur, 350 KB HTML sınırında kalır, iç içe sütunu düzleştirir ve masaüstü ızgarayı `8+4`, `4+8`, `6+6`, `4+4+4`, `3+3+3+3` olarak kurar. Bilgi kartları `bento_features`, ikon listesi, kolaj, `faq_accordion`, `form_block` ve `map_embed` buradan çıkar. Derleyici satır kimliği, marka adı veya sabit düğme adresi yazmaz. Taban adres yoksa göreli yol olduğu gibi kalır. Koyu bantta tek başlık ve tek düğme `cta_banner` olur; metin kaynaktan gelir.
+
+Panelde iki iş ayrıdır. **Veri kümesini zengin yerleşimle derle** yalnızca depodaki `docs/akinsoftizmir-com-tr-aktarim` dosyasını okur (`reconstructRichSiteDataset`); eşleşmiş siteyi okumaz, çöp ve taslağı yayına almaz. **Eksikleri tamamla** eşleşmiş sitedeki göreli görseli, yapışık başlığı ve boş yerleşimi onarır; veri kümesini çağırmaz.
 
 ## 1. Neden ayrı eklenti
 
@@ -34,7 +36,7 @@ WordPress kodu NexPress çekirdeğine girmez. Site eklentisi orada kalır; bize 
 **Gelmez**
 
 - E-ticaret: fiyat, stok, varyasyon, sepet, sipariş, kupon.
-- Kullanıcı ve parola.
+- Parola ve parola özeti. Canlı itme kullanıcı oluşturmaz. Yerel olgu dosyası (`enrichImportedFacts`) e-posta ve adla girişi kapalı editör açabilir; özet kopyalanmaz.
 - Eklenti PHP'si, tema PHP'si, uzak CSS ve JavaScript.
 
 ## 3. Akış
@@ -64,7 +66,9 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 | Akordeon / SSS panelleri | `faq_accordion` (iki sütunlu akordeonlar tek blokta birleştirilir) |
 | Gelişmiş form bloğu | `form_block` (`formId: "frm_wp_1"`) |
 | Harita bloğu | `map_embed` (`embedUrl`, Google Maps `<iframe>`) |
-| Senkronize alt çağrı bandı | `cta_banner` (`variant: "dark-contrast"`) |
+| Senkronize koyu bant: tek başlık ve tek düğme | `cta_banner` (başlık, açıklama ve adres kaynaktan) |
+| Aynı bantta birden çok düğme | `button_row` |
+| Kampanya çapası (`appendDatasetLists`) | yalnızca veri kümesi katmanı; derleyici `dynamic_list` eklemez |
 | Başlık, paragraf, düğme, görsel | aynı tür |
 | Kapak (başlık, kısa açıklama, öne çıkan görsel) | `tpl_post_title` (`showTldr`) + `tpl_featured_image` |
 | Üst / alt şerit | header ve footer yapılandırması |
@@ -77,7 +81,7 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 | 1 | Eşleştirme kodu, sayfa/yazı/taksonomi/SEO/yorum/medya yazma, iç bağlantı tarama | **0.2.0** |
 | 2 | Satır ve sütun çizimi, kapak bandı, menü, üst şerit telefonu ve alt kart | **0.2.0** |
 | 3 | Form tanımları, sayfa ve site SEO'su, 301 | **0.2.0** |
-| 4 | Zengin HTML + satır içi `<style>` derleyicisi (`compileRichWpHtml`), birleşik kart/kolaj/liste/harita/form sentezi, 350 KB HTML sınırı, tam veri kümesi yeniden derleyici | **0.3.0** |
+| 4 | Zengin HTML derleyicisi, 350 KB sınırı, veri kümesi ile onarımın ayrılması | **0.3.0** |
 
 ## 6. Güvenlik
 

@@ -104,7 +104,14 @@ export async function enrichImportedFacts(siteId: string, filePath: string): Pro
     if (!asset && item.path) {
       const filename = baseName(item.path) || names[0] || "gorsel";
       const id = `med_wp_${createHash("sha1").update(item.path).digest("hex").slice(0, 16)}`;
-      const url = `https://www.akinsoftizmir.com.tr/wp-content/uploads/${item.path.replace(/^\/+/, "")}`;
+      const url = /^https?:\/\//i.test(item.url)
+        ? item.url
+        : item.path
+          ? item.path.startsWith("/")
+            ? item.path
+            : `/${item.path}`
+          : "";
+      if (!url) continue;
       await repo.saveMediaAsset({
         id,
         filename,

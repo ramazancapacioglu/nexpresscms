@@ -21,6 +21,17 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-10] — Tema önizlemesi, tema değişimi ve kalıcı bağlantı
+- **Önizleme:** `?nx_preview=` resmi temayı da manifestodan okur. Blok derleyicisi önizlenen resmi tema kimliğini kullanır. Tek dilde bağlantı `/?nx_preview=` olur.
+- **Tema değişimi:** Yazılım Firması kapanınca şerit sade düzene, yerleşim kutulu genişliğe ve düğme dolu stile döner. Menü, footer ve sayfalar silinmez.
+- **Kalıcı bağlantı:** SEO ayarlarında yapı seçilir. Kayıt `.htaccess` dosyasını `index.php` kuralı olmadan yeniler. Nginx bu dosyayı okumaz. Tarih ve `/arsiv/{sayı}` ön eki ara katmanda slug yoluna iner.
+
+### [2026-11-10] — Köprü derleyicisi siteden bağımsız, veri kümesi ile onarım ayrıldı
+- **Derleyici (`packages/wp-importer/src/rich-layout.ts`, `rich-layout-rows.ts`):** Satır kimliğine bağlı sabit çağrı bandı ve kampanya listesi çıkarıldı. Taban adres yoksa göreli görsel yolu durur; varsayılan olarak başka bir alan adı eklenmez. Harita sorgusu boşsa metin `Konum` olur. Palet yedeği nötr renktir; veri kümesi kendi paletini verir. Tek başlık ve tek düğmeli koyu bant, metni kaynaktan `cta_banner` olur. Satır kurulumu `rich-layout-rows.ts` dosyasına ayrıldı.
+- **Veri kümesi (`apps/cms/src/lib/wp-bridge/reconstruct.ts`, `dataset-chrome.ts`, `dataset-images.ts`):** Menü, üst şerit ve form bu katmanda kaldı. Görsel eşlemesi `url` alanını da yerel dosyaya çevirir. Çöp ve taslak yayına alınmaz. Yazı şeması `schemaFromBridge` ile `BlogPosting` olur. Kampanya listesi `appendDatasetLists` ile eklenir.
+- **Panel:** Veri kümesi düğmesi ile **Eksikleri tamamla** ayrıldı. Onarım veri kümesini çağırmaz. Dosya aktarımı kabuk adresinin hazır değeri boşaldı. Olgu dosyası medya adresi artık sabit bir alan adına yazılmaz. Örnek GA4 satırları ve çevrimdışı arama örneği genel adrese çekildi.
+- **Doküman:** `docs/13`, `docs/17`, `docs/24`, `docs/25` köprü sürümünü `0.3.0` olarak hizalar. `docs/12` komut satırı yedeğini tamamlanmış sayar.
+
 ### [2026-11-09] — WordPress Köprüsü v0.3.0: Zengin Blok & Satır İçi CSS Derleyicisi, Birleşik Kart/Kolaj/Liste Sentezi ve Tam Veri Kümesi Yeniden Derleyici
 - **Zengin Blok ve Satır İçi `<style>` Derleyicisi (`packages/wp-importer/src/rich-layout.ts`, `rich-layout-styles.ts`, `html.ts`, `bridge-parse.ts`, `bridge-draw.ts`):**
   - `extractRichStyles` ile satır içi `<style>` blokları DOM ayrıştırmasından önce okunur; `@media (max-width: ...)` kuralları ayıklanarak masaüstü ızgara oranları (`65%/35%` → `8+4`, `35%/65%` → `4+8`, `repeat(2, ...)` → `6+6`, `repeat(3, ...)` → `4+4+4`, `repeat(4, ...)` → `3+3+3+3`, `minmax(0, 1fr)` → tek sütun dikey akış) doğru tespit edilir.

@@ -1,12 +1,47 @@
 import {
+  HEADER_TEMPLATES,
   YF_BRAND,
   YF_FOOTER,
   YF_HEADER,
+  YF_LEGACY_THEME_ID,
   YF_MENUS,
   YF_REACH_FORM_ID,
   YF_SIDEBAR,
+  YF_THEME_ID,
 } from "@nexpress/themes";
 import { getFormDefinitionRepository, getScopedRepository } from "@nexpress/database";
+
+export function isYazilimFirmasiTheme(themeId: string): boolean {
+  return themeId === YF_THEME_ID || themeId === YF_LEGACY_THEME_ID;
+}
+
+/**
+ * Yazılım Firması kapanınca tam genişlik, hap düğme ve o temanın şerit düzeni kalkar.
+ * Menü ağacı ve footer içeriği durur; sayfalar silinmez.
+ */
+export async function restoreChromeAfterYazilimFirmasi(siteId: string, locale = "tr") {
+  const repo = getScopedRepository(siteId);
+  const nav = await repo.getNavigationLayout(locale);
+  const plain = HEADER_TEMPLATES.find((item) => item.id === "header-plain")?.value;
+  if (nav && plain) {
+    const ctaLabel = nav.headerConfig.mainBar?.ctaLabel || plain.mainBar.ctaLabel;
+    const ctaHref = nav.headerConfig.mainBar?.ctaHref || plain.mainBar.ctaHref;
+    await repo.saveNavigationLayout({
+      locale,
+      headerConfig: { ...plain, mainBar: { ...plain.mainBar, ctaLabel, ctaHref } },
+      menuItems: nav.menuItems,
+      footerConfig: nav.footerConfig,
+      sidebarConfig: nav.sidebarConfig,
+    });
+  }
+  await repo.saveSiteSettings({
+    customizer: {
+      buttons: { style: "solid" },
+      header: { height: 64, glass: false, sticky: true },
+      layout: { contentLayout: "boxed", sidebarOnPage: false },
+    },
+  });
+}
 
 /** Temayı seçince şerit, menü, footer, kenar ve demo formu yayına yazılır. Sayfa içerikleri silinmez. */
 export async function applyYazilimFirmasiChrome(siteId: string, locale = "tr") {

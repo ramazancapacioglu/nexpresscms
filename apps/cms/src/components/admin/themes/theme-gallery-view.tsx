@@ -49,13 +49,22 @@ interface ThemeGalleryViewProps {
   activeTheme: ThemeGalleryItem;
   themes: ThemeGalleryItem[];
   defaultLocale: string;
+  /** Tek dilde boş: önizleme `/?nx_preview=` olur, `/tr` yönlendirmesine düşmez. */
+  previewBase?: string;
+}
+
+function previewHref(base: string, id: string): string {
+  const query = `nx_preview=${encodeURIComponent(id)}`;
+  return `${base || ""}/?${query}`.replace(/\/\//, "/");
 }
 
 export function ThemeGalleryView({
   activeTheme,
   themes,
   defaultLocale,
+  previewBase,
 }: ThemeGalleryViewProps) {
+  const previewRoot = previewBase ?? `/${defaultLocale}`;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -360,7 +369,7 @@ export function ThemeGalleryView({
               </Link>
 
               <a
-                href={`/${defaultLocale}?nx_preview=${encodeURIComponent(activeTheme.id)}`}
+                href={previewHref(previewRoot, activeTheme.id)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground hover:bg-muted transition"
@@ -536,7 +545,7 @@ export function ThemeGalleryView({
                   <div className="flex items-center gap-1.5">
                     {/* Önizle */}
                     <a
-                      href={`/${defaultLocale}?nx_preview=${encodeURIComponent(thm.id)}`}
+                      href={previewHref(previewRoot, thm.id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-[11px] font-semibold text-foreground hover:bg-muted transition"

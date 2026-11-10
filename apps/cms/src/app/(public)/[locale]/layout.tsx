@@ -2,7 +2,7 @@ import React from "react";
 import { localeBase, prefixedFallbackPath } from "@nexpress/core";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
-import { getActiveSkin, getPreviewTheme } from "@/lib/public-theme";
+import { getActiveSkin, getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { runScheduler } from "@/lib/scheduler";
 import { after } from "next/server";
@@ -79,13 +79,13 @@ export default async function PublicLocaleLayout({
   }
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
-  const isInk = activeTheme.id === INK_GRID_ID;
+  const preview = await getPreviewTheme(siteId);
+  const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
+  const isInk = skinId === INK_GRID_ID;
+  const isYf = skinId === YF_THEME_ID;
   const savedBg = site?.designTokens?.colors.background?.toLowerCase() ?? "";
   const savedIsLight = savedBg === "" || savedBg.startsWith("#fff") || savedBg === "#fcfcfd";
-  const tokens =
-    isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens);
-  const preview = await getPreviewTheme(siteId);
-  const isYf = (preview?.themeId ?? activeTheme.id) === YF_THEME_ID;
+  const tokens = preview?.tokens ?? (isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens));
   const skin = preview ? { themeId: preview.themeId, css: preview.css } : await getActiveSkin(siteId);
   const cssVars = compileDesignTokensToCssVars(preview?.tokens ?? tokens, resolveSiteSettings(site?.settings).customizer);
   // Düzen bileşenleri renkleri CSS değişkeninden okur (palet/karanlık mod değişince bileşen kodu aynı kalır)
@@ -304,7 +304,7 @@ export default async function PublicLocaleLayout({
           className={`nx-public-header z-40 border-b ${headerBehavior.transparent ? "absolute inset-x-0 top-0" : headerBehavior.sticky === false ? "relative" : "sticky top-0"} ${headerBehavior.glass === false || headerBehavior.transparent ? "" : "backdrop-blur-md"}`}
         >
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto px-4 py-3 sm:px-6">
-            <RscBlockRenderer blocks={headerTpl.blocks} themeId={activeTheme.id} tokens={vt} locale={locale} tpl={tplCtx} />
+            <RscBlockRenderer blocks={headerTpl.blocks} themeId={skinId} tokens={vt} locale={locale} tpl={tplCtx} />
           </div>
         </header>
       ) : (

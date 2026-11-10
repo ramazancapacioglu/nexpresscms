@@ -1,3 +1,4 @@
+import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
@@ -117,6 +118,8 @@ export interface SeoEngineSettings {
   noIndexTagArchives: boolean;
   sitemapTypes: ContentType[];
   minWordCount: number;
+  /** Kalıcı bağlantı yapısı. Varsayılan `postname` (`/{slug}`). */
+  permalinkStructure?: PermalinkStructure;
 }
 
 export type ButtonCase = "none" | "uppercase";
@@ -318,7 +321,11 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
   const d = DEFAULT_CUSTOMIZER_SETTINGS;
   const seoRaw = (r.seo && typeof r.seo === "object" ? r.seo : {}) as Record<string, unknown>;
   return {
-    seo: { ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo), schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements) },
+    seo: {
+      ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
+      schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements),
+      permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
+    },
     general: mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {

@@ -12,6 +12,7 @@ export * from "./style-presets";
 export * from "./inline-text";
 export * from "./slug";
 export * from "./site-settings";
+export * from "./permalinks";
 export * from "./taxonomy";
 export * from "./session-token";
 export * from "./json-dates";

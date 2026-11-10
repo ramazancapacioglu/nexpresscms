@@ -18,7 +18,9 @@ Yönetim: `/admin/migration` (yalnızca admin). API: `POST /api/admin/wp-import`
 - Yönlendirme: eski bağlantının yolu → `/{dil}/{slug}` (301; yalnızca herkese açık yayındakiler; `?p=ID` biçimi yönlendirilemez).
 
 ## HTML → blok
-Başlık (h1–h2→h2, h3, h4–h6→h4), paragraf (satır içi biçim `props.html`, düz metin `props.text`), liste (`list_element`), alıntı, kod (`language-*`), tablo (`data_table`), görsel/şekil (`image_figure`, alt yazı), YouTube/Vimeo (`video_embed`), ayraç. Klasik editör metni (boş satırla paragraf) ve Gutenberg yorumları işlenir. Sayfa oluşturucu kodları (`vc_*`, `et_pb_*`, `elementor*`…) atılır; bilinmeyen kısa kodlar atılır ve uyarı olur.
+Başlık (h1–h2→h2, h3, h4–h6→h4), paragraf (satır içi biçim `props.html`, düz metin `props.text`), liste (`list_element`), alıntı, kod (`language-*`), tablo (`data_table`), görsel/şekil (`image_figure`, alt yazı), YouTube/Vimeo (`video_embed`), ayraç. Klasik editör metni (boş satırla paragraf) ve Gutenberg yorumları işlenir. Dosya aktarımında sayfa oluşturucu kısa kodu (`vc_*`, `et_pb_*` ve benzeri) atılır; bilinmeyen kısa kod uyarı olur.
+
+Canlı köprü bu kısa kod yolunu kullanmaz. WordPress eklentisi işlenmiş HTML gönderir; `compileRichWpHtml` satır, sütun, kart, liste, akordeon, form ve haritayı blok ağacına çevirir. Ayrıntı `docs/24`. Taban adres verilmezse göreli görsel yolu durur.
 
 ## Görseller
 Varsayılan: görsel adresleri eski sitede kalır. Seçenek açıksa en çok 400 görsel indirilip medya kitaplığına alınır (bloklarda ve öne çıkan görselde adresler yeniden yazılır); indirilemeyen görselin adresi olduğu gibi kalır. Güvenlik için bkz. `docs/11` §8a.

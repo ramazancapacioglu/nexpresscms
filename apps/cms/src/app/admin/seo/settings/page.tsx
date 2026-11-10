@@ -1,11 +1,12 @@
 import React from "react";
 import { headers } from "next/headers";
-import { pluginRegistry } from "@nexpress/core";
+import { pluginRegistry, resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
 import { getPluginState } from "@/lib/plugin-state";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import "@/plugins/register";
+import { PermalinkCard } from "@/components/admin/seo/permalink-card";
 import { SeoSettingsPanel } from "./settings-panel";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +25,9 @@ export default async function AdminSeoSettingsPage() {
       <SeoTabs />
       <div>
         <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">SEO ayarları</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Marka, yerel işletme, yorum ve yazım kuralları bu sayfada.</p>
+        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Marka, yerel işletme, yorum, yazım kuralları ve kalıcı bağlantılar bu sayfada.</p>
       </div>
+      <PermalinkCard initial={resolveSiteSettings(site?.settings).seo.permalinkStructure ?? "postname"} />
       {!manifest ? (
         <p className="text-[13px] text-[#5F6570]">SEO eklentisi yüklü değil.</p>
       ) : (

@@ -34,8 +34,8 @@ const SEED_SERP_DATA: Record<string, SerperIntelReport> = {
         position: 1,
       },
       {
-        title: "Wolvox Ön Muhasebe Modülü — Akınsoft İzmir Yetkili Bayi",
-        link: "https://www.akinsoftizmir.com.tr/wolvox-erp/",
+        title: "Bulut Ön Muhasebe Modülü",
+        link: "https://example.com/bulut-muhasebe",
         snippet: "e-Fatura, e-Arşiv ve e-İrsaliye uyumlu bulut ve yerel ön muhasebe çözümleriyle finansal süreçlerinizi hızlandırın.",
         position: 2,
       },

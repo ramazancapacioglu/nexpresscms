@@ -35,6 +35,7 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   noIndexTagArchives: false,
   sitemapTypes: ["page", "post", "kb_tech", "ai_prompt", "campaign", "product"],
   minWordCount: 150,
+  permalinkStructure: "postname",
 };
 
 export const DEFAULT_CUSTOMIZER_SETTINGS: SiteCustomizerSettings = {

@@ -54,7 +54,7 @@ export function WpImportPanel() {
   const [report, setReport] = useState<Report | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState<"" | "analyze" | "run">("");
-  const [shellUrl, setShellUrl] = useState("https://www.akinsoftizmir.com.tr/");
+  const [shellUrl, setShellUrl] = useState("");
   const [shell, setShell] = useState<ShellSummary | null>(null);
   const [shellError, setShellError] = useState("");
   const [shellBusy, setShellBusy] = useState(false);

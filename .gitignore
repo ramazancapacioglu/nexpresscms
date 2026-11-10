@@ -45,3 +45,6 @@ a11y-report.json
 docs/kadence-referans-eklentiler/
 tools/wp-reference/wp-data/
 apps/cms/data/media/
+
+# Kalıcı bağlantı kaydı çalışma anında yazar; depoda durmaz
+public/.htaccess

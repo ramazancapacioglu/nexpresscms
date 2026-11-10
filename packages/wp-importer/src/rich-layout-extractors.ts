@@ -1,7 +1,7 @@
 import { DomUtils } from "htmlparser2";
 import type { AnyNode, Element } from "domhandler";
 import { sanitizeInlineHtml, type BlockNode } from "@nexpress/core";
-import { rewriteAbsoluteUrl } from "./links";
+import { resolveAgainstBase, rewriteAbsoluteUrl } from "./links";
 
 export const squash = (s: string) => s.replace(/\s+/g, " ").trim();
 export const cls = (el: Element) => el.attribs?.class ?? "";
@@ -45,12 +45,8 @@ export function resolveImgSrc(el: Element, baseUrl: string): string {
     if (!raw) continue;
     const u = raw.trim();
     if (!u || u.startsWith("data:")) continue;
-    try {
-      const abs = new URL(u, baseUrl || "https://www.akinsoftizmir.com.tr");
-      if (abs.protocol === "http:" || abs.protocol === "https:") return abs.toString();
-    } catch {
-      if (u.startsWith("/")) return u;
-    }
+    const abs = resolveAgainstBase(u, baseUrl);
+    if (abs) return abs;
   }
   return "";
 }
@@ -60,7 +56,8 @@ export function resolveLinkHref(raw: string | undefined, baseUrl: string): strin
   const u = raw.trim();
   if (!u || u === "#" || u.startsWith("javascript:")) return "";
   if (u.startsWith("tel:") || u.startsWith("mailto:") || u.startsWith("#")) return u;
-  return rewriteAbsoluteUrl(u, baseUrl || "https://www.akinsoftizmir.com.tr", "");
+  if (!baseUrl) return u;
+  return rewriteAbsoluteUrl(u, baseUrl, "");
 }
 
 export function mergeConsecutiveIconLists(blocks: BlockNode[]): BlockNode[] {

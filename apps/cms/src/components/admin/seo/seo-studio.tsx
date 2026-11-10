@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ContentType, SeoEngineSettings } from "@nexpress/core";
+import type { ContentType, PermalinkStructure, SeoEngineSettings } from "@nexpress/core";
 import { saveSeoEngineSettingsAction } from "@/app/admin/actions";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
 import { WebmasterPanel } from "./webmaster-panel";
@@ -49,7 +49,7 @@ export function SeoStudio({
   const save = () => {
     start(async () => {
       const sameAs = seo.sameAs.map((item) => item.trim()).filter(Boolean);
-      await saveSeoEngineSettingsAction({
+      const res = await saveSeoEngineSettingsAction({
         seo: {
           ...seo,
           sameAs,
@@ -58,7 +58,9 @@ export function SeoStudio({
           autoSchemaFromBlocks: seo.autoSchema,
         },
       });
-      setNotice("SEO ayarları kaydedildi.");
+      const where = res.htaccessPath ? ` .htaccess yenilendi: ${res.htaccessPath}.` : "";
+      const fail = res.htaccessError ? ` Dosya yazılamadı: ${res.htaccessError}.` : "";
+      setNotice(`SEO ayarları kaydedildi.${where}${fail} Nginx bu dosyayı okumaz.`);
       router.refresh();
     });
   };
@@ -239,6 +241,22 @@ function SettingsView({
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
+        <h2 className="text-[13px] font-semibold">Kalıcı bağlantı</h2>
+        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+          Yapı
+          <select
+            className={`${fieldClass} mt-1`}
+            value={seo.permalinkStructure ?? "postname"}
+            onChange={(e) => patch({ permalinkStructure: e.target.value as PermalinkStructure })}
+          >
+            <option value="postname">Yazı adı — /yazi-adi</option>
+            <option value="plain">Düz — /yazi-adi</option>
+            <option value="dayname">Gün ve ad — /2026/11/10/yazi-adi</option>
+            <option value="monthname">Ay ve ad — /2026/11/yazi-adi</option>
+            <option value="numeric">Sayısal — /arsiv/123/yazi-adi</option>
+          </select>
+        </label>
+        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Kayıt .htaccess dosyasını yeniler. Nginx bu dosyayı okumaz.</p>
         <h2 className="text-[13px] font-semibold">Başlık ve açıklama</h2>
         <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Başlık şablonu

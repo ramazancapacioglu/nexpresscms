@@ -133,30 +133,36 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
       </section>
 
       <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
-        <h2 className="text-[15px] font-semibold">Zengin yerleşim derleyicisi & Eksikleri tamamla</h2>
+        <h2 className="text-[15px] font-semibold">Veri kümesinden derle</h2>
         <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
-          İç içe geçmiş sütunları düzleştirir, satır içi CSS sütun oranlarını (8+4, 4+8, 6+6, 4+4+4) uygular, bilgi kartlarını ve kontrol listelerini birleşik bileşenlere dönüştürür, göreli görselleri indirir ve menü/renk paletini senkronize eder.
+          Eşleşmiş siteyi okumaz. Depoda aktarım veri kümesi varsa sayfa, yazı, kategori, menü ve üst şeridi o dosyadan yeniden yazar. Dosya yoksa hiçbir kayıt değişmez. Çöp ve taslak yayına alınmaz.
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={reconstruct}
-            disabled={reconstructing || repairing || !pluginOn}
-            className="rounded-md bg-[#14151A] px-3 py-1.5 text-[13px] font-medium text-white dark:bg-[#F3F4F6] dark:text-[#14151A]"
-          >
-            {reconstructing ? "Derleniyor…" : "Tüm sayfaları zengin yerleşimle derle"}
-          </button>
-          <button
-            type="button"
-            onClick={repair}
-            disabled={repairing || reconstructing || !pluginOn}
-            className="rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]"
-          >
-            {repairing ? "Tamamlanıyor…" : "Eksikleri tamamla & AI ile onar"}
-          </button>
-        </div>
-        {message ? <p className="mt-2 text-[13px] text-emerald-700 dark:text-emerald-400">{message}</p> : null}
-        {error ? <p className="mt-2 text-[13px] text-amber-700">{error}</p> : null}
+        <button
+          type="button"
+          onClick={reconstruct}
+          disabled={reconstructing || repairing || !pluginOn}
+          className="mt-3 rounded-md bg-[#14151A] px-3 py-1.5 text-[13px] font-medium text-white dark:bg-[#F3F4F6] dark:text-[#14151A]"
+        >
+          {reconstructing ? "Derleniyor…" : "Veri kümesini zengin yerleşimle derle"}
+        </button>
+      </section>
+
+      {message ? <p className="text-[13px] text-emerald-700 dark:text-emerald-400">{message}</p> : null}
+      {error ? <p className="text-[13px] text-amber-700">{error}</p> : null}
+
+      <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
+        <h2 className="text-[15px] font-semibold">İçe aktarılanı onar</h2>
+        <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
+          Eşleşmiş siteden gelen göreli görselleri indirir, yapışık başlıkları ayırır ve yerleşimi boş sayfaları tamamlar. Veri kümesine dokunmaz.
+        </p>
+        <button
+          type="button"
+          onClick={repair}
+          disabled={repairing || reconstructing || !pluginOn}
+          className="mt-3 rounded-md border border-[#14151A] px-3 py-1.5 text-[13px] font-medium dark:border-[#F3F4F6]"
+        >
+          {repairing ? "Onarılıyor…" : "Eksikleri tamamla"}
+        </button>
       </section>
 
       {report ? (
