@@ -9,6 +9,7 @@ import { getSession, mustSetUpTwoFactor } from "@/lib/auth/session";
 import { ThemeBoundary } from "@/components/admin/theme-boundary";
 import { createTranslator } from "@nexpress/i18n";
 import { AdminShellClient } from "@/components/admin/admin-shell-client";
+import { ClearChunkReload } from "@/components/admin/chunk-reload";
 import { COMMERCE_PLUGIN_ID, MARKETPLACE_PLUGIN_ID, pluginEnabled } from "@/lib/plugin-gate";
 import { PERFORNEXT_PLUGIN_ID } from "@/plugins/perfornext";
 
@@ -41,6 +42,7 @@ export default async function AdminLayout({
 
   return (
     <ThemeBoundary>
+    <ClearChunkReload />
     <Suspense>
     <AdminShellClient
       siteId={siteId}

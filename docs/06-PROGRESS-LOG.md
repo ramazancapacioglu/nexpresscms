@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-10] — Yönetim paneli eski parça hatası
+- Dağıtımdan sonra açık panel eski `/_next/static/chunks/...` adresini ister; sunucu HTML 404 döndüğü için tarayıcı betiği `text/html` diye keser. Yönetim hata sınırı bu durumda belgeyi bir kez yeniler.
+
 ### [2026-11-10] — Tema önizlemesi, tema değişimi ve kalıcı bağlantı
 - **Önizleme:** `?nx_preview=` resmi temayı da manifestodan okur. Blok derleyicisi önizlenen resmi tema kimliğini kullanır. Tek dilde bağlantı `/?nx_preview=` olur.
 - **Tema değişimi:** Yazılım Firması kapanınca şerit sade düzene, yerleşim kutulu genişliğe ve düğme dolu stile döner. Menü, footer ve sayfalar silinmez.

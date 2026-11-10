@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { reloadIfStaleChunk } from "@/components/admin/chunk-reload";
 
 /** Yönetim sayfası hata sınırı: ham hata gösterilmez; olası nedenler ve yeniden deneme sunulur. */
 export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("[admin]", error);
+    reloadIfStaleChunk(error);
   }, [error]);
   const dbHint = /column .* does not exist|relation .* does not exist|no such (column|table)|Failed query/i.test(`${error.message} ${(error as { cause?: { message?: string } }).cause?.message ?? ""}`);
   return (
