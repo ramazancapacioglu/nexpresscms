@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { buildFontFaceCss } from "@nexpress/core";
 import { useThemeStore, type ThemeStoreClientProps } from "./use-theme-store";
 import { ThemeStoreToast } from "./theme-store-toast";
 import { ThemeStoreHeader } from "./theme-store-header";
@@ -12,6 +13,7 @@ export function ThemeStoreClient(props: ThemeStoreClientProps) {
   const s = useThemeStore(props);
   return (
     <div className="space-y-4">
+      <style>{buildFontFaceCss(s.customizer.typography.fonts ?? [])}</style>
       <ThemeStoreToast s={s} />
       <ThemeStoreHeader s={s} />
       <ThemeStoreCustomizer s={s} />

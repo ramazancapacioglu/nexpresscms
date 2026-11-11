@@ -22,7 +22,7 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
-import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
+import { PluginSlot, buildFontFaceCss, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
@@ -100,6 +100,8 @@ export default async function PublicLocaleLayout({
   const sidebarTpl = isYf ? null : sidebarTplRaw;
   const resolvedSettings = resolveSiteSettings(site?.settings);
   const resolvedCustomizer = resolvedSettings.customizer;
+  const installedFonts = resolvedCustomizer.typography.fonts ?? [];
+  const bodyFontFile = preloadFile(installedFonts, primaryFamily((preview?.tokens ?? tokens).typography.bodyFont));
   const ga4Settings = resolvedSettings.seo?.integrations?.ga4;
   const ga4MeasurementId = (ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
   const cust = resolvedCustomizer.header;
@@ -265,6 +267,8 @@ export default async function PublicLocaleLayout({
       className="relative min-h-screen flex flex-col"
     >
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
+      {installedFonts.length > 0 ? <style dangerouslySetInnerHTML={{ __html: buildFontFaceCss(installedFonts) }} /> : null}
+      {bodyFontFile ? <link rel="preload" as="font" type="font/woff2" href={`/api/fonts/${bodyFontFile}`} crossOrigin="anonymous" /> : null}
       {skin?.css ? <style dangerouslySetInnerHTML={{ __html: skin.css }} /> : null}
       {resolvedCustomizer.customCss ? (
         <style id="nx-custom-css" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.customCss }} />

@@ -1,5 +1,54 @@
+import { FONT_CATALOG, primaryFamily, type FontCategory } from "@nexpress/core";
 import { GLOBAL_TYPOGRAPHY_PAIRS } from "@nexpress/themes";
 import type { ThemeStoreState } from "./use-theme-store";
+
+const GROUP_LABEL: Record<FontCategory, string> = { sans: "Sans serif", serif: "Serif", mono: "Kod (mono)", display: "Başlık" };
+
+/** Başlık / gövde / kod yazı tipi seçimi. Seçilen aile sunucuya indirilir ve kendi alan adımızdan sunulur. */
+function FontPicker({ s }: { s: ThemeStoreState }) {
+  const { tokens, customizer, setFontFamily, isPending } = s;
+  const installed = new Set((customizer.typography.fonts ?? []).map((f: { family: string }) => f.family));
+  const rows = [
+    ["headingFont", "Başlık yazı tipi", ["sans", "serif"]],
+    ["bodyFont", "Gövde yazı tipi", ["sans", "serif"]],
+    ["monoFont", "Kod yazı tipi", ["mono"]],
+  ] as const;
+  return (
+    <div className="space-y-2.5">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Yazı tipi seçimi</div>
+      {rows.map(([role, label, groups]) => {
+        const current = primaryFamily(tokens.typography[role]);
+        return (
+          <label key={role} className="block">
+            <span className="mb-1 flex items-center justify-between text-[11px] font-medium">
+              {label}
+              {installed.has(current) ? <span className="font-normal text-emerald-700 dark:text-emerald-400">kendi sunucunuzdan sunuluyor</span> : null}
+            </span>
+            <select
+              aria-label={label}
+              value={FONT_CATALOG.some((f) => f.family === current) ? current : ""}
+              disabled={isPending}
+              onChange={(e) => e.target.value && setFontFamily(role, e.target.value)}
+              className="h-8 w-full rounded border border-border bg-background px-2 text-xs"
+            >
+              <option value="">{current ? `${current} (sistem yedeği)` : "Seçin"}</option>
+              {groups.map((g) => (
+                <optgroup key={g} label={GROUP_LABEL[g]}>
+                  {FONT_CATALOG.filter((f) => f.category === g).map((f) => (
+                    <option key={f.family} value={f.family}>{f.family}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+        );
+      })}
+      <p className="text-[10.5px] leading-relaxed text-muted-foreground">
+        Dosyalar Google'dan bir kez indirilip sunucunuza kaydedilir; ziyaretçiler üçüncü taraf istek yapmaz (KVKK/GDPR uyumlu, daha hızlı). Kaydet ile yayınlanır.
+      </p>
+    </div>
+  );
+}
 
 /** SEKME 3: TİPOGRAFİ ÇİFTLERİ & ÖLÇEK */
 export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
@@ -9,7 +58,8 @@ export function ThemeStoreTabTypography({ s }: { s: ThemeStoreState }) {
       {/* SEKME 3: TİPOGRAFİ ÇİFTLERİ & ÖLÇEK */}
       {activeTab === "typography" && (
         <div className="space-y-4">
-          <div>
+          <FontPicker s={s} />
+          <div className="border-t border-border pt-3">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               Hazır Font Çiftleri (Typography Presets)
             </div>

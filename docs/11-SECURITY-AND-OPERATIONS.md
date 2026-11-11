@@ -37,6 +37,8 @@
 
 Tüm yollarda `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`; üretimde `Strict-Transport-Security`. `/admin` ve `/login` ayrıca `X-Frame-Options: DENY` ve `Cache-Control: no-store`. `X-Powered-By` kapalıdır.
 
+**Yazı tipi indirme:** yönetici bir yazı tipi seçince sunucu yalnızca `fonts.googleapis.com` ve `fonts.gstatic.com` adreslerine gider (sabit sunucu, aile adı katalogdan doğrulanır, dosya `wOF2` imzası ve 600 KB sınırıyla denetlenir). Dosyalar kiracı klasöründe durur; `/api/fonts/{ad}-{özet}.woff2` yalnızca bu adlandırmayı sunar (yol geçişi yok). Ziyaretçi dış istek yapmaz.
+
 ## 5. Testler
 
 `pnpm test` her pakette `tsx --test` (Node'un yerleşik test koşucusu, ek bağımlılık yok) çalıştırır.

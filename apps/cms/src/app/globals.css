@@ -218,3 +218,33 @@ html.dark .nx-admin [class*="dark:border-[#23262E]"] { border-color: #2E333D; }
 [data-nx-inline] { cursor: text; outline: 1px dashed transparent; outline-offset: 3px; border-radius: 2px; transition: outline-color 0.15s; }
 [data-nx-inline]:hover { outline-color: rgb(37 99 235 / 0.55); }
 [data-nx-inline]:focus { outline: 2px solid #2563eb; background: rgb(37 99 235 / 0.07); }
+
+/* Mobil menü: yandan açılan panel (popover, JS'siz). Başlık satırındaki düğme `popovertarget` ile açar; dışarı tıklama/Esc kapatır. */
+.nx-offcanvas {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: min(88vw, 380px);
+  height: 100dvh;
+  max-height: none;
+  padding: 12px;
+  border: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--nx-bg, #fff);
+  color: var(--nx-fg, #0f172a);
+  box-shadow: -12px 0 40px rgb(0 0 0 / 0.18);
+  transform: translateX(100%);
+  transition: transform 0.28s ease, overlay 0.28s allow-discrete, display 0.28s allow-discrete;
+}
+.nx-offcanvas:popover-open { transform: translateX(0); }
+@starting-style { .nx-offcanvas:popover-open { transform: translateX(100%); } }
+.nx-offcanvas::backdrop { background: rgb(15 23 42 / 0.45); opacity: 0; transition: opacity 0.28s ease, overlay 0.28s allow-discrete, display 0.28s allow-discrete; }
+.nx-offcanvas:popover-open::backdrop { opacity: 1; }
+@starting-style { .nx-offcanvas:popover-open::backdrop { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .nx-offcanvas, .nx-offcanvas::backdrop { transition: none; } }
+/* Popover desteği yoksa: açma düğmesi gizlenir, menü satır içi açık liste kalır */
+@supports not selector(:popover-open) {
+  .nx-offcanvas { position: static; transform: none; width: auto; height: auto; box-shadow: none; padding: 8px 0; }
+  .nx-mobile-toggle, .nx-offcanvas-head { display: none; }
+}

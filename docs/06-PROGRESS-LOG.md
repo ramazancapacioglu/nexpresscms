@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-11] — Yazı tipi sistemi ve yandan açılan mobil menü
+- **Yazı tipi:** Özelleştirici › Yazı Tipi'nde başlık/gövde/kod yazı tipi seçilir (25 ailelik katalog, `@nexpress/core/fonts`). Seçilen aile bir kez Google Fonts'tan indirilir (`apps/cms/src/lib/fonts.ts`; yalnızca `latin` + `latin-ext`, Türkçeyi kapsar) ve `{MEDIA_DIR}/{siteId}/fonts` altına yazılır; ziyaretçi `/api/fonts/{dosya}` ile kendi alan adımızdan alır (`immutable`, `font-display: swap`, gövde yazı tipi `preload`). Ziyaretçi üçüncü taraf istek yapmaz; CSP `font-src 'self'` değişmedi. `customizer.typography.fonts` yalnızca katalog ailelerini ve geçerli dosya adlarını saklar (testli). Hazır font çiftleri de seçilince dosyaları indirir. Eskiden `googleFonts` bayrağı hiçbir şey yapmıyordu.
+- **Mobil menü:** `<details>` açılır liste yerine yandan açılan panel (`popover`, JS'siz; dışarı tıklama/Esc kapatır; kapatma düğmesi; hareket azaltma desteği). Popover desteği olmayan eski tarayıcıda menü satır içi açık liste kalır. Yazılım Firması teması CSS'i yeni sınıflara (`.nx-mobile-toggle`, `.nx-offcanvas`) uyarlandı.
+
 ### [2026-11-11] — Tema, tasarım yapısı ve editör toparlaması
 - **Tema hemen etkin:** Site satırı önbelleği (`packages/database/src/cms/site.ts`) modül düzeyindeydi; Next, sunucu eylemi ile sayfa rotasını ayrı paketlerde derleyince iki kopya olup eylemdeki temizlik sayfaya ulaşmıyordu (tema 15 sn geç yansıyordu). `globalThis` üzerinde tek Map olur, `activateTheme` yazmadan sonra da temizler, `invalidateSite` aynı önbelleği düşürür. Tarayıcıda doğrulandı: DB ve ziyaretçi çıktısı aynı anda değişir.
 - **Tema başına şerit:** Resmi temalar başlık/altlık/düğme düzenini getirir (`theme-chrome.ts`). Tema değişince ayrılan temanın düzeni `general.themeChrome` altına saklanır, dönülünce geri gelir (`theme-chrome-switch.ts`, testli). Ana header satırı dikey ortalanmıyordu (`h-full` + `min-height`); düzeltildi.

@@ -1,3 +1,4 @@
+import { sanitizeInstalledFonts, type InstalledFont } from "./fonts";
 import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
@@ -141,6 +142,8 @@ export interface SiteCustomizerSettings {
     bodyLineHeight: number | string;
     headingTransform: "none" | "uppercase";
     googleFonts: boolean;
+    /** Sunucuya indirilmiş yazı tipleri (`@font-face` bunlardan üretilir). */
+    fonts?: InstalledFont[];
   };
   layout: {
     contentLayout: "boxed" | "fullwidth";
@@ -356,7 +359,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       darkMode: c.darkMode === "auto" ? "auto" : "off",
       darkColors: Object.fromEntries(Object.entries((c.darkColors && typeof c.darkColors === "object" ? c.darkColors : {}) as Record<string, unknown>).filter(([, v]) => typeof v === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))) as Record<string, string>,
       stylePresets: sanitizeStylePresets(c.stylePresets),
-      typography: mergeSection(d.typography, c.typography),
+      typography: { ...mergeSection(d.typography, c.typography), fonts: sanitizeInstalledFonts((c.typography as { fonts?: unknown } | undefined)?.fonts) },
       layout: mergeSection(d.layout, c.layout),
       buttons: mergeSection(d.buttons, c.buttons),
       header: mergeSection(d.header, c.header),

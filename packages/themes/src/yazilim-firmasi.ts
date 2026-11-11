@@ -273,9 +273,9 @@ ${S} .nx-mega { border-radius:18px !important; border-color:#e6e6ea !important; 
 ${S} .nx-mega-title { font-size:11px !important; font-weight:700 !important; letter-spacing:.08em !important; text-transform:uppercase; color:#084f9e !important; }
 ${S} .nx-mega li a { font-size:13px !important; font-weight:400 !important; text-transform:none !important; letter-spacing:0 !important; color:#1d1d1f !important; border-radius:8px; }
 ${S} .nx-mega li a:hover { color:#0071e3 !important; background:#f5f5f7; }
-${S} .nx-mobile-nav > summary { height:34px; border-radius:980px; border-color:#d2d2d7; font-size:12px; padding:0 14px; }
-${S} .nx-mobile-nav > nav { width:min(400px,calc(100vw - 16px)); max-height:min(78vh,640px); border-radius:18px; border:1px solid #e6e6ea; background:#fff; padding:8px; box-shadow:0 24px 60px rgba(0,0,0,.16); }
-${S} .nx-mobile-nav a, ${S} .nx-mobile-nav summary { color:#1d1d1f; }
+${S} .nx-mobile-toggle { height:34px; border-radius:980px; border-color:#d2d2d7; font-size:12px; padding:0 14px; }
+${S} .nx-offcanvas { background:#fff; box-shadow:-16px 0 48px rgba(0,0,0,.14); }
+${S} .nx-mobile-nav a, ${S} .nx-offcanvas a, ${S} .nx-offcanvas summary { color:#1d1d1f; }
 @media (max-width:767px) {
   ${S} .nx-yf-hero { padding:48px 16px 24px; }
   ${S} .nx-yf-hero h1 { font-size:2rem; }
