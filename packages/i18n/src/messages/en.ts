@@ -111,6 +111,14 @@ export const en: Messages = {
     },
     account: { admin: "Administrator", editor: "Editor", signOut: "Sign out", language: "Panel language", languageHint: "Only the admin panel menus; content language is separate.", saved: "Language saved." },
   },
+  consent: {
+    message: "This site may use optional cookies to improve your experience and measure visits. Essential cookies are always on.",
+    accept: "Accept all",
+    reject: "Essential only",
+    policy: "Cookie policy",
+    preferences: "Cookie preferences",
+    label: "Cookie consent",
+  },
   site: {
     language: "Language",
     themeSwitch: "Change theme",

@@ -192,7 +192,7 @@ function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: stri
 
 /**
  * Mobil menü: yandan açılan panel (off-canvas), JS'siz. `popover="auto"`: dışarı tıklayınca ve Esc ile kapanır, odak
- * yönetimi ve üst katman tarayıcıdadır. Panelin kayma/karartma stili `globals.css` (`.nx-offcanvas`) içindedir.
+ * yönetimi ve üst katman tarayıcıdadır. Panelin kayma/karartma stili `public.css` (`.nx-offcanvas`) içindedir.
  * Popover desteklemeyen eski tarayıcıda menü satır içi açık liste olarak görünür (CSS `@supports` yedeği).
  */
 export function MobileNav({ menu, extra, label, allLabel }: { menu: NavigationMenuItem[]; extra?: NavigationLink[]; label: string; allLabel: string }) {

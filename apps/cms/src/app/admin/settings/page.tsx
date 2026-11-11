@@ -6,6 +6,7 @@ import { requireAdminPage } from "@/lib/auth/session";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { SiteOps } from "@/components/admin/site-ops";
 import { LocalesCard } from "@/components/admin/locales-card";
+import { CookieConsentCard } from "@/components/admin/cookie-consent-card";
 import { mediaRoot } from "@/lib/media/storage";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export default async function AdminSettingsPage() {
       defaultLocale={site?.defaultLocale ?? "tr"}
       initialIdentities={general.locales ?? {}}
     />
+    <CookieConsentCard initial={general.cookieConsent ?? { enabled: false, message: "", policyHref: "" }} />
     <SiteOps maintenance={{ enabled: general.maintenanceEnabled, message: general.maintenanceMessage }} />
     </div>
   );

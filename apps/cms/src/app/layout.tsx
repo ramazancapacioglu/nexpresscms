@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "@/plugins/register";
-import "./globals.css";
 
 import { headers } from "next/headers";
 import { localeDirection, resolveSiteSettings, webmasterVerification } from "@nexpress/core";

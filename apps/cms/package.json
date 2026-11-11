@@ -15,7 +15,8 @@
     "test": "node --test test/*.test.mjs && tsx --test test/*.test.ts",
     "a11y": "node scripts/a11y-audit.mjs",
     "auth:e2e": "node scripts/auth-e2e.mjs",
-    "seo:contract": "node scripts/seo-contract.mjs"
+    "seo:contract": "node scripts/seo-contract.mjs",
+    "css:check": "node scripts/check-public-css.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -1,3 +1,4 @@
+import "@/app/public.css";
 import React from "react";
 import { localeBase, prefixedFallbackPath } from "@nexpress/core";
 import type { Metadata } from "next";
@@ -6,7 +7,7 @@ import { getActiveSkin, getPreviewTheme, officialPreviewId } from "@/lib/public-
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { runScheduler } from "@/lib/scheduler";
 import { after } from "next/server";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/public/site-chrome";
 import { PublicSidebarWidgetArea } from "@/components/public/public-widgets";
 import { templateFor } from "@/lib/templates";
@@ -23,10 +24,11 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
-import { PluginSlot, buildFontFaceCss, pageMaxWidth, readPageOptions, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
+import { CONSENT_COOKIE, consentBannerVisible, optionalScriptsAllowed, PluginSlot, buildFontFaceCss, pageMaxWidth, readPageOptions, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
+import { CookieConsent } from "@/components/public/cookie-consent";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -103,8 +105,12 @@ export default async function PublicLocaleLayout({
   const resolvedCustomizer = resolvedSettings.customizer;
   const installedFonts = resolvedCustomizer.typography.fonts ?? [];
   const bodyFontFile = preloadFile(installedFonts, primaryFamily((preview?.tokens ?? tokens).typography.bodyFont));
+  // Çerez onayı: açıkken GA4 ve özel baş/son betikler yalnızca "tümünü kabul" ile yüklenir
+  const consentSettings = resolvedSettings.general.cookieConsent ?? { enabled: false, message: "", policyHref: "" };
+  const consentValue = consentSettings.enabled ? (await cookies()).get(CONSENT_COOKIE)?.value : undefined;
+  const optionalOk = optionalScriptsAllowed(consentSettings, consentValue);
   const ga4Settings = resolvedSettings.seo?.integrations?.ga4;
-  const ga4MeasurementId = (ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
+  const ga4MeasurementId = (optionalOk && ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ lb, site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
@@ -283,7 +289,7 @@ export default async function PublicLocaleLayout({
       {resolvedCustomizer.customCss ? (
         <style id="nx-custom-css" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.customCss }} />
       ) : null}
-      {resolvedCustomizer.headerScripts ? (
+      {optionalOk && resolvedCustomizer.headerScripts ? (
         <div id="nx-header-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.headerScripts }} />
       ) : null}
       {preview ? (
@@ -396,11 +402,12 @@ export default async function PublicLocaleLayout({
       ) : (
         <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
-      {resolvedCustomizer.footerScripts ? (
+      {optionalOk && resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}
       {isYf ? <YazilimFirmasiReach locale={locale} /> : null}
       <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />
+      {consentSettings.enabled ? <CookieConsent settings={consentSettings} visible={consentBannerVisible(consentSettings, consentValue)} t={t} /> : null}
     </div>
   );
 }

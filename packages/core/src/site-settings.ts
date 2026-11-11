@@ -1,4 +1,5 @@
 import { sanitizeInstalledFonts, type InstalledFont } from "./fonts";
+import { DEFAULT_COOKIE_CONSENT, sanitizeCookieConsent, type CookieConsentSettings } from "./consent";
 import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
@@ -256,6 +257,8 @@ export interface GeneralSettings {
    * temaya dönülünce geri gelir. Kayıt yoksa temanın hazır düzeni uygulanır.
    */
   themeChrome?: Record<string, ChromeSnapshot>;
+  /** Çerez onayı bannerı ve betik kapısı. Varsayılan kapalı. */
+  cookieConsent?: CookieConsentSettings;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -268,6 +271,7 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   postsPageSlug: "",
   chromeSnapshot: null,
   themeChrome: {},
+  cookieConsent: DEFAULT_COOKIE_CONSENT,
 };
 
 /** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
@@ -354,6 +358,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       postsPageSlug: sanitizeReadingSlug(generalRaw.postsPageSlug),
       chromeSnapshot: sanitizeChromeSnapshot(generalRaw.chromeSnapshot),
       themeChrome: sanitizeThemeChrome(generalRaw.themeChrome),
+      cookieConsent: sanitizeCookieConsent(generalRaw.cookieConsent),
     },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {

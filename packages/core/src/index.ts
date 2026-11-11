@@ -15,6 +15,7 @@ export * from "./site-settings";
 export * from "./permalinks";
 export * from "./reading";
 export * from "./fonts";
+export * from "./consent";
 export * from "./page-options";
 export * from "./taxonomy";
 export * from "./session-token";

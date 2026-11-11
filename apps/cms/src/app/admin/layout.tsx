@@ -1,3 +1,4 @@
+import "@/app/admin.css";
 import React, { Suspense } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";

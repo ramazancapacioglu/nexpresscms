@@ -80,6 +80,10 @@ jobs:
         env:
           SEO_BASE_URL: http://localhost:3000
         run: pnpm --filter @nexpress/cms seo:contract
+      - name: Ziyaretçi CSS kapsamı (yönetim CSS'inde olup ziyaretçide eksik sınıf yok)
+        env:
+          SEO_BASE_URL: http://localhost:3000
+        run: pnpm --filter @nexpress/cms css:check
       - name: axe taraması (kritik/ciddi ihlal ve mobil taşma derlemeyi düşürür)
         env:
           A11Y_BASE_URL: http://localhost:3000

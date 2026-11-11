@@ -114,6 +114,14 @@ export const tr = {
     },
     account: { admin: "Yönetici", editor: "Editör", signOut: "Çıkış yap", language: "Panel dili", languageHint: "Yalnızca yönetim panelinin menüleri; içerik dili ayrıdır.", saved: "Dil kaydedildi." },
   },
+  consent: {
+    message: "Bu site, deneyiminizi iyileştirmek ve ziyaretleri ölçmek için isteğe bağlı çerezler kullanabilir. Zorunlu çerezler her zaman etkindir.",
+    accept: "Tümünü kabul et",
+    reject: "Yalnızca zorunlu",
+    policy: "Çerez politikası",
+    preferences: "Çerez tercihleri",
+    label: "Çerez onayı",
+  },
   site: {
     language: "Dil",
     themeSwitch: "Tema değiştir",
