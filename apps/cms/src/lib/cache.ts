@@ -3,6 +3,7 @@ import { cache } from "react";
 import { revalidatePath as nextRevalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 import { parseWithDates, stringifyWithDates } from "@nexpress/core";
+import { invalidateSiteCache } from "@nexpress/database";
 
 /** Ön yüz okumaları için varsayılan bayatlama; zamanlanmış yayınları da bu sürede yakalar. */
 const FALLBACK_TTL_SECONDS = 120;
@@ -121,6 +122,7 @@ export async function invalidateSite(siteId?: string): Promise<void> {
   const id = siteId ?? (await headers()).get("x-nexpress-site-id") ?? "default";
   epochs.set(id, (epochs.get(id) ?? 0) + 1);
   oversizeCache.clear();
+  invalidateSiteCache(id);
   try {
     revalidateTag(siteTag(id));
   } catch {

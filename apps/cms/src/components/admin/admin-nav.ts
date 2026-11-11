@@ -351,23 +351,20 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {
-    label: "Görünüm",
-    items: pick(
-      ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/footer", "/admin/appearance/sidebar"],
-      {
-        "/admin/themes": { label: "Temalar", count: undefined },
-        "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
-      }
-    ),
-  },
-  {
     label: "Tasarım",
     items: [
-      ...pick(["/admin/studio", "/admin/appearance/templates"], {
-        "/admin/studio": { label: "Tasarım stüdyosu", count: undefined },
-        "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
-      }),
-      ...pick(["/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(
+        ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/templates", "/admin/studio"],
+        {
+          "/admin/themes": { label: "Temalar", count: undefined },
+          "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
+          "/admin/appearance/header": { label: "Header & Footer", count: undefined },
+          "/admin/appearance/menus": { label: "Menüler", count: undefined },
+          "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
+          "/admin/studio": { label: "Kütüphane & AI", count: undefined },
+        }
+      ),
+      ...pick(["/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   {

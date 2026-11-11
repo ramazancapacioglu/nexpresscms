@@ -81,7 +81,18 @@ export interface HeaderBarSlotConfig {
   mobileRightWidgets?: string[];
 }
 
+/** Header öğelerinin ortak ayarları (yerleşim kurucusu). Hepsi isteğe bağlıdır; eski kayıtlar değişmeden çalışır. */
+export interface HeaderOptions {
+  /** Ana düğmenin biçimi. Varsayılan `solid`. */
+  ctaStyle?: "solid" | "outline" | "ghost";
+  secondaryLabel?: string;
+  secondaryHref?: string;
+  /** `html` öğesinin metni (düz metin, en çok 160 karakter). */
+  htmlText?: string;
+}
+
 export interface HeaderConfig {
+  options?: HeaderOptions;
   topBar: HeaderBarSlotConfig & {
     announcementText?: string;
     contactPhone?: string;

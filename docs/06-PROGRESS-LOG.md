@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-11] — Tema, tasarım yapısı ve editör toparlaması
+- **Tema hemen etkin:** Site satırı önbelleği (`packages/database/src/cms/site.ts`) modül düzeyindeydi; Next, sunucu eylemi ile sayfa rotasını ayrı paketlerde derleyince iki kopya olup eylemdeki temizlik sayfaya ulaşmıyordu (tema 15 sn geç yansıyordu). `globalThis` üzerinde tek Map olur, `activateTheme` yazmadan sonra da temizler, `invalidateSite` aynı önbelleği düşürür. Tarayıcıda doğrulandı: DB ve ziyaretçi çıktısı aynı anda değişir.
+- **Tema başına şerit:** Resmi temalar başlık/altlık/düğme düzenini getirir (`theme-chrome.ts`). Tema değişince ayrılan temanın düzeni `general.themeChrome` altına saklanır, dönülünce geri gelir (`theme-chrome-switch.ts`, testli). Ana header satırı dikey ortalanmıyordu (`h-full` + `min-height`); düzeltildi.
+- **Demo içerik:** Tüm resmi temalara demo paketi (`demo-generic.ts`, `demo-copy.ts`); aktarım demo ana sayfayı açılış sayfası yapar; kartta **Demo ile** tek adım; tema kartlarında jetonlardan çizilen maket önizleme.
+- **Tasarım yapısı:** Görünüm + Tasarım grupları tek **Tasarım** grubu ve tek sekme çubuğu oldu (Temalar, Özelleştirici, Header, Footer, Menüler, Kenar çubuğu, Şablonlar, Kütüphane & AI). Stüdyo sekmeleri yeniden adlandırıldı.
+- **Header yerleşim kurucusu:** `/admin/appearance/header` sürükle-bırak kurucu oldu (3 şerit × 3 bölge, masaüstü/mobil, öğe ayar paneli). 7 yeni öğe (`phone`, `email`, `button2`, `social`, `cart`, `html`, `divider`) ve `HeaderConfig.options`; mobil türetmede geniş öğeler atlanır. Özel header şablonu açıksa sayfa uyarır.
+- **Kütüphane:** Kart ızgarası 4 sütun, tek satır ad ve ilk cümle (tam metin `title`'da); önizleme kutusu taşmayı keser. 12 yeni kurumsal bölüm (`lib_corp_*`, tema rengine uyumlu).
+- **Görsel kadrajı:** Her görsel alanına kadraj noktası, kırp/sığdır ve yakınlaştırma (`#nx:` yönergesi, `ImageDirectives`, testli); tüm bloklarda `ResponsiveImage` ile çalışır.
+
 ### [2026-11-10] — Öne çıkan sayfa, blog sayfası ve tema kabuğu
 - **Sayfalar:** Öne çıkan sayfa ana sayfayı, blog sayfası yazı listesini belirler. Tema demosu yalnızca öne çıkan sayfa boşken kullanılır.
 - **Köprü 0.3.1:** WordPress ana sayfa ve yazı sayfası bayrakları okunur. Veri kümesindeki `blog` adresi yazı sayfası olur ve o andaki menü/şerit tema değişince geri gelsin diye saklanır.

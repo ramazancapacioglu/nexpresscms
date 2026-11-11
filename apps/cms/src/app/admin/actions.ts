@@ -8,7 +8,7 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
-import { switchThemeChrome } from "@/lib/apply-yazilim-firmasi-theme";
+import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
 import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";

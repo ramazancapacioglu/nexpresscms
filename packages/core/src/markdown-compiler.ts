@@ -1,4 +1,5 @@
 import { blockPlainText } from "./inline-html";
+import { stripImageDirectives } from "./media";
 import type { BlockNode } from "./types";
 
 function catalogBlockToMarkdown(props: Record<string, unknown>): string {
@@ -103,7 +104,7 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
 
     case "image_figure": {
       const alt = String(p.altText ?? p.alt ?? "Görsel");
-      const url = String(p.url ?? "");
+      const url = stripImageDirectives(String(p.url ?? ""));
       const caption = p.caption ? `\n*${String(p.caption)}*` : "";
       return `![${alt}](${url})${caption}`;
     }

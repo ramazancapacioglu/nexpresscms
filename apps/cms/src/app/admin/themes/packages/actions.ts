@@ -5,7 +5,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
-import { switchThemeChrome } from "@/lib/apply-yazilim-firmasi-theme";
+import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 
 export type ActivateResult =
   | { ok: true; pagesAdded: number; pagesSkipped: number; chromeApplied: boolean }

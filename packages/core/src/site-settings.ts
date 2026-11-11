@@ -1,4 +1,4 @@
-import { sanitizeChromeSnapshot, sanitizeReadingSlug, type ChromeSnapshot } from "./reading";
+import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
@@ -246,6 +246,11 @@ export interface GeneralSettings {
   postsPageSlug?: string;
   /** Yazılım Firması kabuğu uygulanmadan önceki şerit, menü ve yerleşim. */
   chromeSnapshot?: ChromeSnapshot | null;
+  /**
+   * Tema başına şerit düzeni: tema değişirken ayrılan temanın başlık/altlık/menü düzeni buraya yazılır,
+   * temaya dönülünce geri gelir. Kayıt yoksa temanın hazır düzeni uygulanır.
+   */
+  themeChrome?: Record<string, ChromeSnapshot>;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -257,6 +262,7 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   frontPageSlug: "",
   postsPageSlug: "",
   chromeSnapshot: null,
+  themeChrome: {},
 };
 
 /** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
@@ -342,6 +348,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       frontPageSlug: sanitizeReadingSlug(generalRaw.frontPageSlug),
       postsPageSlug: sanitizeReadingSlug(generalRaw.postsPageSlug),
       chromeSnapshot: sanitizeChromeSnapshot(generalRaw.chromeSnapshot),
+      themeChrome: sanitizeThemeChrome(generalRaw.themeChrome),
     },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {

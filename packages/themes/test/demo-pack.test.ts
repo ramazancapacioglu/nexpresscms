@@ -15,7 +15,7 @@ test("Yazılım Firması demo paketi benzersiz adresler ve ayrı vitrin kullanı
   assert.ok(slugs.includes(YF_DEMO_HOME_SLUG));
   assert.ok(pack.entries.some((entry) => entry.type === "post"));
   assert.ok(pack.entries.some((entry) => entry.slug === "e-donusum"));
-  assert.equal(getThemeDemoPack("corporate-aurora"), null);
+  assert.equal(getThemeDemoPack("bilinmeyen-tema"), null);
 });
 
 test("Yazılım Firması: menü, footer ve sayfa bağlantıları demo adreslerine çıkar; görseller var", () => {

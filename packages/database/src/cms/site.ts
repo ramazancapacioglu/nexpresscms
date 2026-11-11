@@ -8,7 +8,13 @@ interface CachedSite {
   site: SiteDto | null;
   expiresAt: number;
 }
-const siteCache = new Map<string, CachedSite>();
+/**
+ * Süreç genelinde tek örnek: Next, sunucu eylemleri ile sayfa rotalarını ayrı paketlerde derleyebilir; modül
+ * düzeyinde bir `Map` bu durumda iki kopya olur ve eylemdeki `delete` sayfadaki kopyayı temizlemez
+ * (tema değişikliği ziyaretçiye 15 sn geç yansırdı). `globalThis` üzerinde tutulduğundan her kopya aynı Map'i görür.
+ */
+const globalForSite = globalThis as unknown as { __nxSiteRowCache?: Map<string, CachedSite> };
+const siteCache = (globalForSite.__nxSiteRowCache ??= new Map<string, CachedSite>());
 
 /**
  * Site önbelleğini temizler. `siteId` verilirse yalnızca o kiracıyı, verilmezse tümünü temizler.
@@ -169,6 +175,8 @@ export class CmsSiteRepository extends CmsRepositoryBase {
           eq(t.installedThemes.themeId, themeId)
         )
       );
+    // Yazma bittikten sonra da düşür: yazma sırasında gelen bir okuma eski satırı yeniden önbelleğe koymuş olabilir.
+    siteCache.delete(this.siteId);
   }
 
   /**

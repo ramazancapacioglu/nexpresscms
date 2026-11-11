@@ -6,6 +6,7 @@ export * from "./demo-pack";
 export * from "./ink-grid-pages";
 export * from "./chrome-templates";
 export * from "./chrome-library";
+export * from "./theme-chrome";
 export * from "./responsive-image";
 export * from "./dynamic-list";
 export * from "./block-template-context";

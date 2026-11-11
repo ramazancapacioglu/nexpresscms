@@ -34,12 +34,16 @@ interface HeaderProps {
   menuLabel: string;
   menuAllLabel: string;
   searchLabel: string;
+  /** "Sepet" öğesinin etiketi. */
+  cartLabel?: string;
+  /** "Sosyal bağlantılar" öğesi: SEO > Kuruluş > sameAs adreslerinden türetilir. */
+  social?: Array<{ label: string; href: string }>;
   /** Yazılım firması teması: arama ikonu sayfa yerine canlı sonuç penceresi açar. */
   liveSearch?: boolean;
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, liveSearch }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, cartLabel = "Sepet", social = [], liveSearch }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
   const bottom = header?.bottomBar;
@@ -47,6 +51,10 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const ctaLabel = (custom.ctaLabel || main?.ctaLabel || "").trim();
   const ctaHref = (custom.ctaHref || main?.ctaHref || "").trim();
   const showCta = custom.showCta !== false && ctaLabel !== "" && isSafeMenuHref(ctaHref) && !ctaHref.startsWith("/admin");
+  const options = header?.options ?? {};
+  const secondaryHref = (options.secondaryHref ?? "").trim();
+  const secondaryLabel = (options.secondaryLabel ?? "").trim();
+  const showSecondary = secondaryLabel !== "" && isSafeMenuHref(secondaryHref) && !secondaryHref.startsWith("/admin");
   const logoText = custom.logoText.trim() || siteName;
   const sticky = main?.sticky ?? custom.sticky;
   const glass = main?.glassmorphism ?? custom.glass;
@@ -57,9 +65,6 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const bottomZones = resolveHeaderZones(bottom, DEFAULT_HEADER_ZONES.bottom);
   const topMobile = resolveMobileHeaderZones(top, topZones);
   const bottomMobile = resolveMobileHeaderZones(bottom, bottomZones);
-  const zoneHas = (zones: HeaderZones, id: HeaderWidgetId) =>
-    zones.left.includes(id) || zones.center.includes(id) || zones.right.includes(id);
-
   const widget = (id: HeaderWidgetId, viewport: "desktop" | "mobile") => {
     if (id === "announcement") return top?.announcementText ? <span className="font-medium">{top.announcementText}</span> : null;
     if (id === "contact") {
@@ -116,15 +121,60 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       );
     }
     if (id === "cta" && showCta) {
+      const variant = ink ? "outline" : options.ctaStyle ?? "solid";
+      const filled = variant === "solid";
       return (
         <a
           href={ctaHref}
-          style={{ backgroundColor: ink ? "transparent" : tokens.colors.primary, color: ink ? tokens.colors.foreground : tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius, border: ink ? "1px solid rgba(255,255,255,0.2)" : undefined }}
-          className="inline-flex items-center px-4 py-2 text-sm font-semibold"
+          style={{
+            backgroundColor: filled ? tokens.colors.primary : "transparent",
+            color: filled ? tokens.colors.primaryForeground : ink ? tokens.colors.foreground : tokens.colors.primary,
+            borderRadius: tokens.geometry.borderRadius,
+            border: variant === "ghost" ? "1px solid transparent" : filled ? "1px solid transparent" : ink ? "1px solid rgba(255,255,255,0.25)" : `1px solid ${tokens.colors.primary}`,
+          }}
+          className="nx-header-cta inline-flex items-center whitespace-nowrap px-4 py-2 text-sm font-semibold"
         >
           {ctaLabel}
         </a>
       );
+    }
+    if (id === "button2" && showSecondary) {
+      return (
+        <a
+          href={secondaryHref}
+          style={{ color: ink ? tokens.colors.foreground : tokens.colors.primary, borderRadius: tokens.geometry.borderRadius, border: `1px solid ${ink ? "rgba(255,255,255,0.25)" : tokens.colors.primary}` }}
+          className="nx-header-button2 inline-flex items-center whitespace-nowrap px-4 py-2 text-sm font-semibold"
+        >
+          {secondaryLabel}
+        </a>
+      );
+    }
+    if (id === "phone") {
+      const phone = top?.contactPhone?.trim();
+      return phone ? <a className="nx-header-phone whitespace-nowrap text-sm font-medium" href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a> : null;
+    }
+    if (id === "email") {
+      const email = top?.contactEmail?.trim();
+      return email ? <a className="nx-header-email whitespace-nowrap text-sm font-medium" href={`mailto:${email}`}>{email}</a> : null;
+    }
+    if (id === "social") {
+      return social.length > 0 ? (
+        <span className="nx-header-social flex items-center gap-3 text-sm font-medium">
+          {social.map((item) => (
+            <a key={item.href} href={item.href} rel="noopener noreferrer me" target="_blank" className="opacity-80 hover:opacity-100">{item.label}</a>
+          ))}
+        </span>
+      ) : null;
+    }
+    if (id === "cart") {
+      return <a href={`${lb ?? `/${locale}`}/magaza/sepet`} className="nx-header-cart whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">{cartLabel}</a>;
+    }
+    if (id === "html") {
+      const text = (options.htmlText ?? "").trim();
+      return text ? <span className="nx-header-text text-sm">{text}</span> : null;
+    }
+    if (id === "divider") {
+      return <span aria-hidden="true" className="nx-header-divider h-5 w-px bg-current opacity-20" />;
     }
     if (id === "links" && bottomLinks.length > 0) {
       return (
@@ -164,7 +214,22 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       </div>
     );
   };
-  const topVisible = Boolean(top?.enabled && (top.announcementText || top.contactPhone || top.contactEmail));
+  /** Şeritte gerçekten çizilecek bir öğe var mı (boş duyuru/telefon şeridi görünmez). */
+  const hasContent = (zones: HeaderZones) =>
+    [...zones.left, ...zones.center, ...zones.right].some((id) => {
+      if (id === "announcement") return Boolean(top?.announcementText);
+      if (id === "contact") return Boolean(top?.contactPhone || top?.contactEmail);
+      if (id === "phone") return Boolean(top?.contactPhone);
+      if (id === "email") return Boolean(top?.contactEmail);
+      if (id === "links") return bottomLinks.length > 0;
+      if (id === "social") return social.length > 0;
+      if (id === "html") return Boolean((options.htmlText ?? "").trim());
+      if (id === "button2") return showSecondary;
+      if (id === "cta") return showCta;
+      return true;
+    });
+  const topVisible = Boolean(top?.enabled && hasContent(topZones));
+  const bottomVisible = Boolean(bottom?.enabled && hasContent(bottomZones));
   const shell = ink ? "100%" : tokens.geometry.containerMaxWidth;
 
   const shellSticky = sticky !== false && !ink;
@@ -202,33 +267,33 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
             : `nx-public-header relative z-40 border-b ${glass === false ? "" : "backdrop-blur-md"}`
         }
       >
-        <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto px-4 sm:px-6">
-          {row(mainZones, "hidden h-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
-          {row(mobileZones, "grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
+        <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">
+          {row(mainZones, "hidden w-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
+          {row(mobileZones, "grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
-        {bottom?.enabled && bottomLinks.length > 0 && hasExplicitMobileZones(bottom) ? (
-          <>
-            {zoneHas(bottomZones, "links") ? (
+        {bottomVisible ? (
+          hasExplicitMobileZones(bottom) ? (
+            <>
               <div className="hidden border-t border-white/10 text-xs md:block">
                 <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
                   {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
                 </div>
               </div>
-            ) : null}
-            {zoneHas(bottomMobile, "links") ? (
-              <div className="border-t border-white/10 text-xs md:hidden">
-                <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2">
-                  {row(bottomMobile, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "mobile")}
+              {hasContent(bottomMobile) ? (
+                <div className="border-t border-white/10 text-xs md:hidden">
+                  <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2">
+                    {row(bottomMobile, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "mobile")}
+                  </div>
                 </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="border-t border-white/10 text-xs">
+              <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
+                {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
               </div>
-            ) : null}
-          </>
-        ) : bottom?.enabled && bottomLinks.length > 0 ? (
-          <div className="border-t border-white/10 text-xs">
-            <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
-              {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
             </div>
-          </div>
+          )
         ) : null}
       </header>
     </div>

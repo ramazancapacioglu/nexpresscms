@@ -1,5 +1,5 @@
 import React from "react";
-import { buildPictureSpec, parseMediaRef } from "@nexpress/core";
+import { buildPictureSpec, parseImageDirectives, parseMediaRef } from "@nexpress/core";
 
 /** Medya kimliği -> odak noktası (%). Yalnızca 50/50 dışındakiler taşınır. */
 export type MediaFocalMap = Record<string, { x: number; y: number }>;
@@ -28,7 +28,7 @@ export interface ResponsiveImageProps {
  * özgün en-boy oranı = sıfır kayma). Dış adresler düz `<img>` olarak kalır. İstemci JS'i yoktur.
  */
 export function ResponsiveImage({
-  src,
+  src: rawSrc,
   alt,
   title,
   className,
@@ -41,12 +41,24 @@ export function ResponsiveImage({
 }: ResponsiveImageProps) {
   const loading = priority ? "eager" : "lazy";
   const fetchPriority = priority ? "high" : undefined;
+  // Alan başına sunum yönergesi (`#nx:fit=…;x=…;y=…;z=…`): blok kodu değişmeden her görselde çalışır
+  const { url: src, directives } = parseImageDirectives(rawSrc);
   const ref = parseMediaRef(src);
-  const point = ref ? focal?.[ref.id] : undefined;
-  const imgStyle = point ? { ...style, objectPosition: `${point.x}% ${point.y}%` } : style;
+  const point = directives.x !== undefined || directives.y !== undefined ? { x: directives.x ?? 50, y: directives.y ?? 50 } : ref ? focal?.[ref.id] : undefined;
+  const zoom = directives.zoom && directives.zoom > 1 ? directives.zoom : undefined;
+  const baseStyle: React.CSSProperties = {
+    ...style,
+    ...(directives.fit ? { objectFit: directives.fit } : {}),
+    ...(point ? { objectPosition: `${point.x}% ${point.y}%` } : {}),
+    ...(zoom ? { transform: `scale(${zoom})`, transformOrigin: point ? `${point.x}% ${point.y}%` : "50% 50%" } : {}),
+  };
+  const imgStyle = Object.keys(baseStyle).length ? baseStyle : undefined;
+  // Yakınlaştırılan görsel kutusundan taşmasın: kırpan sarmalayıcı yalnızca yakınlaştırmada eklenir
+  const clip = (node: React.ReactElement) =>
+    zoom ? <span style={{ display: "block", overflow: "hidden", width: "100%", height: "100%" }}>{node}</span> : node;
 
   if (!ref) {
-    return (
+    return clip(
       <img
         src={src}
         alt={alt}
@@ -63,7 +75,7 @@ export function ResponsiveImage({
   }
 
   const spec = buildPictureSpec(ref);
-  return (
+  return clip(
     <picture>
       {spec.sources.map((source) => (
         <source key={source.type} type={source.type} srcSet={source.srcSet} sizes={sizes} />

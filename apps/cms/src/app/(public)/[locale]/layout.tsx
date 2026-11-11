@@ -22,7 +22,7 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
-import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, toCssVarTokens } from "@nexpress/core";
+import { PluginSlot, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
@@ -321,6 +321,8 @@ export default async function PublicLocaleLayout({
         menuLabel={t("site.menu")}
         menuAllLabel={t("site.menuAll")}
         searchLabel={t("site.search")}
+        cartLabel={t("shop.cart")}
+        social={socialLinksFromSameAs(resolvedSettings.seo.sameAs)}
         liveSearch={isYf}
       />
       )}
