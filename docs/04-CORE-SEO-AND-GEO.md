@@ -56,6 +56,12 @@ SEO bir eklenti veya harici araç değil, her `saveContent` / `patchContent` kay
 
 ---
 
+**Başlık şablonu güvencesi:** `resolveSeoMeta` başka SEO eklentilerinin değişkenlerini (`%sitename%`, `%sitedesc%`, `%%title%%`…) `%site%`, `%tagline%`, `%title%`'a çevirir (`normalizeTitleTemplate`), tanınmayanı atar ve sonuç boş ya da yalnız ayraçsa `başlık | site`'e düşer. Yarıda kesilmiş açıklama (`healCutDescription`) toparlanır. Sayfa şeması yayın tarihi, kırıntı ve görsel taşır; yazar adı yoksa yazar Organization'dır (uydurma kişi yazılmaz); içe aktarma izleri JSON-LD'ye girmez.
+
+**Site simgesi:** `seo.siteIcon` (kitaplıktan yerel görsel). Yayımlanan adresler: `/favicon.ico` (32), `/apple-touch-icon.png` (180), `/api/site-icon/{192|512}`, `/manifest.webmanifest`. Ayar boşsa hiçbiri yayımlanmaz ve `<link>` basılmaz.
+
+**Sözleşme testi:** `pnpm --filter @nexpress/cms seo:contract` çalışan uygulamada her içerik için dolu başlık, tek h1, canonical, og:title, geçerli ve sızıntısız JSON-LD, yazılarda `datePublished`/yazar/`og:type=article` denetler (CI'da koşar).
+
 ## 5. SEO sayfası (`/admin/seo`)
 
 Motor ayarları tema özelleştiricisinden ayrıdır. Kayıt `sites.settings.seo` içindedir.

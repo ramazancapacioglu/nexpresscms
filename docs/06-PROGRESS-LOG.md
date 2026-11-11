@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-11] — SEO düzeltmeleri (inceleme raporu `docs/26` §2)
+- **`<title>`:** Köprü WordPress'in ana sayfa başlık şablonunu site geneli `titleTemplate` yazıyor, bilinmeyen değişkenler boşalıp her iç sayfa başlığı `|` oluyordu. Köprü artık `homeTitleTemplate`'e yazar; `normalizeTitleTemplate` başka SEO eklentilerinin değişkenlerini (`%sitename%`, `%%title%%`…) çevirir, tanınmayanı atar; sonuç boş/yalnız ayraçsa `başlık | site` yedeğine düşülür (canlıdaki bozuk kayıt veri değişmeden düzelir).
+- **Şema:** `datePublished`, `BreadcrumbList` (Ana sayfa › üst sayfa › sayfa), `og:type=article` + `article:published/modified_time`, görseli olmayan içerikte üretilmiş paylaşım görseli. İçe aktarma izleri (`wpId`, `wpKind`, `migratedFrom`…) JSON-LD'ye sızmaz. Uydurma varsayılan yazar kaldırıldı: yazar adı yoksa yayıncı kuruluş yazar sayılır. Kök `@id` eğik çizgili.
+- **Çözümleyici:** zengin metindeki (`html`) iç/dış bağlantılar sayılır, `heading_element`/`paragraph_element`/`text_div` ve tanınmayan blokların metni ve bağlantıları analize girer; başlık düzeyi `"h2"` çözülür.
+- **Meta açıklama:** 150+ karakter olup cümleyle bitmeyen (yarıda kesilmiş) açıklama son cümleye/sözcüğe toparlanır ve `…` eklenir; köprü artık sözcük sınırında keser.
+- **Tek h1:** sayfa başlığı h1 olan düzende içerikteki vitrin ve 1. düzey başlık h2'ye düşer.
+- **Site simgesi:** SEO > Motor > Ayarlar'da kitaplıktan simge seçilir; `/favicon.ico`, `/apple-touch-icon.png`, `/manifest.webmanifest`, `/api/site-icon/{192|512}` yayımlanır, `<link>` etiketleri basılır (simge yoksa hiçbiri). Ara katman eşleyicisi `favicon.ico`'yu artık dışlamaz (kiracı başlığı için).
+- **Sözleşme testi:** `apps/cms/scripts/seo-contract.mjs` (`pnpm --filter @nexpress/cms seo:contract`) çalışan uygulamada her içerik için başlık, tek h1, canonical, og:title, JSON-LD geçerliliği/sızıntısı ve yazı şemasını denetler; CI'a eklendi.
+
 ### [2026-11-11] — Sayfa bazlı görünüm seçenekleri
 - **Editör › Sayfa Ayarları › Görünüm:** header (site ayarı / şeffaf / gizli; şeffafta açık-koyu yazı rengi), footer gizleme, içerik genişliği (dar 760, geniş 1440, tam), kenar çubuğu (site ayarı / yok / sol / sağ), üst-alt boşluğu kaldırma, sayfa başlığını gizleme. Değerler `schemaAttributes._page` altındadır; yalnızca varsayılandan farklılar yazılır (`@nexpress/core/page-options`, testli). Eski `_sidebar` anahtarı okunur ve yeni anahtarla değiştirilir.
 - **Ziyaretçi:** `[locale]/layout.tsx` içerik seçeneklerini önbellekli okumayla çözer (ana sayfa için `lib/home-slug.ts`). Şeffaf header içeriğin üstüne biner (`SiteHeader overlay`, `data-nx-overlay`). Başlık gizleme h1'i `sr-only` bırakır (SEO). Yerleşik makale düzeninde çalışır; şablonlu sayfada başlık/kenar çubuğu şablondan gelir.

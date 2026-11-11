@@ -22,7 +22,7 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
     initialPub.scheduledAt ?? ""
   );
   const [authorName, setAuthorName] = useState<string>(
-    initialPub.authorName ?? "Baş Mimari Ekibi"
+    initialPub.authorName ?? ""
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialPub.categories

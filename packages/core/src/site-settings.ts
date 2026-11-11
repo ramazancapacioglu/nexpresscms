@@ -66,6 +66,8 @@ export interface SeoEngineSettings {
   twitterHandle: string;
   organizationName: string;
   organizationLogo: string;
+  /** Site simgesi (favicon, ana ekran simgesi): kare, en az 512 px, kitaplıktan yerel görsel. Boşsa simge yayımlanmaz. */
+  siteIcon: string;
   sameAs: string[];
   robotsTxtExtra: string;
   /**
@@ -436,7 +438,7 @@ export function resolvePublishing(
     accessPassword: pwd,
     password: pwd,
     scheduledAt: String(pub.scheduledAt ?? ""),
-    authorName: String(pub.authorName ?? "Baş Mimari Ekibi"),
+    authorName: String(pub.authorName ?? ""),
     categories: strArr(pub.categories),
     tags: strArr(pub.tags),
     allowComments: pub.allowComments !== false,

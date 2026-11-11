@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createElement } from "react";
 import { createTranslator } from "@nexpress/i18n";
 import { ICON_PATHS } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
@@ -20,7 +20,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           <section className="nx-yf-hero">
             <div className="mx-auto max-w-[1200px]">
               {typeof p.badge === "string" && p.badge ? <p className="mb-4 text-xs font-semibold uppercase tracking-[.2em] text-[#00ac48]">{p.badge}</p> : null}
-              <h1 className="max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">{String(p.title ?? "")}</h1>
+              {createElement(p.demoteTitle === true ? "h2" : "h1", { className: "max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl" }, String(p.title ?? ""))}
               {typeof p.subtitle === "string" ? <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-slate-400 sm:text-lg">{p.subtitle}</p> : null}
               <div className="mt-8 flex flex-wrap gap-3">
                 {typeof p.primaryCtaLabel === "string" ? (
@@ -57,12 +57,11 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                 {p.badge}
               </span>
             )}
-            <h1
-              style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-3xl font-bold tracking-tight sm:text-5xl leading-tight"
-            >
-              {String(p.title ?? "")}
-            </h1>
+            {createElement(
+              p.demoteTitle === true ? "h2" : "h1",
+              { style: { fontFamily: tokens.typography.headingFont }, className: "text-3xl font-bold tracking-tight sm:text-5xl leading-tight" },
+              String(p.title ?? "")
+            )}
             {typeof p.subtitle === "string" && (
               <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
                 {p.subtitle}

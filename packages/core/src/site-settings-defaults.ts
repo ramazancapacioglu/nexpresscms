@@ -12,6 +12,7 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   twitterHandle: "",
   organizationName: "NexPress CMS",
   organizationLogo: "",
+  siteIcon: "",
   sameAs: [],
   robotsTxtExtra: "",
   searchIndexing: true,

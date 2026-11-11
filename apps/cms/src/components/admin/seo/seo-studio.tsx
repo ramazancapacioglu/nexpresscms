@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ContentType, PermalinkStructure, SeoEngineSettings } from "@nexpress/core";
 import { saveSeoEngineSettingsAction } from "@/app/admin/actions";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
+import { MediaPickerDialog } from "@/components/admin/media/media-picker-dialog";
 import { WebmasterPanel } from "./webmaster-panel";
 import { BotPolicyPanel } from "./bot-policy-panel";
 import { contentTypeLabel, type SeoSummary } from "./seo-summary";
@@ -238,6 +239,7 @@ function SettingsView({
   seo: SeoEngineSettings;
   patch: (next: Partial<SeoEngineSettings>) => void;
 }) {
+  const [iconPicker, setIconPicker] = useState(false);
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
@@ -318,6 +320,15 @@ function SettingsView({
           Logo adresi
           <input className={`${fieldClass} mt-1`} value={seo.organizationLogo} onChange={(e) => patch({ organizationLogo: e.target.value })} />
         </label>
+        <div className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
+          Site simgesi (favicon)
+          <div className="mt-1 flex gap-1">
+            <input aria-label="Site simgesi adresi" className={fieldClass} value={seo.siteIcon ?? ""} onChange={(e) => patch({ siteIcon: e.target.value })} placeholder="Kitaplıktan kare bir görsel seçin (en az 512 px)" />
+            <button type="button" onClick={() => setIconPicker(true)} className="shrink-0 rounded border border-[#E6E7EA] px-2.5 text-[11px] font-medium dark:border-[#23262E]">Seç</button>
+          </div>
+          <span className="mt-1 block">Sekme simgesi, telefon ana ekranı ve manifest için kullanılır. Boşsa simge yayımlanmaz.</span>
+          <MediaPickerDialog open={iconPicker} onClose={() => setIconPicker(false)} onPick={(m) => { patch({ siteIcon: m.url }); setIconPicker(false); }} />
+        </div>
         <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Twitter
           <input className={`${fieldClass} mt-1`} value={seo.twitterHandle} onChange={(e) => patch({ twitterHandle: e.target.value })} placeholder="@site" />

@@ -4,6 +4,8 @@
 >
 > Bu rapor `docs/25` iç denetiminin yerine geçmez, onu **ölçümle sınar**. `docs/25` her satırı "✅ %100" işaretler; aşağıdaki bulgular bunun bazı yerlerde iyimser olduğunu gösterir.
 
+> **Durum güncellemesi (2026-11-11):** §2.1 başlık hatası, §2.2 şema eksikleri, §2.3 çözümleyici, §2.5 site simgesi ve §2.6'daki çift h1 / kesik açıklama bu dalda düzeltildi ve CI'a SEO sözleşme testi eklendi (`docs/06` günlüğü). Canlı sitede etkili olması için dağıtım gerekir. Kalanlar: `www` yönlendirmesi, IndexNow anahtarı, Search Console (sunucu/ortam işleri, §2.7).
+
 ---
 
 ## 0. Yöntem ve sınırlar (neyi nasıl doğruladım)

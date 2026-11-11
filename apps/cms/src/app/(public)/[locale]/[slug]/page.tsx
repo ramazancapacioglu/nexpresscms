@@ -27,6 +27,17 @@ import { PostDiscussion } from "@/components/public/post-discussion";
 import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
 import { authorSlug } from "@/lib/author-slug";
 
+/** Sayfa başlığı zaten h1 ise içerikteki vitrin (hero) başlığı h2'ye düşer: sayfada tek h1 kalır (SEO ve erişilebilirlik). */
+function demoteHeroTitles<T extends { type: string; props: Record<string, unknown>; children?: T[] }>(nodes: T[]): T[] {
+  return nodes.map((node) => ({
+    ...node,
+    ...(node.type === "hero" ? { props: { ...node.props, demoteTitle: true } } : {}),
+    // İçerikteki 1. düzey başlık da h2 olur (sayfa başlığı h1'i tek kalır)
+    ...((node.type === "heading" || node.type === "heading_element") && /^(h?1)$/i.test(String(node.props.level ?? "")) ? { props: { ...node.props, level: typeof node.props.level === "number" ? 2 : "h2" } } : {}),
+    ...(node.children ? { children: demoteHeroTitles(node.children) } : {}),
+  }));
+}
+
 function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
   for (const node of nodes) {
     if (node.type === type) return true;
@@ -76,6 +87,9 @@ export async function generateMetadata({
     metaDescription: content.metaDescription,
     canonicalUrl: content.canonicalUrl,
     noIndex: content.noIndex,
+    ogType: content.type === "post" || /Article|BlogPosting/i.test(content.schemaType) ? "article" : "website",
+    publishedTime: content.publishedAt ?? content.createdAt ?? null,
+    modifiedTime: content.updatedAt ?? null,
     imageUrl:
       content.featuredImage ??
       pub.featuredImageUrl ??
@@ -99,6 +113,9 @@ export async function generateMetadata({
       locale: seoMeta.openGraph.locale,
       type: seoMeta.openGraph.type,
       images: seoMeta.openGraph.images,
+      ...(seoMeta.openGraph.type === "article"
+        ? { publishedTime: seoMeta.openGraph.publishedTime, modifiedTime: seoMeta.openGraph.modifiedTime }
+        : {}),
     },
     twitter: {
       card: seoMeta.twitter.card,
@@ -180,33 +197,6 @@ export default async function PublicDynamicContentPage({
     schemaType: content.schemaType,
     categories: pub.categories,
   });
-  const schemaGraph = await buildPageSchemaGraph({
-    siteId,
-    siteName: localizedSite.name,
-    siteUrl: baseUrl,
-    locale,
-    pageUrl,
-    autoSchema: localizedSite.seo.autoSchema !== false,
-    aggregateRating:
-      reviewEntries.length > 0
-        ? {
-            ratingValue: Number(avgRating),
-            reviewCount: reviewEntries.length,
-          }
-        : undefined,
-    content: {
-      id: content.id,
-      title: content.title,
-      tldr: content.tldr,
-      schemaType: placement?.schemaType ?? content.schemaType,
-      schemaAttributes: content.schemaAttributes,
-      authorName: pub.authorName || content.authorName,
-      updatedAt: content.updatedAt,
-      blocks: content.blocks,
-      imageUrl: featuredImageUrl,
-    },
-  });
-
   const t = createTranslator(locale);
   const cover = coverTemplateContext({
     site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
@@ -259,10 +249,48 @@ export default async function PublicDynamicContentPage({
   const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
   const syncedPatterns = await getSyncedPatternsMap(siteId);
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
+  // Sayfa başlığını h1 yapan düzende (yerleşik makale ya da başlık yuvalı şablon) içerikteki vitrin başlığı h2 olur
+  const contentBlocks = !canvas && (!tpl || treeHas(tpl.blocks, "tpl_post_title")) ? demoteHeroTitles(content.blocks) : content.blocks;
   const authorName = pub.authorName || content.authorName;
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
+
+  const schemaGraph = await buildPageSchemaGraph({
+    siteId,
+    siteName: localizedSite.name,
+    siteUrl: baseUrl,
+    locale,
+    pageUrl,
+    // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
+    breadcrumbs: [
+      { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+      ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
+      { name: content.title, url: pageUrl },
+    ],
+    autoSchema: localizedSite.seo.autoSchema !== false,
+    aggregateRating:
+      reviewEntries.length > 0
+        ? {
+            ratingValue: Number(avgRating),
+            reviewCount: reviewEntries.length,
+          }
+        : undefined,
+    content: {
+      id: content.id,
+      title: content.title,
+      tldr: content.tldr,
+      schemaType: placement?.schemaType ?? content.schemaType,
+      schemaAttributes: content.schemaAttributes,
+      authorName: pub.authorName || content.authorName,
+      updatedAt: content.updatedAt,
+      publishedAt: content.publishedAt ?? content.createdAt ?? null,
+      blocks: content.blocks,
+      // Öne çıkan görsel yoksa meta ile aynı üretilmiş paylaşım görseli (Article için görsel önerilir)
+      imageUrl: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
+    },
+  });
+
   const children = pub.pillar ? family.filter((item) => item.id !== content.id && item.status === "published" && resolvePublishing(item.schemaAttributes).parentId === content.id) : [];
   const pillarList = children.length > 0 ? (
     <section className="mx-auto max-w-4xl space-y-3 px-4 py-6">
@@ -336,7 +364,7 @@ export default async function PublicDynamicContentPage({
       breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={content.blocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
+        content: <RscBlockRenderer blocks={contentBlocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         excerpt: content.tldr,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
@@ -368,7 +396,7 @@ export default async function PublicDynamicContentPage({
         {banner}
         {switcher}
         <RscBlockRenderer
-          blocks={content.blocks}
+          blocks={contentBlocks}
           themeId={skinId}
           tokens={tokens}
           mediaFocal={mediaFocal}
@@ -494,7 +522,7 @@ export default async function PublicDynamicContentPage({
       )}
 
       <RscBlockRenderer
-        blocks={content.blocks}
+        blocks={contentBlocks}
         themeId={skinId}
         tokens={tokens}
         lcp={!featuredImageUrl}

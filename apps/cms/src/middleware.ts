@@ -171,5 +171,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // favicon.ico dışarıda bırakılmaz: kiracı başlığı (x-nexpress-site-id) simge rotasına da ulaşmalı
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };

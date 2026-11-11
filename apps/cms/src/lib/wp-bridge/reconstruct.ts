@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ContentStatus } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
+import { truncateSmart } from "@nexpress/seo-core";
 import { compileRichWpHtml, convertWpHtml, hasRichBlockMarkup, rewriteBlockLinks, schemaFromBridge } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { captureChromeSnapshot } from "@/lib/apply-yazilim-firmasi-theme";
@@ -188,7 +189,7 @@ export async function reconstructRichSiteDataset(siteId: string): Promise<{
       tldr: (page.excerpt || page.title).slice(0, 260),
       blocks,
       metaTitle: existing?.metaTitle ?? page.title,
-      metaDescription: existing?.metaDescription ?? (page.excerpt ? page.excerpt.slice(0, 160) : undefined),
+      metaDescription: existing?.metaDescription ?? (page.excerpt ? truncateSmart(page.excerpt, 160) : undefined),
     });
     if (finalSlug === "blog" || rawSlug === "blog") blogSlug = finalSlug;
     pagesUpdated += 1;
@@ -231,7 +232,7 @@ export async function reconstructRichSiteDataset(siteId: string): Promise<{
       tldr: (post.excerpt || post.title).slice(0, 260),
       blocks,
       metaTitle: existing?.metaTitle ?? post.title,
-      metaDescription: existing?.metaDescription ?? (post.excerpt ? post.excerpt.slice(0, 160) : undefined),
+      metaDescription: existing?.metaDescription ?? (post.excerpt ? truncateSmart(post.excerpt, 160) : undefined),
       ...(!existing?.publishedAt && date && !Number.isNaN(date.getTime()) ? { publishedAt: date } : {}),
     });
     postsUpdated += 1;
