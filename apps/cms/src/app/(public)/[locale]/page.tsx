@@ -16,20 +16,7 @@ import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
-
-/** Seçilmiş öne çıkan sayfa durur. Yoksa tema demosu, o da yoksa `ana-sayfa`. */
-async function resolveHomeSlug(siteId: string, themeId: string, locale: string, settings: unknown) {
-  let fallback = "ana-sayfa";
-  if (themeId === INK_GRID_ID) fallback = INK_GRID_HOME_SLUG;
-  else if (themeId === YF_THEME_ID) {
-    const demo = await getPublicContentBySlug(siteId, YF_DEMO_HOME_SLUG, locale);
-    if (demo) fallback = YF_DEMO_HOME_SLUG;
-  }
-  const chosen = pickFrontSlug(resolveSiteSettings(settings).general.frontPageSlug, "");
-  if (!chosen) return fallback;
-  const page = await getPublicContentBySlug(siteId, chosen, locale);
-  return page ? chosen : fallback;
-}
+import { resolveHomeSlug } from "@/lib/home-slug";
 
 /** Ana sayfa: dil başına canonical ve karşılıklı hreflang (yalnızca yayındaki çeviriler). */
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {

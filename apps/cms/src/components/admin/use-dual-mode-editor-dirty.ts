@@ -29,6 +29,7 @@ export function useDualModeEditorDirty(p: ReturnType<typeof useDualModeEditorBlo
     allowReviews: p.allowReviews,
     showShareButtons: p.showShareButtons,
     showFeaturedImage: p.showFeaturedImage,
+    pageOptions: p.pageOptions,
     parentId: p.parentId,
     pillar: p.pillar,
   };

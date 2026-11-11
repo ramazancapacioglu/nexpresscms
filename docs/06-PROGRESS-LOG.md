@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-11] — Sayfa bazlı görünüm seçenekleri
+- **Editör › Sayfa Ayarları › Görünüm:** header (site ayarı / şeffaf / gizli; şeffafta açık-koyu yazı rengi), footer gizleme, içerik genişliği (dar 760, geniş 1440, tam), kenar çubuğu (site ayarı / yok / sol / sağ), üst-alt boşluğu kaldırma, sayfa başlığını gizleme. Değerler `schemaAttributes._page` altındadır; yalnızca varsayılandan farklılar yazılır (`@nexpress/core/page-options`, testli). Eski `_sidebar` anahtarı okunur ve yeni anahtarla değiştirilir.
+- **Ziyaretçi:** `[locale]/layout.tsx` içerik seçeneklerini önbellekli okumayla çözer (ana sayfa için `lib/home-slug.ts`). Şeffaf header içeriğin üstüne biner (`SiteHeader overlay`, `data-nx-overlay`). Başlık gizleme h1'i `sr-only` bırakır (SEO). Yerleşik makale düzeninde çalışır; şablonlu sayfada başlık/kenar çubuğu şablondan gelir.
+- **Editör güvenlik ağı:** sayfa seçenekleri kirli-değişiklik imzasına yalnızca varsayılandan farklıysa girer (eski yerel taslak imzaları değişmez).
+
 ### [2026-11-11] — Yazı tipi sistemi ve yandan açılan mobil menü
 - **Yazı tipi:** Özelleştirici › Yazı Tipi'nde başlık/gövde/kod yazı tipi seçilir (25 ailelik katalog, `@nexpress/core/fonts`). Seçilen aile bir kez Google Fonts'tan indirilir (`apps/cms/src/lib/fonts.ts`; yalnızca `latin` + `latin-ext`, Türkçeyi kapsar) ve `{MEDIA_DIR}/{siteId}/fonts` altına yazılır; ziyaretçi `/api/fonts/{dosya}` ile kendi alan adımızdan alır (`immutable`, `font-display: swap`, gövde yazı tipi `preload`). Ziyaretçi üçüncü taraf istek yapmaz; CSP `font-src 'self'` değişmedi. `customizer.typography.fonts` yalnızca katalog ailelerini ve geçerli dosya adlarını saklar (testli). Hazır font çiftleri de seçilince dosyaları indirir. Eskiden `googleFonts` bayrağı hiçbir şey yapmıyordu.
 - **Mobil menü:** `<details>` açılır liste yerine yandan açılan panel (`popover`, JS'siz; dışarı tıklama/Esc kapatır; kapatma düğmesi; hareket azaltma desteği). Popover desteği olmayan eski tarayıcıda menü satır içi açık liste kalır. Yazılım Firması teması CSS'i yeni sınıflara (`.nx-mobile-toggle`, `.nx-offcanvas`) uyarlandı.

@@ -40,10 +40,12 @@ interface HeaderProps {
   social?: Array<{ label: string; href: string }>;
   /** Yazılım firması teması: arama ikonu sayfa yerine canlı sonuç penceresi açar. */
   liveSearch?: boolean;
+  /** Sayfa seçeneği "şeffaf header": şerit içeriğin üstüne biner, yazı rengi `light` (beyaz) veya `dark` (koyu). */
+  overlay?: "light" | "dark";
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, cartLabel = "Sepet", social = [], liveSearch }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, cartLabel = "Sepet", social = [], liveSearch, overlay }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
   const bottom = header?.bottomBar;
@@ -235,7 +237,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const shellSticky = sticky !== false && !ink;
   const searchAction = `${lb ?? `/${locale}`}/ara`;
   return (
-    <div className={shellSticky ? "nx-header-shell sticky top-0 z-40" : "nx-header-shell"}>
+    <div className={overlay ? "nx-header-shell absolute inset-x-0 top-0 z-40" : shellSticky ? "nx-header-shell sticky top-0 z-40" : "nx-header-shell"}>
       {liveSearch ? (
         <div id="nx-yf-search" popover="auto" className="nx-yf-search">
           <form action={searchAction} method="get" role="search" className="nx-yf-search-panel">
@@ -260,11 +262,16 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       ) : null}
 
       <header
-        style={{ borderColor: tokens.colors.border, backgroundColor: ink || glass === false ? tokens.colors.background : `color-mix(in srgb, ${tokens.colors.background} 92%, transparent)` }}
+        data-nx-overlay={overlay}
+        style={
+          overlay
+            ? { borderColor: "transparent", backgroundColor: "transparent", color: overlay === "dark" ? "#0b0d12" : "#ffffff" }
+            : { borderColor: tokens.colors.border, backgroundColor: ink || glass === false ? tokens.colors.background : `color-mix(in srgb, ${tokens.colors.background} 92%, transparent)` }
+        }
         className={
           ink
             ? "nx-public-header sticky top-0 z-40 border-b"
-            : `nx-public-header relative z-40 border-b ${glass === false ? "" : "backdrop-blur-md"}`
+            : `nx-public-header relative z-40 border-b ${glass === false || overlay ? "" : "backdrop-blur-md"}`
         }
       >
         <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">

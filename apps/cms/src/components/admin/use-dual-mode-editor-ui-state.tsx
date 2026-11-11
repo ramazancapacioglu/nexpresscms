@@ -14,7 +14,7 @@ export function useDualModeEditorUiState(p: ReturnType<typeof useDualModeEditorP
   const [leftDrawerOpen, setLeftDrawerOpen] = useState<boolean>(true);
   const [leftTab, setLeftTab] = useState<"tree" | "inserter">("tree");
   const [rightSidebarOpen, setRightSidebarOpen] = useState<boolean>(true);
-  const [rightTab, setRightTab] = useState<"publish" | "seo" | "block" | "engage" | "template">(
+  const [rightTab, setRightTab] = useState<"publish" | "seo" | "block" | "engage" | "template" | "look">(
     "block"
   );
   // Dar ekranda (<1024px) paneller çekmecedir: kanvas tam genişlikte açılır, paneller isteğe bağlı açılır

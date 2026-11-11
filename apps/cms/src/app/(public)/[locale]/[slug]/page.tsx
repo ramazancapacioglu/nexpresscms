@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentWidthStyle, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -418,7 +418,7 @@ export default async function PublicDynamicContentPage({
 
         <h1
           style={{ fontFamily: tokens.typography.headingFont }}
-          className="text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"
+          className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
         >
           {content.title}
         </h1>

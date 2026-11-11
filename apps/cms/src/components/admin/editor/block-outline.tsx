@@ -24,7 +24,7 @@ export interface BlockOutlineProps {
   blocks: BlockNode[];
   selectedBlockId: string | null;
   setSelectedBlockId: Dispatch<SetStateAction<string | null>>;
-  setRightTab: Dispatch<SetStateAction<"publish" | "seo" | "block" | "engage" | "template">>;
+  setRightTab: Dispatch<SetStateAction<"publish" | "seo" | "block" | "engage" | "template" | "look">>;
   setBlocks: (
     updater: BlockNode[] | ((prev: BlockNode[]) => BlockNode[]),
     recordHistory?: boolean

@@ -27,6 +27,7 @@ import { BlockAdvancedTab } from "./block-advanced-tab";
 import { PublishTab } from "./publish-tab";
 import { SeoTab } from "./seo-tab";
 import { EngageTab } from "./engage-tab";
+import { PageLookTab } from "./page-look-tab";
 import { TemplateTab } from "./template-tab";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -126,12 +127,13 @@ export function BlockInspector() {
 
       {/* Sayfa Ayarları Modu Alt Sekmeleri (Yayın | SEO | Medya & Etk.) */}
       {!isBlockMode && !isTemplateMode && (
-        <div className="grid grid-cols-3 gap-1 border-b bg-muted/30 px-2.5 py-1.5 text-[11px]">
+        <div className="grid grid-cols-4 gap-1 border-b bg-muted/30 px-2.5 py-1.5 text-[11px]">
           {(
             [
               ["publish", "Yayın"],
               ["seo", `SEO (${seoAnalysis.score})`],
-              ["engage", "Medya & Etk."],
+              ["engage", "Medya"],
+              ["look", "Görünüm"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -292,6 +294,8 @@ export function BlockInspector() {
           <PublishTab />
         ) : rightTab === "seo" ? (
           <SeoTab />
+        ) : rightTab === "look" ? (
+          <PageLookTab />
         ) : (
           <EngageTab />
         )}

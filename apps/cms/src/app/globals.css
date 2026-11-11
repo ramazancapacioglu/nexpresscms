@@ -248,3 +248,8 @@ html.dark .nx-admin [class*="dark:border-[#23262E]"] { border-color: #2E333D; }
   .nx-offcanvas { position: static; transform: none; width: auto; height: auto; box-shadow: none; padding: 8px 0; }
   .nx-mobile-toggle, .nx-offcanvas-head { display: none; }
 }
+
+/* Sayfa seçeneği: genişlik. Yerleşik makale düzeninin iç sınırı da açılır. */
+main[data-nx-width="wide"] > article, main[data-nx-width="full"] > article { max-width: none; }
+/* Şeffaf header: menü ve bağlantılar şeridin yazı rengini kalıtır */
+.nx-public-header[data-nx-overlay] a, .nx-public-header[data-nx-overlay] summary, .nx-public-header[data-nx-overlay] .nx-logo span { color: inherit; }

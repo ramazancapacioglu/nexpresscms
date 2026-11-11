@@ -12,7 +12,8 @@ import { PublicSidebarWidgetArea } from "@/components/public/public-widgets";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getResolvedMenu, getResolvedMenuLibrary } from "@/lib/menu-data";
-import { getPublicNavigation, getPublicSite, getPublicWidgetFeed, resolvePublicContent } from "@/lib/public-data";
+import { getPublicContentBySlug, getPublicNavigation, getPublicSite, getPublicWidgetFeed, resolvePublicContent } from "@/lib/public-data";
+import { resolveHomeSlug } from "@/lib/home-slug";
 import {
   compileDesignTokensToCssVars,
   getThemeManifest,
@@ -22,7 +23,7 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
-import { PluginSlot, buildFontFaceCss, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
+import { PluginSlot, buildFontFaceCss, pageMaxWidth, readPageOptions, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
@@ -123,6 +124,14 @@ export default async function PublicLocaleLayout({
     !isCampaignDetail &&
     !isCampaignArchive &&
     segs.length >= 2;
+
+  // Sayfa başına görünüm seçenekleri (`schemaAttributes._page`): içerik düzende de okunur (önbellekli, sayfayla aynı okuma)
+  const pageContent = isHome
+    ? await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, site?.activeThemeId ?? "corporate-aurora", locale, site?.settings), locale)
+    : isSingleContent
+      ? (await resolvePublicContent(siteId, decodeURIComponent(segs[1]!), locale))?.content
+      : null;
+  const pageOpts = readPageOptions(pageContent?.schemaAttributes as Record<string, unknown> | undefined);
 
   let targetAreaId = "primary";
   let contentSidebarPos: "none" | "left" | "right" | undefined = undefined;
@@ -242,6 +251,7 @@ export default async function PublicLocaleLayout({
     }
   }
 
+  if (pageOpts.sidebar !== "default") contentSidebarPos = pageOpts.sidebar;
   const activeSidebarArea = resolveActiveSidebarArea(nav?.sidebarConfig, targetAreaId);
   const effectiveSidebarPos: "none" | "left" | "right" =
     contentSidebarPos !== undefined
@@ -298,14 +308,14 @@ export default async function PublicLocaleLayout({
         </>
       ) : null}
 
-      {headerTpl && tplCtx && !isYf ? (
+      {pageOpts.header === "hidden" ? null : headerTpl && tplCtx && !isYf ? (
         <header
           style={
-            headerBehavior.transparent
-              ? { borderColor: "transparent", backgroundColor: "transparent", color: headerBehavior.tone === "dark" ? "#0b0d12" : "#ffffff" }
+            headerBehavior.transparent || pageOpts.header === "transparent"
+              ? { borderColor: "transparent", backgroundColor: "transparent", color: (pageOpts.header === "transparent" ? pageOpts.headerTone : headerBehavior.tone) === "dark" ? "#0b0d12" : "#ffffff" }
               : { borderColor: vt.colors.border, backgroundColor: headerBehavior.glass === false ? vt.colors.background : `color-mix(in srgb, ${vt.colors.background} 94%, transparent)` }
           }
-          className={`nx-public-header z-40 border-b ${headerBehavior.transparent ? "absolute inset-x-0 top-0" : headerBehavior.sticky === false ? "relative" : "sticky top-0"} ${headerBehavior.glass === false || headerBehavior.transparent ? "" : "backdrop-blur-md"}`}
+          className={`nx-public-header z-40 border-b ${headerBehavior.transparent || pageOpts.header === "transparent" ? "absolute inset-x-0 top-0" : headerBehavior.sticky === false ? "relative" : "sticky top-0"} ${headerBehavior.glass === false || headerBehavior.transparent ? "" : "backdrop-blur-md"}`}
         >
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto px-4 py-3 sm:px-6">
             <RscBlockRenderer blocks={headerTpl.blocks} themeId={skinId} tokens={vt} locale={locale} tpl={tplCtx} />
@@ -328,6 +338,7 @@ export default async function PublicLocaleLayout({
         cartLabel={t("shop.cart")}
         social={socialLinksFromSameAs(resolvedSettings.seo.sameAs)}
         liveSearch={isYf}
+        overlay={pageOpts.header === "transparent" ? pageOpts.headerTone : undefined}
       />
       )}
       {isYf ? (
@@ -352,12 +363,14 @@ export default async function PublicLocaleLayout({
           ) : null
         ) : null}
         <main
+          data-nx-width={pageOpts.width === "default" ? undefined : pageOpts.width}
           style={{
             maxWidth:
-              isInk || hasSidebar || resolvedCustomizer.layout.contentLayout === "fullwidth"
-                ? "100%"
-                : tokens.geometry.containerMaxWidth,
-            ...(headerBehavior.transparent ? { paddingTop: 0 } : {}),
+              pageMaxWidth(pageOpts.width) ??
+              (isInk || hasSidebar || resolvedCustomizer.layout.contentLayout === "fullwidth" ? "100%" : tokens.geometry.containerMaxWidth),
+            ...(headerBehavior.transparent || pageOpts.header === "transparent" || pageOpts.flush ? { paddingTop: 0 } : {}),
+            ...(pageOpts.flush ? { paddingBottom: 0 } : {}),
+            ...(pageOpts.width === "full" ? { paddingLeft: 0, paddingRight: 0 } : {}),
           }}
           className={isInk ? "mx-auto w-full flex-1" : "mx-auto min-w-0 w-full flex-1 px-4 py-10 sm:px-6"}
         >
@@ -374,7 +387,7 @@ export default async function PublicLocaleLayout({
         ) : null}
       </div>
 
-      {footerTpl && tplCtx && !isYf ? (
+      {pageOpts.footer === "hidden" ? null : footerTpl && tplCtx && !isYf ? (
         <footer style={{ borderColor: vt.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
           <div style={{ maxWidth: tokens.geometry.containerMaxWidth }} className="mx-auto">
             <RscBlockRenderer blocks={footerTpl.blocks} themeId={activeTheme.id} tokens={tokens} locale={locale} tpl={tplCtx} />

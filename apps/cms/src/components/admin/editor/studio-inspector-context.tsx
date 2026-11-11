@@ -11,13 +11,14 @@ import type {
   ContentStatus,
   DesignTokens,
   DeviceKey,
+  PageOptions,
   SchemaGraphNode,
 } from "@nexpress/core";
 import type { TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 import type { SnapshotLike } from "@nexpress/core";
 import type { SeoAnalysis } from "@nexpress/seo-core";
 
-type RightTab = "publish" | "seo" | "block" | "engage" | "template";
+type RightTab = "publish" | "seo" | "block" | "engage" | "template" | "look";
 type EditorMode = "visual" | "preview" | "code" | "markdown";
 type InspectorSubTab = "general" | "style" | "advanced";
 type Visibility = "public" | "private" | "password" | "members_only";
@@ -119,6 +120,8 @@ export interface StudioInspectorApi {
   setShowShareButtons: Dispatch<SetStateAction<boolean>>;
   showFeaturedImage: boolean;
   setShowFeaturedImage: Dispatch<SetStateAction<boolean>>;
+  pageOptions: PageOptions;
+  setPageOptions: Dispatch<SetStateAction<PageOptions>>;
   parentId: string;
   setParentId: Dispatch<SetStateAction<string>>;
   pillar: boolean;

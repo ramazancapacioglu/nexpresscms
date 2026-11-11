@@ -1,5 +1,5 @@
 import { type StudioInspectorApi } from "@/components/admin/editor/studio-inspector-context";
-import { type ContentStatus } from "@nexpress/core";
+import { writePageOptions, type ContentStatus } from "@nexpress/core";
 import { saveContentAction, saveTaxonomyAction } from "@/app/admin/actions";
 import type { useDualModeEditorDirty } from "./use-dual-mode-editor-dirty";
 
@@ -30,7 +30,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         metaDescription: metaDescription.trim(),
         canonicalUrl: canonicalUrl || undefined,
         noIndex,
-        schemaAttributes: {
+        schemaAttributes: writePageOptions({
           ...(initialDoc?.schemaAttributes ?? {}),
           richSchema: Object.keys(richSchema).length > 0 ? richSchema : undefined,
           _template: templateId || undefined,
@@ -52,7 +52,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
             parentId: p.parentId || undefined,
             pillar: p.pillar,
           },
-        },
+        }, p.pageOptions),
       });
 
       if (res.ok) {
@@ -216,6 +216,8 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setShowShareButtons,
     showFeaturedImage: p.showFeaturedImage,
     setShowFeaturedImage: p.setShowFeaturedImage,
+    pageOptions: p.pageOptions,
+    setPageOptions: p.setPageOptions,
     parentId: p.parentId,
     setParentId: p.setParentId,
     pillar: p.pillar,
