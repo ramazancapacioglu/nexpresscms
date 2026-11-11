@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-11] — Erişilebilirlik, kırıntı ve editör ince ayarları
+- **Kontrast:** Lighthouse'ın işaretlediği tüm `color-contrast` ihlalleri kapandı (yerelde erişilebilirlik 96 → 100): `text-amber-600` → `700`, `text-slate-400` rol etiketi → `text-nx-muted`, `--color-nx-muted` yüzde 20 koyulaştırıldı, bağlantı listesindeki rozet artık yarı saydam bağlantının içinde değil (opaklık yalnızca etikette) ve zemini AA için biraz koyu.
+- **Görünür kırıntı:** Yerleşik makale düzeninde "← Ana sayfa" yerine `Ana sayfa › (üst sayfa) › sayfa` (`nav aria-label`, son öğe `aria-current`); JSON-LD `BreadcrumbList` ile aynı listeden gelir.
+- **Editör:** Kayan blok araç çubuğu üstte 44 px yer yoksa (ilk blok, bitişik bloklar) bloğun içinde sol üstte durur, başlığı örtmez. Başlık alanı genişlik/yazı tipi değişince yeniden ölçülür (iki satırlı başlık kırpılmıyordu).
+- **Perfornext:** "Core Web Vitals" adı "risk tahmini" oldu (içerikten tahmin; ölçüm değil); gerçek ölçüm için PageSpeed/Lighthouse yönlendirmesi eklendi.
+
 ### [2026-11-11] — Çerez onayı (KVKK/GDPR) ve ziyaretçi CSS'inin ayrılması
 - **Çerez onayı:** `/admin/settings` › Çerez onayı: banner metni ve politika adresi. Açıkken ziyaretçi, JS'siz bir formla (`POST /api/consent`, `nx_consent` çerezi, 180 gün) "Tümünü kabul" ya da "Yalnızca zorunlu" seçer; seçim sonrası "Çerez tercihleri" düğmesi seçimi sıfırlar. Google Analytics ve özel baş/son betikler yalnızca "tümü" ile yüklenir; zorunlu çerezler (oturum, sepet, faydalı oyu) onaysız çalışır. Geri dönüş adresi yalnızca aynı site (açık yönlendirme yok). Metinler `consent.*` i18n anahtarlarıdır. Saf mantık `@nexpress/core/consent` (testli). Banner kişiye göre değiştiğinden CDN HTML önbelleği çerezli isteklerde atlanmalıdır.
 - **CSS ayrımı:** `globals.css` → `admin.css` (yönetim ve oturum sayfaları, tam Tailwind taraması) + `public.css` (ziyaretçi; `source(none)` + açık `@source` listesi, yönetim paneli yardımcı sınıfları yok). Ziyaretçi CSS'i 158 KB → 80 KB ham, ~24 KB → ~13 KB gzip. `pnpm --filter @nexpress/cms css:check` ziyaretçi HTML'indeki hiçbir sınıfın yönetim CSS'inde olup ziyaretçi CSS'inde eksik kalmadığını denetler (24 sayfada 0 eksik; CI'da koşar). Yeni ziyaretçi kaynak klasörü `public.css` `@source` listesine eklenmelidir.

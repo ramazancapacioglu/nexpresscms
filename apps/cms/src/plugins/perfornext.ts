@@ -11,7 +11,7 @@ export const PERFORNEXT_MANIFEST: PluginManifest = {
   license: "free",
   builtin: false,
   icon: "Gauge",
-  description: "Önbellek ön ısıtma ve temizliği, veritabanı şişkinlik bakımı, medya hattı denetimi, 0-KB RSC bütçesi ve Core Web Vitals ağırlık raporu.",
+  description: "Önbellek ön ısıtma ve temizliği, veritabanı şişkinlik bakımı, medya hattı denetimi, 0-KB RSC bütçesi ve Core Web Vitals risk tahmini (içerik ağırlığından; gerçek ölçüm değildir) raporu.",
   settingsHref: "/admin/perfornext",
   settings: [
     {
@@ -40,6 +40,6 @@ export const PERFORNEXT_MANIFEST: PluginManifest = {
     { id: "cache", group: "Önbellek", label: "Önbellek & Ön Isıtma", description: "Süre, dönem sayacı, tüm dillerde önbellek ön ısıtma ve düşürme.", status: "ready", defaultEnabled: true, surfaces: ["/admin/perfornext"] },
     { id: "database", group: "Veritabanı", label: "Veritabanı & Şişkinlik Bakımı", description: "Tablo/günlük satır sayıları, WAL/ANALYZE istatistik bakımı, revizyon budama ve 404/çöp temizliği.", status: "ready", defaultEnabled: true, surfaces: ["/admin/perfornext"] },
     { id: "media", group: "Medya", label: "Medya & Görsel Hattı", description: "Toplam medya boyutu, >1,5 MB ağır yüklemeler, kullanılmayan dosyalar ve eksik alt metinler.", status: "ready", defaultEnabled: true, surfaces: ["/admin/perfornext"] },
-    { id: "content", group: "İçerik", label: "İçerik Ağırlığı & Core Web Vitals", description: "CLS/LCP riskleri, DOM derinliği, gömülü iframe'ler, tahmini HTML yükü ve Markdown önbellek derlemesi.", status: "ready", defaultEnabled: true, surfaces: ["/admin/perfornext"] },
+    { id: "content", group: "İçerik", label: "İçerik Ağırlığı & CWV Risk Tahmini", description: "CLS/LCP riskleri, DOM derinliği, gömülü iframe'ler, tahmini HTML yükü ve Markdown önbellek derlemesi.", status: "ready", defaultEnabled: true, surfaces: ["/admin/perfornext"] },
   ],
 };

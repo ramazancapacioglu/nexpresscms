@@ -70,7 +70,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
     return (
       <div className="space-y-2">
         <h1 className="text-[18px] font-semibold">Perfornext kapalı</h1>
-        <p className="text-[13px] text-[#5F6570]">Önbellek, veritabanı bakımı ve Core Web Vitals denetimi bu eklentidedir.</p>
+        <p className="text-[13px] text-[#5F6570]">Önbellek, veritabanı bakımı ve içerik ağırlığı (Core Web Vitals risk tahmini) bu eklentidedir. Gerçek ölçüm için PageSpeed Insights / Lighthouse kullanın.</p>
         <Link href="/admin/plugins" className="text-[13px] text-[#1D5ED8] hover:underline">Eklentiler</Link>
       </div>
     );
@@ -119,7 +119,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight">Perfornext · Performans ve Hız Merkezi</h1>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            0-KB RSC bütçe denetimi, çok dilli önbellek ön ısıtma, veritabanı şişkinlik bakımı, medya hattı ve Core Web Vitals ağırlık analizi.
+            0-KB RSC bütçe denetimi, çok dilli önbellek ön ısıtma, veritabanı şişkinlik bakımı, medya hattı ve Core Web Vitals risk tahmini (içerikten; ölçüm değil) analizi.
           </p>
         </div>
         <Link href="/admin/plugins" className={`rounded-md border ${border} px-3 py-1.5 text-[12px] hover:bg-black/5 dark:hover:bg-white/5`}>
@@ -310,7 +310,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
         <section className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570]">
-              İçerik Ağırlığı & Core Web Vitals ({defaultLocale.toUpperCase()})
+              İçerik Ağırlığı & CWV Risk Tahmini ({defaultLocale.toUpperCase()})
             </h2>
             <form action={recompileMarkdownAction}>
               <button type="submit" className={`rounded-md border ${border} px-3 py-1.5 text-[12px] hover:bg-black/5 dark:hover:bg-white/5`}>
@@ -337,7 +337,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
             ))}
           </dl>
           {content.heaviest.length === 0 ? (
-            <p className="text-[12px] text-[#5F6570]">Ağır veya Core Web Vitals uyarısı olan yayın yok.</p>
+            <p className="text-[12px] text-[#5F6570]">Ağır ya da CLS/LCP risk işareti taşıyan yayın yok.</p>
           ) : (
             <ul className={`divide-y rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
               {content.heaviest.map((row) => {

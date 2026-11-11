@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 /**
  * Sayfa başlığı (h1) alanı: tuvalin ilk satırıdır, sitenin başlık yazı tipiyle çizilir. Çok satıra otomatik büyür;
@@ -14,6 +14,19 @@ export function TitleField({ value, onChange, fontFamily }: { value: string; onC
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [value]);
+  // Genişlik (panel/çerçeve boyutu) ya da yazı tipi yüklemesi satır sayısını değiştirir: yalnızca değere bağlı ölçüm başlığı kırpabilir
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    };
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    void el.ownerDocument.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, []);
   return (
     <textarea
       ref={ref}

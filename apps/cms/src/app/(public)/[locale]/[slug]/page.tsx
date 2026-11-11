@@ -255,6 +255,12 @@ export default async function PublicDynamicContentPage({
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
+  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir
+  const crumbs = [
+    { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+    ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
+    { name: content.title, url: pageUrl },
+  ];
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -263,11 +269,7 @@ export default async function PublicDynamicContentPage({
     locale,
     pageUrl,
     // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
-    breadcrumbs: [
-      { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
-      ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
-      { name: content.title, url: pageUrl },
-    ],
+    breadcrumbs: crumbs,
     autoSchema: localizedSite.seo.autoSchema !== false,
     aggregateRating:
       reviewEntries.length > 0
@@ -422,9 +424,19 @@ export default async function PublicDynamicContentPage({
       <header className="space-y-4 border-b pb-8">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Link href={(lb || "/")} className="text-nx-muted hover:underline">
-              ← Ana Sayfa
-            </Link>
+            <nav aria-label={t("content.breadcrumb")}>
+              <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
+                {crumbs.map((crumb, i) => {
+                  const last = i === crumbs.length - 1;
+                  return (
+                    <li key={crumb.url} className="flex items-center gap-1.5">
+                      {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
+                      {last ? null : <span aria-hidden="true">›</span>}
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
           </div>
           <div className="flex items-center gap-3">
             <Link

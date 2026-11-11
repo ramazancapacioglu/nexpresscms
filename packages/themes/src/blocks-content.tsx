@@ -206,7 +206,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             <footer className="text-xs font-semibold text-nx-soft">
               — {String(p.author ?? "")}
               {typeof p.role === "string" && p.role ? (
-                <span className="text-slate-400 font-normal"> • {p.role}</span>
+                <span className="text-nx-muted font-normal"> • {p.role}</span>
               ) : null}
             </footer>
           )}
@@ -360,7 +360,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
                 Editoryal İnceleme & Değerlendirme
               </div>
               <h3
@@ -371,7 +371,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
               </h3>
             </div>
             <div className="flex items-center gap-3 bg-amber-50 border border-amber-200/80 px-4 py-2.5 rounded-xl">
-              <div className="text-2xl font-extrabold text-amber-600">
+              <div className="text-2xl font-extrabold text-amber-700">
                 {rating.toFixed(1)}
                 <span className="text-xs font-normal text-amber-700/80"> / 5.0</span>
               </div>
