@@ -2,6 +2,8 @@
 
 import React from "react";
 import {
+  FOOTER_SOCIAL_LABEL,
+  FOOTER_SOCIAL_NETWORKS,
   FOOTER_BACKGROUNDS,
   FOOTER_BACKGROUND_LABEL,
   footerRowColors,
@@ -16,7 +18,7 @@ import { fieldClass } from "./appearance-ui";
 const PREVIEW_TOKENS = { primary: "#2563eb", primaryForeground: "#ffffff", muted: "#f1f5f9" };
 
 /** Orta ve alt satırın stil denetleri (zemin, boşluk, ayraç, genişlik, alt çubuk düzeni) ve canlı şerit önizlemesi. */
-export function FooterStylePanel({ value, onChange }: { value: FooterOptions | undefined; onChange: (next: FooterOptions) => void }) {
+export function FooterStylePanel({ value, onChange, menus = [] }: { value: FooterOptions | undefined; onChange: (next: FooterOptions) => void; menus?: Array<{ id: string; name: string }> }) {
   const options = value ?? {};
   const resolved = resolveFooterStyle(options);
   const setRow = (key: "main" | "bottom", patch: Partial<FooterBottomStyle>) => onChange({ ...options, [key]: { ...(options[key] ?? {}), ...patch } });
@@ -134,9 +136,36 @@ export function FooterStylePanel({ value, onChange }: { value: FooterOptions | u
           </select>
         </label>
         <label className="inline-flex items-center gap-1.5">
+          Alt çubuk menüsü
+          <select aria-label="Alt çubuk menüsü" className={`${fieldClass} !w-auto`} value={options.bottom?.menuId ?? ""} onChange={(e) => setRow("bottom", { menuId: e.target.value || undefined })}>
+            <option value="">Yok</option>
+            {menus.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+        </label>
+        <label className="inline-flex items-center gap-1.5">
           <input type="checkbox" checked={options.bottom?.backToTop === true} onChange={(e) => setRow("bottom", { backToTop: e.target.checked })} />
           &ldquo;Başa dön&rdquo; bağlantısı
         </label>
+      </div>
+      <div className="space-y-2 border-t border-[#E6E7EA] pt-3 dark:border-[#23262E]">
+        <div className="text-[11px] font-semibold">Alt çubukta sosyal bağlantılar (yalnızca https)</div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {FOOTER_SOCIAL_NETWORKS.map((id) => (
+            <input
+              key={id}
+              type="url"
+              aria-label={`${FOOTER_SOCIAL_LABEL[id]} adresi`}
+              placeholder={`${FOOTER_SOCIAL_LABEL[id]} adresi (https://…)`}
+              value={options.bottom?.socials?.[id] ?? ""}
+              onChange={(e) => {
+                const socials = { ...(options.bottom?.socials ?? {}), [id]: e.target.value };
+                if (!e.target.value) delete socials[id];
+                setRow("bottom", { socials });
+              }}
+              className={fieldClass}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

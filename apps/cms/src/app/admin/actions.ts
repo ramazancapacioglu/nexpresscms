@@ -8,6 +8,7 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { dispatchPluginWebhooks } from "@/lib/plugin-webhooks";
+import { purgeContentCaches } from "@/lib/cdn-purge";
 import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
@@ -230,6 +231,9 @@ export async function saveContentAction(input: {
   if (savedPrefix) await revalidatePath(`/${locale}/${savedPrefix}/${res.slug}`);
   await revalidatePath("/sitemap.xml");
   await revalidatePath("/llms.txt");
+
+  // Yayından kalkan içerik (taslağa/zamanlamaya alındı): afterPublish tetiklenmez, eski sayfa CDN'de kalmasın
+  if (existing?.status === "published" && status !== "published") void purgeContentCaches(siteId, { contentId: res.contentId, locale });
 
   // Veri eklentilerinin giden bildirimi (yalnızca yayındaki içerik; hata kaydı bozmaz, beklenmez)
   if (status === "published") {

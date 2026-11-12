@@ -340,6 +340,8 @@ export function SiteFooter({
   const style = resolveFooterStyle(footer?.options);
   const mainColors = footerRowColors(style.main, tokens.colors);
   const bottomColors = footerRowColors(style.bottom, tokens.colors);
+  // Alt çubuk menüsü: yalnızca güvenli adresler, ilk düzey, en çok 6 öğe
+  const bottomMenu = (style.bottom.menuId ? (menuLibrary?.[style.bottom.menuId] ?? []) : []).filter((l) => isSafeMenuHref(l.href)).slice(0, 6);
   const copyright = expandFooterText(footer?.copyrightText, siteName, new Date().getFullYear());
   const maxWidth = tokens.geometry.containerMaxWidth;
   const rowBox = (r: typeof style.main, c: ReturnType<typeof footerRowColors>) => ({
@@ -455,6 +457,16 @@ export function SiteFooter({
               {(footer?.bottomLinks ?? []).map((link) => (
                 <a key={`${link.href}|${link.label}`} href={link.href} className="underline-offset-2 hover:underline">
                   {link.label}
+                </a>
+              ))}
+              {bottomMenu.map((link) => (
+                <a key={link.id} href={link.href} {...(link.target === "_blank" ? { target: "_blank", rel: "noopener" } : {})} className="underline-offset-2 hover:underline">
+                  {link.label}
+                </a>
+              ))}
+              {style.bottom.socials.map((s) => (
+                <a key={s.id} href={s.href} rel="noopener me" aria-label={s.label} className="underline-offset-2 hover:underline">
+                  {s.label}
                 </a>
               ))}
               {style.bottom.backToTop ? (

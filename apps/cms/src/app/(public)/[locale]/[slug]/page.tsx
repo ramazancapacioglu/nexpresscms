@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -223,6 +223,10 @@ export default async function PublicDynamicContentPage({
   const canvas = content.schemaAttributes?.canvas === true;
   const pageForms = await loadPageForms(siteId, content.blocks);
   const canEdit = Boolean(await getSession());
+  // Ziyaretçi üyesi: oturum + (içerik kademe istiyorsa) yeterli kademe
+  const [visitorMember, membership] = await Promise.all([getVisitorMember(), getMembership(siteId)]);
+  const neededTier = readPageOptions(content.schemaAttributes).memberTier;
+  const memberTierOk = memberMeetsTier(membership.tiers, visitorMember?.tier, neededTier);
   const access = await checkVisitorContentAccess({
     siteId,
     contentId: content.id,
@@ -230,10 +234,10 @@ export default async function PublicDynamicContentPage({
     visibility: pub.visibility,
     accessPassword: pub.accessPassword,
     hasSession: canEdit,
-    hasMemberSession: Boolean(await getVisitorMember()),
+    hasMemberSession: Boolean(visitorMember) && memberTierOk,
     isDraftPreview: Boolean(draft),
   });
-  const memberMode = (await getMembership(siteId)).mode;
+  const memberMode = membership.mode;
   // Özel içerik türü: alan değerleri tanıma göre okunur (`_fields`); tablo ziyaretçiye `custom_fields` bloğu olarak basılır
   const customDef = findContentType(types, content.type);
   const customFields = displayFields(customDef, content.schemaAttributes, locale);
@@ -259,6 +263,8 @@ export default async function PublicDynamicContentPage({
           t={t}
           hasError={sp.pwd === "error"}
           memberLoginHref={memberMode !== "closed" ? `${lb}/uye/giris?next=${encodeURIComponent(`${lb}${cPath}`)}` : undefined}
+          memberTierNeeded={visitorMember && !memberTierOk ? membership.tiers.find((x) => x.id === neededTier)?.label : undefined}
+          memberAccountHref={visitorMember ? `${lb}/uye` : undefined}
         />
       </>
     );

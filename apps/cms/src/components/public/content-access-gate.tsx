@@ -61,10 +61,15 @@ export function ContentAccessGate({
   t,
   hasError,
   memberLoginHref,
+  memberTierNeeded,
+  memberAccountHref,
 }: {
   gate: "password" | "members_only";
   /** Üyelik açıksa ziyaretçi üye girişi adresi; yoksa panel girişi gösterilir. */
   memberLoginHref?: string;
+  /** Oturum açık üye ama kademesi yetmiyor: gereken kademenin adı. */
+  memberTierNeeded?: string;
+  memberAccountHref?: string;
   contentId: string;
   locale: string;
   slug: string;
@@ -90,7 +95,7 @@ export function ContentAccessGate({
           {title}
         </h1>
         <p className="text-sm text-nx-soft leading-relaxed">
-          {gate === "password" ? t("content.passwordBody") : t("content.membersOnlyBody")}
+          {gate === "password" ? t("content.passwordBody") : memberTierNeeded ? t("content.membersTierBody", { tier: memberTierNeeded }) : t("content.membersOnlyBody")}
         </p>
       </div>
 
@@ -129,6 +134,10 @@ export function ContentAccessGate({
             {t("content.passwordButton")}
           </button>
         </form>
+      ) : memberTierNeeded ? (
+        <div>
+          <a href={memberAccountHref ?? "/"} className="text-sm font-semibold underline">{t("member.accountTitle")}</a>
+        </div>
       ) : (
         <div>
           <a

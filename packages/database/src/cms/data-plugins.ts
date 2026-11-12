@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, desc, eq, lt, lte, or } from "drizzle-orm";
 import type { CustomContentType, DataPluginManifest, DataPluginWebhook, SignatureStatus } from "@nexpress/core";
 import { upsertScoped } from "../dialect";
 import { CmsPluginRepository } from "./plugins";
@@ -20,6 +20,23 @@ export interface DataPluginDto extends DataPluginInput {
   lastDelivery: { at: string; event: string; ok: boolean; status: number | null; error?: string } | null;
   installedAt: Date;
   updatedAt: Date;
+}
+
+export type DeliveryStatus = "pending" | "delivered" | "failed";
+
+export interface DeliveryDto {
+  id: string;
+  pluginId: string;
+  webhookId: string;
+  event: string;
+  body: string;
+  status: DeliveryStatus;
+  attempts: number;
+  nextAttemptAt: Date;
+  lastStatus: number | null;
+  lastError: string;
+  createdAt: Date;
+  deliveredAt: Date | null;
 }
 
 /** `.nxplugin` veri eklentileri (kod içermez). Kurulum etkinleştirme değildir; her işlem `siteId` kapsamlıdır. */
@@ -103,12 +120,69 @@ export class CmsDataPluginRepository extends CmsPluginRepository {
     await db.update(t.dataPlugins).set({ lastDelivery: delivery as unknown as Record<string, unknown> }).where(and(eq(t.dataPlugins.siteId, this.siteId), eq(t.dataPlugins.pluginId, pluginId)));
   }
 
+  // ---- Webhook teslimat kuyruğu ----
+
+  public async enqueueDelivery(input: { id: string; pluginId: string; webhookId: string; event: string; body: string }): Promise<void> {
+    const { db, t } = this.backend;
+    const now = new Date();
+    await db.insert(t.pluginDeliveries).values({ id: input.id, siteId: this.siteId, pluginId: input.pluginId, webhookId: input.webhookId, event: input.event, body: input.body, status: "pending", attempts: 0, nextAttemptAt: now, lastStatus: null, lastError: "", createdAt: now, deliveredAt: null });
+  }
+
+  /** Zamanı gelmiş bekleyen teslimatlar (en eskiden başlayarak). */
+  public async dueDeliveries(now: Date, limit = 20): Promise<DeliveryDto[]> {
+    const { db, t } = this.backend;
+    const rows = await db.select().from(t.pluginDeliveries).where(and(eq(t.pluginDeliveries.siteId, this.siteId), eq(t.pluginDeliveries.status, "pending"), lte(t.pluginDeliveries.nextAttemptAt, now))).orderBy(asc(t.pluginDeliveries.nextAttemptAt)).limit(limit);
+    return rows as DeliveryDto[];
+  }
+
+  /**
+   * Bir denemenin sonucunu yazar. Koşullu: yalnızca hâlâ `pending` ve beklenen deneme sayısındaki kayıt güncellenir
+   * (iki süreç aynı teslimatı yarışta işlerse tek sonuç yazılır). Dönen `true` = bu çağrı yazdı.
+   */
+  public async recordAttempt(id: string, expectedAttempts: number, result: { ok: boolean; status: number | null; error?: string; nextAttemptAt?: Date; giveUp?: boolean }): Promise<boolean> {
+    const { db, t } = this.backend;
+    const rows = await db
+      .update(t.pluginDeliveries)
+      .set({
+        attempts: expectedAttempts + 1,
+        lastStatus: result.status,
+        lastError: (result.error ?? "").slice(0, 200),
+        status: result.ok ? "delivered" : result.giveUp ? "failed" : "pending",
+        ...(result.ok ? { deliveredAt: new Date() } : {}),
+        ...(result.nextAttemptAt ? { nextAttemptAt: result.nextAttemptAt } : {}),
+      })
+      .where(and(eq(t.pluginDeliveries.siteId, this.siteId), eq(t.pluginDeliveries.id, id), eq(t.pluginDeliveries.status, "pending"), eq(t.pluginDeliveries.attempts, expectedAttempts)))
+      .returning({ id: t.pluginDeliveries.id });
+    return rows.length > 0;
+  }
+
+  public async listDeliveries(pluginId: string, limit = 10): Promise<DeliveryDto[]> {
+    const { db, t } = this.backend;
+    const rows = await db.select().from(t.pluginDeliveries).where(and(eq(t.pluginDeliveries.siteId, this.siteId), eq(t.pluginDeliveries.pluginId, pluginId))).orderBy(desc(t.pluginDeliveries.createdAt)).limit(limit);
+    return rows as DeliveryDto[];
+  }
+
+  /** Başarısız kaydı yeniden kuyruğa alır (yönetici elle). */
+  public async requeueDelivery(id: string): Promise<boolean> {
+    const { db, t } = this.backend;
+    const rows = await db.update(t.pluginDeliveries).set({ status: "pending", attempts: 0, nextAttemptAt: new Date(), lastError: "" }).where(and(eq(t.pluginDeliveries.siteId, this.siteId), eq(t.pluginDeliveries.id, id), eq(t.pluginDeliveries.status, "failed"))).returning({ id: t.pluginDeliveries.id });
+    return rows.length > 0;
+  }
+
+  /** Tamamlanmış (teslim edilmiş ya da vazgeçilmiş) kayıtlar `days` günden eskiyse silinir; bekleyenlere dokunulmaz. */
+  public async purgeOldDeliveries(days = 14): Promise<void> {
+    const { db, t } = this.backend;
+    const cutoff = new Date(Date.now() - days * 86_400_000);
+    await db.delete(t.pluginDeliveries).where(and(eq(t.pluginDeliveries.siteId, this.siteId), or(eq(t.pluginDeliveries.status, "delivered"), eq(t.pluginDeliveries.status, "failed"))!, lt(t.pluginDeliveries.createdAt, cutoff)));
+  }
+
   /** Yalnızca devre dışı eklenti silinir. */
   public async deleteDataPlugin(pluginId: string): Promise<{ ok: true } | { ok: false; error: string }> {
     const plugin = await this.getDataPlugin(pluginId);
     if (!plugin) return { ok: false, error: "Eklenti bulunamadı." };
     if (plugin.enabled) return { ok: false, error: "Etkin eklenti silinemez; önce devre dışı bırakın." };
     const { db, t } = this.backend;
+    await db.delete(t.pluginDeliveries).where(and(eq(t.pluginDeliveries.siteId, this.siteId), eq(t.pluginDeliveries.pluginId, pluginId)));
     await db.delete(t.dataPlugins).where(and(eq(t.dataPlugins.siteId, this.siteId), eq(t.dataPlugins.pluginId, pluginId)));
     return { ok: true };
   }

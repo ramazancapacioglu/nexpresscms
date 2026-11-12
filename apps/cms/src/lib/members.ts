@@ -21,7 +21,7 @@ export const memberCookieOptions = () => ({
 
 export async function getMembership(siteId: string): Promise<MembershipSettings> {
   const site = await getScopedRepository(siteId).getSite();
-  return resolveSiteSettings(site?.settings).general.membership ?? { mode: "closed", privacyUrl: "" };
+  return resolveSiteSettings(site?.settings).general.membership ?? { mode: "closed", tiers: [], privacyUrl: "" };
 }
 
 /** Çerezdeki belirteci doğrular ve veritabanıyla eşler: üye etkin ve oturum sürümü aynı olmalı. */

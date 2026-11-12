@@ -4,6 +4,7 @@ import { revalidatePath as nextRevalidatePath, revalidateTag, unstable_cache } f
 import { headers } from "next/headers";
 import { parseWithDates, stringifyWithDates } from "@nexpress/core";
 import { invalidateSiteCache } from "@nexpress/database";
+import { sharedCounter, sharedCounterBump } from "@/lib/shared-state";
 
 /** Ön yüz okumaları için varsayılan bayatlama; zamanlanmış yayınları da bu sürede yakalar. */
 const FALLBACK_TTL_SECONDS = 120;
@@ -36,7 +37,23 @@ const g = globalThis as unknown as {
 const boot = (g.__nxCacheBoot ??= Date.now());
 const epochs = (g.__nxCacheEpoch ??= new Map<string, number>());
 const oversizeCache = (g.__nxOversizeCache ??= new Map<string, { exp: number; raw: string }>());
-const epochOf = (siteId: string) => `${boot}.${epochs.get(siteId) ?? 0}`;
+const remoteEpochs = new Map<string, { value: number; at: number }>();
+const REMOTE_EPOCH_TTL_MS = 1000;
+
+/**
+ * Önbellek dönemi: süreç açılışı + yerel sayaç + (`REDIS_URL` varsa) ortak sayaç. Başka bir örnek yazınca ortak sayaç
+ * artar; bu örnek değişikliği en geç 1 sn içinde görür (sayaç 1 sn yerelde tutulur, her okumada Redis'e gidilmez).
+ */
+async function epochOf(siteId: string): Promise<string> {
+  const now = Date.now();
+  let remote = remoteEpochs.get(siteId);
+  if (!remote || now - remote.at > REMOTE_EPOCH_TTL_MS) {
+    const value = await sharedCounter(`nx:epoch:${siteId}`);
+    remote = { value: value ?? 0, at: now };
+    remoteEpochs.set(siteId, remote);
+  }
+  return `${boot}.${epochs.get(siteId) ?? 0}.${remote.value}`;
+}
 
 /** Kayıtlı önbellek süresi. Sınır 30–600 saniye. */
 export function cacheTtlSeconds(): number {
@@ -82,7 +99,7 @@ export function cachedRead<A extends [siteId: string, ...rest: string[]], R>(
   read: (...args: A) => Promise<R>
 ): (...args: A) => Promise<R> {
   return cache(async (...args: A): Promise<R> => {
-    const keyParts = [name, epochOf(args[0]), ...args];
+    const keyParts = [name, await epochOf(args[0]), ...args];
     const memKey = keyParts.join("|");
     const memHit = oversizeCache.get(memKey);
     if (memHit && memHit.exp > Date.now()) {
@@ -121,6 +138,8 @@ export function cachedRead<A extends [siteId: string, ...rest: string[]], R>(
 export async function invalidateSite(siteId?: string): Promise<void> {
   const id = siteId ?? (await headers()).get("x-nexpress-site-id") ?? "default";
   epochs.set(id, (epochs.get(id) ?? 0) + 1);
+  remoteEpochs.delete(id);
+  await sharedCounterBump(`nx:epoch:${id}`);
   oversizeCache.clear();
   invalidateSiteCache(id);
   try {

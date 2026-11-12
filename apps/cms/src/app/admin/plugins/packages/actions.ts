@@ -7,6 +7,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
+import { processDueWebhookDeliveries } from "@/lib/plugin-webhooks";
 
 type Result<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -114,4 +115,14 @@ export async function revealWebhookSecretAction(input: { pluginId: string }): Pr
   } catch {
     return { ok: false, error: "Sır çözülemedi (SECRETS_KEY değişmiş olabilir)." };
   }
+}
+
+/** Vazgeçilmiş (başarısız) teslimatı yeniden kuyruğa alır ve hemen dener. */
+export async function retryDeliveryAction(input: { deliveryId: string }): Promise<Result> {
+  const admin = await requireAdmin("plugins.retryDelivery");
+  const ok = await getScopedRepository(admin.siteId).requeueDelivery(input.deliveryId);
+  if (!ok) return { ok: false, error: "Teslimat bulunamadı ya da başarısız durumda değil." };
+  await processDueWebhookDeliveries(admin.siteId);
+  await revalidatePath("/admin/plugins/packages");
+  return { ok: true };
 }

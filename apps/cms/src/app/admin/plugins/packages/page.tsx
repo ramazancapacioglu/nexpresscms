@@ -12,7 +12,9 @@ export const dynamic = "force-dynamic";
 export default async function DataPluginsPage() {
   const me = await requireAdminPage();
   const siteId = (await headers()).get("x-nexpress-site-id") ?? me.siteId;
-  const plugins = await getScopedRepository(siteId).listDataPlugins();
+  const repo = getScopedRepository(siteId);
+  const plugins = await repo.listDataPlugins();
+  const deliveries = Object.fromEntries(await Promise.all(plugins.map(async (p) => [p.pluginId, (await repo.listDeliveries(p.pluginId, 5)).map((d) => ({ id: d.id, event: d.event, status: d.status, attempts: d.attempts, at: d.createdAt.toISOString().slice(0, 16).replace("T", " "), error: d.lastError, nextAt: d.status === "pending" ? d.nextAttemptAt.toISOString().slice(0, 16).replace("T", " ") : null }))] as const)));
   const views: DataPluginView[] = plugins.map((p) => ({
     id: p.pluginId,
     name: p.manifest.name,
@@ -26,6 +28,7 @@ export default async function DataPluginsPage() {
     hasPages: p.pages.length > 0,
     hasWebhooks: p.webhooks.length > 0,
     lastDelivery: p.lastDelivery,
+    deliveries: deliveries[p.pluginId] ?? [],
     installedAt: p.installedAt.toISOString().slice(0, 10),
   }));
   return (

@@ -1,3 +1,4 @@
+import type { MembershipTier } from "@nexpress/core";
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { DEFAULT_STUDIO_TOKENS } from "@/components/admin/editor/studio-model";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,8 @@ export interface DualModeEditorClientProps {
   customType?: CustomContentType;
   /** Sitedeki tüm özel türler (liste bloğu kaynağı seçimi için). */
   customTypes?: CustomContentType[];
+  /** Üyelik kademeleri (düşükten yükseğe); boşsa içerikte kademe seçimi gösterilmez. */
+  memberTiers?: MembershipTier[];
   startNew?: boolean;
   siteTokens?: DesignTokens;
   inspectorSlot?: React.ReactNode;
@@ -37,6 +40,7 @@ export function useDualModeEditorDocument({
   initialContextType = "page",
   customType,
   customTypes,
+  memberTiers,
   startNew = false,
   siteTokens = DEFAULT_STUDIO_TOKENS,
   inspectorSlot,
@@ -188,5 +192,5 @@ export function useDualModeEditorDocument({
     restoreHistory(historyIdxRef.current + 1);
   };
 
-  return { customType, customTypes, isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug: setSlugManual, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId, locale, defaultLocale, siteLocales, translations };
+  return { customType, customTypes, memberTiers, isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug: setSlugManual, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId, locale, defaultLocale, siteLocales, translations };
 }

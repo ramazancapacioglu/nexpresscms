@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Küçük borçların kapatılması
+- ✅ **Footer alt çubuk:** sosyal bağlantılar (https) ve alt çubuk menüsü (`docs/03`).
+- ✅ **CDN temizleme:** Cloudflare ya da imzalı webhook; `content:afterPublish` kancasında, zamanlanmış yayın ve yayından kalkma dahil; 1,5 sn birleştirme, 30'luk parçalama, hata bildirimi (`packages/core/src/cdn-purge.ts`, `lib/cdn-purge.ts`).
+- ✅ **Webhook yeniden deneme kuyruğu:** `plugin_deliveries` tablosu, üstel bekleme (1 dk…6 sa, 6 deneme), kalıcı hatada vazgeçme, koşullu sonuç yazımı, zamanlayıcı entegrasyonu, panelde kuyruk ve "Yeniden dene". Zamanlanmış yayın da bildirir.
+- ✅ **Üyelik kademesi ve profil:** en çok 5 kademe, içerik başına gereken kademe, yönetici ataması, ad düzenleme, tüm cihazlardan çıkış. `members.tier` (göç `0023`).
+- ✅ **Redis / çok örnekli:** isteğe bağlı `REDIS_URL`; bağımlılıksız RESP2 istemcisi (`redis-client.ts`), paylaşımlı hız sınırı (giriş ve üye bağlantısı), ortak önbellek dönemi (başka örneğin yazması ≤1 sn içinde görülür). Redis yoksa/erişilemezse süreç belleğine düşer (fail-open).
+- 🧪 `redis-client.test.ts` (RESP kodlama/çözme, zaman aşımı, geri çekilme, sahte sunucuyla), `cdn-purge.test.ts`, `plugin-deliveries.test.ts` (kuyruk, yarış, kiracı), `membership.test.ts` (kademe), `footer-style.test.ts`, `data-plugin.test.ts` (yeniden deneme). Tarayıcıda: footer X bağlantısı (`javascript:` olan basılmadı), kademe akışı (kademesiz/gümüş/altın), profil ve tüm cihazlardan çıkış, hız sınırı sayaçları Redis'te, webhook teslimatı `pending` → zamanlayıcıyla 2. deneme.
+- ⚠️ **Gerçek Redis, Cloudflare ve genel https alıcıyla denenmedi** (ortamda docker/ağ yok): Redis istemcisi RESP2'ye göre yazıldı ve sahte sunucuyla uygulamaya bağlı hâlde doğrulandı; Cloudflare isteği resmi şemaya göre kuruldu.
+
 ### [2026-11-12] — Ziyaretçi üyeliği (parolasız, e-posta bağlantılı)
 - ✅ Kararlar (kullanıcıyla): giriş **e-posta bağlantısı** (parola yok), kayıt politikası **yönetici ayarı** (kapalı / açık / davetle; varsayılan kapalı).
 - ✅ Çekirdek: `membership.ts` (ayar, e-posta, güvenli dönüş adresi), `member-token.ts` (bağlantı + oturum belirteci, alan ayrımlı HMAC), `content-access` üye kuralı. Veritabanı: `members` tablosu (iki motor, göç `0022`), `MemberRepository` (atomik tek kullanım, kiracı kapsamlı).

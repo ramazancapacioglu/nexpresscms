@@ -1,6 +1,6 @@
 "use server";
 
-import { normalizeMemberEmail, resolveSiteSettings, sanitizeMembership, type MembershipSettings } from "@nexpress/core";
+import { isValidTierId, normalizeMemberEmail, resolveSiteSettings, sanitizeMembership, type MembershipSettings } from "@nexpress/core";
 import { newMemberId } from "@nexpress/core/member-token";
 import { getMemberRepository, getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
@@ -55,6 +55,20 @@ export async function setMemberStatusAction(input: { id: string; status: "active
   return { ok: true };
 }
 
+/** Üyenin kademesini atar (boş = kademesiz). Kademe sitedeki tanımlı kademelerden biri olmalıdır. */
+export async function setMemberTierAction(input: { id: string; tier: string }): Promise<Result> {
+  const admin = await requireAdmin("members.setTier");
+  const repo = getMemberRepository(admin.siteId);
+  const member = await repo.findById(input.id);
+  if (!member) return { ok: false, error: "Üye bulunamadı." };
+  const tier = input.tier.trim();
+  if (tier && (!isValidTierId(tier) || !(await currentMembership(admin.siteId)).tiers.some((t) => t.id === tier))) return { ok: false, error: "Tanımlı olmayan kademe." };
+  await repo.setTier(member.id, tier);
+  await recordAudit({ id: admin.sub, email: admin.email }, "members.setTier", { target: member.email, detail: tier || "kademesiz" });
+  await revalidatePath("/admin/members");
+  return { ok: true };
+}
+
 export async function deleteMemberAction(input: { id: string }): Promise<Result> {
   const admin = await requireAdmin("members.delete");
   const repo = getMemberRepository(admin.siteId);
@@ -67,4 +81,4 @@ export async function deleteMemberAction(input: { id: string }): Promise<Result>
 }
 
 export const currentMembership = async (siteId: string): Promise<MembershipSettings> =>
-  resolveSiteSettings((await getScopedRepository(siteId).getSite())?.settings).general.membership ?? { mode: "closed", privacyUrl: "" };
+  resolveSiteSettings((await getScopedRepository(siteId).getSite())?.settings).general.membership ?? { mode: "closed", tiers: [], privacyUrl: "" };

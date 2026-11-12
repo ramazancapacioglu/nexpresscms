@@ -199,3 +199,20 @@ export function describePermissions(pkg: { contentTypes: readonly CustomContentT
   }
   return out;
 }
+
+/** Webhook yeniden deneme: en çok 6 deneme; beklemeler 1 dk, 5 dk, 30 dk, 2 sa, 6 sa. */
+export const WEBHOOK_MAX_ATTEMPTS = 6;
+export const WEBHOOK_BACKOFF_MINUTES = [1, 5, 30, 120, 360] as const;
+
+/** Geçici hatalar yeniden denenir (ağ hatası, 408/425/429, 5xx); kalıcı istemci hataları (400, 401, 403, 404, 410…) denenmez. */
+export const isRetryableStatus = (status: number | null): boolean => status === null || status === 408 || status === 425 || status === 429 || status >= 500;
+
+/**
+ * Başarısız bir denemeden sonra ne olacağı. `attemptsDone` = bu deneme dahil yapılan deneme sayısı (1, 2, …).
+ * Vazgeçilirse `giveUp`; yoksa bir sonraki deneme zamanı.
+ */
+export function nextWebhookAttempt(attemptsDone: number, status: number | null, now: Date): { giveUp: true } | { giveUp: false; at: Date } {
+  if (!isRetryableStatus(status) || attemptsDone >= WEBHOOK_MAX_ATTEMPTS) return { giveUp: true };
+  const minutes = WEBHOOK_BACKOFF_MINUTES[Math.min(attemptsDone - 1, WEBHOOK_BACKOFF_MINUTES.length - 1)]!;
+  return { giveUp: false, at: new Date(now.getTime() + minutes * 60_000) };
+}

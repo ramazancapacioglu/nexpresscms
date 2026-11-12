@@ -3,6 +3,8 @@ import { getFormSubmissionRepository, getScopedRepository } from "@nexpress/data
 import "@/plugins/register";
 import { invalidateSite } from "./cache";
 import { notify, syncSystemNotifications } from "./notify";
+import { contentPath, localeBase, resolveSiteSettings } from "@nexpress/core";
+import { dispatchPluginWebhooks, processDueWebhookDeliveries } from "./plugin-webhooks";
 
 const lastRun = new Map<string, number>();
 const MIN_INTERVAL_MS = 60_000;
@@ -22,8 +24,23 @@ export async function runScheduler(siteId: string, force = false): Promise<{ pub
     const purged = await repo.purgeExpiredTrash();
     // KVKK: form gönderimleri 365 günden uzun tutulmaz
     await getFormSubmissionRepository(siteId).purgeOlderThan(365).catch(() => 0);
+    if (published.length > 0) {
+      // Zamanlanmış yayın da eklenti webhook'larını tetikler (admin kaydından farksız)
+      void (async () => {
+        const site = await repo.getSite();
+        const locale = site?.defaultLocale ?? "tr";
+        const types = resolveSiteSettings(site?.settings).general.contentTypes;
+        const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+        for (const id of published) {
+          const c = await repo.getContentById(id, locale);
+          if (c) await dispatchPluginWebhooks(siteId, "content.published", { contentId: c.contentId, type: c.type, slug: c.slug, title: c.title, url: `${appUrl}${localeBase(site, locale)}${contentPath(types, c)}`, status: "published", locale });
+        }
+      })().catch(() => undefined);
+    }
     if (published.length > 0) await notify(siteId, { kind: "content.scheduled_published", severity: "info", title: `${published.length} zamanlanmış içerik yayınlandı`, href: "/admin/schedule", audience: "all", window: 0 });
     void syncSystemNotifications(siteId);
+    // Eklenti webhook yeniden denemeleri (zamanı gelen bekleyenler)
+    void processDueWebhookDeliveries(siteId);
     if (published.length > 0 || purged > 0) {
       try {
         await invalidateSite(siteId);

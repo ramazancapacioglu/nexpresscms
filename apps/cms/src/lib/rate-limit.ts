@@ -1,17 +1,13 @@
-/** Bellek içi sabit pencere sınırı (tek süreç). Çok örnekli kurulumda Redis'e taşınmalıdır (docs/12). */
-export function createRateLimiter(max: number, windowMs: number) {
-  const hits = new Map<string, { count: number; resetAt: number }>();
+import { windowIncr } from "@/lib/shared-state";
+
+/**
+ * Sabit pencere hız sınırı. Sayaç `REDIS_URL` varsa Redis'te (tüm örnekler ortak), yoksa süreç belleğindedir.
+ * `take` sayar ve izin verilip verilmediğini döner (sınır aşıldıysa false).
+ */
+export function createRateLimiter(name: string, max: number, windowMs: number) {
   return {
-    /** Sayar ve izin verilip verilmediğini döner (sınır aşıldıysa false). */
-    take(key: string, now = Date.now()): boolean {
-      if (hits.size > 5000) for (const [k, v] of hits) if (v.resetAt <= now) hits.delete(k);
-      const e = hits.get(key);
-      if (!e || e.resetAt <= now) {
-        hits.set(key, { count: 1, resetAt: now + windowMs });
-        return true;
-      }
-      e.count += 1;
-      return e.count <= max;
+    async take(key: string): Promise<boolean> {
+      return (await windowIncr(`nx:rl:${name}:${key}`, windowMs)) <= max;
     },
   };
 }

@@ -27,7 +27,15 @@ export interface FooterRowStyle {
   width?: "contained" | "full";
 }
 
+export const FOOTER_SOCIAL_NETWORKS = ["x", "linkedin", "instagram", "youtube", "github", "facebook"] as const;
+export type FooterSocialNetwork = (typeof FOOTER_SOCIAL_NETWORKS)[number];
+export const FOOTER_SOCIAL_LABEL: Record<FooterSocialNetwork, string> = { x: "X", linkedin: "LinkedIn", instagram: "Instagram", youtube: "YouTube", github: "GitHub", facebook: "Facebook" };
+
 export interface FooterBottomStyle extends FooterRowStyle {
+  /** Alt çubukta gösterilecek sosyal bağlantılar (ağ → https adresi). */
+  socials?: Partial<Record<FooterSocialNetwork, string>>;
+  /** Alt çubukta gösterilecek menü (`footerConfig.menus` kaydının kimliği; ilk düzey, en çok 6 öğe). */
+  menuId?: string;
   /** `split`: telif solda, bağlantılar sağda. `centered`: ikisi de ortada. */
   layout?: "split" | "centered";
   /** Sayfa başına dönen bağlantı (JS'siz çapa). */
@@ -39,6 +47,16 @@ export interface FooterOptions {
   bottom?: FooterBottomStyle;
   /** Sütunlar arası boşluk. */
   gap?: "sm" | "md" | "lg";
+}
+
+function safeSocialUrl(value: unknown): string {
+  if (typeof value !== "string") return "";
+  try {
+    const u = new URL(value.trim());
+    return u.protocol === "https:" && !u.username && !u.password ? u.href.slice(0, 300) : "";
+  } catch {
+    return "";
+  }
 }
 
 const HEX_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -53,7 +71,7 @@ export interface ResolvedFooterRow {
 
 export interface ResolvedFooterStyle {
   main: ResolvedFooterRow;
-  bottom: ResolvedFooterRow & { centered: boolean; backToTop: boolean };
+  bottom: ResolvedFooterRow & { centered: boolean; backToTop: boolean; socials: Array<{ id: FooterSocialNetwork; label: string; href: string }>; menuId: string | null };
   gapPx: number;
 }
 
@@ -77,7 +95,17 @@ export function resolveFooterStyle(options: FooterOptions | undefined | null): R
   const bottom = row(options?.bottom, { paddingY: 20, divider: true });
   return {
     main: row(options?.main, { paddingY: 48, divider: false }),
-    bottom: { ...bottom, centered: options?.bottom?.layout === "centered", backToTop: options?.bottom?.backToTop === true },
+    bottom: {
+      ...bottom,
+      centered: options?.bottom?.layout === "centered",
+      backToTop: options?.bottom?.backToTop === true,
+      // Yalnızca https adresleri; geçersiz değer atılır (javascript:/data: asla bağlantı olmaz)
+      socials: FOOTER_SOCIAL_NETWORKS.flatMap((id) => {
+        const href = safeSocialUrl(options?.bottom?.socials?.[id]);
+        return href ? [{ id, label: FOOTER_SOCIAL_LABEL[id], href }] : [];
+      }),
+      menuId: typeof options?.bottom?.menuId === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(options.bottom.menuId) ? options.bottom.menuId : null,
+    },
     gapPx: GAP_PX[options?.gap ?? "md"] ?? GAP_PX.md,
   };
 }

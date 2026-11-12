@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { describePermissions, parseTrustedKeys, sanitizeManifest, sanitizePluginContentTypes, sanitizeWebhooks, signPackageChecksum, signWebhook, validateWebhookUrl, verifyPackageSignature } from "../src/index";
+import { WEBHOOK_MAX_ATTEMPTS, isRetryableStatus, nextWebhookAttempt, describePermissions, parseTrustedKeys, sanitizeManifest, sanitizePluginContentTypes, sanitizeWebhooks, signPackageChecksum, signWebhook, validateWebhookUrl, verifyPackageSignature } from "../src/index";
 
 test("manifest: geçerli kabul; kimlik, sürüm, anahtar ve adres sıkı denetlenir", () => {
   const ok = sanitizeManifest({ id: "acme-referanslar", name: " Acme  Referans ", version: "1.2.3", vendor: "Acme", description: "x".repeat(500) });
@@ -79,4 +79,18 @@ test("izin özeti: paketin yapacağı her şey listelenir, webhook alan adları 
   assert.deepEqual(lines.map((l) => l.id), ["content-types", "pages", "webhooks"]);
   assert.match(lines[2]!.label, /hooks\.acme\.com, other\.acme\.io/);
   assert.deepEqual(describePermissions({ contentTypes: [], pages: [], webhooks: [] }), []);
+});
+
+test("yeniden deneme: geçici hata beklemeyle, kalıcı hata ve deneme sınırı vazgeçer", () => {
+  const now = new Date("2026-01-01T00:00:00Z");
+  const at = (attempts: number, status: number | null) => nextWebhookAttempt(attempts, status, now);
+  assert.deepEqual(at(1, 500), { giveUp: false, at: new Date("2026-01-01T00:01:00Z") });
+  assert.deepEqual(at(2, null), { giveUp: false, at: new Date("2026-01-01T00:05:00Z") });
+  assert.deepEqual(at(3, 429), { giveUp: false, at: new Date("2026-01-01T00:30:00Z") });
+  assert.deepEqual(at(4, 503), { giveUp: false, at: new Date("2026-01-01T02:00:00Z") });
+  assert.deepEqual(at(5, 502), { giveUp: false, at: new Date("2026-01-01T06:00:00Z") });
+  assert.deepEqual(at(WEBHOOK_MAX_ATTEMPTS, 500), { giveUp: true }, "deneme sınırı");
+  for (const s of [400, 401, 403, 404, 410, 422]) assert.deepEqual(at(1, s), { giveUp: true }, `kalıcı hata ${s}`);
+  assert.equal(isRetryableStatus(408) && isRetryableStatus(425) && isRetryableStatus(null), true);
+  assert.equal(isRetryableStatus(301), false);
 });

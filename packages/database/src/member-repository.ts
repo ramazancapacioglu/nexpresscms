@@ -14,6 +14,7 @@ export interface MemberDto {
   emailVerifiedAt: Date | null;
   linkSeq: number;
   sessionVersion: number;
+  tier: string;
   consentAt: Date | null;
   createdAt: Date;
   lastLoginAt: Date | null;
@@ -65,6 +66,7 @@ export class MemberRepository {
       emailVerifiedAt: null,
       linkSeq: 0,
       sessionVersion: 0,
+      tier: "",
       consentAt: input.consent ? now : null,
       createdAt: now,
       lastLoginAt: null,
@@ -105,6 +107,11 @@ export class MemberRepository {
     const { db, m } = this.b;
     await db.update(m).set({ status }).where(this.scope(eq(m.id, id)));
     await this.revokeSessions(id);
+  }
+
+  public async setTier(id: string, tier: string): Promise<void> {
+    const { db, m } = this.b;
+    await db.update(m).set({ tier }).where(this.scope(eq(m.id, id)));
   }
 
   public async setName(id: string, name: string): Promise<void> {

@@ -4,7 +4,7 @@ import React, { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert, ShieldCheck, ShieldQuestion, Upload } from "lucide-react";
 import type { PermissionLine, SignatureStatus } from "@nexpress/core";
-import { deleteDataPluginAction, disableDataPluginAction, enableDataPluginAction, revealWebhookSecretAction } from "./actions";
+import { deleteDataPluginAction, disableDataPluginAction, enableDataPluginAction, retryDeliveryAction, revealWebhookSecretAction } from "./actions";
 
 export interface DataPluginView {
   id: string;
@@ -19,6 +19,7 @@ export interface DataPluginView {
   hasPages: boolean;
   hasWebhooks: boolean;
   lastDelivery: { at: string; event: string; ok: boolean; status: number | null; error?: string } | null;
+  deliveries: Array<{ id: string; event: string; status: "pending" | "delivered" | "failed"; attempts: number; at: string; error: string; nextAt: string | null }>;
   installedAt: string;
 }
 
@@ -74,6 +75,24 @@ function Card({ p }: { p: DataPluginView }) {
       </div>
 
       {p.lastDelivery ? <p className="text-[11px] text-[#5F6570]">Son bildirim: {p.lastDelivery.at.slice(0, 16).replace("T", " ")} · {p.lastDelivery.event} · <span className={p.lastDelivery.ok ? "text-emerald-700 dark:text-emerald-300" : "text-red-600"}>{p.lastDelivery.ok ? "başarılı" : `başarısız (${p.lastDelivery.error ?? p.lastDelivery.status})`}</span></p> : null}
+
+      {p.deliveries.length > 0 ? (
+        <details className="text-[11px]">
+          <summary className="cursor-pointer text-[#5F6570]">Bildirim kuyruğu ({p.deliveries.filter((d) => d.status === "pending").length} bekleyen, {p.deliveries.filter((d) => d.status === "failed").length} başarısız)</summary>
+          <ul className="mt-1.5 space-y-1">
+            {p.deliveries.map((d) => (
+              <li key={d.id} className="flex flex-wrap items-center gap-x-2">
+                <span className="font-mono text-[#8C9099]">{d.at}</span>
+                <span>{d.event}</span>
+                <span className={d.status === "delivered" ? "text-emerald-700 dark:text-emerald-300" : d.status === "failed" ? "text-red-600" : "text-amber-700 dark:text-amber-300"}>
+                  {d.status === "delivered" ? "teslim edildi" : d.status === "failed" ? `vazgeçildi (${d.attempts} deneme${d.error ? `: ${d.error}` : ""})` : `bekliyor, sonraki deneme ${d.nextAt}`}
+                </span>
+                {d.status === "failed" ? <button type="button" disabled={pending} onClick={() => run(() => retryDeliveryAction({ deliveryId: d.id }), "Yeniden denendi.")} className="text-[#266DF0] hover:underline">Yeniden dene</button> : null}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       {!p.enabled ? (
         <div className="space-y-2 border-t pt-3 text-[12px]">

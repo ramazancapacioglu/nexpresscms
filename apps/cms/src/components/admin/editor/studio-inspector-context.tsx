@@ -1,5 +1,6 @@
 "use client";
 
+import type { MembershipTier } from "@nexpress/core";
 import type { RichSchemaFields } from "./rich-schema-panel";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
 import { createContext, useContext } from "react";
@@ -126,6 +127,7 @@ export interface StudioInspectorApi {
   setPageOptions: Dispatch<SetStateAction<PageOptions>>;
   customType?: CustomContentType;
   customTypes?: CustomContentType[];
+  memberTiers?: MembershipTier[];
   fieldValues: FieldValues;
   setFieldValues: Dispatch<SetStateAction<FieldValues>>;
   parentId: string;

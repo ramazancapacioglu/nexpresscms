@@ -111,3 +111,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 ## Ziyaretçi üyeliği (2026-11-12) — kalanlar
 
 - Yapıldı: parolasız üyelik (`docs/11` §7b). Kalan: üye başına içerik/rol ayrımı (şimdi tek düzey "üye"), ücretli/kademeli üyelik, üye profil alanları, "tüm cihazlardan çıkış", hız sınırının Redis'e taşınması, sosyal giriş, üye e-posta değiştirme, üyelere bülten/bildirim tercihleri ve üye girişi için header bağlantısı (şimdi gate ve `/uye/giris` adresi).
+
+## Küçük borçlar — durum (2026-11-12)
+
+- ~~Redis/çok örnekli önbellek~~, ~~yayında CDN temizleme~~, ~~footer alt çubuk sosyal/menü~~, ~~webhook yeniden deneme kuyruğu~~, ~~üyelik kademesi ve profil~~ yapıldı (`docs/11` §6, §7b; `docs/03`).
+- Kalan (yeni): `unstable_cache` verisi hâlâ örnek başına (yalnızca **geçersiz kılma** ortaktır; ortak veri önbelleği yok); `REDIS_URL` için Sentinel/Cluster desteği yok; çöpe taşıma ve toplu durum değişiminde CDN temizleme; kademeli (ücretli) üyelik ve ödeme; üye e-posta değiştirme; webhook teslimat günlüğü için dışa aktarma; `form.submitted` olayı.

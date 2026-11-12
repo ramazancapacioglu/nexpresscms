@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveSiteSettings, safeLinkUrl, safeMemberNext, normalizeMemberEmail, sanitizeMembership } from "../src/index";
+import { memberMeetsTier, readPageOptions, writePageOptions, tierRank, suggestTierId, resolveSiteSettings, safeLinkUrl, safeMemberNext, normalizeMemberEmail, sanitizeMembership } from "../src/index";
 import { MEMBER_LINK_TTL_SECONDS, MEMBER_SESSION_TTL_SECONDS, createMemberLinkToken, createMemberSessionToken, verifyMemberLinkToken, verifyMemberSessionToken } from "../src/member-token";
 
 const secret = "test-secret-with-enough-length-0123456789";
@@ -8,7 +8,7 @@ const member = { id: "mem_0123456789abcdef", linkSeq: 3, sessionVersion: 2 };
 const now = 1_800_000_000_000;
 
 test("ayarlar: varsayılan kapalı; bilinmeyen mod kapalıya düşer; aydınlatma bağlantısı güvenli", () => {
-  assert.deepEqual(sanitizeMembership(undefined), { mode: "closed", privacyUrl: "" });
+  assert.deepEqual(sanitizeMembership(undefined), { mode: "closed", tiers: [], privacyUrl: "" });
   assert.equal(sanitizeMembership({ mode: "open" }).mode, "open");
   assert.equal(sanitizeMembership({ mode: "herkes" }).mode, "closed");
   assert.equal(sanitizeMembership({ privacyUrl: "javascript:alert(1)" }).privacyUrl, "");
@@ -48,4 +48,38 @@ test("oturum çerezi: sürüm taşır, süre sınırı vardır, bağlantı belir
   assert.equal(verifyMemberSessionToken(secret, "site-a", t, now + (MEMBER_SESSION_TTL_SECONDS + 1) * 1000), null);
   assert.equal(verifyMemberLinkToken(secret, "site-a", t, now), null, "oturum çerezi giriş bağlantısı olamaz");
   assert.throws(() => createMemberSessionToken(secret, "site-a", { id: "../x", sessionVersion: 0 }, now));
+});
+
+test("kademeler: temizlik, sıra rütbedir; kademesiz üye 0", () => {
+  const s = sanitizeMembership({ tiers: [{ id: "gumus", label: " Gümüş  Üye " }, { id: "altin", label: "Altın" }, { id: "altin", label: "Kopya" }, { id: "Kötü Kimlik", label: "x" }, { id: "bos", label: "" }, "x", null, ...Array.from({ length: 9 }, (_, i) => ({ id: `k${i}x`, label: `K${i}` }))] });
+  assert.deepEqual(s.tiers.slice(0, 2), [{ id: "gumus", label: "Gümüş Üye" }, { id: "altin", label: "Altın" }]);
+  assert.equal(s.tiers.length, 5, "en çok 5 kademe");
+  assert.deepEqual(sanitizeMembership({ tiers: "x" }).tiers, []);
+  assert.equal(tierRank(s.tiers, "gumus"), 1);
+  assert.equal(tierRank(s.tiers, "altin"), 2);
+  assert.equal(tierRank(s.tiers, ""), 0);
+  assert.equal(tierRank(s.tiers, "yok"), 0);
+  assert.equal(suggestTierId("Altın Üye"), "altin-uye");
+  assert.match(suggestTierId("!!!"), /^kademe-/);
+});
+
+test("kademe kuralı: gereksinim boş/bilinmeyen herkesi geçirir; yüksek kademe düşüğü de açar, tersi açmaz", () => {
+  const tiers = [{ id: "gumus", label: "Gümüş" }, { id: "altin", label: "Altın" }];
+  assert.equal(memberMeetsTier(tiers, "", ""), true);
+  assert.equal(memberMeetsTier(tiers, "", "yok"), true, "silinmiş kademe gereksinimi yok sayılır");
+  assert.equal(memberMeetsTier([], "", "altin"), true, "kademesiz sitede gereksinim anlamsız");
+  assert.equal(memberMeetsTier(tiers, "", "gumus"), false, "kademesiz üye");
+  assert.equal(memberMeetsTier(tiers, "gumus", "gumus"), true);
+  assert.equal(memberMeetsTier(tiers, "gumus", "altin"), false);
+  assert.equal(memberMeetsTier(tiers, "altin", "gumus"), true);
+  assert.equal(memberMeetsTier(tiers, "silinmis", "gumus"), false, "bilinmeyen üye kademesi 0");
+});
+
+test("sayfa seçeneği: memberTier okunur, geçersiz atılır, varsayılan yazılmaz", () => {
+  assert.equal(readPageOptions({ _page: { memberTier: "altin" } }).memberTier, "altin");
+  assert.equal(readPageOptions({ _page: { memberTier: "<x>" } }).memberTier, "");
+  assert.equal(readPageOptions({}).memberTier, "");
+  const w = writePageOptions({}, { ...readPageOptions({}), memberTier: "altin" });
+  assert.deepEqual(w._page, { memberTier: "altin" });
+  assert.equal("_page" in writePageOptions({}, readPageOptions({})), false);
 });

@@ -474,7 +474,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
         })()}
       </section>
 
-      <FooterStylePanel value={footer.options} onChange={(options) => setFooter((prev) => ({ ...prev, options }))} />
+      <FooterStylePanel value={footer.options} onChange={(options) => setFooter((prev) => ({ ...prev, options }))} menus={menus} />
 
       {/* 3. Alt Telif & Yasal Satır */}
       <section className="space-y-3 rounded-xl border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">

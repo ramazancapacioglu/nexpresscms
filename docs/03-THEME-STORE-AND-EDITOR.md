@@ -292,3 +292,5 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 ## Footer Satır Stilleri (2026-11-12)
 
 `/admin/appearance/footer` altında **Satır Stilleri** paneli: orta satır ve alt çubuk için zemin (sayfa, açık gri, marka, koyu, özel renk), dikey boşluk, üst ayraç, tam/kapsayıcı genişlik; alt çubuk düzeni (soldan-sağa ya da ortalanmış), "Başa dön" bağlantısı ve sütun boşluğu. Kayıt `footerConfig.options` altındadır (`packages/core/src/footer-style.ts`); sözleşme `docs/23` §2.4.
+
+**Alt çubuk sosyal bağlantı ve menü (2026-11-12):** `FooterConfig.options.bottom.socials` (X, LinkedIn, Instagram, YouTube, GitHub, Facebook; yalnızca https, kimlik bilgisiz) ve `menuId` (`footerConfig.menus` kaydı; ilk düzey, en çok 6 güvenli bağlantı). Metin etiketli, JS'siz bağlantılardır (`rel="noopener me"`, `aria-label`); simge paketi eklenmez. Panel: `/admin/appearance/footer` › Satır Stilleri.

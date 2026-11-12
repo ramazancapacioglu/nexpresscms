@@ -816,6 +816,8 @@ export const sqliteMembers = sqliteTable(
     linkSeq: integer("link_seq").default(0).notNull(),
     /** Oturum sürümü: çıkış-tümü, devre dışı bırakma ve silme çerezleri düşürür. */
     sessionVersion: integer("session_version").default(0).notNull(),
+    /** Üyelik kademesi (`general.membership.tiers` kimliği); boş = kademesiz üye */
+    tier: text("tier").default("").notNull(),
     /** Aydınlatma metni onayı (KVKK) */
     consentAt: integer("consent_at", { mode: "timestamp_ms" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
@@ -824,6 +826,36 @@ export const sqliteMembers = sqliteTable(
   (t) => [
     index("members_site_id_idx").on(t.siteId),
     uniqueIndex("members_site_email_uidx").on(t.siteId, t.email),
+  ]
+);
+
+/**
+ * EKLENTİ WEBHOOK TESLİMATLARI — giden bildirimlerin kalıcı kuyruğu. Başarısız gönderim üstel bekleme ile yeniden denenir
+ * (zamanlayıcı); `id` her denemede aynıdır (`X-NexPress-Delivery`), alıcı tekrarı eler.
+ */
+export const sqlitePluginDeliveries = sqliteTable(
+  "plugin_deliveries",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    pluginId: text("plugin_id").notNull(),
+    webhookId: text("webhook_id").notNull(),
+    event: text("event").notNull(),
+    /** Gönderilecek JSON gövde (içerik metni ve kişisel veri içermez) */
+    body: text("body").notNull(),
+    /** pending | delivered | failed */
+    status: text("status").default("pending").notNull(),
+    attempts: integer("attempts").default(0).notNull(),
+    nextAttemptAt: integer("next_attempt_at", { mode: "timestamp_ms" }).notNull(),
+    lastStatus: integer("last_status"),
+    lastError: text("last_error").default("").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    deliveredAt: integer("delivered_at", { mode: "timestamp_ms" }),
+  },
+  (t) => [
+    index("plugin_deliveries_site_id_idx").on(t.siteId),
+    index("plugin_deliveries_due_idx").on(t.siteId, t.status, t.nextAttemptAt),
+    index("plugin_deliveries_plugin_idx").on(t.siteId, t.pluginId, t.createdAt),
   ]
 );
 

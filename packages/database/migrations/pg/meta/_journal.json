@@ -162,6 +162,13 @@
       "when": 1794496581818,
       "tag": "0022_damp_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794497976929,
+      "tag": "0023_rich_warbound",
+      "breakpoints": true
     }
   ]
 }

@@ -25,6 +25,7 @@ export * from "./html-cache";
 export * from "./crux";
 export * from "./data-plugin";
 export * from "./membership";
+export * from "./cdn-purge";
 export * from "./json-dates";
 export * from "./ai-bots";
 export * from "./robots";

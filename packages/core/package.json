@@ -18,6 +18,7 @@
     "./draft-preview": "./src/draft-preview.ts",
     "./account-token": "./src/account-token.ts",
     "./member-token": "./src/member-token.ts",
+    "./redis-client": "./src/redis-client.ts",
     "./totp": "./src/totp.ts",
     "./markdown": "./src/markdown-compiler.ts",
     "./types": "./src/types.ts"

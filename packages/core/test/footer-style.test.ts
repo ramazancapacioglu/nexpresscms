@@ -38,3 +38,12 @@ test("telif yer tutucuları", () => {
   assert.equal(expandFooterText("© {year} {site}. Tüm hakları saklıdır.", "Acme", 2026), "© 2026 Acme. Tüm hakları saklıdır.");
   assert.equal(expandFooterText(undefined, "Acme", 2026), "");
 });
+
+test("alt çubuk: sosyal bağlantılar yalnızca https; menü kimliği güvenli biçimde", () => {
+  const s = resolveFooterStyle({ bottom: { socials: { x: "https://x.com/acme", linkedin: "javascript:alert(1)", github: "http://github.com/a", youtube: "https://u:p@youtube.com/c", instagram: "  https://instagram.com/acme  ", facebook: "" }, menuId: "mnu_1" } });
+  assert.deepEqual(s.bottom.socials.map((x) => [x.id, x.label]), [["x", "X"], ["instagram", "Instagram"]]);
+  assert.equal(s.bottom.menuId, "mnu_1");
+  assert.equal(resolveFooterStyle({ bottom: { menuId: "a b<script>" } }).bottom.menuId, null);
+  assert.deepEqual(resolveFooterStyle(undefined).bottom.socials, []);
+  assert.equal(resolveFooterStyle(undefined).bottom.menuId, null);
+});

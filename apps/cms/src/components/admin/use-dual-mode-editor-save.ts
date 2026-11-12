@@ -220,6 +220,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
     setPageOptions: p.setPageOptions,
     customType: p.customType,
     customTypes: p.customTypes,
+    memberTiers: p.memberTiers,
     fieldValues: p.fieldValues,
     setFieldValues: p.setFieldValues,
     parentId: p.parentId,

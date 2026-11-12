@@ -74,6 +74,7 @@ export default async function AdminContentsEditorPage({
       initialSelectedId={sp.id}
       initialContextType={requestedType}
       customTypes={resolveSiteSettings(site?.settings).general.contentTypes}
+      memberTiers={resolveSiteSettings(site?.settings).general.membership?.tiers}
       customType={customDef ?? findContentType(resolveSiteSettings(site?.settings).general.contentTypes, contents.find((c) => c.contentId === sp.id)?.type)}
       startNew={sp.new === "1"}
       canPublish={roleCan(session.role, "content.publish")}

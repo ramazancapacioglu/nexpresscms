@@ -8,8 +8,8 @@ import { createRateLimiter } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-const perEmail = createRateLimiter(5, 60 * 60 * 1000);
-const perIp = createRateLimiter(30, 60 * 60 * 1000);
+const perEmail = createRateLimiter("member-email", 5, 60 * 60 * 1000);
+const perIp = createRateLimiter("member-ip", 30, 60 * 60 * 1000);
 
 /**
  * Giriş/kayıt bağlantısı iste (JS'siz form). Hesap varlığı sızmaz: sonuç her durumda aynı "gönderildi" sayfasıdır
@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
   const email = normalizeMemberEmail(form.get("email"));
   if (!email) return back({ e: "email" });
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  if (!perIp.take(`${siteId}:${ip}`) || !perEmail.take(`${siteId}:${email}`)) return back({ e: "rate" });
+  // İkisi de sayılır (kısa devre yok): bir sınır aşılsa da diğer sayaç ilerler
+  const [ipOk, emailOk] = await Promise.all([perIp.take(`${siteId}:${ip}`), perEmail.take(`${siteId}:${email}`)]);
+  if (!ipOk || !emailOk) return back({ e: "rate" });
   if (!(await mailerReady(siteId))) return back({ e: "mail" });
 
   const repo = getMemberRepository(siteId);

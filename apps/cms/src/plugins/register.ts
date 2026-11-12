@@ -4,6 +4,7 @@ import { registerRagIndexing } from "@nexpress/rag";
 import { registerAgenticSeoProPlugin } from "@nexpress-pro/agentic-seo";
 import { registerAiDesignProPlugin } from "@nexpress-pro/ai-design";
 import { registerIndexNow } from "@/lib/indexnow";
+import { purgeContentCaches } from "@/lib/cdn-purge";
 import { cmsHooks, pluginRegistry } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { sendMail } from "@/lib/mailer";
@@ -21,6 +22,17 @@ import { PERFORNEXT_MANIFEST } from "./perfornext";
  * Pro paketlere import yalnızca bu dosyada bulunur.
  * Çağrı idempotenttir; eklentiler kendi kayıt bayraklarını tutar.
  */
+let cdnPurgeHook = false;
+
+/** Yayın/güncelleme sonrası CDN önbelleğini temizler (`CDN_PURGE_PROVIDER` tanımlıysa). Zamanlanmış yayını da kapsar. */
+function registerCdnPurge(): void {
+  if (cdnPurgeHook) return;
+  cdnPurgeHook = true;
+  cmsHooks.registerAction("content:afterPublish", "cms.cdnPurge", async ({ siteId, contentId, locale }) => {
+    await purgeContentCaches(siteId, { contentId, locale });
+  });
+}
+
 let agentMailHook = false;
 
 /** Talep oluşunca site iletişim adresine mektup. SMTP yoksa talep yine kaydolur. */
@@ -50,6 +62,7 @@ export function registerWorkspacePlugins(): void {
   pluginRegistry.register(PERFORNEXT_MANIFEST);
   installPluginGate();
   registerIndexNow();
+  registerCdnPurge();
   // Yayında içeriği dizinler; gömme çağrısı yanıttan sonra çalışır (kayıt akışını bekletmez)
   registerRagIndexing({ runAfterResponse: (task) => after(task) });
   registerAgentRequestMail();

@@ -2,7 +2,7 @@ import { getCmsContext } from "@nexpress/core";
 import { CmsDataPluginRepository } from "./cms/data-plugins";
 
 export * from "./cms/types";
-export type { DataPluginDto, DataPluginInput } from "./cms/data-plugins";
+export type { DataPluginDto, DataPluginInput, DeliveryDto, DeliveryStatus } from "./cms/data-plugins";
 export { invalidateSiteCache } from "./cms/site";
 
 /**

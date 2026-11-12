@@ -12,7 +12,7 @@ const head = "text-[11px] font-semibold uppercase tracking-wider text-muted-fore
  * Değerler `schemaAttributes._page` altına yazılır; "Site ayarı" seçili alanlar sitenin genel ayarını izler.
  */
 export function PageLookTab() {
-  const { pageOptions: o, setPageOptions, templateId } = useStudioInspector();
+  const { pageOptions: o, setPageOptions, templateId, memberTiers = [] } = useStudioInspector();
   const set = (patch: Partial<PageOptions>) => setPageOptions((prev) => ({ ...prev, ...patch }));
   return (
     <div className="space-y-4 text-[12px]">
@@ -37,6 +37,20 @@ export function PageLookTab() {
         ) : null}
         {o.header === "transparent" ? <p className="text-[11px] text-muted-foreground">Sayfanın ilk bölümü header'ın altına uzanır; okunur olması için zemin rengiyle uyumlu yazı rengini seçin.</p> : null}
       </div>
+
+      {memberTiers.length > 0 ? (
+        <div className={card}>
+          <div className={head}>Üyelik erişimi</div>
+          <label className="block">
+            Gereken kademe
+            <select aria-label="Gereken üyelik kademesi" value={o.memberTier} onChange={(e) => set({ memberTier: e.target.value })} className={select}>
+              <option value="">Tüm üyeler</option>
+              {memberTiers.map((t) => <option key={t.id} value={t.id}>{t.label} ve üstü</option>)}
+            </select>
+          </label>
+          <p className="text-[11px] text-muted-foreground">Yalnızca görünürlük &quot;Üyelere özel&quot; iken geçerlidir (Yayın sekmesi).</p>
+        </div>
+      ) : null}
 
       <div className={card}>
         <div className={head}>İçerik alanı</div>

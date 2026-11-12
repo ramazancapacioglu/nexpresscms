@@ -18,6 +18,8 @@ export interface PageOptions {
   /** İçerik alanının üst ve alt boşluğunu kaldırır (tam genişlik bantlar için). */
   flush: boolean;
   sidebar: PageSidebar;
+  /** `Üyelere özel` içerikte gereken üyelik kademesi (`general.membership.tiers` kimliği); boş = her üye. */
+  memberTier: string;
 }
 
 export const DEFAULT_PAGE_OPTIONS: PageOptions = {
@@ -28,6 +30,7 @@ export const DEFAULT_PAGE_OPTIONS: PageOptions = {
   hideTitle: false,
   flush: false,
   sidebar: "default",
+  memberTier: "",
 };
 
 const pick = <T extends string>(value: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(value as T) ? (value as T) : fallback);
@@ -46,6 +49,7 @@ export function readPageOptions(attrs: Attrs): PageOptions {
     hideTitle: raw.hideTitle === true,
     flush: raw.flush === true,
     sidebar: pick(raw.sidebar ?? legacySidebar, ["default", "none", "left", "right"] as const, "default"),
+    memberTier: typeof raw.memberTier === "string" && /^[a-z][a-z0-9_-]{1,19}$/.test(raw.memberTier) ? raw.memberTier : "",
   };
 }
 

@@ -17,6 +17,7 @@ export default async function AdminMembersPage() {
     email: m.email,
     name: m.name,
     status: m.status,
+    tier: m.tier,
     verified: m.emailVerifiedAt !== null,
     createdAt: m.createdAt.toISOString().slice(0, 10),
     lastLoginAt: m.lastLoginAt ? m.lastLoginAt.toISOString().slice(0, 10) : null,
