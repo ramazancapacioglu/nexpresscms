@@ -85,6 +85,8 @@ export interface ContentAccessCheckInput {
   visibility: ContentVisibility;
   accessPassword?: string;
   hasSession: boolean;
+  /** Geçerli ziyaretçi üyesi oturumu (panel oturumu değil): yalnızca üyelere özel içeriği açar. */
+  hasMemberSession?: boolean;
   hasValidPasswordToken: boolean;
   isDraftPreview?: boolean;
 }
@@ -102,7 +104,8 @@ export function evaluateContentAccess(input: ContentAccessCheckInput): ContentAc
     return { allowed: true, gate: "none" };
   }
   if (input.visibility === "members_only") {
-    return { allowed: false, gate: "members_only" };
+    // Ziyaretçi üyesi yalnızca üyelere özel içeriği açar (parola kapısı ve panel yetkisi ayrıdır)
+    return input.hasMemberSession ? { allowed: true, gate: "none" } : { allowed: false, gate: "members_only" };
   }
   const password = (input.accessPassword ?? "").trim();
   if (input.visibility === "password" || (input.status === "restricted" && password.length > 0)) {
@@ -112,7 +115,7 @@ export function evaluateContentAccess(input: ContentAccessCheckInput): ContentAc
     return { allowed: false, gate: "password" };
   }
   if (input.status === "restricted") {
-    return { allowed: false, gate: "members_only" };
+    return input.hasMemberSession ? { allowed: true, gate: "none" } : { allowed: false, gate: "members_only" };
   }
   return { allowed: true, gate: "none" };
 }

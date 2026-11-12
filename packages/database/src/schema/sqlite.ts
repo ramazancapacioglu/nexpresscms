@@ -799,6 +799,35 @@ export const sqliteDataPlugins = sqliteTable(
 );
 
 /**
+ * ZİYARETÇİ ÜYELERİ — `members_only` içeriği açan parolasız (e-posta bağlantılı) hesaplar. Panel kullanıcılarından ayrıdır
+ * (`users`). Yalnızca e-posta, ad ve onay zamanı tutulur (veri azaltma); silme gerçek silmedir.
+ */
+export const sqliteMembers = sqliteTable(
+  "members",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    email: text("email").notNull(),
+    name: text("name").default("").notNull(),
+    /** active | pending (e-posta doğrulanmadı) | disabled */
+    status: text("status").default("pending").notNull(),
+    emailVerifiedAt: integer("email_verified_at", { mode: "timestamp_ms" }),
+    /** Giriş bağlantısı sırası: yeni bağlantı/kullanım artırır (yalnızca en son bağlantı, tek kullanım). */
+    linkSeq: integer("link_seq").default(0).notNull(),
+    /** Oturum sürümü: çıkış-tümü, devre dışı bırakma ve silme çerezleri düşürür. */
+    sessionVersion: integer("session_version").default(0).notNull(),
+    /** Aydınlatma metni onayı (KVKK) */
+    consentAt: integer("consent_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    lastLoginAt: integer("last_login_at", { mode: "timestamp_ms" }),
+  },
+  (t) => [
+    index("members_site_id_idx").on(t.siteId),
+    uniqueIndex("members_site_email_uidx").on(t.siteId, t.email),
+  ]
+);
+
+/**
  * AJAN TALEPLERİ — yapay zeka ajanlarının MCP üzerinden bıraktığı teklif / destek / demo talepleri.
  * Kişisel veri içerir (e-posta, telefon): yönetici panelinden yönetilir, ön yüzde gösterilmez.
  */

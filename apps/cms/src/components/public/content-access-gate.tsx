@@ -20,6 +20,7 @@ export async function checkVisitorContentAccess(input: {
   visibility: ContentVisibility;
   accessPassword?: string;
   hasSession: boolean;
+  hasMemberSession?: boolean;
   isDraftPreview?: boolean;
 }): Promise<ContentAccessDecision> {
   const pwd = (input.accessPassword ?? "").trim();
@@ -40,6 +41,7 @@ export async function checkVisitorContentAccess(input: {
     visibility: input.visibility,
     accessPassword: pwd,
     hasSession: input.hasSession,
+    hasMemberSession: input.hasMemberSession,
     hasValidPasswordToken,
     isDraftPreview: input.isDraftPreview,
   });
@@ -58,8 +60,11 @@ export function ContentAccessGate({
   tokens,
   t,
   hasError,
+  memberLoginHref,
 }: {
   gate: "password" | "members_only";
+  /** Üyelik açıksa ziyaretçi üye girişi adresi; yoksa panel girişi gösterilir. */
+  memberLoginHref?: string;
   contentId: string;
   locale: string;
   slug: string;
@@ -127,7 +132,7 @@ export function ContentAccessGate({
       ) : (
         <div>
           <a
-            href={`/login?next=${encodeURIComponent(pagePath)}`}
+            href={memberLoginHref ?? `/login?next=${encodeURIComponent(pagePath)}`}
             style={{
               backgroundColor: tokens.colors.primary,
               color: tokens.colors.primaryForeground,
@@ -135,7 +140,7 @@ export function ContentAccessGate({
             }}
             className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold transition hover:opacity-95"
           >
-            {t("content.membersOnlyCta")}
+            {memberLoginHref ? t("content.membersOnlyMemberCta") : t("content.membersOnlyCta")}
           </a>
         </div>
       )}

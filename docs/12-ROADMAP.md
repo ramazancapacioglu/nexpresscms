@@ -106,3 +106,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - Yapıldı: `.nxplugin` (tür, taslak sayfa, imzalı webhook; `docs/27`). Kod eklentisi yükleme bilerek yok.
 - Kalan: eklenti ayar alanları ve çeviri paketi; `form.submitted` olayı (kişisel veri: ayrı onay ve alan seçimi gerekir); yeniden deneme kuyruğu ve teslimat günlüğü (şimdi yalnızca son sonuç); eklenti güncelleme akışında izin farkını gösterme; imzayı sunucuya `PLUGIN_TRUSTED_KEYS` yerine panelden yönetilen anahtar listesi; ziyaretçi CSS katkısı (kapsamlı, bütçe denetimli).
+
+
+## Ziyaretçi üyeliği (2026-11-12) — kalanlar
+
+- Yapıldı: parolasız üyelik (`docs/11` §7b). Kalan: üye başına içerik/rol ayrımı (şimdi tek düzey "üye"), ücretli/kademeli üyelik, üye profil alanları, "tüm cihazlardan çıkış", hız sınırının Redis'e taşınması, sosyal giriş, üye e-posta değiştirme, üyelere bülten/bildirim tercihleri ve üye girişi için header bağlantısı (şimdi gate ve `/uye/giris` adresi).

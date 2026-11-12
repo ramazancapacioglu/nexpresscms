@@ -38,7 +38,7 @@ test("sorgu: yalnızca izleme/sayfalama tarafsızdır; çıktıyı değiştirenl
 test("yol: dil önekli sayfalar; mağaza, arama, kampanya ve dosya uç noktaları dışarıda", () => {
   assert.notEqual(htmlCacheControl({ ...base, path: "/tr" }), null);
   assert.notEqual(htmlCacheControl({ ...base, path: "/en-gb/about" }), null);
-  for (const p of ["/tr/magaza", "/tr/magaza/sepet", "/tr/ara", "/tr/kampanya/x", "/tr/llms.txt", "/tr/ai-sitemap.json", "/admin", "/api/x", "/api", "/og", "/sitemap.xml"]) assert.equal(htmlCacheControl({ ...base, path: p }), null, p);
+  for (const p of ["/tr/magaza", "/tr/magaza/sepet", "/tr/ara", "/tr/kampanya/x", "/tr/uye", "/tr/uye/giris", "/tr/llms.txt", "/tr/ai-sitemap.json", "/admin", "/api/x", "/api", "/og", "/sitemap.xml"]) assert.equal(htmlCacheControl({ ...base, path: p }), null, p);
   assert.notEqual(htmlCacheControl({ ...base, path: "/tr/kategori/rehber" }), null);
 });
 

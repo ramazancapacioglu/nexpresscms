@@ -9,6 +9,7 @@ import {
   verifySessionToken,
 } from "@nexpress/core";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
+import { MEMBER_SESSION_COOKIE, resolveMemberCookie } from "@/lib/members";
 
 /**
  * ?format=md ve Accept: text/markdown isteklerine veritabanındaki
@@ -56,11 +57,13 @@ export async function GET(request: NextRequest) {
         request.cookies.get(contentAccessCookieName(content.id))?.value
       )
     : false;
+  const hasMemberSession = Boolean(await resolveMemberCookie(siteId, request.cookies.get(MEMBER_SESSION_COOKIE)?.value));
   const access = evaluateContentAccess({
     status: content.status,
     visibility: pub.visibility,
     accessPassword: pub.accessPassword,
     hasSession,
+    hasMemberSession,
     hasValidPasswordToken,
   });
 

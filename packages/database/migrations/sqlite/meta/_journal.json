@@ -155,6 +155,13 @@
       "when": 1794495708792,
       "tag": "0021_aromatic_lord_tyger",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1794496581427,
+      "tag": "0022_old_warbound",
+      "breakpoints": true
     }
   ]
 }

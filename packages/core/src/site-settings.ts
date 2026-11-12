@@ -1,5 +1,6 @@
 import { sanitizeInstalledFonts, type InstalledFont } from "./fonts";
 import { sanitizeContentTypes, type CustomContentType } from "./content-types";
+import { DEFAULT_MEMBERSHIP, sanitizeMembership, type MembershipSettings } from "./membership";
 import { DEFAULT_COOKIE_CONSENT, sanitizeCookieConsent, type CookieConsentSettings } from "./consent";
 import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
@@ -262,6 +263,8 @@ export interface GeneralSettings {
   cookieConsent?: CookieConsentSettings;
   /** Yöneticinin tanımladığı özel içerik türleri ve alanları (`content-types.ts`). */
   contentTypes?: CustomContentType[];
+  /** Ziyaretçi üyeliği: kayıt politikası ve aydınlatma bağlantısı. Varsayılan kapalı. */
+  membership?: MembershipSettings;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -275,6 +278,7 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   chromeSnapshot: null,
   themeChrome: {},
   cookieConsent: DEFAULT_COOKIE_CONSENT,
+  membership: DEFAULT_MEMBERSHIP,
   contentTypes: [],
 };
 
@@ -363,6 +367,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       chromeSnapshot: sanitizeChromeSnapshot(generalRaw.chromeSnapshot),
       themeChrome: sanitizeThemeChrome(generalRaw.themeChrome),
       cookieConsent: sanitizeCookieConsent(generalRaw.cookieConsent),
+      membership: sanitizeMembership(generalRaw.membership),
       contentTypes: sanitizeContentTypes(generalRaw.contentTypes),
     },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),

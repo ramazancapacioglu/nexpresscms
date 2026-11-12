@@ -23,7 +23,7 @@ const NEUTRAL_PARAMS = new Set(["sayfa", "gclid", "fbclid", "msclkid", "ref"]);
 const isNeutralParam = (key: string): boolean => NEUTRAL_PARAMS.has(key) || key.startsWith("utm_");
 
 /** Önbelleğe girmeyecek yollar: mağaza, arama, dosya benzeri uç noktalar. */
-const SKIP_PATH = /^\/(?:api|og)(?:\/|$)|^\/[a-z]{2,3}(?:-[a-z0-9]{2,8})?\/(?:magaza|ara|kampanya)(?:\/|$)|\.[a-z0-9]{2,5}$/i;
+const SKIP_PATH = /^\/(?:api|og)(?:\/|$)|^\/[a-z]{2,3}(?:-[a-z0-9]{2,8})?\/(?:magaza|ara|kampanya|uye)(?:\/|$)|\.[a-z0-9]{2,5}$/i;
 const PAGE_PATH = /^\/[a-z]{2,3}(?:-[a-z0-9]{2,8})?(?:\/|$)/;
 
 export const MAX_HTML_CACHE_SECONDS = 86_400;

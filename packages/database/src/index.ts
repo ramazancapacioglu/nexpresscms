@@ -24,6 +24,7 @@ export * from "./site-identity-repository";
 export * from "./site-reset-repository";
 export * from "./sitemap-repository";
 export * from "./user-repository";
+export * from "./member-repository";
 export * from "./schema/pg";
 export * from "./schema/sqlite";
 export { pushSchema } from "./scripts/push";

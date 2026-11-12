@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Ziyaretçi üyeliği (parolasız, e-posta bağlantılı)
+- ✅ Kararlar (kullanıcıyla): giriş **e-posta bağlantısı** (parola yok), kayıt politikası **yönetici ayarı** (kapalı / açık / davetle; varsayılan kapalı).
+- ✅ Çekirdek: `membership.ts` (ayar, e-posta, güvenli dönüş adresi), `member-token.ts` (bağlantı + oturum belirteci, alan ayrımlı HMAC), `content-access` üye kuralı. Veritabanı: `members` tablosu (iki motor, göç `0022`), `MemberRepository` (atomik tek kullanım, kiracı kapsamlı).
+- ✅ Ziyaretçi: `/uye/giris`, `/uye/dogrula` (GET tüketmez), `/uye` (çıkış, veri indir, hesabı sil), `/api/members/*`; içerik kapısı üye girişine yönlenir (üyelik açıksa); `?format=md` üyeye açılır. i18n `member.*` (tr/en).
+- ✅ Yönetim: `/admin/members` (politika, aydınlatma adresi, davet, devre dışı, silme; e-posta kurulu değilse uyarı ve açma engeli).
+- 🐞 Testler iki gerçek hata yakaladı: üye kimliğindeki `_` belirteç biçimine uymuyordu; `no-referrer` sayfası `Origin: null` gönderip çapraz kaynak denetiminde 500 üretiyordu (denetim artık patlamaz, `referrer: origin`).
+- 🧪 `membership.test.ts`, `members.test.ts` (depo, yarış, kiracı ayrımı), `content-access.test.ts`, `html-cache.test.ts`. Tarayıcıda (SMTP yakalayıcıyla): kapı → kayıt → e-posta → GET tüketmez → POST ile giriş (HttpOnly Lax çerez) → içerik açıldı → bağlantı yeniden kullanılamadı → hesap/veri indirme → markdown üyeye açık, anonime 403 → panele giremez → çıkış → devre dışı bırakınca oturum düştü → hız sınırı → kapalı mod → rıza olmadan/çapraz kaynak reddedildi.
+
 ### [2026-11-12] — Dışarıdan eklenti yükleme: bildirimsel veri eklentileri (.nxplugin)
 - ✅ Karar: sunucuda yüklenen kodu çalıştırmak yerine **kod içermeyen veri eklentisi** (`.nxtheme` ile aynı güven modeli). Sözleşme `docs/27`.
 - ✅ Çekirdek (`packages/core/src/data-plugin.ts`, saf): manifest, webhook (https/443/alan adı), özel tür ve webhook doğrulama, Ed25519 imza (`verifyPackageSignature`; `PLUGIN_TRUSTED_KEYS`), HMAC webhook imzası, izin özeti. `CustomContentType.plugin` (eklentiye ait tür işareti).

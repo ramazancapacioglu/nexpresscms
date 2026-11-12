@@ -304,6 +304,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/members",
+        label: "Ziyaretçi üyeleri",
+        icon: UsersIcon,
+        count: "Parolasız",
+        shortcut: "G Ü",
+        adminOnly: true,
+      },
+      {
         href: "/admin/users",
         label: "Kullanıcılar & Roller",
         icon: UsersIcon,
@@ -404,7 +412,7 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
       ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
-  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
+  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/members", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
 ];
 
 /** Yöneticinin tanımladığı özel türleri "İçerik" grubuna ekler (her tür kendi listesine gider). */

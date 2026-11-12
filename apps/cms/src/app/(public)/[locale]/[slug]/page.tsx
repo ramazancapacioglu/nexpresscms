@@ -27,6 +27,7 @@ import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
 import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
 import { authorSlug } from "@/lib/author-slug";
+import { getMembership, getVisitorMember } from "@/lib/members";
 
 /** Sayfa başlığı zaten h1 ise içerikteki vitrin (hero) başlığı h2'ye düşer: sayfada tek h1 kalır (SEO ve erişilebilirlik). */
 function demoteHeroTitles<T extends { type: string; props: Record<string, unknown>; children?: T[] }>(nodes: T[]): T[] {
@@ -229,8 +230,10 @@ export default async function PublicDynamicContentPage({
     visibility: pub.visibility,
     accessPassword: pub.accessPassword,
     hasSession: canEdit,
+    hasMemberSession: Boolean(await getVisitorMember()),
     isDraftPreview: Boolean(draft),
   });
+  const memberMode = (await getMembership(siteId)).mode;
   // Özel içerik türü: alan değerleri tanıma göre okunur (`_fields`); tablo ziyaretçiye `custom_fields` bloğu olarak basılır
   const customDef = findContentType(types, content.type);
   const customFields = displayFields(customDef, content.schemaAttributes, locale);
@@ -255,6 +258,7 @@ export default async function PublicDynamicContentPage({
           tokens={tokens}
           t={t}
           hasError={sp.pwd === "error"}
+          memberLoginHref={memberMode !== "closed" ? `${lb}/uye/giris?next=${encodeURIComponent(`${lb}${cPath}`)}` : undefined}
         />
       </>
     );
