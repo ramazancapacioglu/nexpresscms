@@ -16,7 +16,11 @@ cd "$ROOT_DIR"
 echo -e "${CYAN}=== NexPress CMS Güncelleme Başlatılıyor ===${NC}"
 
 echo -e "${YELLOW}[1/5] Git deposundan son değişiklikler çekiliyor...${NC}"
-git pull
+# Panelin ürettiği .htaccess izlenmez. Eski bir sürüm onu depoya almışsa,
+# sunucudaki kopya pull'u "üzerine yazılır" diye keser. Silmek güvenli: nginx okumaz,
+# sonraki kalıcı bağlantı kaydı dosyayı yeniden yazar.
+rm -f apps/cms/public/.htaccess
+git pull --ff-only
 
 echo -e "${YELLOW}[2/5] Bağımlılıklar güncelleniyor...${NC}"
 pnpm install --frozen-lockfile || pnpm install

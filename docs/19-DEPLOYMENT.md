@@ -82,7 +82,7 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d alanadiniz.com
 ```
 
-ileriseo.com nginx ile Node'a vekil eder. Panelde kalıcı bağlantı kaydı `public/.htaccess` yazar; nginx bu dosyayı uygulamaz. 404 bu kayıttan sonra da sürerse kaynak vekil veya uygulama rotasıdır. Apache önünde dosya `HTACCESS_PATH` ile belge köküne alınabilir.
+ileriseo.com nginx ile Node'a vekil eder. Panelde kalıcı bağlantı kaydı `apps/cms/public/.htaccess` yazar; bu dosya depoya girmez (`**/public/.htaccess`). Güncelleme betiği pull öncesi onu siler, yoksa sunucudaki kopya `git pull`'u keser. Nginx bu dosyayı uygulamaz. 404 bu kayıttan sonra da sürerse kaynak vekil veya uygulama rotasıdır. Apache önünde dosya `HTACCESS_PATH` ile belge köküne alınabilir.
 
 ### E) 1-Tık Güncelleme (Update Script)
 

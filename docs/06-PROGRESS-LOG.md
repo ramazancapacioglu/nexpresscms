@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Üretilen `.htaccess` depoya girmesin
+- Kalıcı bağlantı kaydı `apps/cms/public/.htaccess` yazar. Kök `.gitignore` yalnızca `public/.htaccess` diyordu; paket yolu eşleşmediği için dosya `main`'e girdi. Sunucuda aynı yol zaten vardı, `git pull` "üzerine yazılır" diye durdu ve canlı aktarım 4 saniyede düştü (göç ve derleme başlamadı).
+- `**/public/.htaccess` ve `.claude/` yok sayılır. Dosya dizinden çıkarıldı. `scripts/update-host.sh` pull öncesi bu dosyayı siler (`--ff-only`). Nginx dosyayı okumaz; sonraki panel kaydı yeniden üretir.
+
 ### [2026-11-12] — Küçük borçların kapatılması
 - ✅ **Footer alt çubuk:** sosyal bağlantılar (https) ve alt çubuk menüsü (`docs/03`).
 - ✅ **CDN temizleme:** Cloudflare ya da imzalı webhook; `content:afterPublish` kancasında, zamanlanmış yayın ve yayından kalkma dahil; 1,5 sn birleştirme, 30'luk parçalama, hata bildirimi (`packages/core/src/cdn-purge.ts`, `lib/cdn-purge.ts`).

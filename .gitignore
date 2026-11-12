@@ -46,5 +46,8 @@ docs/kadence-referans-eklentiler/
 tools/wp-reference/wp-data/
 apps/cms/data/media/
 
-# Kalıcı bağlantı kaydı çalışma anında yazar; depoda durmaz
-public/.htaccess
+# Kalıcı bağlantı kaydı çalışma anında yazar; depoda durmaz (paket içindeki public de)
+**/public/.htaccess
+
+# Claude yerel çalışma kopyası (node_modules içerir)
+.claude/
