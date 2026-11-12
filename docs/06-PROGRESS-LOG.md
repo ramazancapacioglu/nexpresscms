@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Ziyaretçi HTML önbelleği: çalışma zamanı ve güvenli kural
+- ✅ Eski kural derleme zamanında okunuyor ve yalnızca `/tr` ile `/tr/{slug}` yollarını eşliyordu: ön eksiz (tek dil) adreslerde **hiç çalışmıyordu**. Yerine `packages/core/src/html-cache.ts` (`htmlCacheControl`) ve `middleware.ts` kuralı geldi: `PUBLIC_CACHE_SECONDS` çalışma zamanında okunur, tüm dillerde ve ön eksiz adreslerde çalışır.
+- ✅ Güvenlik: `nx_*` çerezi (oturum, çerez onayı, içerik parolası, önizleme) taşıyan, çıktıyı değiştiren sorgu parametresi içeren, `utm_source` (yapay zeka yönlendirme izleme), mağaza/arama/kampanya/dosya yollarındaki istekler ve noindex siteler asla `public` işaretlenmez.
+- ✅ `scripts/nginx-nexpress.conf` sonuna isteğe bağlı nginx `proxy_cache` bloğu (çerez atlama, `stale-while-revalidate`, `X-Cache-Status`).
+- 🧪 `html-cache.test.ts`; üretim derlemesinde `PUBLIC_CACHE_SECONDS=60` ile başlıklar yol yol doğrulandı (ana sayfa/slug/`?sayfa=2` public; çerezli, `?q=`, `utm_source`, `/magaza`, `/admin` özel).
+- ⚠️ CDN isabeti uygulamaya ulaşmaz: bot/yapay zeka telemetrisi eksik sayılır; 404 yanıtları da N sn önbellekte kalır.
+
 ### [2026-11-12] — Roller ve izinler (author, contributor + izin matrisi)
 - ✅ `packages/core/src/permissions.ts`: `USER_ROLES` (admin, editor, author, contributor), `CAPABILITIES`, `ROLE_CAPABILITIES`, `roleCan`, `isLimitedRole`, `canOpenAdminPath`, `contentOwnerId`, `contentAccess`. `UserRole` genişledi; **oturum belirteci doğrulayıcısı eski iki rolü sabit yazıyordu**, `USER_ROLE_IDS` ile düzeltildi (regresyon testi). DB'de rol sütunu düz metin: göç yok.
 - ✅ Sunucu: `requireUser({ can })`; `saveContentAction` izne bağlı, sahiplik ve yayın yetkisi sunucuda (katkıcı → taslak, yazar yalnızca kendi içeriği; yalnızca sayfa/yazı/özel tür). İçerik sahibi `_ownerId`. Sınırlı roller için middleware yol beyaz listesi, `/admin/contents` yalnızca kendi içerik listesini istemciye verir, API kapıları (`panel.full`, `media.upload`). Rol değişince oturumlar kapanır.

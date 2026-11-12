@@ -4,6 +4,7 @@ import { sanitizePermalinkStructure, stripPermalinkPrefix, type PermalinkStructu
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
 import { canOpenAdminPath, isLimitedRole } from "@nexpress/core/permissions";
+import { htmlCacheControl } from "@nexpress/core/html-cache";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
@@ -171,6 +172,18 @@ export async function middleware(request: NextRequest) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  // Paylaşımlı (CDN/vekil) HTML önbelleği: çalışma zamanında `PUBLIC_CACHE_SECONDS`; yalnızca herkese aynı çıktı veren istekler
+  if (!previewing && !searchParams.has("nx_draft")) {
+    const cacheControl = htmlCacheControl({
+      method: request.method,
+      path: internalPath,
+      searchParams,
+      cookieNames: request.cookies.getAll().map((c) => c.name),
+      ttlSeconds: Number(process.env.PUBLIC_CACHE_SECONDS ?? 0),
+    });
+    // Kapalı siteler (noindex) paylaşımlı önbelleğe girmez: kapı kararı değişince bayat kopya kalmasın
+    if (cacheControl && indexing) response.headers.set("Cache-Control", cacheControl);
+  }
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
   if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);

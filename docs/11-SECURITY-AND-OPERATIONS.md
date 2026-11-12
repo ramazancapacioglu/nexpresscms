@@ -67,7 +67,7 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 | `REQUIRE_ADMIN_2FA` | `1` ise iki adımlı doğrulaması olmayan yönetici yalnızca `/admin/profile` ve kurulum eylemlerine erişir (diğer admin sayfaları ve eylemleri profile yönlendirir); editörleri etkilemez |
 | `SMTP_URL` | form e-postaları için yedek SMTP bağlantısı (`smtp://kullanici:parola@sunucu:587`); panelden SMTP açıksa o kullanılır |
 | `MEDIA_DIR` | yüklenen görseller ve türevleri (kalıcı birim; varsayılan `./data/media`) |
-| `PUBLIC_CACHE_SECONDS` | ziyaretçi HTML'i için CDN `s-maxage` (0 = kapalı; derlemede okunur) |
+| `PUBLIC_CACHE_SECONDS` | ziyaretçi HTML'i için CDN `s-maxage` (0 = kapalı; **çalışma zamanında** okunur, yeniden başlatma yeter; en çok 86400) |
 
 ## 7a. Perfornext
 

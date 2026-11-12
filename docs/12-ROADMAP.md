@@ -96,3 +96,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - Yapıldı: satır stilleri (zemin, boşluk, ayraç, genişlik), alt çubuk düzeni, `{year}`/`{site}`, "Başa dön".
 - Kalan: alt çubukta sosyal simge ve menü yuvası; üst satır için ayrı sütun düzeni (şimdi yalnızca çağrı bandı); satır başına arka plan görseli/degrade; mobilde sütun sırası seçimi; yönetim önizlemesinde yer tutucuların açılmış hali.
+
+## Önbellek (2026-11-12) — kalanlar
+
+- Yapıldı: çalışma zamanlı, çerez/sorgu duyarlı HTML `s-maxage` (`docs/04` §6).
+- Kalan: yayında CDN/nginx temizleme (purge) bağlantısı (şimdi yalnızca TTL ile bayatlar); 404/yönlendirme yanıtları için ayrı (kısa) TTL; çok örnekli kurulumda ortak veri önbelleği (Redis); kök düzenin `headers()` okuması yüzünden sayfaların hâlâ dinamik üretilmesi (kaynakta ISR için kiracı kimliğinin başlıktan ayrılması gerekir).
