@@ -11,7 +11,7 @@ import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
-import { BUILT_IN_TYPE_IDS, findContentType, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
+import { BUILT_IN_TYPE_IDS, contentAccess, contentOwnerId, findContentType, roleCan, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -147,14 +147,30 @@ export async function saveContentAction(input: {
   /** Düzenlenen dil; etkin diller dışındaki değer varsayılan dile düşer */
   locale?: string;
 }) {
-  const session = await requireUser({ audit: "cms.saveContent" });
+  // İzne bağlı kapı: editör/yönetici her içeriği; yazar ve katkıcı yalnızca kendi içeriğini yazar (aşağıdaki sahiplik denetimi)
+  const session = await requireUser({ can: "content.create", audit: "cms.saveContent" });
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
   const locale = input.locale && site?.supportedLocales.includes(input.locale) ? input.locale : (site?.defaultLocale ?? "tr");
 
-  if (input.status === "scheduled") {
+  // Sahiplik ve yayın yetkisi. Sınırlı roller: yalnızca sayfa/yazı/özel tür; başkasının içeriği düzenlenemez; yayın yetkisi yoksa taslak
+  let existing: Awaited<ReturnType<typeof repo.listContents>>[number] | null = null;
+  if (input.contentId) {
+    const own = (await repo.listContents({ locale })).find((c) => c.contentId === input.contentId);
+    existing = own ?? (locale !== (site?.defaultLocale ?? "tr") ? ((await repo.listContents({ locale: site?.defaultLocale ?? "tr" })).find((c) => c.contentId === input.contentId) ?? null) : null);
+  }
+  let status = input.status ?? "published";
+  if (!roleCan(session.role, "content.editAny")) {
+    if (input.contentId && !existing) return { ok: false as const, error: "Bu içeriğe erişiminiz yok." };
+    if (input.type !== "page" && input.type !== "post" && (BUILT_IN_TYPE_IDS as readonly string[]).includes(input.type)) return { ok: false as const, error: "Bu içerik türünü oluşturma yetkiniz yok." };
+    const access = contentAccess(session.role, session.sub, existing);
+    if (!access.edit) return { ok: false as const, error: "Bu içeriği düzenleme yetkiniz yok." };
+    if (!access.publish) status = "draft";
+  }
+
+  if (status === "scheduled") {
     // Tarihsiz/geçmiş zamanlama sonsuza dek bekler ya da hemen yayınlanır: kayıtta reddedilir
     const tz = resolveSiteSettings(site?.settings).general.timezone;
     const at = resolvePublishing(input.schemaAttributes).scheduledAt;
@@ -170,17 +186,23 @@ export async function saveContentAction(input: {
     if (!def) return { ok: false as const, error: "Bilinmeyen içerik türü." };
     const { values, errors } = sanitizeFieldValues(def, (attrs as { _fields?: unknown } | undefined)?._fields);
     const problems = Object.values(errors);
-    if (input.status !== "draft" && problems.length > 0) return { ok: false as const, error: `${problems[0]}${problems.length > 1 ? ` (+${problems.length - 1} alan daha)` : ""}` };
+    if (status !== "draft" && problems.length > 0) return { ok: false as const, error: `${problems[0]}${problems.length > 1 ? ` (+${problems.length - 1} alan daha)` : ""}` };
     attrs = writeFieldValues(attrs, values);
   } else if (attrs && "_fields" in attrs) {
     attrs = writeFieldValues(attrs, {});
   }
 
+  // Sahip kaydı yalnızca sunucuda yazılır: istemciden gelen değer yok sayılır, var olan sahip korunur, yeni içerikte yazan olur
+  const ownerId = existing ? contentOwnerId(existing.schemaAttributes) : session.sub;
+  attrs = { ...(attrs ?? {}) };
+  delete (attrs as Record<string, unknown>)._ownerId;
+  if (ownerId) (attrs as Record<string, unknown>)._ownerId = ownerId;
+
   const res = await repo.saveContent({
     actor: { id: session.sub, email: session.email },
     contentId: input.contentId,
     type: input.type,
-    status: input.status ?? "published",
+    status,
     importanceScore: input.importanceScore,
     schemaType: input.schemaType,
     schemaAttributes: attrs,

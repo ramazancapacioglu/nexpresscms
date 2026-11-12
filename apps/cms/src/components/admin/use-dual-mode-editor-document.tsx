@@ -11,6 +11,8 @@ export interface DualModeEditorClientProps {
   initialSelectedId?: string;
   initialContextType?: ContentType;
   /** Düzenlenen içeriğin özel türü (yerleşik türlerde yok): "Alanlar" sekmesini açar. */
+  /** false: kullanıcı yayınlayamaz (katkıcı); yalnızca taslak kaydedilir. */
+  canPublish?: boolean;
   customType?: CustomContentType;
   /** Sitedeki tüm özel türler (liste bloğu kaynağı seçimi için). */
   customTypes?: CustomContentType[];

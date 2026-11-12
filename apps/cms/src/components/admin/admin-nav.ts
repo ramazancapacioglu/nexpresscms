@@ -1,4 +1,6 @@
 import type { ComponentType } from "react";
+import { isLimitedRole } from "@nexpress/core/permissions";
+import type { UserRole } from "@nexpress/core/session";
 import {
   LayoutGrid,
   Palette,
@@ -45,6 +47,8 @@ export interface NavItem {
   shortcut: string;
   count?: string;
   adminOnly?: boolean;
+  /** Sınırlı roller (yazar, katkıcı) de görür. Varsayılan: yalnızca tam panel rolleri. */
+  limited?: boolean;
   /** false: kenar çubuğunda görünmez (üst sekme çubuğundan erişilir) ama komut paletinde ve izlerde kalır */
   sidebar?: boolean;
 }
@@ -72,6 +76,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "İçerik & Yayın",
     items: [
       {
+        href: "/admin/my-content",
+        label: "İçeriklerim",
+        icon: FileText,
+        count: "Kendi yazılarım",
+        shortcut: "G M",
+        limited: true,
+      },
+      {
         href: "/admin/pages",
         label: "Sayfalar",
         icon: FileText,
@@ -91,6 +103,7 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: Sparkles,
         count: "Editör",
         shortcut: "G C",
+        limited: true,
       },
       {
         href: "/admin/taxonomies",
@@ -113,6 +126,7 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: ImageIcon,
         count: "Alt/LCP",
         shortcut: "G I",
+        limited: true,
       },
       {
         href: "/admin/comments",
@@ -355,9 +369,16 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
   hrefs.map((h) => ({ ...ITEM_BY_HREF.get(h)!, ...overrides[h] }));
 
 /** Panel menüsü: az grup, ilgili sayfalar tek çatıda. SEO ve Görünüm tek öğedir; alt sayfalar üstteki sekme çubuğundadır. */
+/** Menü ve komut paleti için tek kural: yönetici-yalnız öğeler ve sınırlı rollere kapalı öğeler gizlenir. */
+export function navVisibleForRole(item: Pick<NavItem, "adminOnly" | "limited" | "href">, role: UserRole | undefined): boolean {
+  if (item.adminOnly && role !== "admin") return false;
+  if (isLimitedRole(role)) return item.limited === true;
+  return item.href !== "/admin/my-content";
+}
+
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
-  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
+  { label: "İçerik", items: pick(["/admin/my-content", "/admin/pages", "/admin/posts", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {
     label: "Tasarım",

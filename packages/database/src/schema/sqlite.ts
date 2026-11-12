@@ -661,7 +661,7 @@ export const sqliteUsers = sqliteTable(
     email: text("email").notNull(),
     name: text("name").default("").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role").$type<"admin" | "editor">().default("editor").notNull(),
+    role: text("role").$type<"admin" | "editor" | "author" | "contributor">().default("editor").notNull(),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     lastLoginAt: integer("last_login_at", { mode: "timestamp" }),
     sessionVersion: integer("session_version").default(0).notNull(),

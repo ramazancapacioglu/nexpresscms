@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Roller ve izinler (author, contributor + izin matrisi)
+- ✅ `packages/core/src/permissions.ts`: `USER_ROLES` (admin, editor, author, contributor), `CAPABILITIES`, `ROLE_CAPABILITIES`, `roleCan`, `isLimitedRole`, `canOpenAdminPath`, `contentOwnerId`, `contentAccess`. `UserRole` genişledi; **oturum belirteci doğrulayıcısı eski iki rolü sabit yazıyordu**, `USER_ROLE_IDS` ile düzeltildi (regresyon testi). DB'de rol sütunu düz metin: göç yok.
+- ✅ Sunucu: `requireUser({ can })`; `saveContentAction` izne bağlı, sahiplik ve yayın yetkisi sunucuda (katkıcı → taslak, yazar yalnızca kendi içeriği; yalnızca sayfa/yazı/özel tür). İçerik sahibi `_ownerId`. Sınırlı roller için middleware yol beyaz listesi, `/admin/contents` yalnızca kendi içerik listesini istemciye verir, API kapıları (`panel.full`, `media.upload`). Rol değişince oturumlar kapanır.
+- ✅ Arayüz: `/admin/my-content` ("İçeriklerim"), `/admin/users/roles` izin matrisi, kullanıcı formunda dört rol, sınırlı rollerde menü/komut paleti süzülür ve eklenti kenar yuvası gizlenir, katkıcıda "Yayınla" düğmesi yok.
+- 🧪 `permissions.test.ts`, `auth.test.ts` (rol belirteci). Tarayıcıda: yazar/katkıcı girişi, yetkisiz yollar → içeriklerim, katkıcı yazısı taslak (ziyaretçide 404), yazar yazısı yayında, başkasının içeriği/şablon/ürün editörü reddedildi, API 403. Üretim derlemesinde bütçe, `css:check` ve `seo-contract` geçti.
+
 ### [2026-11-12] — Özel tür arşiv sayfaları
 - ✅ `CustomContentType` yeni alanlar: `archive`, `archiveSlug`, `archiveIntro`. Adres boşsa çoğul addan türer (`termSlug`); sistem rotaları (`RESERVED_ARCHIVE_SLUGS`: kategori, etiket, magaza, ara, yazar, kampanya…), başka türün adresi ya da geçersiz biçim reddedilir (önce çoğul ada düşer, o da çakışırsa arşiv kapanır; `droppedArchives` kayıtta yöneticiye bildirir). Eski kayıtlar kapalı kalır.
 - ✅ Ziyaretçi: `/{arşiv-adresi}` (`[slug]` rotasında, **aynı adda içerik yoksa**) sayfalı (`?sayfa=N`, 12 kayıt) liste; tek h1, tanıtım metni, `CollectionPage` + `ItemList` JSON-LD, kanonik adres, boş arşiv `noindex`. Bileşen `components/public/type-archive.tsx`. JS yok.

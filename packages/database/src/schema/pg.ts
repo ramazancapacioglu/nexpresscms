@@ -668,7 +668,7 @@ export const pgUsers = pgTable(
     email: text("email").notNull(),
     name: text("name").default("").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role").$type<"admin" | "editor">().default("editor").notNull(),
+    role: text("role").$type<"admin" | "editor" | "author" | "contributor">().default("editor").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     lastLoginAt: timestamp("last_login_at"),
     sessionVersion: integer("session_version").default(0).notNull(),

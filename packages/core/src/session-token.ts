@@ -2,7 +2,9 @@
  * Oturum belirteci: `base64url(payload).base64url(hmac)`.
  * Yalnızca Web Crypto kullanır; middleware (edge) ve Node'da aynı kodla çalışır.
  */
-export type UserRole = "admin" | "editor";
+/** Geçerli rol kimlikleri (belirteç doğrulaması bunu kullanır; rol listesi ve izinler `permissions.ts`). */
+export const USER_ROLE_IDS = ["admin", "editor", "author", "contributor"] as const;
+export type UserRole = (typeof USER_ROLE_IDS)[number];
 
 export interface SessionPayload {
   sub: string;
@@ -60,7 +62,7 @@ export async function verifySessionToken(
     if (!valid) return null;
     const payload = JSON.parse(new TextDecoder().decode(fromBase64Url(body))) as SessionPayload;
     if (typeof payload.exp !== "number" || payload.exp <= nowSeconds) return null;
-    if (payload.role !== "admin" && payload.role !== "editor") return null;
+    if (!(USER_ROLE_IDS as readonly string[]).includes(payload.role)) return null;
     if (!Number.isInteger(payload.sv)) return null;
     return payload;
   } catch {

@@ -20,6 +20,7 @@ export * from "./content-types";
 export * from "./page-options";
 export * from "./taxonomy";
 export * from "./session-token";
+export * from "./permissions";
 export * from "./json-dates";
 export * from "./ai-bots";
 export * from "./robots";

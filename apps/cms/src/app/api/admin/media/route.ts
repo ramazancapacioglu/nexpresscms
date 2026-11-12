@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMediaFolderRepository, getScopedRepository } from "@nexpress/database";
+import { roleCan } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -8,6 +9,7 @@ export const runtime = "nodejs";
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ ok: false, error: "Oturum gerekli." }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  if (!roleCan(session.role, "media.upload")) return NextResponse.json({ ok: false, error: "Yetkiniz yok." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const [assets, folders] = await Promise.all([getScopedRepository(session.siteId).listMediaAssets(), getMediaFolderRepository(session.siteId).list()]);
   return NextResponse.json({ ok: true, assets, folders }, { headers: { "Cache-Control": "no-store" } });
 }

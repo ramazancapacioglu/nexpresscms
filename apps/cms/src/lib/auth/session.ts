@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifySessionToken, type SessionPayload, type UserRole } from "@nexpress/core/session";
+import { roleCan, type Capability } from "@nexpress/core/permissions";
 import { getUserRepository } from "@nexpress/database";
 import { isUiLocale } from "@nexpress/i18n";
 import { recordAudit } from "@/lib/audit";
@@ -34,7 +35,10 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
 });
 
 export interface GuardOptions {
+  /** Varsayılan `admin` ve `editor`. Sınırlı roller (yazar, katkıcı) yalnızca `can` ile açıkça izin verilen eylemlere girer. */
   roles?: UserRole[];
+  /** Rol yerine izne bağlı kapı: rolün bu izni varsa geçer (`roles` yok sayılır). */
+  can?: Capability;
   /** Denetim günlüğüne yazılacak eylem adı (örn. `cms.saveContent`) */
   audit?: string;
   /** Yalnızca profil/2FA kurulum eylemleri: zorunlu 2FA'sı olup kurmamış yönetici bunlara erişebilir */
@@ -50,10 +54,10 @@ export const mustSetUpTwoFactor = (session: Pick<SessionUser, "role" | "twoFacto
  * `audit` verilirse yetkilendirilen çağrı günlüğe yazılır (sonuçtan bağımsız, çağrı kaydıdır).
  */
 export async function requireUser(options: GuardOptions | UserRole[] = {}): Promise<SessionUser> {
-  const { roles = ["admin", "editor"], audit, allowWithout2fa = false } = Array.isArray(options) ? { roles: options } : options;
+  const { roles = ["admin", "editor"], can, audit, allowWithout2fa = false } = Array.isArray(options) ? { roles: options, can: undefined, audit: undefined, allowWithout2fa: false } : options;
   const session = await getSession();
   if (!session) redirect("/login");
-  if (!roles.includes(session.role)) throw new Error("Bu işlem için yetkiniz yok.");
+  if (can ? !roleCan(session.role, can) : !roles.includes(session.role)) throw new Error("Bu işlem için yetkiniz yok.");
   if (!allowWithout2fa && mustSetUpTwoFactor(session)) redirect("/admin/profile?2fa=required");
   if (audit) await recordAudit({ id: session.sub, email: session.email }, audit);
   return session;

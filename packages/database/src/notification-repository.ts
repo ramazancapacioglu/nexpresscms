@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, like, lt, notInArray, or, isNull } from "drizzle-orm";
-import { canSeeNotification, getCmsContext, NOTIFICATION_DEFAULT_WINDOW_MS, SYSTEM_KEY_PREFIX, type DbDialect, type NotificationInput, type NotificationSeverity } from "@nexpress/core";
+import { canSeeNotification, getCmsContext, NOTIFICATION_DEFAULT_WINDOW_MS, SYSTEM_KEY_PREFIX, type DbDialect, type NotificationInput, type NotificationSeverity, type UserRole } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
 
@@ -18,7 +18,7 @@ export interface NotificationDto {
   updatedAt: Date;
 }
 
-type Role = "admin" | "editor";
+type Role = UserRole;
 const VISIBLE_DAYS = 30;
 
 /** Bildirim merkezi deposu; her sorgu `siteId` kapsamlıdır. Okundu durumu kullanıcıya özeldir. */

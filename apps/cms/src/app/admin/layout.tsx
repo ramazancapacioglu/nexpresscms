@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCmsMode, PluginSlot, resolveSiteSettings } from "@nexpress/core";
+import { getCmsMode, PluginSlot, isLimitedRole, resolveSiteSettings, ROLE_LABEL } from "@nexpress/core";
 import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { logoutAction } from "@/app/login/actions";
 import { getSession, mustSetUpTwoFactor } from "@/lib/auth/session";
@@ -59,7 +59,7 @@ export default async function AdminLayout({
         >
           <span className="block truncate font-medium">{session.name || session.email}</span>
           <span className="block truncate text-[10px] text-[#5F6570] dark:text-[#8C9099]">
-            {session.email} • {session.role === "admin" ? t("admin.account.admin") : t("admin.account.editor")}
+            {session.email} • {session.role === "admin" ? t("admin.account.admin") : session.role === "editor" ? t("admin.account.editor") : ROLE_LABEL[session.role]}
           </span>
         </Link>
         <form action={logoutAction}>
@@ -77,7 +77,7 @@ export default async function AdminLayout({
       hiddenHrefs={hiddenHrefs}
       customTypes={resolveSiteSettings(site?.settings).general.contentTypes?.map((c) => ({ id: c.id, label: c.labelPlural }))}
       sidebarSlot={
-        <PluginSlot
+        isLimitedRole(session.role) ? null : <PluginSlot
           name="admin.sidebar.nav"
           siteId={siteId}
           fallback={

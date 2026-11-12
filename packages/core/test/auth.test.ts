@@ -56,3 +56,13 @@ test("sır kutusu şifreler ve çözer; düz metni olduğu gibi bırakır", () =
   assert.equal(encryptSecret(boxed), boxed, "çift şifrelenmez");
   assert.throws(() => decryptSecret(boxed.slice(0, -4) + "AAAA"));
 });
+
+test("oturum belirteci: dört rol kabul edilir, bilinmeyen rol reddedilir", async () => {
+  const now = 1_000_000;
+  for (const role of ["admin", "editor", "author", "contributor"] as const) {
+    const token = await signSessionToken({ ...payload(now + 60), role }, secret);
+    assert.equal((await verifySessionToken(token, secret, now))?.role, role, role);
+  }
+  const bad = await signSessionToken({ ...payload(now + 60), role: "root" as never }, secret);
+  assert.equal(await verifySessionToken(bad, secret, now), null);
+});

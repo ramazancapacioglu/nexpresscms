@@ -11,6 +11,7 @@
     "./locale-path": "./src/locale-path.ts",
     "./permalinks": "./src/permalinks.ts",
     "./session": "./src/session-token.ts",
+    "./permissions": "./src/permissions.ts",
     "./password": "./src/password.ts",
     "./secret-box": "./src/secret-box.ts",
     "./draft-preview": "./src/draft-preview.ts",

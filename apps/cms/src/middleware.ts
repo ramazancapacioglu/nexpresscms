@@ -3,11 +3,12 @@ import { resolveLocaleMode, type LocaleMode } from "@nexpress/core/locale-path";
 import { sanitizePermalinkStructure, stripPermalinkPrefix, type PermalinkStructure } from "@nexpress/core/permalinks";
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
+import { canOpenAdminPath, isLimitedRole } from "@nexpress/core/permissions";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
-const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations", "/admin/content-types"];
+const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations", "/admin/content-types", "/admin/users/roles"];
 
 type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure };
 
@@ -107,6 +108,13 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.search = `?next=${encodeURIComponent(pathname)}`;
+      return seal(NextResponse.redirect(url));
+    }
+    // Sınırlı roller (yazar, katkıcı): yalnızca kendi içerik yolları; kök "içeriklerim"e yönlenir
+    if (isLimitedRole(session.role) && !canOpenAdminPath(session.role, pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/my-content";
+      url.search = "";
       return seal(NextResponse.redirect(url));
     }
     // Yönetici bölümleri: editör için anında 307 (sayfa içinde de veritabanı rolüyle ayrıca denetlenir)

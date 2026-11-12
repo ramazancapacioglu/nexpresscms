@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { listStorefrontProducts } from "@/lib/plugin-gate";
+import { roleCan } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -11,6 +12,7 @@ export async function GET() {
   const session = await getSession();
   const headers = { "Cache-Control": "no-store" };
   if (!session) return NextResponse.json({ ok: false, error: "Oturum gerekli." }, { status: 401, headers });
+  if (!roleCan(session.role, "content.create")) return NextResponse.json({ ok: false, error: "Yetkiniz yok." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const repo = getScopedRepository(session.siteId);
   const site = await repo.getSite();
   const locale = site?.defaultLocale ?? "tr";
