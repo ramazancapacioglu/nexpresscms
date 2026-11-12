@@ -5,7 +5,10 @@ import type { BlockNode } from "./types";
  * Veri okuma uygulamada (`lib/dynamic-content.ts`); burada veritabanı yoktur. Sonuç her istekte güncel veriden üretilir
  * (Markdown önbelleğine girmez).
  */
-export type DynamicSource = "posts" | "pages" | "products" | "campaigns";
+/** `type:<id>`: yöneticinin tanımladığı özel içerik türünün kayıtları (`content-types.ts`). */
+export type DynamicSource = "posts" | "pages" | "products" | "campaigns" | `type:${string}`;
+
+const CUSTOM_SOURCE_RE = /^type:[a-z][a-z0-9_]{1,31}$/;
 export type DynamicOrder = "newest" | "oldest" | "title";
 export type DynamicLayout = "cards" | "list" | "carousel";
 export type DynamicCardStyle = "default" | "minimal" | "overlay" | "featured";
@@ -76,7 +79,12 @@ export function termSlug(input: string): string {
 /** Blok özelliklerinden güvenli sorgu: bilinmeyen/bozuk değerler varsayılana düşer, sınırlar uygulanır. */
 export function normalizeDynamicQuery(props: Record<string, unknown> | null | undefined): DynamicQuery {
   const p = props ?? {};
-  const source: DynamicSource = p.source === "pages" || p.source === "products" || p.source === "campaigns" ? p.source : "posts";
+  const source: DynamicSource =
+    p.source === "pages" || p.source === "products" || p.source === "campaigns"
+      ? p.source
+      : typeof p.source === "string" && CUSTOM_SOURCE_RE.test(p.source)
+        ? (p.source as DynamicSource)
+        : "posts";
   const n = Math.round(Number(p.limit));
   const limit = n >= 1 ? Math.min(DYNAMIC_MAX_ITEMS, n) : 6; // geçersiz/olumsuz sayı varsayılana düşer
   return {

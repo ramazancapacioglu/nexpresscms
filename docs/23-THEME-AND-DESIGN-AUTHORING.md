@@ -441,6 +441,7 @@ Bunlar editörde elle eklenebilir ve tema paketinin `pages/*.json` şeması tür
 
 - `media_file`: `{ url, kind: "document"|"video"|"audio", title, description, mime, size, uploadDate, poster? }`. `url` yalnızca `/…` veya `http(s)`.
 - `dynamic_list`: `{ source: "posts"|"pages"|"products", category?, tag?, limit 1–24, orderBy: "newest"|"oldest"|"title", excludeCurrent, layout: "cards"|"list"|"carousel", cardStyle: "default"|"minimal"|"overlay"|"featured", columns 1–4, showImage, showExcerpt, showDate, showSearch, showSort, showFilters, showPriceFilter, paginate, heading?, emptyText? }`. `category` / `tag` taksonomi slug’ıdır. Fiyat süzgeci yalnızca `products`.
+- `custom_fields`: `{ title? }`. Özel içerik türünün alanlarını tablo olarak çizer; veri bloktan değil içeriğin `schemaAttributes._fields` değerinden gelir (`docs/03`). Ziyaretçi sayfası bu bloğu özel türlerde otomatik başa ekler; modelin yazması gerekmez.
 - `schema_card`: `{ schema: "software"|"offer"|"qa"|"tech" }`. Veri içeriğin kendi özniteliğinden gelir.
 - `button_element`: `{ label, href, styleVariant: "primary"|"secondary"|"outline", align, icon, iconSide }`.
 - `list_element`: `{ style: "bullet"|"number", items: string[] }`.

@@ -30,6 +30,7 @@ export function useDualModeEditorDirty(p: ReturnType<typeof useDualModeEditorBlo
     showShareButtons: p.showShareButtons,
     showFeaturedImage: p.showFeaturedImage,
     pageOptions: p.pageOptions,
+    fieldValues: p.fieldValues,
     parentId: p.parentId,
     pillar: p.pillar,
   };

@@ -276,3 +276,11 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
   - **Soru-Cevap & AI Prompt Şablonu (`qa-single`):** Öne çıkan uzman yanıtı, mevzuat özeti, PAA alt soruları ve `QAPage` şeması.
   - **Destek Hub Şablonu (`destek-hub`):** AnyDesk/TeamViewer uzaktan bağlantı butonları ve 7/24 teknik servis çağrısı.
 - **0-KB RSC Hız Kuralı:** Senkronize modeller ziyaretçi yüzeyinde (`RscBlockRenderer`) önbelleğe alınmış desen sözlüğü (`patterns`) üzerinden derlenir; sayfaya tek bir satır dahi istemci JS yükü binmez.
+
+## Özel İçerik Türleri ve Özel Alanlar (2026-11-12)
+
+- **Tanım:** `/admin/content-types` (yalnızca yönetici). Tür: kimlik (`a-z`, rakam, `_`; yerleşik ad olamaz), ad, çoğul ad, Schema.org türü, site haritasına girsin mi. Alan: anahtar, etiket, tür (kısa/uzun metin, sayı, evet-hayır, seçenek, tarih, bağlantı, e-posta, görsel), zorunlu, yardım, ziyaretçide göster. Sınır: 12 tür × 30 alan. Saklama: `site_settings.general.contentTypes`.
+- **Veri:** içerik normal `contents` satırıdır (`type` = tür kimliği); değerler `schemaAttributes._fields`. Göç gerekmez. Kayıtta sunucu `sanitizeFieldValues` ile doğrular; zorunlu alan yalnızca yayında zorunludur.
+- **Editör:** özel türde sağ panelde **Alanlar** sekmesi. Liste: `/admin/entries/{tür}`; yan menüde tür başına bağlantı.
+- **Ziyaretçi:** alanlar `custom_fields` bloğu (JS'siz tablo) olarak içeriğin başına eklenir; `markdownCache` sonuna `## Özellikler` yazılır; site haritası `{tür}-N.xml`; dinamik liste kaynağı `type:{kimlik}`.
+- **Sınırlar (v1):** tür başına arşiv/rota yok (`/{slug}`); özel alanlardan JSON-LD yok; dinamik liste kartı alan göstermez; tür başına sınıflandırma yok.

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { and, count, desc, eq, inArray, type AnyColumn } from "drizzle-orm";
-import { compileBlocksToMarkdown } from "@nexpress/core";
+import { compileBlocksToMarkdown, fieldsMarkdown, findContentType, resolveSiteSettings } from "@nexpress/core";
 import { getDbDialect, getPgClient, getSqliteClient } from "./client";
 import { backendFor, type CommonDb } from "./dialect";
 
@@ -165,11 +165,25 @@ export class PerformanceRepository {
       })
       .from(t.contentTranslations)
       .where(eq(t.contentTranslations.siteId, this.siteId));
+    // Özel alan listesi Markdown'ın parçasıdır: içerik türü ve öznitelikleriyle birlikte yeniden derlenir
+    const siteRow = (await db.select({ settings: t.sites.settings }).from(t.sites).where(eq(t.sites.siteId, this.siteId)).limit(1))[0];
+    const types = resolveSiteSettings(siteRow?.settings).general.contentTypes;
+    const meta = new Map<string, { type: string; attrs: unknown }>();
+    if (types?.length) {
+      const infos = await db
+        .select({ id: t.contentTranslations.id, type: t.contents.type, attrs: t.contents.schemaAttributes })
+        .from(t.contentTranslations)
+        .innerJoin(t.contents, eq(t.contents.id, t.contentTranslations.contentId))
+        .where(eq(t.contentTranslations.siteId, this.siteId));
+      for (const i of infos) meta.set(i.id, { type: i.type, attrs: i.attrs });
+    }
     let updated = 0;
     for (const row of rows) {
+      const info = meta.get(row.id);
       const compiled = compileBlocksToMarkdown(row.blocks ?? [], {
         title: row.title,
         tldr: row.tldr,
+        appendix: info ? fieldsMarkdown(findContentType(types, info.type), info.attrs) : "",
       });
       if (compiled !== row.markdownCache) {
         await db

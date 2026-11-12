@@ -28,6 +28,7 @@ import { PublishTab } from "./publish-tab";
 import { SeoTab } from "./seo-tab";
 import { EngageTab } from "./engage-tab";
 import { PageLookTab } from "./page-look-tab";
+import { CustomFieldsTab } from "./custom-fields-tab";
 import { TemplateTab } from "./template-tab";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -40,6 +41,7 @@ import { useStudioInspector } from "./studio-inspector-context";
 export function BlockInspector() {
   const ed = useStudioInspector();
   const {
+    customType,
     rightSidebarOpen,
     setRightSidebarOpen,
     rightTab,
@@ -127,13 +129,14 @@ export function BlockInspector() {
 
       {/* Sayfa Ayarları Modu Alt Sekmeleri (Yayın | SEO | Medya & Etk.) */}
       {!isBlockMode && !isTemplateMode && (
-        <div className="grid grid-cols-4 gap-1 border-b bg-muted/30 px-2.5 py-1.5 text-[11px]">
+        <div className={`grid ${customType ? "grid-cols-5" : "grid-cols-4"} gap-1 border-b bg-muted/30 px-2.5 py-1.5 text-[11px]`}>
           {(
             [
               ["publish", "Yayın"],
               ["seo", `SEO (${seoAnalysis.score})`],
               ["engage", "Medya"],
               ["look", "Görünüm"],
+              ...(customType ? ([["fields", "Alanlar"]] as const) : []),
             ] as const
           ).map(([key, label]) => (
             <button
@@ -296,6 +299,8 @@ export function BlockInspector() {
           <SeoTab />
         ) : rightTab === "look" ? (
           <PageLookTab />
+        ) : rightTab === "fields" && customType ? (
+          <CustomFieldsTab />
         ) : (
           <EngageTab />
         )}

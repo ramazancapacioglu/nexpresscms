@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentWidthStyle, displayFields, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -219,6 +219,9 @@ export default async function PublicDynamicContentPage({
     hasSession: canEdit,
     isDraftPreview: Boolean(draft),
   });
+  // Özel içerik türü: alan değerleri tanıma göre okunur (`_fields`); tablo ziyaretçiye `custom_fields` bloğu olarak basılır
+  const customDef = findContentType(resolveSiteSettings(site?.settings).general.contentTypes, content.type);
+  const customFields = displayFields(customDef, content.schemaAttributes, locale);
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
   const formCtx = { forms: pageForms, path: `${lb}/${content.slug}`, token: createFormToken(`${lb}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
@@ -250,7 +253,10 @@ export default async function PublicDynamicContentPage({
   const syncedPatterns = await getSyncedPatternsMap(siteId);
   const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
   // Sayfa başlığını h1 yapan düzende (yerleşik makale ya da başlık yuvalı şablon) içerikteki vitrin başlığı h2 olur
-  const contentBlocks = !canvas && (!tpl || treeHas(tpl.blocks, "tpl_post_title")) ? demoteHeroTitles(content.blocks) : content.blocks;
+  const demotedBlocks = !canvas && (!tpl || treeHas(tpl.blocks, "tpl_post_title")) ? demoteHeroTitles(content.blocks) : content.blocks;
+  // Alan tablosu: içerikte `custom_fields` bloğu yoksa ve sayfa tuval değilse içeriğin başına otomatik eklenir
+  const autoFields = !canvas && customFields.length > 0 && !treeHas(content.blocks, "custom_fields");
+  const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
   const authorName = pub.authorName || content.authorName;
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
@@ -366,7 +372,7 @@ export default async function PublicDynamicContentPage({
       breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={contentBlocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
+        content: <RscBlockRenderer blocks={contentBlocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         excerpt: content.tldr,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
@@ -403,7 +409,7 @@ export default async function PublicDynamicContentPage({
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
-          dynamic={dynamicData} pageSchema={pageSchema}
+          dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}
           patterns={syncedPatterns}
           form={formCtx}
           tpl={cover}
@@ -540,7 +546,7 @@ export default async function PublicDynamicContentPage({
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
         locale={locale}
-        dynamic={dynamicData} pageSchema={pageSchema}
+        dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}
         patterns={syncedPatterns}
         form={formCtx}
         tpl={cover}

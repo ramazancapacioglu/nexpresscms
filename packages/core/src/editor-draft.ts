@@ -38,6 +38,8 @@ export interface EditorDraftFields {
   templateId?: string;
   /** Sayfa başına görünüm seçenekleri (yoksa varsayılan). */
   pageOptions?: PageOptions;
+  /** Özel içerik türünün alan değerleri (yoksa boş). */
+  fieldValues?: Record<string, unknown>;
 }
 
 /** Kararlı imza: alan sırası sabittir, böylece aynı içerik her zaman aynı imzayı verir. */
@@ -54,6 +56,7 @@ export function draftSignature(fields: EditorDraftFields): string {
       fields.richSchema && Object.keys(fields.richSchema).length > 0 ? fields.richSchema : null,
       fields.templateId || null,
       ...(pageChanged ? [fields.pageOptions] : []),
+      ...(fields.fieldValues && Object.keys(fields.fieldValues).length > 0 ? [{ f: fields.fieldValues }] : []),
     ])
   );
 }

@@ -35,6 +35,7 @@ import {
   LifeBuoy,
   Archive,
   Megaphone,
+  Boxes,
 } from "lucide-react";
 
 export interface NavItem {
@@ -97,6 +98,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: FolderTree,
         count: "Ağaç",
         shortcut: "G X",
+      },
+      {
+        href: "/admin/content-types",
+        label: "İçerik Türleri & Alanlar",
+        icon: Boxes,
+        count: "Özel",
+        shortcut: "G I",
+        adminOnly: true,
       },
       {
         href: "/admin/media",
@@ -348,7 +357,7 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
 /** Panel menüsü: az grup, ilgili sayfalar tek çatıda. SEO ve Görünüm tek öğedir; alt sayfalar üstteki sekme çubuğundadır. */
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
-  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
+  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {
     label: "Tasarım",
@@ -376,6 +385,19 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   },
   { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
 ];
+
+/** Yöneticinin tanımladığı özel türleri "İçerik" grubuna ekler (her tür kendi listesine gider). */
+export function withCustomTypes(
+  sections: Array<{ label: string; items: NavItem[] }>,
+  types: Array<{ id: string; label: string }> | undefined
+): Array<{ label: string; items: NavItem[] }> {
+  if (!types?.length) return sections;
+  return sections.map((section) =>
+    section.label === "İçerik"
+      ? { ...section, items: [...section.items, ...types.map((t): NavItem => ({ href: `/admin/entries/${t.id}`, label: t.label, icon: Boxes, shortcut: "" }))] }
+      : section
+  );
+}
 
 export { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, QUICK_COMMANDS } from "./admin-nav-meta";
 

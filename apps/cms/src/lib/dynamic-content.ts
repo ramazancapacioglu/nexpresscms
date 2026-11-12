@@ -1,5 +1,6 @@
 import "server-only";
 import {
+  BUILT_IN_TYPE_IDS,
   collectDynamicBlocks,
   localeBase,
   normalizeDynamicQuery,
@@ -9,6 +10,7 @@ import {
   type BlockNode,
   type DynamicCandidate,
   type DynamicDataMap,
+  type DynamicSource,
 } from "@nexpress/core";
 import { cachedRead } from "./cache";
 import { listStorefrontProducts } from "./plugin-gate";
@@ -69,7 +71,8 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
       continue;
     }
 
-    const kind = c.type === "post" ? "posts" : c.type === "page" ? "pages" : null;
+    // Özel içerik türleri `type:<id>` kaynağı olarak listelenir; şablon ve yerleşik ticaret/kampanya türleri hariç
+    const kind: DynamicSource | null = c.type === "post" ? "posts" : c.type === "page" ? "pages" : !BUILT_IN_TYPE_IDS.includes(c.type as never) ? `type:${c.type}` : null;
     if (!kind) continue;
     out.push({
       id: c.contentId,

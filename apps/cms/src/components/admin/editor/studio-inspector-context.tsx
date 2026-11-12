@@ -9,7 +9,9 @@ import type {
   BlockStyle,
   BlockStyleValues,
   ContentStatus,
+  CustomContentType,
   DesignTokens,
+  FieldValues,
   DeviceKey,
   PageOptions,
   SchemaGraphNode,
@@ -18,7 +20,7 @@ import type { TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 import type { SnapshotLike } from "@nexpress/core";
 import type { SeoAnalysis } from "@nexpress/seo-core";
 
-type RightTab = "publish" | "seo" | "block" | "engage" | "template" | "look";
+type RightTab = "publish" | "seo" | "block" | "engage" | "template" | "look" | "fields";
 type EditorMode = "visual" | "preview" | "code" | "markdown";
 type InspectorSubTab = "general" | "style" | "advanced";
 type Visibility = "public" | "private" | "password" | "members_only";
@@ -122,6 +124,10 @@ export interface StudioInspectorApi {
   setShowFeaturedImage: Dispatch<SetStateAction<boolean>>;
   pageOptions: PageOptions;
   setPageOptions: Dispatch<SetStateAction<PageOptions>>;
+  customType?: CustomContentType;
+  customTypes?: CustomContentType[];
+  fieldValues: FieldValues;
+  setFieldValues: Dispatch<SetStateAction<FieldValues>>;
   parentId: string;
   setParentId: Dispatch<SetStateAction<string>>;
   pillar: boolean;

@@ -22,6 +22,7 @@ export const tr = {
     sources: "Kaynaklar",
   },
   content: {
+    fieldsTitle: "Özellikler",
     breadcrumb: "Sayfa yolu",
     restricted: "Kısıtlı içerik",
     restrictedBody: "Bu içerik kurumsal üyelere veya parola sahiplerine özel olarak işaretlenmiştir.",

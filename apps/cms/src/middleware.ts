@@ -7,7 +7,7 @@ import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
-const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations"];
+const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations", "/admin/content-types"];
 
 type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure };
 

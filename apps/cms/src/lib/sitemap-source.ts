@@ -22,7 +22,7 @@ export async function loadSitemap(siteId: string) {
   const entries = [...contentEntries, ...archives];
   return {
     entries,
-    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, "archive"]),
+    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), "archive"]),
     defaultLocale: site?.defaultLocale ?? "tr",
     prefixless: isPrefixless(site, site?.defaultLocale ?? "tr"),
   };

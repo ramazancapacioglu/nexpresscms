@@ -1,6 +1,6 @@
 import type { SaveContentInput } from "./types";
 import { eq, and, inArray, like } from "drizzle-orm";
-import { cmsHooks, compileBlocksToMarkdown, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type BlockNode, type ContentStatus } from "@nexpress/core";
+import { cmsHooks, compileBlocksToMarkdown, fieldsMarkdown, findContentType, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type BlockNode, type ContentStatus } from "@nexpress/core";
 import { analyzeSeo, extractContentStats } from "@nexpress/seo-core";
 import { CmsRevisionRepository, type RevisionSnapshot } from "./revisions";
 
@@ -144,13 +144,14 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
     // Yeni içerikte adres doluysa kendiliğinden benzersizleşir (-2, -3…); mevcut içeriğin adresi asla sessizce değişmez
     if (!input.contentId) input = { ...input, slug: await this.availableSlug(input.locale, input.slug) };
     const contentId = input.contentId ?? `cnt_${Date.now()}`;
+    const site = await this.getSite();
+    const siteSettings = site?.settings ?? resolveSiteSettings({});
+    // Özel içerik türünün alan değerleri Markdown'a (llms/RAG/`?format=md`) "Özellikler" listesi olarak eklenir
     const rawMarkdown = compileBlocksToMarkdown(input.blocks, {
       title: input.title,
       tldr: input.tldr,
+      appendix: fieldsMarkdown(findContentType(siteSettings.general.contentTypes, input.type), input.schemaAttributes, input.locale),
     });
-
-    const site = await this.getSite();
-    const siteSettings = site?.settings ?? resolveSiteSettings({});
     const existing = input.contentId
       ? await this.getContentById(input.contentId, input.locale)
       : null;

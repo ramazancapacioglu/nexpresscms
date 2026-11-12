@@ -19,6 +19,7 @@ export const en: Messages = {
     sources: "Sources",
   },
   content: {
+    fieldsTitle: "Details",
     breadcrumb: "Breadcrumb",
     restricted: "Restricted content",
     restrictedBody: "This content is reserved for corporate members or password holders.",

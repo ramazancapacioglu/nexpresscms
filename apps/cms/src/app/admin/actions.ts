@@ -11,7 +11,7 @@ import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
-import { resolvePublishing, resolveSiteSettings, sanitizeMenu, sanitizeMenus, zonedLocalToUtc } from "@nexpress/core";
+import { BUILT_IN_TYPE_IDS, findContentType, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -163,6 +163,19 @@ export async function saveContentAction(input: {
     if (when.getTime() <= Date.now()) return { ok: false as const, error: "Zamanlanmış yayın tarihi gelecekte olmalı." };
   }
 
+  // Özel içerik türü: tür tanımda olmalı; alan değerleri tanıma göre temizlenir, yayında zorunlu alanlar doğrulanır
+  let attrs = input.schemaAttributes;
+  if (!(BUILT_IN_TYPE_IDS as readonly string[]).includes(input.type)) {
+    const def = findContentType(resolveSiteSettings(site?.settings).general.contentTypes, input.type);
+    if (!def) return { ok: false as const, error: "Bilinmeyen içerik türü." };
+    const { values, errors } = sanitizeFieldValues(def, (attrs as { _fields?: unknown } | undefined)?._fields);
+    const problems = Object.values(errors);
+    if (input.status !== "draft" && problems.length > 0) return { ok: false as const, error: `${problems[0]}${problems.length > 1 ? ` (+${problems.length - 1} alan daha)` : ""}` };
+    attrs = writeFieldValues(attrs, values);
+  } else if (attrs && "_fields" in attrs) {
+    attrs = writeFieldValues(attrs, {});
+  }
+
   const res = await repo.saveContent({
     actor: { id: session.sub, email: session.email },
     contentId: input.contentId,
@@ -170,7 +183,7 @@ export async function saveContentAction(input: {
     status: input.status ?? "published",
     importanceScore: input.importanceScore,
     schemaType: input.schemaType,
-    schemaAttributes: input.schemaAttributes,
+    schemaAttributes: attrs,
     featuredImage: input.featuredImage ?? null,
     locale,
     region: "TR",

@@ -7,6 +7,7 @@ export * from "./ink-grid-pages";
 export * from "./chrome-templates";
 export * from "./chrome-library";
 export * from "./theme-chrome";
+export { CustomFieldList } from "./custom-fields";
 export * from "./responsive-image";
 export * from "./dynamic-list";
 export * from "./block-template-context";

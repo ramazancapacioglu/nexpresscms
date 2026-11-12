@@ -1,6 +1,6 @@
 import type { RichSchemaFields } from "@/components/admin/editor/rich-schema-panel";
 import { useMemo, useState } from "react";
-import { readPageOptions, resolvePublishing, type PageOptions } from "@nexpress/core";
+import { readFieldValues, readPageOptions, resolvePublishing, type FieldValues, type PageOptions } from "@nexpress/core";
 import type { MediaAssetDto, TaxonomyDto } from "@nexpress/database";
 import type { useDualModeEditorDocument } from "./use-dual-mode-editor-document";
 
@@ -77,9 +77,10 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
 
   // Hızlı Kategori & Etiket Ekleme (Sidebar içinden)
   const [quickCatName, setQuickCatName] = useState("");
+  const [fieldValues, setFieldValues] = useState<FieldValues>(() => readFieldValues(p.customType, initialDoc?.schemaAttributes));
   const [pageOptions, setPageOptions] = useState<PageOptions>(() => readPageOptions(initialDoc?.schemaAttributes));
   const [quickCatParentId, setQuickCatParentId] = useState<string>("");
   const [quickTagName, setQuickTagName] = useState("");
 
-  return { ...p, pageOptions, setPageOptions, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, showFeaturedImage, setShowFeaturedImage, parentId, setParentId, pillar, setPillar, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, templateId, setTemplateId, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
+  return { ...p, fieldValues, setFieldValues, pageOptions, setPageOptions, visibility, setVisibility, accessPassword, setAccessPassword, scheduledAt, setScheduledAt, authorName, setAuthorName, selectedCategories, setSelectedCategories, selectedTags, setSelectedTags, featuredImageUrl, setFeaturedImageUrl, featuredImageAlt, setFeaturedImageAlt, featuredImageCaption, setFeaturedImageCaption, focusKeyword, setFocusKeyword, allowComments, setAllowComments, allowReviews, setAllowReviews, showShareButtons, setShowShareButtons, showFeaturedImage, setShowFeaturedImage, parentId, setParentId, pillar, setPillar, metaTitle, setMetaTitle, metaDescription, setMetaDescription, canonicalUrl, setCanonicalUrl, templateId, setTemplateId, richSchema, setRichSchema, noIndex, setNoIndex, taxonomies, setTaxonomies, mediaAssets, setMediaAssets, quickCatName, setQuickCatName, quickCatParentId, setQuickCatParentId, quickTagName, setQuickTagName, initialPub };
 }

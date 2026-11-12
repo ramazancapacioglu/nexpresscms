@@ -126,3 +126,9 @@ test("sorgu döngüsü: fiyat aralığı süzgeci (ürünler), sınırlar ve ge�
   // yazı kaynağında fiyat süzgeci açılamaz
   assert.equal(normalizeDynamicQuery({ source: "posts", showPriceFilter: true }).showPriceFilter, false);
 });
+
+test("özel tür kaynağı: type:<kimlik> kabul edilir, bozuk kimlik yazılara düşer", () => {
+  assert.equal(normalizeDynamicQuery({ source: "type:referans" }).source, "type:referans");
+  assert.equal(normalizeDynamicQuery({ source: "type:Referans!" }).source, "posts");
+  assert.equal(normalizeDynamicQuery({ source: "type:" }).source, "posts");
+});

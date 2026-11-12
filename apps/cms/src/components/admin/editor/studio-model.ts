@@ -89,6 +89,7 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   shape_divider: "Şekil ayırıcı",
   anchor_nav: "Yapışkan çapa menüsü",
   synced_pattern: "Senkronize model",
+  custom_fields: "Özel alan tablosu",
   campaign_showcase: "Kampanya Vitrini",
 };
 

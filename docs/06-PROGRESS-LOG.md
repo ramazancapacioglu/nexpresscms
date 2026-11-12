@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Özel içerik türleri ve özel alanlar (docs/26 §3 boşluğu)
+- ✅ `packages/core/src/content-types.ts`: `general.contentTypes` altında tür tanımı (en çok 12 tür × 30 alan; metin, uzun metin, sayı, evet/hayır, seçenek, tarih, bağlantı, e-posta, görsel). `sanitizeContentTypes`, `sanitizeFieldValues` (alan türüne göre doğrulama, `javascript:` bağlantısı yok), `displayFields`, `fieldsMarkdown`. Değerler `contents.schemaAttributes._fields` altındadır; `contents.type` düz metin olduğundan **veritabanı göçü yok**.
+- ✅ Yönetim: `/admin/content-types` (yalnızca yönetici; tür/alan oluşturma), `/admin/entries/[type]` (tür listesi), yan menüde tür başına bağlantı. Editörde yalnızca özel türde **Alanlar** sekmesi; kayıtta `saveContentAction` türü ve değerleri sunucuda doğrular (zorunlu alan yayında zorunlu, taslakta serbest).
+- ✅ Ziyaretçi: alanlar `custom_fields` bloğu (`nx-custom-fields`, JS'siz tablo) olarak içeriğin başına otomatik eklenir; `?format=md` / `/llms.txt` / RAG için `markdownCache` sonuna `## Özellikler` bölümü yazılır (`appendix`). Site haritasına tür başına `referans-N.xml` girer (`inSitemap`), `/ai-sitemap.json` türü taşır.
+- ✅ Dinamik liste kaynağı `type:<kimlik>`; blok `custom_fields` katalog dışıdır (docs/23 §5.2).
+- ⚠️ v1 sınırları: tür başına arşiv/rota yok (içerik `/{slug}` altında); özel alanlardan JSON-LD üretilmez; dinamik liste kartı alan göstermez; tür başına sınıflandırma yok.
+- 🧪 Test: `content-types.test.ts`, `dynamic-content.test.ts` (`type:`). Tarayıcıda uçtan uca doğrulandı: tür tanımı → editör Alanlar sekmesi → yayın → ziyaretçi tablosu (tek h1), `?format=md`, site haritası.
+
 ### [2026-11-11] — Erişilebilirlik, kırıntı ve editör ince ayarları
 - **Kontrast:** Lighthouse'ın işaretlediği tüm `color-contrast` ihlalleri kapandı (yerelde erişilebilirlik 96 → 100): `text-amber-600` → `700`, `text-slate-400` rol etiketi → `text-nx-muted`, `--color-nx-muted` yüzde 20 koyulaştırıldı, bağlantı listesindeki rozet artık yarı saydam bağlantının içinde değil (opaklık yalnızca etikette) ve zemini AA için biraz koyu.
 - **Görünür kırıntı:** Yerleşik makale düzeninde "← Ana sayfa" yerine `Ana sayfa › (üst sayfa) › sayfa` (`nav aria-label`, son öğe `aria-current`); JSON-LD `BreadcrumbList` ile aynı listeden gelir.

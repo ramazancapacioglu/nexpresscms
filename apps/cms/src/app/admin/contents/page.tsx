@@ -1,6 +1,6 @@
 import React from "react";
 import { headers } from "next/headers";
-import { PluginSlot, type ContentType } from "@nexpress/core";
+import { findContentType, PluginSlot, resolveSiteSettings, type ContentType } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { DualModeEditorClient } from "@/components/admin/dual-mode-editor-client";
 
@@ -30,8 +30,10 @@ export default async function AdminContentsEditorPage({
   // Çeviri düzenlerken kaynağı da listeden bulunabilsin: seçili içeriğin dil durumu
   const translations = sp.id ? await repo.translationOverview(sp.id) : [];
 
-  const requestedType: ContentType =
-    sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign" || sp.type === "template"
+  const customDef = findContentType(resolveSiteSettings(site?.settings).general.contentTypes, sp.type);
+  const requestedType: ContentType = customDef
+    ? customDef.id
+    : sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign" || sp.type === "template"
       ? (sp.type as ContentType)
       : "page";
 
@@ -59,6 +61,8 @@ export default async function AdminContentsEditorPage({
       translations={translations}
       initialSelectedId={sp.id}
       initialContextType={requestedType}
+      customTypes={resolveSiteSettings(site?.settings).general.contentTypes}
+      customType={customDef ?? findContentType(resolveSiteSettings(site?.settings).general.contentTypes, contents.find((c) => c.contentId === sp.id)?.type)}
       startNew={sp.new === "1"}
       siteTokens={site?.designTokens}
       inspectorSlot={

@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCmsMode, PluginSlot } from "@nexpress/core";
+import { getCmsMode, PluginSlot, resolveSiteSettings } from "@nexpress/core";
 import { getDbDialect, getScopedRepository } from "@nexpress/database";
 import { logoutAction } from "@/app/login/actions";
 import { getSession, mustSetUpTwoFactor } from "@/lib/auth/session";
@@ -75,6 +75,7 @@ export default async function AdminLayout({
       role={session.role}
       uiLocale={session.uiLocale}
       hiddenHrefs={hiddenHrefs}
+      customTypes={resolveSiteSettings(site?.settings).general.contentTypes?.map((c) => ({ id: c.id, label: c.labelPlural }))}
       sidebarSlot={
         <PluginSlot
           name="admin.sidebar.nav"

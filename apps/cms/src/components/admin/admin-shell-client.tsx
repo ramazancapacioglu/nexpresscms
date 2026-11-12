@@ -20,7 +20,7 @@ import {
 import { createTranslator } from "@nexpress/i18n";
 import { NotificationBell } from "./notification-bell";
 import { CommandPalette } from "./command-palette";
-import { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS } from "./admin-nav";
+import { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, WORKSPACE_SECTIONS as BASE_SECTIONS, withCustomTypes } from "./admin-nav";
 import { AdminProgressBar } from "./admin-progress-bar";
 
 interface AdminShellClientProps {
@@ -37,6 +37,8 @@ interface AdminShellClientProps {
   uiLocale?: string;
   /** Kapalı eklentilerin menü adresleri */
   hiddenHrefs?: string[];
+  /** Özel içerik türleri (kenar çubuğuna eklenir). */
+  customTypes?: Array<{ id: string; label: string }>;
 }
 
 export function AdminShellClient({
@@ -50,7 +52,9 @@ export function AdminShellClient({
   role,
   uiLocale = "tr",
   hiddenHrefs = [],
+  customTypes,
 }: AdminShellClientProps) {
+  const WORKSPACE_SECTIONS = withCustomTypes(BASE_SECTIONS, customTypes);
   const t = createTranslator(uiLocale);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -108,8 +112,9 @@ export function AdminShellClient({
   const studioIsPost =
     studioType === "post" || studioType === "kb_tech" || studioType === "ai_prompt";
   const studioIsTemplate = studioType === "template";
-  const studioBackHref = studioIsTemplate ? "/admin/appearance/templates" : studioIsPost ? "/admin/posts" : "/admin/pages";
-  const studioBackLabel = studioIsTemplate ? "Şablonlara Dön" : studioIsPost ? "Blog Yazılarına Dön" : "Sayfalara Dön";
+  const customStudioType = customTypes?.find((c) => c.id === studioType);
+  const studioBackHref = studioIsTemplate ? "/admin/appearance/templates" : customStudioType ? `/admin/entries/${customStudioType.id}` : studioIsPost ? "/admin/posts" : "/admin/pages";
+  const studioBackLabel = studioIsTemplate ? "Şablonlara Dön" : customStudioType ? `${customStudioType.label} listesine dön` : studioIsPost ? "Blog Yazılarına Dön" : "Sayfalara Dön";
 
   // Üst çubuk yolu: bölüm / sayfa; en uzun eşleşen menü öğesi (alt sayfalar üst öğenin adını taşır)
   const navMatch = WORKSPACE_SECTIONS.flatMap((section) => section.items.map((item) => ({ section, item })))

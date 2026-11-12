@@ -1,5 +1,5 @@
 import type { TemplateRenderContext } from "./block-template-context";
-import type { PageSchemaData } from "@nexpress/core";
+import type { DisplayField, PageSchemaData } from "@nexpress/core";
 import type { DynamicDataMap } from "@nexpress/core";
 import type React from "react";
 import type { BlockNode, DesignTokens } from "@nexpress/core";
@@ -34,6 +34,8 @@ export interface BlockRenderContext {
   tpl?: TemplateRenderContext;
   /** Şema kartları (schema_card) için sayfanın şema verisi */
   pageSchema?: PageSchemaData;
+  /** `custom_fields` bloğu için sayfanın özel alan değerleri (yalnızca özel içerik türlerinde). */
+  customFields?: DisplayField[];
   /** Senkronize modeller (synced_pattern için modelId → BlockNode[] haritası) */
   patterns?: Record<string, BlockNode[]>;
   preview?: boolean;

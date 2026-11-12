@@ -15,7 +15,7 @@ export type SiteProfile = "corporate" | "ecommerce" | "news";
 /**
  * 3. Polimorfik İçerik Türleri ve Yayın Durumları (Taslak, Yayında, Zamanlanmış, Kısıtlı)
  */
-export type ContentType =
+export type BuiltInContentType =
   | "template"    // Tema oluşturucu şablonu (header, footer, sayfa, blog, arşiv…): yayınlanmaz, hiçbir ziyaretçi yüzeyine girmez
   | "page"        // Kurumsal sayfalar & Görsel Kanvas açılış sayfaları
   | "post"        // Blog ve haber yazıları
@@ -23,6 +23,12 @@ export type ContentType =
   | "ai_prompt"   // Soru Madenciliği / PAA sayfası (/soru/{slug} - FAQPage)
   | "product"     // Ürün veya Yazılım (Product / SoftwareApplication)
   | "campaign";   // Kampanya ve Teklif sayfası (/kampanya/{slug} - Offer)
+
+/**
+ * İçerik türü: yerleşik türler ya da yöneticinin tanımladığı özel tür kimliği (`general.contentTypes`, bkz. `content-types.ts`).
+ * `(string & {})` yerleşik adların otomatik tamamlanmasını korur; veritabanı sütunu düz metindir, göç gerekmez.
+ */
+export type ContentType = BuiltInContentType | (string & {});
 
 export type ContentStatus =
   | "draft"       // Taslak
@@ -184,6 +190,7 @@ export const BLOCK_TYPES = [
   "shape_divider",
   "anchor_nav",
   "synced_pattern",
+  "custom_fields",
   "campaign_showcase",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];

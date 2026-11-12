@@ -86,3 +86,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - **Editör zenginleştirme (docs/20):** Faz 1 (stil motoru) tamam. Sırada Faz 2 (simge/sayaç/referans/marquee blokları, düğme hover-simge, sütun sırası, şekil ayırıcılar), Faz 3 (sorgu döngüsü + süzgeçler), Faz 4 (üst bilgi oluşturucu, tür başına yerleşim, görüntüleme koşulları, karanlık mod), Faz 5 (stil ön ayarları, kayan blok araç çubuğu).
 
 - **Faz 4b tamam** (karanlık mod, palet değişkenleri, şeffaf header, içerik genişliği). **Üst bilgi öğe dizisi ve mobil düzen yapıldı (2026-11-04):** sol/orta/sağ bölgeler ve ayrı mobil diziler ön yüzde ve header editöründe çözülür. Yazılmayan ana şerit logo solda, kalan öğeler sağda türetilir. Hazır header kütüphanesinin her kaydında tasarlanmış mobil dizi vardır; forma alınmadan düzenlenir. Üst ve alt şerit mobil dizisi yazılırsa küçük ekran onu basar. Kalan: ziyaretçi için elle tema anahtarı (JS gerektirir; bilerek yok), kullanıcı CSS'inde ve eklenti bloklarında sabit renkler için uyum denetimi.
+
+## Özel içerik türleri — kalanlar (2026-11-12)
+
+- Yapıldı: tür/alan tanımı, editör sekmesi, ziyaretçi tablosu, markdown, site haritası, dinamik liste kaynağı (`docs/03`).
+- Kalan: tür başına arşiv sayfası ve adres öneki; alanlardan JSON-LD (ör. `Event`, `Person`); dinamik liste kartında alan gösterimi; alan bazlı süzme/sıralama; tür başına sınıflandırma; alanların CSV içe/dışa aktarımı.
