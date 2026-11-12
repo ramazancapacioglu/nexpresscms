@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { displayFields, droppedArchives, findTypeByArchiveSlug, isValidTypeId, readFieldValues, resolveSiteSettings, sanitizeContentTypes, sanitizeFieldValues, writeFieldValues } from "../src/index";
+import { contentPath, contentPrefix, displayFields, droppedArchives, fieldSchemaProps, findTypeByArchiveSlug, isValidTypeId, readFieldValues, resolveSiteSettings, sanitizeContentTypes, sanitizeFieldValues, writeFieldValues } from "../src/index";
 
 const defs = sanitizeContentTypes([
   {
@@ -86,4 +86,48 @@ test("arşiv: eski kayıtta kapalı; adres çoğul addan türer; sistem rotası 
   assert.equal(findTypeByArchiveSlug(types, "ekip-uyeleri")?.id, "ekip");
   assert.equal(findTypeByArchiveSlug(types, "kapalilar"), undefined);
   assert.deepEqual(droppedArchives([{ id: "magaza_x", label: "Mağaza", archive: true }, { id: "ekip", archive: true }], types), ["Mağaza"]);
+});
+
+test("JSON-LD eşlemesi: yalnızca schemaProp tanımlı dolu alanlar; temel alanlar ezilemez; adresler mutlak", () => {
+  const t = sanitizeContentTypes([{
+    id: "etkinlik", label: "Etkinlik", labelPlural: "Etkinlikler", schemaType: "Event", fields: [
+      { key: "baslangic", label: "Başlangıç", kind: "date", schemaProp: "startDate" },
+      { key: "bilet", label: "Bilet", kind: "url", schemaProp: "url" },
+      { key: "afis", label: "Afiş", kind: "image", schemaProp: "image" },
+      { key: "tel", label: "Telefon", kind: "text", schemaProp: "telephone" },
+      { key: "ucretsiz", label: "Ücretsiz", kind: "boolean", schemaProp: "isAccessibleForFree" },
+      { key: "kontenjan", label: "Kontenjan", kind: "number", schemaProp: "maximumAttendeeCapacity" },
+      { key: "salon", label: "Salon", kind: "text", schemaProp: "location" },
+      { key: "kopya", label: "Kopya", kind: "text", schemaProp: "location" },
+      { key: "kotu", label: "Kötü", kind: "text", schemaProp: "@type" },
+      { key: "bos", label: "Boş", kind: "text", schemaProp: "email" },
+      { key: "web", label: "Web", kind: "url", schemaProp: "sameAsPage" },
+    ],
+  }])[0]!;
+  assert.equal(t.fields.find((f) => f.key === "bilet")?.schemaProp, undefined, "korumalı özellik (url) atılır");
+  assert.equal(t.fields.find((f) => f.key === "afis")?.schemaProp, undefined, "korumalı özellik (image) atılır");
+  assert.equal(t.fields.find((f) => f.key === "kotu")?.schemaProp, undefined, "@ ile başlayan geçersiz");
+  const out = fieldSchemaProps(t, { _fields: { baslangic: "2026-05-01", tel: "+90 212 000 00 00", ucretsiz: true, kontenjan: "150", salon: "Büyük Salon", kopya: "ikinci", web: "/etkinlik/x" } }, { baseUrl: "https://x.test/" });
+  assert.deepEqual(out, { startDate: "2026-05-01", telephone: "+90 212 000 00 00", isAccessibleForFree: true, maximumAttendeeCapacity: 150, location: "Büyük Salon", sameAsPage: "https://x.test/etkinlik/x" });
+  assert.deepEqual(fieldSchemaProps(undefined, {}, { baseUrl: "https://x.test" }), {});
+  assert.deepEqual(fieldSchemaProps(t, {}, { baseUrl: "https://x.test" }), {}, "değer yoksa özellik yok");
+});
+
+test("kayıt öneki: yalnızca arşivi açık ve önekli tür; adres tek doğru biçimde üretilir", () => {
+  const types = sanitizeContentTypes([
+    { id: "referans", label: "Referans", labelPlural: "Referanslar", archive: true, prefixed: true, fields: [] },
+    { id: "ekip", label: "Ekip", labelPlural: "Ekibimiz", archive: true, fields: [] },
+    { id: "etkinlik", label: "Etkinlik", labelPlural: "Etkinlikler", prefixed: true, fields: [] },
+    { id: "kisa", label: "Kısa", labelPlural: "Kısa", archive: true, archiveSlug: "ab", prefixed: true, fields: [] },
+  ]);
+  assert.equal(contentPrefix(types, "referans"), "referanslar");
+  assert.equal(contentPrefix(types, "ekip"), null, "arşiv var ama önek istenmemiş");
+  assert.equal(contentPrefix(types, "etkinlik"), null, "arşivsiz tür önek alamaz");
+  assert.equal(contentPrefix(types, "page"), null);
+  assert.equal(contentPath(types, { type: "referans", slug: "acme" }), "/referanslar/acme");
+  assert.equal(contentPath(types, { type: "ekip", slug: "ali" }), "/ali");
+  assert.equal(contentPath(types, { type: "post", slug: "yazi" }), "/yazi");
+  assert.equal(contentPath(undefined, { type: "referans", slug: "x" }), "/x");
+  // 2 harfli arşiv adresi dil koduyla karışır: reddedilir, çoğul addan türeyene düşer
+  assert.equal(types.find((t) => t.id === "kisa")?.archiveSlug, "kisa");
 });

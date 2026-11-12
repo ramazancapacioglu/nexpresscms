@@ -52,6 +52,7 @@ export function FieldRow({
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px]">
         <label className="inline-flex items-center gap-1.5"><input type="checkbox" checked={field.required === true} onChange={(e) => onChange({ ...field, required: e.target.checked || undefined })} /> Zorunlu</label>
         <label className="inline-flex items-center gap-1.5"><input type="checkbox" checked={field.show !== false} onChange={(e) => onChange({ ...field, show: e.target.checked ? undefined : false })} /> Ziyaretçide göster</label>
+        <input aria-label="Schema.org özelliği" className={`${input} max-w-[11rem] font-mono`} value={field.schemaProp ?? ""} maxLength={41} onChange={(e) => onChange({ ...field, schemaProp: e.target.value.replace(/[^A-Za-z]/g, "") || undefined })} placeholder="JSON-LD: startDate" title="Bu alanın değeri sayfanın JSON-LD varlığına bu özellik adıyla yazılır (isteğe bağlı)" />
         <input aria-label="Yardım metni" className={`${input} max-w-sm`} value={field.help ?? ""} maxLength={160} onChange={(e) => onChange({ ...field, help: e.target.value || undefined })} placeholder="Editöre yardım metni (isteğe bağlı)" />
       </div>
     </div>

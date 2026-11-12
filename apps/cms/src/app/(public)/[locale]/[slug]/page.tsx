@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, displayFields, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -51,29 +51,32 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ locale: string; slug: string; prefix?: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug, prefix } = await params;
   const sp0 = await searchParams;
   const nx_draft = typeof sp0.nx_draft === "string" ? sp0.nx_draft : undefined;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const lb = await siteLocaleBase(siteId, locale);
   const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
-  const [site, resolved] = await Promise.all([
-    getPublicSite(siteId),
-    draftMeta ? Promise.resolve({ content: draftMeta, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
-  ]);
+  const site = await getPublicSite(siteId);
+  const types = resolveSiteSettings(site?.settings).general.contentTypes;
+  // Önekli adres (`/referanslar/acme`): önek yalnızca kayıtları önekli açık bir türün arşiv adresi olabilir
+  const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
+  const prefixValid = !prefix || prefixDef?.prefixed === true;
+  const resolved = !prefixValid ? null : draftMeta ? { content: draftMeta, isRedirect: false } : await resolvePublicContent(siteId, slug, locale, prefixDef?.id ?? "");
 
   if (!resolved || !resolved.content) {
     // Özel türün arşiv adresi (aynı adda içerik yoksa)
-    const archive = await loadTypeArchive(siteId, locale, slug, Number(sp0.sayfa) || 1);
+    const archive = prefix ? null : await loadTypeArchive(siteId, locale, slug, Number(sp0.sayfa) || 1);
     if (archive) return typeArchiveMetadata(archive, locale);
     return { title: `${createTranslator(locale)("common.notFoundTitle")} | NexPress CMS` };
   }
 
   const content = resolved.content;
+  const cPath = contentPath(types, content);
   const pub = resolvePublishing(content.schemaAttributes);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
@@ -83,7 +86,7 @@ export async function generateMetadata({
     tagline: localizedSite.tagline,
     baseUrl,
     locale,
-    path: `${lb}/${content.slug}`,
+    path: `${lb}${cPath}`,
     title: content.title,
     tldr: content.tldr,
     excerpt: content.excerpt,
@@ -106,7 +109,7 @@ export async function generateMetadata({
     description: seoMeta.description,
     alternates: {
       canonical: seoMeta.canonical,
-      languages: await hreflangAlternates(siteId, content.contentId, baseUrl),
+      languages: await hreflangAlternates(siteId, content.contentId, baseUrl, contentPrefix(types, content.type)),
     },
     robots: draftMeta ? { index: false, follow: false } : hasDynamicQueryParams(sp0) ? { index: false, follow: true } : seoMeta.robots,
     openGraph: {
@@ -134,10 +137,10 @@ export default async function PublicDynamicContentPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ locale: string; slug: string; prefix?: string }>;
   searchParams: Promise<{ sayfa?: string; form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { locale, slug, prefix } = await params;
   const sp = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
@@ -146,19 +149,22 @@ export default async function PublicDynamicContentPage({
   await trackAiReferral();
 
   const draft = await resolveDraftPreview(siteId, locale, slug, sp.nx_draft);
-  const [site, resolved] = await Promise.all([
-    getPublicSite(siteId),
-    draft ? Promise.resolve({ content: draft, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
-  ]);
+  const site = await getPublicSite(siteId);
+  const types = resolveSiteSettings(site?.settings).general.contentTypes;
+  const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
+  const prefixValid = !prefix || prefixDef?.prefixed === true;
+  const resolved = !prefixValid ? null : draft ? { content: draft, isRedirect: false } : await resolvePublicContent(siteId, slug, locale, prefixDef?.id ?? "");
 
   if (!resolved || !resolved.content) {
-    const archive = await loadTypeArchive(siteId, locale, slug, Number(sp.sayfa) || 1);
+    const archive = prefix ? null : await loadTypeArchive(siteId, locale, slug, Number(sp.sayfa) || 1);
     if (archive) return <TypeArchiveView data={archive} locale={locale} />;
-    return redirectOrNotFound(siteId, `${lb}/${slug}`);
+    return redirectOrNotFound(siteId, `${lb}/${prefix ? `${prefix}/` : ""}${slug}`);
   }
 
-  if (resolved.isRedirect) {
-    permanentRedirect(`${lb}/${resolved.content.slug}`);
+  // Tek doğru adres: eski slug, önekli türün öneksiz adresi → kalıcı yönlendirme
+  const cPath = contentPath(types, resolved.content);
+  if (resolved.isRedirect || (!draft && !prefix && contentPrefix(types, resolved.content.type))) {
+    permanentRedirect(`${lb}${cPath}`);
   }
 
   const content = resolved.content;
@@ -195,7 +201,7 @@ export default async function PublicDynamicContentPage({
     return <PostsIndex siteId={siteId} locale={locale} title={content.title} tokens={tokens} />;
   }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const pageUrl = `${baseUrl}${lb}/${content.slug}`;
+  const pageUrl = `${baseUrl}${lb}${cPath}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
   const placement = schemaPlacementFor(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
@@ -226,13 +232,13 @@ export default async function PublicDynamicContentPage({
     isDraftPreview: Boolean(draft),
   });
   // Özel içerik türü: alan değerleri tanıma göre okunur (`_fields`); tablo ziyaretçiye `custom_fields` bloğu olarak basılır
-  const customDef = findContentType(resolveSiteSettings(site?.settings).general.contentTypes, content.type);
+  const customDef = findContentType(types, content.type);
   const customFields = displayFields(customDef, content.schemaAttributes, locale);
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
-  const formCtx = { forms: pageForms, path: `${lb}/${content.slug}`, token: createFormToken(`${lb}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
-  const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
+  const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale, contentPrefix(types, content.type))} />;
 
   if (!access.allowed && access.gate !== "none") {
     return (
@@ -244,7 +250,7 @@ export default async function PublicDynamicContentPage({
           contentId={content.id}
           locale={locale}
           slug={content.slug}
-          pagePath={`${lb}/${content.slug}`}
+          pagePath={`${lb}${cPath}`}
           title={content.title}
           tokens={tokens}
           t={t}
@@ -300,6 +306,7 @@ export default async function PublicDynamicContentPage({
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,
+      extraProps: fieldSchemaProps(customDef, content.schemaAttributes, { baseUrl }),
       // Öne çıkan görsel yoksa meta ile aynı üretilmiş paylaşım görseli (Article için görsel önerilir)
       imageUrl: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
     },
@@ -363,7 +370,7 @@ export default async function PublicDynamicContentPage({
       allowComments={allowComments}
       allowReviews={allowReviews && (content.type === "product" || reviewEntries.length > 0 || pub.allowReviews === true)}
       sort={sortOrder}
-      pagePath={`${lb}/${content.slug}`}
+      pagePath={`${lb}${cPath}`}
       notice={sp.yorum === "bekliyor" ? t("content.replySent") : null}
     />
   ) : null;
@@ -375,7 +382,7 @@ export default async function PublicDynamicContentPage({
       menu,
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}${cPath}` }],
       post: {
         title: content.title,
         content: <RscBlockRenderer blocks={contentBlocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
@@ -452,7 +459,7 @@ export default async function PublicDynamicContentPage({
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`${lb}/${content.slug}?format=md`}
+              href={`${lb}${cPath}?format=md`}
               className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
             >
               Markdown
@@ -563,7 +570,7 @@ export default async function PublicDynamicContentPage({
         <ContentShareBar
           title={content.title}
           pageUrl={pageUrl}
-          markdownHref={`${lb}/${content.slug}?format=md`}
+          markdownHref={`${lb}${cPath}?format=md`}
           borderRadius={tokens.geometry.borderRadius}
           shareHeading={t("content.shareHeading")}
         />

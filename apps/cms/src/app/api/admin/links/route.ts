@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolvePublishing } from "@nexpress/core";
+import { contentPath, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { listStorefrontProducts } from "@/lib/plugin-gate";
 import { roleCan } from "@nexpress/core";
@@ -18,7 +18,7 @@ export async function GET() {
   const locale = site?.defaultLocale ?? "tr";
   const [contents, taxonomies, products] = await Promise.all([repo.listContents({ locale, status: "published" }), repo.listTaxonomies(), listStorefrontProducts(session.siteId, "published")]);
   const items = [
-    ...contents.filter((c) => c.type !== "product" && resolvePublishing(c.schemaAttributes).visibility !== "private").map((c) => ({ group: c.type === "page" ? "Sayfalar" : "Yazılar", title: c.title, href: c.slug === "ana-sayfa" ? `/${locale}` : `/${locale}/${c.slug}` })),
+    ...contents.filter((c) => c.type !== "product" && resolvePublishing(c.schemaAttributes).visibility !== "private").map((c) => ({ group: c.type === "page" ? "Sayfalar" : "Yazılar", title: c.title, href: c.slug === "ana-sayfa" ? `/${locale}` : `/${locale}${contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}` })),
     ...taxonomies.filter((t) => t.taxonomyType === "category" || t.taxonomyType === "tag").map((t) => ({ group: t.taxonomyType === "category" ? "Kategoriler" : "Etiketler", title: t.name, href: `/${locale}/${t.taxonomyType === "category" ? "kategori" : "etiket"}/${t.slug}` })),
     ...products.map((p) => ({ group: "Ürünler", title: p.name, href: `/${locale}/magaza/${p.slug}` })),
     { group: "Sayfalar", title: "Mağaza", href: `/${locale}/magaza` },

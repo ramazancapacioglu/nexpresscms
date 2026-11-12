@@ -34,18 +34,18 @@ export async function publicLocaleLinks(siteId: string, contentId: string): Prom
   return { links, defaultLocale };
 }
 
-const pathOf = (l: TranslationLink, homeSlug = "ana-sayfa") => (l.slug === homeSlug ? `/${l.locale}` : `/${l.locale}/${l.slug}`);
+const pathOf = (l: TranslationLink, prefix?: string | null, homeSlug = "ana-sayfa") => (l.slug === homeSlug ? `/${l.locale}` : `/${l.locale}/${prefix ? `${prefix}/` : ""}${l.slug}`);
 
 /** Next `alternates.languages` (hreflang + x-default); tek dilli içerikte `undefined`. */
-export async function hreflangAlternates(siteId: string, contentId: string, baseUrl: string) {
+export async function hreflangAlternates(siteId: string, contentId: string, baseUrl: string, prefix?: string | null) {
   const { links, defaultLocale } = await publicLocaleLinks(siteId, contentId);
-  const entries = buildHreflang(links, defaultLocale, (l) => `${baseUrl.replace(/\/$/, "")}${pathOf(l)}`);
+  const entries = buildHreflang(links, defaultLocale, (l) => `${baseUrl.replace(/\/$/, "")}${pathOf(l, prefix)}`);
   return entries.length ? Object.fromEntries(entries.map((e) => [e.hreflang, e.href])) : undefined;
 }
 
 /** Dil değiştirici bağlantıları (JS'siz `<a>`). */
-export async function localeSwitcherLinks(siteId: string, contentId: string, current: string): Promise<LocaleAlternate[]> {
+export async function localeSwitcherLinks(siteId: string, contentId: string, current: string, prefix?: string | null): Promise<LocaleAlternate[]> {
   const { links } = await publicLocaleLinks(siteId, contentId);
   if (links.length < 2) return [];
-  return links.map((l) => ({ locale: l.locale, href: pathOf(l), label: nativeName(l.locale), current: l.locale === current }));
+  return links.map((l) => ({ locale: l.locale, href: pathOf(l, prefix), label: nativeName(l.locale), current: l.locale === current }));
 }

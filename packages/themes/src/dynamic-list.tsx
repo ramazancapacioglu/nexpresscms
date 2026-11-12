@@ -77,6 +77,7 @@ function ItemBody({ it, query, locale, list, featured }: { it: DynamicItem; quer
       {when ? <time dateTime={when.iso} className="block text-xs opacity-70">{when.text}</time> : null}
       <h3 className={`${featured ? "text-xl" : "text-base"} font-semibold leading-snug`}><a href={it.url} className="hover:underline">{it.title}</a></h3>
       {query.showExcerpt && it.excerpt ? <p className="line-clamp-3 text-sm opacity-80">{it.excerpt}</p> : null}
+      {it.fields && it.fields.length > 0 ? <p className="text-xs opacity-75">{it.fields.map((f) => `${f.label}: ${f.text}`).join(" · ")}</p> : null}
       {it.price ? <p className="text-sm font-semibold">{it.price}</p> : null}
     </div>
   );

@@ -88,6 +88,7 @@ export function ContentTypesManager({ initial, counts }: { initial: CustomConten
                 <label className="block text-[11px] font-medium">Başlık altı tanıtım
                   <input aria-label="Arşiv tanıtımı" className={input} value={t.archiveIntro ?? ""} maxLength={300} onChange={(e) => patch({ archiveIntro: e.target.value })} placeholder="Kısa bir açıklama (isteğe bağlı)" />
                 </label>
+                <label className="inline-flex items-center gap-2 text-[11px] sm:col-span-2"><input type="checkbox" checked={t.prefixed === true} onChange={(e) => patch({ prefixed: e.target.checked })} /> Kayıt adresleri arşiv adresinin altında olsun (<span className="font-mono">/{t.archiveSlug || "arşiv-adresi"}/kayıt-adı</span>); <span className="font-mono">/kayıt-adı</span> buraya kalıcı yönlendirir</label>
               </div>
             ) : <p className="text-[11px] text-[#8C9099]">Açıkken bu türün yayınları ziyaretçide sayfalı bir liste olarak görünür ve site haritasına girer.</p>}
           </div>

@@ -11,7 +11,7 @@ import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
-import { BUILT_IN_TYPE_IDS, contentAccess, contentOwnerId, findContentType, roleCan, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
+import { BUILT_IN_TYPE_IDS, contentAccess, contentPrefix, contentOwnerId, findContentType, roleCan, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -225,6 +225,9 @@ export async function saveContentAction(input: {
   await revalidatePath("/admin/contents");
   await revalidatePath(`/${locale}`);
   await revalidatePath(`/${locale}/${res.slug}`);
+  const savedPrefix = contentPrefix(resolveSiteSettings(site?.settings).general.contentTypes, input.type);
+  if (savedPrefix) await revalidatePath(`/${locale}/${savedPrefix}/${res.slug}`);
+  await revalidatePath("/sitemap.xml");
   await revalidatePath("/llms.txt");
 
   return {

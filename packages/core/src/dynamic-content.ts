@@ -123,6 +123,8 @@ export interface DynamicCandidate {
   /** Taksonomi terimleri (ad ya da slug; karşılaştırma `termSlug` ile) */
   categories: string[];
   tags: string[];
+  /** Özel içerik türü kayıtlarında kartta gösterilecek ilk alanlar (en çok 3; görsel ve uzun metin hariç). */
+  fields?: Array<{ label: string; text: string }>;
   /** Ürünler için biçimlenmiş fiyat */
   price?: string;
   /** Ürünler için kuruş cinsinden fiyat (süzgeç için; öğeye taşınmaz) */

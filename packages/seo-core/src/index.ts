@@ -28,12 +28,23 @@ export interface BuildCoreSchemaInput {
     imageAlt?: string | null;
     keywords?: string[];
     articleSection?: string;
+    /** Özel alanlardan gelen Schema.org özellikleri (`fieldSchemaProps`); temel alanları ezmez. */
+    extraProps?: Record<string, string | number | boolean>;
   };
   /** Motor ayarları: bloklardan otomatik FAQPage/HowTo/Review üret. */
   autoSchema?: boolean;
   organization?: { name?: string; logo?: string; sameAs?: string[] };
   breadcrumbs?: Array<{ name: string; url: string }>;
   aggregateRating?: { ratingValue: number; reviewCount: number };
+}
+
+/** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; yalnızca ilkel değerler geçer. */
+const RESERVED_NODE_KEYS = new Set(["name", "headline", "description", "url", "inLanguage", "isPartOf", "publisher", "author", "datePublished", "dateModified", "mainEntityOfPage", "image", "aggregateRating", "sameAs"]);
+function safeExtraProps(extra: Record<string, string | number | boolean> | undefined): Record<string, string | number | boolean> {
+  if (!extra) return {};
+  return Object.fromEntries(
+    Object.entries(extra).filter(([k, v]) => /^[a-z][A-Za-z]{1,40}$/.test(k) && !RESERVED_NODE_KEYS.has(k) && ["string", "number", "boolean"].includes(typeof v))
+  );
 }
 
 /**
@@ -120,6 +131,7 @@ export async function buildPageSchemaGraph(
             },
           }
         : {}),
+      ...safeExtraProps(c.extraProps),
       ...cleanAttrs,
     };
     baseNodes.push(entity);

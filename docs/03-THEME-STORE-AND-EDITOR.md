@@ -284,7 +284,10 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 - **Editör:** özel türde sağ panelde **Alanlar** sekmesi. Liste: `/admin/entries/{tür}`; yan menüde tür başına bağlantı.
 - **Ziyaretçi:** alanlar `custom_fields` bloğu (JS'siz tablo) olarak içeriğin başına eklenir; `markdownCache` sonuna `## Özellikler` yazılır; site haritası `{tür}-N.xml`; dinamik liste kaynağı `type:{kimlik}`.
 - **Arşiv:** türde "Arşiv sayfası oluştur" açılırsa `/{arşiv-adresi}` (varsayılan: çoğul adın slug'ı) yayınlanmış kayıtları sayfalı listeler, JSON-LD (`CollectionPage`) üretir ve site haritasına girer. Aynı adda bir sayfa/yazı varsa o kazanır; sistem rotaları (`magaza`, `kategori`…) adres olamaz.
-- **Sınırlar:** kayıtlar hâlâ `/{slug}` altındadır (arşiv öneki yok); arşiv için tenant şablonu yok (yerleşik görünüm); özel alanlardan JSON-LD yok; dinamik liste ve arşiv kartı alan göstermez; tür başına sınıflandırma yok.
+- **Kayıt öneki:** arşivi açık türde "Kayıt adresleri arşiv adresinin altında olsun" seçilirse kayıtlar `/{arşiv-adresi}/{slug}` olur; `/{slug}` buraya 308 ile yönlenir, yanlış önek 404 verir. Tek doğru adres `contentPath(types, content)` (`packages/core/src/content-types.ts`); kanonik, JSON-LD, kırıntı, hreflang, site haritası, `ai-sitemap`, `llms*.txt`, dinamik liste, bağlantı seçici ve `?format=md` bunu kullanır. Rota: `[locale]/[slug]/[child]` (aynı düzeyde dinamik klasör adı `slug` kalmalı); `kategori`, `etiket`, `magaza`, `kampanya`, `yazar` sabit klasörleri önce eşleşir. Arşiv adresi en az 3 karakterdir (2 harf dil koduyla karışır). Aynı slug başka türde olabilir: önekli adres kaydı türe göre çözer.
+- **Kartlarda alan:** özel tür kayıtları arşivde ve `type:` dinamik listesinde ilk üç alanı (görsel ve uzun metin hariç) gösterir; kapak görseli yoksa ilk görsel alan kapak olur.
+- **Alanlardan JSON-LD:** alanda "Schema.org özelliği" (ör. `startDate`, `telephone`) yazılırsa değer sayfanın JSON-LD varlığına yazılır (`fieldSchemaProps`; `name`, `url`, `image`, `author`… gibi temel özellikler ve `@` anahtarları ezilemez, bağlantı/görsel mutlak adrese çevrilir).
+- **Sınırlar:** arşiv için tema şablonu yok (yerleşik görünüm); arşivde alan süzme/sıralama yok; tür başına sınıflandırma yok; öneki sonradan kapatmak/değiştirmek eski adresi için otomatik yönlendirme üretmez.
 
 ## Footer Satır Stilleri (2026-11-12)
 

@@ -2,6 +2,10 @@ import "server-only";
 import {
   BUILT_IN_TYPE_IDS,
   collectDynamicBlocks,
+  contentPath,
+  displayFields,
+  findContentType,
+  resolveSiteSettings,
   localeBase,
   normalizeDynamicQuery,
   resolveDynamicBlock,
@@ -32,6 +36,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
     listStorefrontProducts(siteId, "published"),
   ]);
   const base = localeBase(site, locale);
+  const customTypes = resolveSiteSettings(site?.settings).general.contentTypes;
   const out: DynamicCandidate[] = [];
   for (const c of contents) {
     const pub = resolvePublishing(c.schemaAttributes);
@@ -74,13 +79,18 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
     // Özel içerik türleri `type:<id>` kaynağı olarak listelenir; şablon ve yerleşik ticaret/kampanya türleri hariç
     const kind: DynamicSource | null = c.type === "post" ? "posts" : c.type === "page" ? "pages" : !BUILT_IN_TYPE_IDS.includes(c.type as never) ? `type:${c.type}` : null;
     if (!kind) continue;
+    // Özel tür: kartta ilk üç alan; görseli yoksa ilk görsel alanı kapak olur
+    const shown = kind.startsWith("type:") ? displayFields(findContentType(customTypes, c.type), c.schemaAttributes, locale) : [];
+    const fieldImage = shown.find((f) => f.kind === "image")?.href;
+    const cardFields = shown.filter((f) => f.kind !== "image" && f.kind !== "textarea").slice(0, 3).map((f) => ({ label: f.label, text: f.text }));
     out.push({
       id: c.contentId,
       kind,
       title: c.title,
-      url: `${base}/${c.slug}`,
+      url: `${base}${contentPath(customTypes, c)}`,
+      ...(cardFields.length > 0 ? { fields: cardFields } : {}),
       excerpt: (c.tldr || c.excerpt || c.metaDescription || "").slice(0, 220),
-      image: pub.featuredImageUrl || c.featuredImage || null,
+      image: pub.featuredImageUrl || c.featuredImage || fieldImage || null,
       imageAlt: pub.featuredImageAlt || "",
       date: new Date(c.publishedAt ?? c.createdAt).toISOString(),
       categories: pub.categories,

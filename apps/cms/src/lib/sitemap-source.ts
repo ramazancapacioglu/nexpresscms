@@ -1,5 +1,5 @@
 import "server-only";
-import { isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
+import { contentPrefix, isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
@@ -19,7 +19,9 @@ export async function loadSitemap(siteId: string) {
     return { entries: [], files: [], defaultLocale: site?.defaultLocale ?? "tr", prefixless: isPrefixless(site, site?.defaultLocale ?? "tr") };
   }
   const archives = await archiveEntries(siteId, site?.defaultLocale ?? "tr");
-  const entries = [...contentEntries, ...archives];
+  // Önekli özel türlerin kayıtları `/{önek}/{slug}` adresiyle haritaya girer (öneksiz adres yönlendirdiği için listelenmez)
+  const types = settings.general.contentTypes ?? [];
+  const entries = [...contentEntries.map((e) => (contentPrefix(types, e.type) ? { ...e, pathPrefix: contentPrefix(types, e.type) as string } : e)), ...archives];
   return {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), "archive"]),

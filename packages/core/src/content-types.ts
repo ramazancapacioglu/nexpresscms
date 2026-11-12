@@ -35,6 +35,8 @@ export interface CustomFieldDef {
   help?: string;
   /** Ziyaretçi alan tablosunda gösterilsin mi (varsayılan evet). */
   show?: boolean;
+  /** Schema.org özelliği (ör. `startDate`, `telephone`, `price`): değer sayfanın JSON-LD varlığına yazılır. */
+  schemaProp?: string;
 }
 
 export interface CustomContentType {
@@ -52,12 +54,17 @@ export interface CustomContentType {
   archiveSlug?: string;
   /** Arşiv sayfasının başlık altı kısa tanıtımı (en çok 300 karakter). */
   archiveIntro?: string;
+  /** Kayıt adresleri `/{arşiv-adresi}/{kayıt}` olur (`/{kayıt}` kalıcı yönlendirir). Yalnızca arşiv açıkken. */
+  prefixed?: boolean;
   fields: CustomFieldDef[];
 }
 
 export const BUILT_IN_TYPE_IDS: readonly BuiltInContentType[] = ["template", "page", "post", "kb_tech", "ai_prompt", "product", "campaign"];
 
 const ID_RE = /^[a-z][a-z0-9_]{1,31}$/;
+const SCHEMA_PROP_RE = /^[a-z][A-Za-z]{1,40}$/;
+/** JSON-LD varlığının temel alanları: bir özel alan bunları ezemez. */
+export const PROTECTED_SCHEMA_PROPS: readonly string[] = ["context", "type", "id", "name", "headline", "description", "url", "inLanguage", "isPartOf", "publisher", "author", "datePublished", "dateModified", "mainEntityOfPage", "image", "aggregateRating", "sameAs"];
 const KEY_RE = /^[a-z][a-z0-9_]{0,39}$/;
 const SCHEMA_TYPE_RE = /^[A-Z][A-Za-z0-9]{1,40}$/;
 export const MAX_CONTENT_TYPES = 12;
@@ -72,7 +79,8 @@ export const RESERVED_ARCHIVE_SLUGS: readonly string[] = [
   "admin", "api", "login", "og", "sitemap", "sitemaps", "llms", "llms-full", "robots", "feed", "ai-sitemap", "blog",
 ];
 const ARCHIVE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const isUsableArchiveSlug = (slug: string): boolean => slug.length > 0 && slug.length <= 40 && ARCHIVE_SLUG_RE.test(slug) && !RESERVED_ARCHIVE_SLUGS.includes(slug);
+// En az 3 karakter: 2 harfli adresler dil kodu (`/hr/…`) ile karışır
+const isUsableArchiveSlug = (slug: string): boolean => slug.length >= 3 && slug.length <= 40 && ARCHIVE_SLUG_RE.test(slug) && !RESERVED_ARCHIVE_SLUGS.includes(slug);
 
 const clean = (value: unknown, max: number): string => (typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "");
 
@@ -96,6 +104,7 @@ function sanitizeField(raw: unknown): CustomFieldDef | null {
     ...(options ? { options } : {}),
     ...(clean(r.help, 160) ? { help: clean(r.help, 160) } : {}),
     ...(r.show === false ? { show: false } : {}),
+    ...(typeof r.schemaProp === "string" && SCHEMA_PROP_RE.test(r.schemaProp.trim()) && !PROTECTED_SCHEMA_PROPS.includes(r.schemaProp.trim()) ? { schemaProp: r.schemaProp.trim() } : {}),
   };
 }
 
@@ -127,13 +136,25 @@ export function sanitizeContentTypes(value: unknown): CustomContentType[] {
       if (!archiveSlug) archive = false;
     }
     const schemaType = typeof r.schemaType === "string" && SCHEMA_TYPE_RE.test(r.schemaType.trim()) ? r.schemaType.trim() : "WebPage";
-    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, ...(archive ? { archive: true, archiveSlug, ...(clean(r.archiveIntro, 300) ? { archiveIntro: clean(r.archiveIntro, 300) } : {}) } : {}), fields });
+    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, ...(archive ? { archive: true, archiveSlug, ...(clean(r.archiveIntro, 300) ? { archiveIntro: clean(r.archiveIntro, 300) } : {}), ...(r.prefixed === true ? { prefixed: true } : {}) } : {}), fields });
   }
   return out;
 }
 
 export const findContentType = (types: readonly CustomContentType[] | undefined, id: string | undefined | null): CustomContentType | undefined =>
   id ? types?.find((t) => t.id === id) : undefined;
+
+/** Kayıtları `/{önek}/{slug}` altında yayınlanan türün öneki (arşiv adresi); yoksa `null` (`/{slug}`). */
+export const contentPrefix = (types: readonly CustomContentType[] | undefined, typeId: string | undefined | null): string | null => {
+  const def = findContentType(types, typeId);
+  return def?.archive === true && def.prefixed === true && def.archiveSlug ? def.archiveSlug : null;
+};
+
+/** Bir kaydın dile göre öneksiz yolu: `/{önek}/{slug}` ya da `/{slug}`. Tek doğru adres (kanonik) buradan üretilir. */
+export const contentPath = (types: readonly CustomContentType[] | undefined, content: { type: string; slug: string }): string => {
+  const prefix = contentPrefix(types, content.type);
+  return prefix ? `/${prefix}/${content.slug}` : `/${content.slug}`;
+};
 
 /** Arşiv adresine karşılık gelen tür (arşivi açık olanlar arasından). */
 export const findTypeByArchiveSlug = (types: readonly CustomContentType[] | undefined, slug: string): CustomContentType | undefined =>
@@ -291,4 +312,23 @@ export function fieldsMarkdown(type: CustomContentType | undefined, schemaAttrib
   const rows = displayFields(type, schemaAttributes, locale);
   if (rows.length === 0) return "";
   return ["## Özellikler", ...rows.map((r) => `- **${r.label}:** ${r.href && r.kind !== "boolean" && r.kind !== "number" && r.kind !== "date" ? `[${r.text}](${r.href})` : r.text}`)].join("\n");
+}
+
+const absolute = (href: string, baseUrl: string): string => (href.startsWith("/") ? `${baseUrl.replace(/\/$/, "")}${href}` : href);
+
+/**
+ * Alan değerlerinin JSON-LD karşılığı: yalnızca `schemaProp` tanımlı ve dolu alanlar. Değerler kayıtta zaten temizlenmiştir;
+ * bağlantı ve görsel mutlak adrese çevrilir, tarih `YYYY-AA-GG`, sayı sayı, evet/hayır mantıksal değer olarak yazılır.
+ * Aynı özellik iki alanda tanımlıysa ilki kazanır.
+ */
+export function fieldSchemaProps(type: CustomContentType | undefined, schemaAttributes: unknown, options: { baseUrl: string }): Record<string, string | number | boolean> {
+  if (!type) return {};
+  const values = readFieldValues(type, schemaAttributes);
+  const out: Record<string, string | number | boolean> = {};
+  for (const f of type.fields) {
+    const v = values[f.key];
+    if (v === undefined || !f.schemaProp || f.schemaProp in out || PROTECTED_SCHEMA_PROPS.includes(f.schemaProp)) continue;
+    out[f.schemaProp] = f.kind === "url" || f.kind === "image" ? absolute(String(v), options.baseUrl) : v;
+  }
+  return out;
 }

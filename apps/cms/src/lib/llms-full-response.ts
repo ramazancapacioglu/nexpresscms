@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { isPluginModuleEnabled, localeBase } from "@nexpress/core";
+import { contentPath, isPluginModuleEnabled, localeBase, resolveSiteSettings } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
@@ -27,7 +27,7 @@ export async function llmsFullResponse(request: NextRequest, forcedLocale?: stri
     locale,
     items: contents.map((c) => ({
       title: c.title,
-      url: `${baseUrl}${localeBase(site, locale)}/${c.slug === "ana-sayfa" ? "" : c.slug}`.replace(/\/$/, ""),
+      url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),
       type: c.type,
       tldr: c.tldr,
       importanceScore: c.importanceScore,

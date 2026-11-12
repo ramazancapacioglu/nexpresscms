@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Özel türler: kayıt öneki, kart alanları, alanlardan JSON-LD
+- ✅ `prefixed` (arşiv açıkken): kayıtlar `/{arşiv-adresi}/{slug}`; `contentPrefix` / `contentPath` tek doğru adres. Öneksiz adres 308 ile yönlenir, yanlış önek 404. `resolveContentBySlug`/`getContentBySlug` türe duyarlı (`type` seçeneği) → farklı türlerde aynı slug karışmaz. Rota `[locale]/[slug]/[child]` (Next, aynı düzeyde farklı dinamik ad kabul etmez). Arşiv adresi ≥ 3 karakter.
+- ✅ Adres üreticileri güncellendi: sayfa kanoniği/JSON-LD/kırıntı/`?format=md`, hreflang ve dil değiştirici, site haritası (`pathPrefix`), `ai-sitemap.json`, `llms.txt`, `llms-full.txt`, dinamik aday listesi, bağlantı seçici, `markdown-negotiation`, yayında yeniden doğrulama.
+- ✅ Kartlarda ilk üç alan (arşiv ve `type:` listesi), kapak yoksa ilk görsel alan.
+- ✅ Alanda `schemaProp`: değer sayfanın JSON-LD varlığına yazılır (`fieldSchemaProps`, korumalı özellikler ezilemez).
+- 🧪 `content-types.test.ts` (önek, JSON-LD). Tarayıcıda: tür tanımı → kayıt yayını → `/referanslar/acme-perakende` 200 (tek h1, kanonik önekli, JSON-LD `telephone`/`alumniOf`, alan tablosu), `/acme-perakende` 308, yanlış önek 404, arşiv kartında alan, `?format=md`, site haritası, `ai-sitemap`, `llms.txt`. Üretim derlemesinde bütçe, `css:check` ve `seo-contract` geçti.
+
 ### [2026-11-12] — Ziyaretçi HTML önbelleği: çalışma zamanı ve güvenli kural
 - ✅ Eski kural derleme zamanında okunuyor ve yalnızca `/tr` ile `/tr/{slug}` yollarını eşliyordu: ön eksiz (tek dil) adreslerde **hiç çalışmıyordu**. Yerine `packages/core/src/html-cache.ts` (`htmlCacheControl`) ve `middleware.ts` kuralı geldi: `PUBLIC_CACHE_SECONDS` çalışma zamanında okunur, tüm dillerde ve ön eksiz adreslerde çalışır.
 - ✅ Güvenlik: `nx_*` çerezi (oturum, çerez onayı, içerik parolası, önizleme) taşıyan, çıktıyı değiştiren sorgu parametresi içeren, `utm_source` (yapay zeka yönlendirme izleme), mağaza/arama/kampanya/dosya yollarındaki istekler ve noindex siteler asla `public` işaretlenmez.
