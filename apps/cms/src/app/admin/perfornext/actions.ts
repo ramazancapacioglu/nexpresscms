@@ -14,6 +14,7 @@ import {
   listPublishedContents,
   listSitemapEntries,
 } from "@/lib/public-data";
+import { refreshCrux, saveCruxSettings } from "@/lib/perfornext/crux";
 import { PERFORNEXT_PLUGIN_ID } from "@/plugins/perfornext";
 import "@/plugins/register";
 
@@ -120,4 +121,25 @@ export async function saveCacheTtlAction(formData: FormData) {
   });
   await invalidateSite(admin.siteId);
   redirect("/admin/perfornext?done=ttl");
+}
+
+const cruxDone = (message: string) => redirect(`/admin/perfornext?done=crux&m=${encodeURIComponent(message.slice(0, 200))}`);
+
+/** CrUX API anahtarı ve (isteğe bağlı) ölçülecek site adresi. Anahtar şifreli saklanır, geri gösterilmez. */
+export async function saveCruxSettingsAction(formData: FormData) {
+  const admin = await guard("perfornext.crux_save");
+  const res = await saveCruxSettings(admin.siteId, { apiKey: String(formData.get("apiKey") ?? ""), origin: String(formData.get("origin") ?? "") });
+  cruxDone(res.message);
+}
+
+export async function clearCruxKeyAction() {
+  const admin = await guard("perfornext.crux_clear");
+  await saveCruxSettings(admin.siteId, { clearKey: true });
+  cruxDone("CrUX API anahtarı silindi.");
+}
+
+/** Üç cihaz türü için gerçek kullanıcı ölçümünü Google'dan çeker (sunucu tarafı; ziyaretçiye betik eklenmez). */
+export async function refreshCruxAction() {
+  const admin = await guard("perfornext.crux_refresh");
+  cruxDone((await refreshCrux(admin.siteId)).message);
 }

@@ -44,7 +44,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - ~~Şema doğrulayıcı~~ yapıldı (editörde canlı); kalan: kayıtta engelleme/uyarı eşiği, `Speakable`, `Person` yazar varlıkları, `sameAs`.
 - ~~İç bağlantı önerisi: vektörsüz ilk sürüm (başlık / varlık eşleşmesi)~~ **Yapıldı (2026-11-09).** `suggestInternalLinks` (`packages/core/src/internal-links.ts`, birim testli) ve `/admin/seo/audit` ekranında otomatik iç bağlantı fırsatları kartı devrede.
 - 404 ve yönlendirme zincirleri raporu; ~~kırık iç bağlantı denetimi~~ yapıldı (iç bağlantılar); ~~dış bağlantı denetimi~~ yapıldı (2026-11-04, SSRF kapılı, yönetici isteği, en çok 30 adres). Kalan: 404 günlüğü ayrı bir rapor olarak iç denetimle birleşmedi (yönlendirme sayfasındaki kayıt duruyor).
-- Core Web Vitals alan verisi (CrUX / `web-vitals` ile hafif toplayıcı, yalnızca onaylı izleme).
+- ~~Core Web Vitals alan verisi (CrUX)~~ yapıldı (`docs/11` §7a; Perfornext, sunucu tarafı, anahtar gerekir). Kalan: sayfa/URL düzeyinde CrUX sorgusu, geçmiş eğilim (28 gün anlık görüntüleri saklayıp grafik), otomatik günlük yenileme (cron), CrUX History API; kendi `web-vitals` toplayıcısı (yalnızca onaylı izleme, düşük trafikli siteler için) bilinçli olarak yapılmadı: 0-KB kuralı.
 
 ## P3 — Bakım borcu
 

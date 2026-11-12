@@ -42,7 +42,8 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
         settingsHref: m.settingsHref,
         endpoints: m.endpoints ?? [],
         settingFields: m.settings ?? [],
-        settingValues: state.settings,
+        // Yalnızca bildirilen ayar alanları istemciye gider (eklentinin sakladığı sırlar/ölçüm önbelleği gitmez)
+        settingValues: Object.fromEntries((m.settings ?? []).filter((f) => state.settings[f.key] !== undefined).map((f) => [f.key, state.settings[f.key]])),
         enabled: state.enabled,
         licenseKey: state.licenseKey ?? "",
         licenseStatus: licenseVerification?.status,

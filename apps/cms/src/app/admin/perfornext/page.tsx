@@ -7,6 +7,8 @@ import { requireAdminPage } from "@/lib/auth/session";
 import { cacheSnapshot } from "@/lib/cache";
 import { pluginEnabled } from "@/lib/plugin-gate";
 import { hydratePerfornextCache } from "@/lib/perfornext/hydrate";
+import { loadCruxState } from "@/lib/perfornext/crux";
+import { CruxSection } from "./crux-section";
 import {
   budgetPerformanceReport,
   contentReport,
@@ -63,7 +65,7 @@ function resolveNotice(done: string | undefined, settings: Record<string, unknow
   }
 }
 
-export default async function PerfornextPage({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
+export default async function PerfornextPage({ searchParams }: { searchParams: Promise<{ done?: string; m?: string }> }) {
   const me = await requireAdminPage();
   const siteId = (await headers()).get("x-nexpress-site-id") ?? me.siteId;
   if (!(await pluginEnabled(siteId, PERFORNEXT_PLUGIN_ID))) {
@@ -76,7 +78,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
     );
   }
   await hydratePerfornextCache(siteId);
-  const done = (await searchParams).done;
+  const sp = await searchParams;
+  const done = sp.done;
   const site = await getScopedRepository(siteId).getSite();
   const defaultLocale = site?.defaultLocale ?? "tr";
   const baseHref = localeBase(site, defaultLocale);
@@ -111,7 +114,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
   const lastWarmAt = String(settings.lastWarmAt ?? "");
   const lastWarmMs = settings.lastWarmMs != null ? `${Number(settings.lastWarmMs)} ms` : "—";
   const keepRevisions = Number(settings.keepRevisionsCount ?? 10) || 10;
-  const notice = resolveNotice(done, settings);
+  const notice = done === "crux" ? String(sp.m ?? "").slice(0, 200) : resolveNotice(done, settings);
+  const crux = await loadCruxState(siteId);
 
   return (
     <div className="space-y-6">
@@ -131,6 +135,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
           {notice}
         </p>
       ) : null}
+
+      <CruxSection state={crux} />
 
       {modBudget ? (
         <section className="space-y-2">
@@ -311,6 +317,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570]">
               İçerik Ağırlığı & CWV Risk Tahmini ({defaultLocale.toUpperCase()})
+              <span className="ml-2 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">Tahmin</span>
             </h2>
             <form action={recompileMarkdownAction}>
               <button type="submit" className={`rounded-md border ${border} px-3 py-1.5 text-[12px] hover:bg-black/5 dark:hover:bg-white/5`}>

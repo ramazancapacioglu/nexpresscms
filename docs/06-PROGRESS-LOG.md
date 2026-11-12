@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — CrUX alan verisi (ölçülen) ve Perfornext "tahmin / ölçülen" ayrımı
+- ✅ `packages/core/src/crux.ts` (saf): eşikler, yanıt çözümü (CLS yüzdeliği metin gelir), Core Web Vitals geçti/kaldı, hata sınıflandırma (404 = veri yok), anahtar maskesi. `apps/cms/src/lib/perfornext/crux.ts`: Google CrUX API çağrısı (3 cihaz türü, 10 sn zaman aşımı), şifreli anahtar, anlık görüntü saklama. Ziyaretçiye betik yok.
+- ✅ `/admin/perfornext`: "Gerçek Kullanıcı Verisi (CrUX)" bölümü (Ölçülen rozeti; p75, iyi/geliştirilmeli/kötü dağılım çubuğu, dönem, CWV sonucu) ve anahtar/adres formu; içerik ağırlığı raporu "Tahmin" rozetiyle ayrıldı. Eylemler denetim günlüğünde.
+- ✅ `/admin/plugins` istemciye yalnızca bildirilen ayar alanlarını gönderir (saklanan sır/önbellek sızmaz).
+- 🧪 `crux.test.ts`. Sahte CrUX sunucusuyla tarayıcıda: yanlış anahtar → anahtar hatası (sayfada anahtar yok), doğru anahtar → tüm cihazlar geçti, telefon kaldı (LCP 4,6 sn), masaüstü veri yok iletisi; anahtar maskeli, eklentiler sayfasında şifreli değer ve ölçüm önbelleği yok.
+- ⚠️ Gerçek Google anahtarıyla canlıda denenmedi (anahtar gerekir); istek biçimi resmi şemaya göre ve sahte sunucuyla doğrulandı.
+
 ### [2026-11-12] — Özel türler: kayıt öneki, kart alanları, alanlardan JSON-LD
 - ✅ `prefixed` (arşiv açıkken): kayıtlar `/{arşiv-adresi}/{slug}`; `contentPrefix` / `contentPath` tek doğru adres. Öneksiz adres 308 ile yönlenir, yanlış önek 404. `resolveContentBySlug`/`getContentBySlug` türe duyarlı (`type` seçeneği) → farklı türlerde aynı slug karışmaz. Rota `[locale]/[slug]/[child]` (Next, aynı düzeyde farklı dinamik ad kabul etmez). Arşiv adresi ≥ 3 karakter.
 - ✅ Adres üreticileri güncellendi: sayfa kanoniği/JSON-LD/kırıntı/`?format=md`, hreflang ve dil değiştirici, site haritası (`pathPrefix`), `ai-sitemap.json`, `llms.txt`, `llms-full.txt`, dinamik aday listesi, bağlantı seçici, `markdown-negotiation`, yayında yeniden doğrulama.

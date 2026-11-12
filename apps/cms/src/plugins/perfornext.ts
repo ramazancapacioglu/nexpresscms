@@ -11,7 +11,7 @@ export const PERFORNEXT_MANIFEST: PluginManifest = {
   license: "free",
   builtin: false,
   icon: "Gauge",
-  description: "Önbellek ön ısıtma ve temizliği, veritabanı şişkinlik bakımı, medya hattı denetimi, 0-KB RSC bütçesi ve Core Web Vitals risk tahmini (içerik ağırlığından; gerçek ölçüm değildir) raporu.",
+  description: "Önbellek ön ısıtma ve temizliği, veritabanı şişkinlik bakımı, medya hattı denetimi, 0-KB RSC bütçesi, Core Web Vitals risk tahmini (içerik ağırlığından; ölçüm değildir) ve gerçek kullanıcı ölçümü (CrUX, Google API anahtarıyla).",
   settingsHref: "/admin/perfornext",
   settings: [
     {
