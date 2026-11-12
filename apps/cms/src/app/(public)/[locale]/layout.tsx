@@ -400,7 +400,7 @@ export default async function PublicLocaleLayout({
           </div>
         </footer>
       ) : (
-        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
+        <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} backToTopLabel={t("site.backToTop")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
       {optionalOk && resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />

@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Footer satır stilleri (Kadence tarzı yönetim)
+- ✅ `packages/core/src/footer-style.ts`: `FooterConfig.options` (orta satır ve alt çubuk için zemin, özel renk, dikey boşluk, ayraç, tam/kapsayıcı genişlik; alt çubuk düzeni `split|centered`, "Başa dön"; sütun boşluğu). `resolveFooterStyle` çizimde beyaz listeye indirir, `footerRowColors` zemine göre okunaklı yazı rengi seçer, `expandFooterText` telifte `{year}` / `{site}` doldurur. Eski kayıtlar değişmeden aynı görünür.
+- ✅ Ziyaretçi `SiteFooter`: üç satır (üst bant, orta, alt çubuk) ayrı zemin ve boşlukla çizilir; JS yok (başa dön düz çapa). `/admin/appearance/footer` içinde yeni **Satır Stilleri** paneli (canlı şerit önizlemesi), `footer-style-panel.tsx`.
+- 🧪 `footer-style.test.ts`. Üretim derlemesinde bütçe (106,3 kB, rota kodu 0,73 kB), `css:check` (24 sayfa, eksik 0) ve `seo-contract` (16 adres) geçti; tarayıcıda stil kaydedilip ziyaretçi sayfasında doğrulandı.
+
 ### [2026-11-12] — Özel içerik türleri ve özel alanlar (docs/26 §3 boşluğu)
 - ✅ `packages/core/src/content-types.ts`: `general.contentTypes` altında tür tanımı (en çok 12 tür × 30 alan; metin, uzun metin, sayı, evet/hayır, seçenek, tarih, bağlantı, e-posta, görsel). `sanitizeContentTypes`, `sanitizeFieldValues` (alan türüne göre doğrulama, `javascript:` bağlantısı yok), `displayFields`, `fieldsMarkdown`. Değerler `contents.schemaAttributes._fields` altındadır; `contents.type` düz metin olduğundan **veritabanı göçü yok**.
 - ✅ Yönetim: `/admin/content-types` (yalnızca yönetici; tür/alan oluşturma), `/admin/entries/[type]` (tür listesi), yan menüde tür başına bağlantı. Editörde yalnızca özel türde **Alanlar** sekmesi; kayıtta `saveContentAction` türü ve değerleri sunucuda doğrular (zorunlu alan yayında zorunlu, taslakta serbest).

@@ -59,6 +59,7 @@ export * from "./templates";
 export * from "./page-schema";
 export * from "./template-package";
 export * from "./editor-draft";
+export * from "./footer-style";
 export * from "./widgets";
 export * from "./campaigns";
 export * from "./content-weight";

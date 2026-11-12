@@ -2,6 +2,9 @@ import React from "react";
 import {
   DEFAULT_HEADER_ZONES,
   FOOTER_LAYOUT_PRESETS,
+  expandFooterText,
+  footerRowColors,
+  resolveFooterStyle,
   isSafeMenuHref,
   resolveFooterWidgets,
   hasExplicitMobileZones,
@@ -315,6 +318,7 @@ export function SiteFooter({
   tokens,
   footer,
   fallbackText,
+  backToTopLabel,
   widgetFeed,
   menuLibrary,
 }: {
@@ -325,6 +329,7 @@ export function SiteFooter({
   tokens: DesignTokens;
   footer: FooterConfig | undefined;
   fallbackText: string;
+  backToTopLabel: string;
   widgetFeed?: PublicWidgetFeed;
   menuLibrary?: Record<string, NavigationLink[]>;
 }) {
@@ -332,85 +337,133 @@ export function SiteFooter({
     FOOTER_LAYOUT_PRESETS.find((p) => p.id === (footer?.layoutPreset ?? "brand-wide-4")) ??
     FOOTER_LAYOUT_PRESETS[0]!;
   const allWidgets = resolveFooterWidgets(footer, siteName, siteDna || fallbackText);
+  const style = resolveFooterStyle(footer?.options);
+  const mainColors = footerRowColors(style.main, tokens.colors);
+  const bottomColors = footerRowColors(style.bottom, tokens.colors);
+  const copyright = expandFooterText(footer?.copyrightText, siteName, new Date().getFullYear());
+  const maxWidth = tokens.geometry.containerMaxWidth;
+  const rowBox = (r: typeof style.main, c: ReturnType<typeof footerRowColors>) => ({
+    outer: { borderColor: tokens.colors.border } as const,
+    // `contained`: zemin kapsayıcı genişliğinde ve köşeleri yuvarlak; `full`: ekranın tamamı
+    inner: {
+      maxWidth: r.full ? undefined : maxWidth,
+      backgroundColor: c.background ?? undefined,
+      color: c.color ?? undefined,
+      borderRadius: r.full || !c.background ? undefined : tokens.geometry.borderRadius,
+      paddingTop: r.paddingY,
+      paddingBottom: r.paddingY,
+    },
+  });
+  const main = rowBox(style.main, mainColors);
+  const bottom = rowBox(style.bottom, bottomColors);
 
   return (
-    <footer style={{ borderColor: tokens.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
+    <footer className="nx-footer mt-16">
       {footer?.topBanner?.enabled ? (
-        <div
-          style={{
-            maxWidth: tokens.geometry.containerMaxWidth,
-            backgroundColor: tokens.colors.primary,
-            color: tokens.colors.primaryForeground,
-            borderRadius: tokens.geometry.borderRadius,
-          }}
-          className="mx-auto mb-10 flex flex-wrap items-center justify-between gap-4 px-6 py-5"
-        >
-          <div className="space-y-1">
-            {footer.topBanner.badge ? (
-              <span className="inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                {footer.topBanner.badge}
-              </span>
-            ) : null}
-            <div className="text-base font-bold">{footer.topBanner.title}</div>
-            {footer.topBanner.subtitle ? (
-              <p className="text-xs opacity-90">{footer.topBanner.subtitle}</p>
+        <div className="px-4 sm:px-6">
+          <div
+            style={{
+              maxWidth,
+              backgroundColor: tokens.colors.primary,
+              color: tokens.colors.primaryForeground,
+              borderRadius: tokens.geometry.borderRadius,
+            }}
+            className="mx-auto mb-10 flex flex-wrap items-center justify-between gap-4 px-6 py-5"
+          >
+            <div className="space-y-1">
+              {footer.topBanner.badge ? (
+                <span className="inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                  {footer.topBanner.badge}
+                </span>
+              ) : null}
+              <div className="text-base font-bold">{footer.topBanner.title}</div>
+              {footer.topBanner.subtitle ? (
+                <p className="text-xs opacity-90">{footer.topBanner.subtitle}</p>
+              ) : null}
+            </div>
+            {footer.topBanner.ctaLabel && isSafeMenuHref(footer.topBanner.ctaHref) ? (
+              <a
+                href={footer.topBanner.ctaHref}
+                className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-900"
+              >
+                {footer.topBanner.ctaLabel} →
+              </a>
             ) : null}
           </div>
-          {footer.topBanner.ctaLabel && isSafeMenuHref(footer.topBanner.ctaHref) ? (
-            <a
-              href={footer.topBanner.ctaHref}
-              className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-900"
-            >
-              {footer.topBanner.ctaLabel} →
-            </a>
-          ) : null}
         </div>
       ) : null}
 
       <div
-        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
-        className="mx-auto grid grid-cols-1 gap-8 md:grid-cols-12"
+        data-footer-row="main"
+        style={{ ...main.outer, backgroundColor: style.main.full ? (mainColors.background ?? undefined) : undefined, color: style.main.full ? (mainColors.color ?? undefined) : undefined }}
+        className={`${style.main.divider ? "border-t" : ""} px-4 sm:px-6`}
       >
-        {layout.colSpans.map((span, colIdx) => {
-          const colWidgets = allWidgets.filter(
-            (w) =>
-              w.enabled &&
-              Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
-          );
-          return (
-            <div
-              key={colIdx}
-              style={{ gridColumn: `span ${span} / span ${span}` }}
-              className="space-y-5"
-            >
-              {colWidgets.map((w) => (
-                <RenderPublicWidget
-                  key={w.id}
-                  widget={w}
-                  locale={locale}
-                  lb={lb}
-                  tokens={tokens}
-                  feed={widgetFeed}
-                  cardStyle="footer"
-                  menuLibrary={menuLibrary}
-                />
-              ))}
-            </div>
-          );
-        })}
+        <div
+          style={{ ...main.inner, ...(style.main.full ? { backgroundColor: undefined, color: undefined } : {}) }}
+          className={`mx-auto ${style.main.full || !mainColors.background ? "" : "px-6"}`}
+        >
+          <div
+            style={{ maxWidth: style.main.full ? maxWidth : undefined, columnGap: style.gapPx, rowGap: style.gapPx }}
+            className="mx-auto grid grid-cols-1 md:grid-cols-12"
+          >
+            {layout.colSpans.map((span, colIdx) => {
+              const colWidgets = allWidgets.filter(
+                (w) =>
+                  w.enabled &&
+                  Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
+              );
+              return (
+                <div
+                  key={colIdx}
+                  style={{ gridColumn: `span ${span} / span ${span}` }}
+                  className="space-y-5"
+                >
+                  {colWidgets.map((w) => (
+                    <RenderPublicWidget
+                      key={w.id}
+                      widget={w}
+                      locale={locale}
+                      lb={lb}
+                      tokens={tokens}
+                      feed={widgetFeed}
+                      cardStyle="footer"
+                      menuLibrary={menuLibrary}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div
-        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
-        className="mx-auto mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-current/10 pt-6 text-xs opacity-70"
+        data-footer-row="bottom"
+        style={{ ...bottom.outer, backgroundColor: style.bottom.full ? (bottomColors.background ?? undefined) : undefined, color: style.bottom.full ? (bottomColors.color ?? undefined) : undefined }}
+        className={`${style.bottom.divider ? "border-t" : ""} px-4 sm:px-6`}
       >
-        <span>{footer?.copyrightText}</span>
-        <div className="flex gap-3">
-          {(footer?.bottomLinks ?? []).map((link) => (
-            <a key={`${link.href}|${link.label}`} href={link.href}>
-              {link.label}
-            </a>
-          ))}
+        <div
+          style={{ ...bottom.inner, ...(style.bottom.full ? { backgroundColor: undefined, color: undefined } : {}) }}
+          className={`mx-auto ${style.bottom.full || !bottomColors.background ? "" : "px-6"}`}
+        >
+          <div
+            style={{ maxWidth: style.bottom.full ? maxWidth : undefined }}
+            className={`mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 text-xs ${style.bottom.centered ? "justify-center text-center" : "justify-between"}`}
+          >
+            <span className="opacity-80">{copyright}</span>
+            <div className={`flex flex-wrap gap-x-4 gap-y-1 ${style.bottom.centered ? "justify-center" : ""}`}>
+              {(footer?.bottomLinks ?? []).map((link) => (
+                <a key={`${link.href}|${link.label}`} href={link.href} className="underline-offset-2 hover:underline">
+                  {link.label}
+                </a>
+              ))}
+              {style.bottom.backToTop ? (
+                <a href="#" className="underline-offset-2 hover:underline">
+                  {backToTopLabel}
+                </a>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </footer>

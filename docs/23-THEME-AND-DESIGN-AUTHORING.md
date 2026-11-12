@@ -228,6 +228,8 @@ Kurallar:
 }
 ```
 
+İsteğe bağlı `options` (satır stilleri; yoksa önceki görünüm korunur): `{ "main": { "background": "default|muted|primary|dark|custom", "customColor": "#0f172a", "paddingY": 8–120, "divider": bool, "width": "contained|full" }, "bottom": { …aynı alanlar, "layout": "split|centered", "backToTop": bool }, "gap": "sm|md|lg" }`. `copyrightText` içinde `{year}` ve `{site}` yer tutucuları kullanılabilir. Değerler çizimde beyaz listeye indirilir (`resolveFooterStyle`); geçersiz renk sayfa zeminine düşer.
+
 Kolon 0–6. `colSpan` 1–12. Kolon başına en çok 20 bağlantı. `bottomLinks` en çok 12. `label` ≤ 80, `href` ≤ 300, `copyrightText` ≤ 300. `showNewsletter: true` ön yüze e-posta satırı basar; adres uydurma. İsteğe bağlı `layoutPreset`: `4-equal`, `brand-wide-4`, `3-equal`, `2-asymmetric`, `1-centered`, `6-equal`. `6-equal` altı eşit sütundur (`columnIndex` 0–5).
 
 ### 2.5. `pages/<slug>.json`

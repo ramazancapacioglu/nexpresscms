@@ -91,3 +91,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - Yapıldı: tür/alan tanımı, editör sekmesi, ziyaretçi tablosu, markdown, site haritası, dinamik liste kaynağı (`docs/03`).
 - Kalan: tür başına arşiv sayfası ve adres öneki; alanlardan JSON-LD (ör. `Event`, `Person`); dinamik liste kartında alan gösterimi; alan bazlı süzme/sıralama; tür başına sınıflandırma; alanların CSV içe/dışa aktarımı.
+
+## Footer — kalanlar (2026-11-12)
+
+- Yapıldı: satır stilleri (zemin, boşluk, ayraç, genişlik), alt çubuk düzeni, `{year}`/`{site}`, "Başa dön".
+- Kalan: alt çubukta sosyal simge ve menü yuvası; üst satır için ayrı sütun düzeni (şimdi yalnızca çağrı bandı); satır başına arka plan görseli/degrade; mobilde sütun sırası seçimi; yönetim önizlemesinde yer tutucuların açılmış hali.

@@ -1,3 +1,4 @@
+import type { FooterOptions } from "./footer-style";
 import type { FooterLayoutPreset, SiteWidget } from "./widgets";
 
 /**
@@ -165,6 +166,8 @@ export interface FooterTopBannerConfig {
 
 export interface FooterConfig {
   layoutPreset?: FooterLayoutPreset;
+  /** Orta ve alt satırın stili (zemin, boşluk, ayraç, genişlik, alt çubuk düzeni). */
+  options?: FooterOptions;
   topBanner?: FooterTopBannerConfig;
   widgets?: SiteWidget[];
   /** Bu dilde kayıtlı menüler. Header menüsü ayrıca `menuItems` alanına yazılır. */

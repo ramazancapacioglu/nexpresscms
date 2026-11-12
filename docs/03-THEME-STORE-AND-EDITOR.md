@@ -284,3 +284,7 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 - **Editör:** özel türde sağ panelde **Alanlar** sekmesi. Liste: `/admin/entries/{tür}`; yan menüde tür başına bağlantı.
 - **Ziyaretçi:** alanlar `custom_fields` bloğu (JS'siz tablo) olarak içeriğin başına eklenir; `markdownCache` sonuna `## Özellikler` yazılır; site haritası `{tür}-N.xml`; dinamik liste kaynağı `type:{kimlik}`.
 - **Sınırlar (v1):** tür başına arşiv/rota yok (`/{slug}`); özel alanlardan JSON-LD yok; dinamik liste kartı alan göstermez; tür başına sınıflandırma yok.
+
+## Footer Satır Stilleri (2026-11-12)
+
+`/admin/appearance/footer` altında **Satır Stilleri** paneli: orta satır ve alt çubuk için zemin (sayfa, açık gri, marka, koyu, özel renk), dikey boşluk, üst ayraç, tam/kapsayıcı genişlik; alt çubuk düzeni (soldan-sağa ya da ortalanmış), "Başa dön" bağlantısı ve sütun boşluğu. Kayıt `footerConfig.options` altındadır (`packages/core/src/footer-style.ts`); sözleşme `docs/23` §2.4.
