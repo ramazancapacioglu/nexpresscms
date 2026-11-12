@@ -119,7 +119,7 @@ export async function fetchPublicHtml(url: string, opts?: { maxBytes?: number; t
 }
 
 /** Form webhook'u: https JSON POST. Yönlendirme izlenmez; gövde en çok 64 KB okunup atılır. */
-export async function postPublicJson(url: string, body: string, opts?: { timeoutMs?: number }): Promise<void> {
+export async function postPublicJson(url: string, body: string, opts?: { timeoutMs?: number; headers?: Record<string, string>; userAgent?: string }): Promise<void> {
   const u = new URL(url);
   if (u.protocol !== "https:") throw new FetchBlocked("Yalnızca https.");
   if (u.username || u.password) throw new FetchBlocked("Kimlik bilgili adresler desteklenmez.");
@@ -130,7 +130,7 @@ export async function postPublicJson(url: string, body: string, opts?: { timeout
   const payload = Buffer.from(body);
   if (payload.length > 100_000) throw new Error("Gövde çok büyük.");
   await new Promise<void>((resolve, reject) => {
-    const req = https.request(u, { method: "POST", lookup: guardedLookup as never, timeout: timeoutMs, headers: { "user-agent": "NexPress-Forms/1.0", "content-type": "application/json", "content-length": String(payload.length) } }, (r) => {
+    const req = https.request(u, { method: "POST", lookup: guardedLookup as never, timeout: timeoutMs, headers: { "user-agent": opts?.userAgent ?? "NexPress-Forms/1.0", ...(opts?.headers ?? {}), "content-type": "application/json", "content-length": String(payload.length) } }, (r) => {
       const status = r.statusCode ?? 0;
       r.resume();
       r.on("error", reject);

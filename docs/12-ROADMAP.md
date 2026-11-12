@@ -101,3 +101,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - Yapıldı: çalışma zamanlı, çerez/sorgu duyarlı HTML `s-maxage` (`docs/04` §6).
 - Kalan: yayında CDN/nginx temizleme (purge) bağlantısı (şimdi yalnızca TTL ile bayatlar); 404/yönlendirme yanıtları için ayrı (kısa) TTL; çok örnekli kurulumda ortak veri önbelleği (Redis); kök düzenin `headers()` okuması yüzünden sayfaların hâlâ dinamik üretilmesi (kaynakta ISR için kiracı kimliğinin başlıktan ayrılması gerekir).
+
+## Veri eklentileri (2026-11-12) — kalanlar
+
+- Yapıldı: `.nxplugin` (tür, taslak sayfa, imzalı webhook; `docs/27`). Kod eklentisi yükleme bilerek yok.
+- Kalan: eklenti ayar alanları ve çeviri paketi; `form.submitted` olayı (kişisel veri: ayrı onay ve alan seçimi gerekir); yeniden deneme kuyruğu ve teslimat günlüğü (şimdi yalnızca son sonuç); eklenti güncelleme akışında izin farkını gösterme; imzayı sunucuya `PLUGIN_TRUSTED_KEYS` yerine panelden yönetilen anahtar listesi; ziyaretçi CSS katkısı (kapsamlı, bütçe denetimli).

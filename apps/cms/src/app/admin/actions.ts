@@ -7,11 +7,12 @@ import "@/plugins/register";
 import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
+import { dispatchPluginWebhooks } from "@/lib/plugin-webhooks";
 import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
 import { sanitizePermalinkStructure } from "@nexpress/core/permalinks";
-import { BUILT_IN_TYPE_IDS, contentAccess, contentPrefix, contentOwnerId, findContentType, roleCan, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
+import { BUILT_IN_TYPE_IDS, contentAccess, contentPath, contentPrefix, localeBase, contentOwnerId, findContentType, roleCan, resolvePublishing, resolveSiteSettings, sanitizeFieldValues, sanitizeMenu, sanitizeMenus, writeFieldValues, zonedLocalToUtc } from "@nexpress/core";
 import type {
   BlockNode,
   ContentStatus,
@@ -229,6 +230,20 @@ export async function saveContentAction(input: {
   if (savedPrefix) await revalidatePath(`/${locale}/${savedPrefix}/${res.slug}`);
   await revalidatePath("/sitemap.xml");
   await revalidatePath("/llms.txt");
+
+  // Veri eklentilerinin giden bildirimi (yalnızca yayındaki içerik; hata kaydı bozmaz, beklenmez)
+  if (status === "published") {
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    void dispatchPluginWebhooks(siteId, existing?.status === "published" ? "content.updated" : "content.published", {
+      contentId: res.contentId,
+      type: input.type,
+      slug: res.slug,
+      title: input.title,
+      url: `${appUrl}${localeBase(site, locale)}${contentPath(resolveSiteSettings(site?.settings).general.contentTypes, { type: input.type, slug: res.slug })}`,
+      status,
+      locale,
+    });
+  }
 
   return {
     ok: true,

@@ -23,6 +23,7 @@ export * from "./session-token";
 export * from "./permissions";
 export * from "./html-cache";
 export * from "./crux";
+export * from "./data-plugin";
 export * from "./json-dates";
 export * from "./ai-bots";
 export * from "./robots";

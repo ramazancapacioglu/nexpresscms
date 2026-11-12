@@ -105,7 +105,7 @@ export function ContentTypesManager({ initial, counts }: { initial: CustomConten
 
           <div className="flex flex-wrap items-center gap-3 border-t border-[#E6E7EA] pt-3 dark:border-[#23262E]">
             <button type="button" onClick={save} disabled={pending} className="inline-flex h-8 items-center rounded-md bg-[#14151A] px-4 text-[12px] font-medium text-white disabled:opacity-60 dark:bg-[#F3F4F6] dark:text-[#14151A]">{pending ? "Kaydediliyor" : "Kaydet"}</button>
-            <button type="button" onClick={() => { setTypes((all) => all.filter((_, i) => i !== active)); setActive(0); }} className="text-[12px] text-red-600 hover:underline">Bu türü kaldır</button>
+            {t.plugin ? <span className="text-[11px] text-[#8C9099]">Eklenti türü: <span className="font-mono">{t.plugin}</span> (eklentiyi devre dışı bırakarak kaldırılır)</span> : <button type="button" onClick={() => { setTypes((all) => all.filter((_, i) => i !== active)); setActive(0); }} className="text-[12px] text-red-600 hover:underline">Bu türü kaldır</button>}
             {saved.has(t.id) ? <Link href={`/admin/entries/${t.id}`} className="text-[12px] text-[#266DF0] hover:underline">Kayıtları aç →</Link> : null}
             {note ? <span role="status" className={`text-[12px] ${note.ok ? "text-emerald-700 dark:text-emerald-400" : "text-red-600"}`}>{note.text}</span> : null}
           </div>

@@ -29,6 +29,7 @@ export async function saveContentTypesAction(input: { types: CustomContentType[]
   }
   for (const old of current) {
     if (next.some((t) => t.id === old.id)) continue;
+    if (old.plugin) return { ok: false, error: `“${old.label}” türü “${old.plugin}” eklentisine ait; kaldırmak için eklentiyi devre dışı bırakın.` };
     const used = await repo.listContents({ locale, type: old.id });
     if (used.length > 0) return { ok: false, error: `“${old.label}” türünde ${used.length} içerik var; önce içerikleri silin.` };
   }

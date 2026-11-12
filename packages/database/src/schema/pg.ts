@@ -767,6 +767,41 @@ export const pgSitePlugins = pgTable(
 );
 
 /**
+ * VERİ EKLENTİLERİ — panelden yüklenen `.nxplugin` paketleri. Paket kod çalıştırmaz: özel içerik türü tanımları,
+ * başlangıç sayfaları ve giden webhook bildirimleri içerir. Kiracı başına; `enabled` açıkça verilen izinle açılır.
+ */
+export const pgDataPlugins = pgTable(
+  "data_plugins",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    pluginId: text("plugin_id").notNull(),
+    name: text("name").default("").notNull(),
+    version: text("version").default("").notNull(),
+    vendor: text("vendor").default("").notNull(),
+    description: text("description").default("").notNull(),
+    enabled: boolean("enabled").default(false).notNull(),
+    manifest: jsonb("manifest").$type<Record<string, unknown>>().default({}).notNull(),
+    contentTypes: jsonb("content_types").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    pages: jsonb("pages").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    webhooks: jsonb("webhooks").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    /** verified | signed-untrusted | unsigned */
+    signature: text("signature").default("unsigned").notNull(),
+    publisherKey: text("publisher_key").default("").notNull(),
+    checksum: text("checksum").default("").notNull(),
+    /** Webhook HMAC sırrı (`secret-box` ile şifreli) */
+    webhookSecret: text("webhook_secret").default("").notNull(),
+    lastDelivery: jsonb("last_delivery").$type<Record<string, unknown> | null>(),
+    installedAt: timestamp("installed_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("data_plugins_site_id_idx").on(t.siteId),
+    uniqueIndex("data_plugins_site_plugin_uidx").on(t.siteId, t.pluginId),
+  ]
+);
+
+/**
  * AJAN TALEPLERİ — yapay zeka ajanlarının MCP üzerinden bıraktığı teklif / destek / demo talepleri.
  * Kişisel veri içerir (e-posta, telefon): yönetici panelinden yönetilir, ön yüzde gösterilmez.
  */

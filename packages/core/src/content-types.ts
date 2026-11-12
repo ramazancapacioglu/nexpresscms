@@ -54,6 +54,8 @@ export interface CustomContentType {
   archiveSlug?: string;
   /** Arşiv sayfasının başlık altı kısa tanıtımı (en çok 300 karakter). */
   archiveIntro?: string;
+  /** Bu türü ekleyen veri eklentisinin kimliği (`data_plugins`); yalnızca sunucu yazar. Eklenti kapanınca tür kaldırılır. */
+  plugin?: string;
   /** Kayıt adresleri `/{arşiv-adresi}/{kayıt}` olur (`/{kayıt}` kalıcı yönlendirir). Yalnızca arşiv açıkken. */
   prefixed?: boolean;
   fields: CustomFieldDef[];
@@ -136,7 +138,7 @@ export function sanitizeContentTypes(value: unknown): CustomContentType[] {
       if (!archiveSlug) archive = false;
     }
     const schemaType = typeof r.schemaType === "string" && SCHEMA_TYPE_RE.test(r.schemaType.trim()) ? r.schemaType.trim() : "WebPage";
-    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, ...(archive ? { archive: true, archiveSlug, ...(clean(r.archiveIntro, 300) ? { archiveIntro: clean(r.archiveIntro, 300) } : {}), ...(r.prefixed === true ? { prefixed: true } : {}) } : {}), fields });
+    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, ...(typeof r.plugin === "string" && /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(r.plugin) && r.plugin.length <= 40 ? { plugin: r.plugin } : {}), ...(archive ? { archive: true, archiveSlug, ...(clean(r.archiveIntro, 300) ? { archiveIntro: clean(r.archiveIntro, 300) } : {}), ...(r.prefixed === true ? { prefixed: true } : {}) } : {}), fields });
   }
   return out;
 }

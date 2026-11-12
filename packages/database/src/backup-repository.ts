@@ -21,6 +21,7 @@ export const BACKUP_TABLES = [
   "redirects",
   "installedThemes",
   "sitePlugins",
+  "dataPlugins",
   "forms",
   "designLibrary",
   "formSubmissions",
@@ -31,7 +32,7 @@ export type BackupTable = (typeof BACKUP_TABLES)[number];
 export const PERSONAL_TABLES: BackupTable[] = ["formSubmissions", "commentsReviews"];
 
 /** Yedeğe girmeyen/maskelenen sütunlar (sırlar). */
-const OMIT_COLUMNS: Partial<Record<BackupTable, string[]>> = { sitePlugins: ["licenseKey"] };
+const OMIT_COLUMNS: Partial<Record<BackupTable, string[]>> = { sitePlugins: ["licenseKey"], dataPlugins: ["webhookSecret"] };
 
 export const SITE_FIELDS = ["name", "tagline", "defaultLocale", "supportedLocales", "activeThemeId", "designTokens", "siteProfile", "siteDna", "settings"] as const;
 export type SiteSnapshot = Partial<Record<(typeof SITE_FIELDS)[number], unknown>>;

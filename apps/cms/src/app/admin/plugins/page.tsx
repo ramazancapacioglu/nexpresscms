@@ -88,6 +88,7 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
           {[
             { id: "installed", label: "Kurulu eklentiler", href: "/admin/plugins" },
             { id: "dev", label: "Geliştirici", href: "/admin/plugins?tab=dev" },
+            { id: "packages", label: "Paket yükle (.nxplugin)", href: "/admin/plugins/packages" },
           ].map((t) => (
             <Link
               key={t.id}

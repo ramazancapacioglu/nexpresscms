@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Dışarıdan eklenti yükleme: bildirimsel veri eklentileri (.nxplugin)
+- ✅ Karar: sunucuda yüklenen kodu çalıştırmak yerine **kod içermeyen veri eklentisi** (`.nxtheme` ile aynı güven modeli). Sözleşme `docs/27`.
+- ✅ Çekirdek (`packages/core/src/data-plugin.ts`, saf): manifest, webhook (https/443/alan adı), özel tür ve webhook doğrulama, Ed25519 imza (`verifyPackageSignature`; `PLUGIN_TRUSTED_KEYS`), HMAC webhook imzası, izin özeti. `CustomContentType.plugin` (eklentiye ait tür işareti).
+- ✅ Veritabanı: `data_plugins` tablosu (iki motor, göç `0021`), `CmsDataPluginRepository`; yedekte `webhookSecret` maskelenir.
+- ✅ Sunucu: `lib/data-plugin.ts` (zip bombası denetimi, kod/HTML/svg/wasm reddi, yol gezinmesi, SHA-256 bütünlük, imza), `lib/plugin-webhooks.ts` (mevcut `postPublicJson`/`safe-fetch` üzerinden: bağlantı anında IP doğrulama, yönlendirme yok), `saveContentAction` yayında bildirir. Eylemler: etkinleştir (açık onay), devre dışı (türde içerik varsa reddedilir), sil, sırrı göster (denetim günlüğü).
+- ✅ Arayüz: `/admin/plugins/packages` (yükleme, imza rozeti, izin özeti, onay kutusu, son bildirim); eklenti türü tür yöneticisinde kilitli. Yazar aracı `scripts/nxplugin.mjs` (keygen/pack/imza).
+- 🧪 `data-plugin.test.ts`. Tarayıcıda: kod içeren, iç ağ IP'li webhook, yol gezinmeli, boş ve kurcalanmış imzalı paket **reddedildi**; imzasız/imzalı kuruldu, güvenilen anahtarla "Doğrulanmış yayıncı"; onaysız etkinleştirme kapalı; etkinleştirince tür, arşiv ve sır; yayında bildirim denendi (kayıt altı başarısızlık gösterildi); türde içerik varken devre dışı reddedildi; CLI'nin paketi sunucuda doğrulandı; oturumsuz yükleme 401.
+- ⚠️ Gerçek bir alıcıya (genel https) teslimat uçtan uca denenmedi (ortam çevrimdışı); gönderim yolu mevcut `postPublicJson` testli koruma katmanını kullanır.
+
 ### [2026-11-12] — CrUX alan verisi (ölçülen) ve Perfornext "tahmin / ölçülen" ayrımı
 - ✅ `packages/core/src/crux.ts` (saf): eşikler, yanıt çözümü (CLS yüzdeliği metin gelir), Core Web Vitals geçti/kaldı, hata sınıflandırma (404 = veri yok), anahtar maskesi. `apps/cms/src/lib/perfornext/crux.ts`: Google CrUX API çağrısı (3 cihaz türü, 10 sn zaman aşımı), şifreli anahtar, anlık görüntü saklama. Ziyaretçiye betik yok.
 - ✅ `/admin/perfornext`: "Gerçek Kullanıcı Verisi (CrUX)" bölümü (Ölçülen rozeti; p75, iyi/geliştirilmeli/kötü dağılım çubuğu, dönem, CWV sonucu) ve anahtar/adres formu; içerik ağırlığı raporu "Tahmin" rozetiyle ayrıldı. Eylemler denetim günlüğünde.
