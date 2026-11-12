@@ -43,5 +43,14 @@ async function archiveEntries(siteId: string, locale: string): Promise<SitemapEn
     const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
     out.push({ contentId: `archive:${t.taxonomyType}:${t.slug}`, type: "archive", locale, region: "", slug: t.slug, pathPrefix: t.taxonomyType === "category" ? "kategori" : "etiket", updatedAt: latest ? new Date(latest) : new Date(0) });
   }
+  // Özel tür arşivleri (`/{arşiv-adresi}`): açık ve haritaya girmesi istenen, en az bir yayını olan türler
+  const types = resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes ?? [];
+  for (const def of types) {
+    if (!def.archive || !def.archiveSlug || !def.inSitemap) continue;
+    const items = candidates.filter((c) => c.kind === `type:${def.id}`);
+    if (items.length === 0) continue;
+    const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
+    out.push({ contentId: `archive:type:${def.id}`, type: "archive", locale, region: "", slug: def.archiveSlug, updatedAt: latest ? new Date(latest) : new Date(0) });
+  }
   return out;
 }

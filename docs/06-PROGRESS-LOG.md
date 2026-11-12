@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Özel tür arşiv sayfaları
+- ✅ `CustomContentType` yeni alanlar: `archive`, `archiveSlug`, `archiveIntro`. Adres boşsa çoğul addan türer (`termSlug`); sistem rotaları (`RESERVED_ARCHIVE_SLUGS`: kategori, etiket, magaza, ara, yazar, kampanya…), başka türün adresi ya da geçersiz biçim reddedilir (önce çoğul ada düşer, o da çakışırsa arşiv kapanır; `droppedArchives` kayıtta yöneticiye bildirir). Eski kayıtlar kapalı kalır.
+- ✅ Ziyaretçi: `/{arşiv-adresi}` (`[slug]` rotasında, **aynı adda içerik yoksa**) sayfalı (`?sayfa=N`, 12 kayıt) liste; tek h1, tanıtım metni, `CollectionPage` + `ItemList` JSON-LD, kanonik adres, boş arşiv `noindex`. Bileşen `components/public/type-archive.tsx`. JS yok.
+- ✅ Site haritası: açık ve `inSitemap` olan, en az bir yayını olan türün arşivi `archive-N.xml` içine girer.
+- ✅ Yönetim: `/admin/content-types` içinde "Arşiv (liste) sayfası oluştur", adres ve tanıtım alanları (yeni tür varsayılanı açık).
+- 🧪 `content-types.test.ts` (arşiv adresi, çakışma, çift adres). Tarayıcıda: tür tanımı → iki kayıt yayını → `/referanslar` (h1, JSON-LD, kanonik, sitemap); `/magaza` ve olmayan adres davranışı değişmedi. Üretim derlemesinde bütçe, `css:check` (26 sayfa) ve `seo-contract` (18 adres) geçti.
+
 ### [2026-11-12] — Footer satır stilleri (Kadence tarzı yönetim)
 - ✅ `packages/core/src/footer-style.ts`: `FooterConfig.options` (orta satır ve alt çubuk için zemin, özel renk, dikey boşluk, ayraç, tam/kapsayıcı genişlik; alt çubuk düzeni `split|centered`, "Başa dön"; sütun boşluğu). `resolveFooterStyle` çizimde beyaz listeye indirir, `footerRowColors` zemine göre okunaklı yazı rengi seçer, `expandFooterText` telifte `{year}` / `{site}` doldurur. Eski kayıtlar değişmeden aynı görünür.
 - ✅ Ziyaretçi `SiteFooter`: üç satır (üst bant, orta, alt çubuk) ayrı zemin ve boşlukla çizilir; JS yok (başa dön düz çapa). `/admin/appearance/footer` içinde yeni **Satır Stilleri** paneli (canlı şerit önizlemesi), `footer-style-panel.tsx`.

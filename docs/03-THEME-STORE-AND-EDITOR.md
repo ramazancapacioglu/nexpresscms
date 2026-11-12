@@ -283,7 +283,8 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 - **Veri:** içerik normal `contents` satırıdır (`type` = tür kimliği); değerler `schemaAttributes._fields`. Göç gerekmez. Kayıtta sunucu `sanitizeFieldValues` ile doğrular; zorunlu alan yalnızca yayında zorunludur.
 - **Editör:** özel türde sağ panelde **Alanlar** sekmesi. Liste: `/admin/entries/{tür}`; yan menüde tür başına bağlantı.
 - **Ziyaretçi:** alanlar `custom_fields` bloğu (JS'siz tablo) olarak içeriğin başına eklenir; `markdownCache` sonuna `## Özellikler` yazılır; site haritası `{tür}-N.xml`; dinamik liste kaynağı `type:{kimlik}`.
-- **Sınırlar (v1):** tür başına arşiv/rota yok (`/{slug}`); özel alanlardan JSON-LD yok; dinamik liste kartı alan göstermez; tür başına sınıflandırma yok.
+- **Arşiv:** türde "Arşiv sayfası oluştur" açılırsa `/{arşiv-adresi}` (varsayılan: çoğul adın slug'ı) yayınlanmış kayıtları sayfalı listeler, JSON-LD (`CollectionPage`) üretir ve site haritasına girer. Aynı adda bir sayfa/yazı varsa o kazanır; sistem rotaları (`magaza`, `kategori`…) adres olamaz.
+- **Sınırlar:** kayıtlar hâlâ `/{slug}` altındadır (arşiv öneki yok); arşiv için tenant şablonu yok (yerleşik görünüm); özel alanlardan JSON-LD yok; dinamik liste ve arşiv kartı alan göstermez; tür başına sınıflandırma yok.
 
 ## Footer Satır Stilleri (2026-11-12)
 

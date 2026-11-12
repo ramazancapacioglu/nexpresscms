@@ -1,6 +1,6 @@
 "use server";
 
-import { resolveSiteSettings, sanitizeContentTypes, type CustomContentType } from "@nexpress/core";
+import { droppedArchives, resolveSiteSettings, sanitizeContentTypes, type CustomContentType } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
@@ -22,6 +22,10 @@ export async function saveContentTypesAction(input: { types: CustomContentType[]
   const current = resolveSiteSettings(site?.settings).general.contentTypes ?? [];
   if (Array.isArray(input.types) && input.types.length > 0 && next.length < Math.min(input.types.length, 12)) {
     return { ok: false, error: "Bazı türler geçersiz: kimlik küçük harf/rakam/alt çizgi olmalı, ad boş olamaz, yerleşik tür adları kullanılamaz, seçenek listesi boş olamaz." };
+  }
+  const dropped = droppedArchives(input.types, next);
+  if (dropped.length > 0) {
+    return { ok: false, error: `“${dropped[0]}” için arşiv adresi kullanılamıyor: sistem sayfasıyla (kategori, magaza, ara…) ya da başka bir türün adresiyle çakışıyor. Farklı bir adres yazın.` };
   }
   for (const old of current) {
     if (next.some((t) => t.id === old.id)) continue;

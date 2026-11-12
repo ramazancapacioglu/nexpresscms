@@ -6,6 +6,7 @@
  * Güvenlik: tür ve alan kimlikleri sabit bir düzenle sınırlıdır, değerler kayıtta tanıma göre temizlenir
  * (`sanitizeFieldValues`), bilinmeyen alan ve fazla uzun değer atılır.
  */
+import { termSlug } from "./dynamic-content";
 import type { BuiltInContentType } from "./types";
 
 export const FIELD_KINDS = ["text", "textarea", "number", "boolean", "select", "date", "url", "email", "image"] as const;
@@ -45,6 +46,12 @@ export interface CustomContentType {
   schemaType: string;
   /** Site haritasına girsin mi. */
   inSitemap: boolean;
+  /** Tür için herkese açık liste sayfası (`/{archiveSlug}`) olsun mu. Eski kayıtlarda yoktur (kapalı). */
+  archive?: boolean;
+  /** Arşiv adresi (`a-z`, rakam, tire). Boşsa çoğul addan türetilir; kayıtta çözülmüş hali yazılır. */
+  archiveSlug?: string;
+  /** Arşiv sayfasının başlık altı kısa tanıtımı (en çok 300 karakter). */
+  archiveIntro?: string;
   fields: CustomFieldDef[];
 }
 
@@ -58,6 +65,14 @@ export const MAX_FIELDS_PER_TYPE = 30;
 /** Metin alanlarının en çok uzunluğu (kısa metin 200, uzun metin 5000). */
 const MAX_TEXT = 200;
 const MAX_LONG = 5000;
+
+/** Arşiv adresi olamayan adlar: yerleşik rotalar, yönetim ve sistem uç noktaları. */
+export const RESERVED_ARCHIVE_SLUGS: readonly string[] = [
+  "kategori", "etiket", "magaza", "ara", "yazar", "kampanya", "kampanyalar", "sepet", "odeme", "hesap",
+  "admin", "api", "login", "og", "sitemap", "sitemaps", "llms", "llms-full", "robots", "feed", "ai-sitemap", "blog",
+];
+const ARCHIVE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const isUsableArchiveSlug = (slug: string): boolean => slug.length > 0 && slug.length <= 40 && ARCHIVE_SLUG_RE.test(slug) && !RESERVED_ARCHIVE_SLUGS.includes(slug);
 
 const clean = (value: unknown, max: number): string => (typeof value === "string" ? value.replace(/\s+/g, " ").trim().slice(0, max) : "");
 
@@ -102,14 +117,40 @@ export function sanitizeContentTypes(value: unknown): CustomContentType[] {
       seen.add(field.key);
       fields.push(field);
     }
+    // Arşiv: açık adres ya da çoğul addan türetilen adres; sistem rotası/başka tür ile çakışırsa arşiv kapalı kalır
+    let archive = r.archive === true;
+    let archiveSlug: string | undefined;
+    if (archive) {
+      const wanted = typeof r.archiveSlug === "string" ? termSlug(r.archiveSlug.trim()).slice(0, 40) : "";
+      const candidates = [wanted, termSlug(clean(r.labelPlural, 40) || label).slice(0, 40)];
+      archiveSlug = candidates.find((c) => isUsableArchiveSlug(c) && !out.some((t) => t.archiveSlug === c));
+      if (!archiveSlug) archive = false;
+    }
     const schemaType = typeof r.schemaType === "string" && SCHEMA_TYPE_RE.test(r.schemaType.trim()) ? r.schemaType.trim() : "WebPage";
-    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, fields });
+    out.push({ id, label, labelPlural: clean(r.labelPlural, 40) || label, schemaType, inSitemap: r.inSitemap !== false, ...(archive ? { archive: true, archiveSlug, ...(clean(r.archiveIntro, 300) ? { archiveIntro: clean(r.archiveIntro, 300) } : {}) } : {}), fields });
   }
   return out;
 }
 
 export const findContentType = (types: readonly CustomContentType[] | undefined, id: string | undefined | null): CustomContentType | undefined =>
   id ? types?.find((t) => t.id === id) : undefined;
+
+/** Arşiv adresine karşılık gelen tür (arşivi açık olanlar arasından). */
+export const findTypeByArchiveSlug = (types: readonly CustomContentType[] | undefined, slug: string): CustomContentType | undefined =>
+  types?.find((t) => t.archive === true && t.archiveSlug === slug);
+
+/** Arşivi istenip çakışma yüzünden kapanan türlerin adları (kayıtta yöneticiye bildirilir). */
+export function droppedArchives(requested: unknown, sanitized: readonly CustomContentType[]): string[] {
+  if (!Array.isArray(requested)) return [];
+  const out: string[] = [];
+  for (const raw of requested) {
+    const r = raw as { id?: unknown; label?: unknown; archive?: unknown } | null;
+    if (!r || r.archive !== true || typeof r.id !== "string") continue;
+    const kept = sanitized.find((t) => t.id === r.id);
+    if (kept && !kept.archive) out.push(kept.label);
+  }
+  return out;
+}
 
 export type FieldValue = string | number | boolean;
 export type FieldValues = Record<string, FieldValue>;

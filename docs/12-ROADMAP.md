@@ -90,7 +90,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 ## Özel içerik türleri — kalanlar (2026-11-12)
 
 - Yapıldı: tür/alan tanımı, editör sekmesi, ziyaretçi tablosu, markdown, site haritası, dinamik liste kaynağı (`docs/03`).
-- Kalan: tür başına arşiv sayfası ve adres öneki; alanlardan JSON-LD (ör. `Event`, `Person`); dinamik liste kartında alan gösterimi; alan bazlı süzme/sıralama; tür başına sınıflandırma; alanların CSV içe/dışa aktarımı.
+- Arşiv sayfası yapıldı (`docs/03`). Kalan: kayıt adreslerinde tür öneki (`/referanslar/acme`); arşiv için tema şablonu türü; arşivde alan süzme/sıralama; alanlardan JSON-LD (ör. `Event`, `Person`); dinamik liste kartında alan gösterimi; alan bazlı süzme/sıralama; tür başına sınıflandırma; alanların CSV içe/dışa aktarımı.
 
 ## Footer — kalanlar (2026-11-12)
 

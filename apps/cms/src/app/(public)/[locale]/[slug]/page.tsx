@@ -14,6 +14,7 @@ import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
 import { buildTemplateContext, coverTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
+import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
@@ -66,6 +67,9 @@ export async function generateMetadata({
   ]);
 
   if (!resolved || !resolved.content) {
+    // Özel türün arşiv adresi (aynı adda içerik yoksa)
+    const archive = await loadTypeArchive(siteId, locale, slug, Number(sp0.sayfa) || 1);
+    if (archive) return typeArchiveMetadata(archive, locale);
     return { title: `${createTranslator(locale)("common.notFoundTitle")} | NexPress CMS` };
   }
 
@@ -131,7 +135,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
+  searchParams: Promise<{ sayfa?: string; form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
 }) {
   const { locale, slug } = await params;
   const sp = await searchParams;
@@ -148,6 +152,8 @@ export default async function PublicDynamicContentPage({
   ]);
 
   if (!resolved || !resolved.content) {
+    const archive = await loadTypeArchive(siteId, locale, slug, Number(sp.sayfa) || 1);
+    if (archive) return <TypeArchiveView data={archive} locale={locale} />;
     return redirectOrNotFound(siteId, `${lb}/${slug}`);
   }
 

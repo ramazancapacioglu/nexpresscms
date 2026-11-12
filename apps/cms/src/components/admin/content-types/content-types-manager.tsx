@@ -10,7 +10,7 @@ import { FieldRow } from "./field-row";
 const input = "h-8 w-full rounded border border-[#E6E7EA] bg-white px-2 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]";
 const slug = (text: string) => text.toLocaleLowerCase("tr").replace(/ç/g, "c").replace(/ğ/g, "g").replace(/ı/g, "i").replace(/ö/g, "o").replace(/ş/g, "s").replace(/ü/g, "u").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 31);
 
-const blank = (n: number): CustomContentType => ({ id: "", label: "", labelPlural: "", schemaType: "WebPage", inSitemap: true, fields: [{ key: "alan_" + (n + 1), label: "", kind: "text" }] });
+const blank = (n: number): CustomContentType => ({ id: "", label: "", labelPlural: "", schemaType: "WebPage", inSitemap: true, archive: true, fields: [{ key: "alan_" + (n + 1), label: "", kind: "text" }] });
 
 /** Özel içerik türü tanımlayıcı: tür listesi + seçili türün ayarları ve alanları. Kayıtta sunucu yeniden doğrular. */
 export function ContentTypesManager({ initial, counts }: { initial: CustomContentType[]; counts: Record<string, number> }) {
@@ -75,6 +75,22 @@ export function ContentTypesManager({ initial, counts }: { initial: CustomConten
             </label>
           </div>
           <label className="inline-flex items-center gap-2 text-[12px]"><input type="checkbox" checked={t.inSitemap} onChange={(e) => patch({ inSitemap: e.target.checked })} /> Site haritasına ekle</label>
+
+          <div className="space-y-2 rounded-md border border-[#E6E7EA] p-3 dark:border-[#23262E]">
+            <label className="inline-flex items-center gap-2 text-[12px] font-semibold"><input type="checkbox" checked={t.archive === true} onChange={(e) => patch({ archive: e.target.checked })} /> Arşiv (liste) sayfası oluştur</label>
+            {t.archive ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-[11px] font-medium">Arşiv adresi
+                  <span className="flex items-center gap-1"><span className="font-mono text-[#8C9099]">/</span>
+                    <input aria-label="Arşiv adresi" className={`${input} font-mono`} value={t.archiveSlug ?? ""} maxLength={40} onChange={(e) => patch({ archiveSlug: e.target.value.toLocaleLowerCase("tr").replace(/[^a-z0-9-]/g, "-") })} placeholder="boşsa çoğul addan üretilir" />
+                  </span>
+                </label>
+                <label className="block text-[11px] font-medium">Başlık altı tanıtım
+                  <input aria-label="Arşiv tanıtımı" className={input} value={t.archiveIntro ?? ""} maxLength={300} onChange={(e) => patch({ archiveIntro: e.target.value })} placeholder="Kısa bir açıklama (isteğe bağlı)" />
+                </label>
+              </div>
+            ) : <p className="text-[11px] text-[#8C9099]">Açıkken bu türün yayınları ziyaretçide sayfalı bir liste olarak görünür ve site haritasına girer.</p>}
+          </div>
 
           <div className="space-y-2">
             <div className="text-[12px] font-semibold">Alanlar ({t.fields.length}/{MAX_FIELDS_PER_TYPE})</div>

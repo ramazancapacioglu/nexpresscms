@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { displayFields, isValidTypeId, readFieldValues, resolveSiteSettings, sanitizeContentTypes, sanitizeFieldValues, writeFieldValues } from "../src/index";
+import { displayFields, droppedArchives, findTypeByArchiveSlug, isValidTypeId, readFieldValues, resolveSiteSettings, sanitizeContentTypes, sanitizeFieldValues, writeFieldValues } from "../src/index";
 
 const defs = sanitizeContentTypes([
   {
@@ -65,4 +65,25 @@ test("okuma/yazma ve ziyaretçi gösterimi: gizli ve boş alanlar çıkar, biçi
 test("ayar çözümünde türler korunur; yoksa boş", () => {
   assert.equal(resolveSiteSettings({ general: { contentTypes: defs } }).general.contentTypes?.length, 1);
   assert.deepEqual(resolveSiteSettings({}).general.contentTypes, []);
+});
+
+test("arşiv: eski kayıtta kapalı; adres çoğul addan türer; sistem rotası ve çift adres reddedilir", () => {
+  assert.equal(defs[0]!.archive, undefined, "arşiv alanı olmayan tür kapalı kalır");
+  const types = sanitizeContentTypes([
+    { id: "etkinlik", label: "Etkinlik", labelPlural: "Etkinlikler Takvimi", archive: true, fields: [] },
+    { id: "ekip", label: "Ekip", labelPlural: "Ekibimiz", archive: true, archiveSlug: "  Ekip Üyeleri ", archiveIntro: "  Bizi tanıyın  ", fields: [] },
+    { id: "magaza_x", label: "Mağaza", labelPlural: "Mağaza", archive: true, fields: [] },
+    { id: "kopya", label: "Kopya", labelPlural: "Ekibimiz", archive: true, archiveSlug: "ekip-uyeleri", fields: [] },
+    { id: "kapali", label: "Kapalı", labelPlural: "Kapalılar", fields: [] },
+  ]);
+  const by = (id: string) => types.find((t) => t.id === id)!;
+  assert.equal(by("etkinlik").archiveSlug, "etkinlikler-takvimi");
+  assert.equal(by("ekip").archiveSlug, "ekip-uyeleri");
+  assert.equal(by("ekip").archiveIntro, "Bizi tanıyın");
+  assert.equal(by("magaza_x").archive, undefined, "sistem rotası (magaza) arşiv olamaz");
+  assert.equal(by("kopya").archiveSlug, "ekibimiz", "açık adres doluysa çoğul addan türeyene düşer");
+  assert.equal(by("kapali").archive, undefined);
+  assert.equal(findTypeByArchiveSlug(types, "ekip-uyeleri")?.id, "ekip");
+  assert.equal(findTypeByArchiveSlug(types, "kapalilar"), undefined);
+  assert.deepEqual(droppedArchives([{ id: "magaza_x", label: "Mağaza", archive: true }, { id: "ekip", archive: true }], types), ["Mağaza"]);
 });
