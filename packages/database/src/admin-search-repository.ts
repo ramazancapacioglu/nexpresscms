@@ -1,5 +1,5 @@
 import { and, eq, ne } from "drizzle-orm";
-import { getCmsContext, rankAdminSearch, type AdminSearchCandidate, type AdminSearchHit, type DbDialect } from "@nexpress/core";
+import { getCmsContext, rankAdminSearch, type AdminSearchCandidate, type AdminSearchHit, type DbDialect, type UserRole } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
 
@@ -16,7 +16,7 @@ export class AdminSearchRepository {
     private readonly dialect: DbDialect
   ) {}
 
-  public async search(query: string, role: "admin" | "editor", perGroup = 5): Promise<AdminSearchHit[]> {
+  public async search(query: string, role: UserRole, perGroup = 5): Promise<AdminSearchHit[]> {
     const { db, t } = this.backend();
     const s = this.siteId;
     const out: AdminSearchCandidate[] = [];

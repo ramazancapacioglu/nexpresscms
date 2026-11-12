@@ -20,6 +20,7 @@ import {
 import type { DesignTokens } from "@nexpress/core";
 import { activateThemeAction } from "@/app/admin/actions";
 import { importThemeDemoAction } from "@/app/admin/themes/demo-actions";
+import { ThemePreviewMock } from "./theme-preview-mock";
 import {
   activateUploadedThemeAction,
   deleteUploadedThemeAction,
@@ -112,6 +113,24 @@ export function ThemeGalleryView({
         } else {
           notify("err", "Tema etkinleştirilemedi.");
         }
+      } catch {
+        notify("err", "Bir hata oluştu.");
+      }
+    });
+  };
+
+  /** Tek tıkla: temayı etkinleştirir, demo sayfaları ekler ve demo ana sayfayı açılış sayfası yapar. */
+  const handleActivateWithDemo = (theme: ThemeGalleryItem) => {
+    const count = theme.demoCount ?? 0;
+    if (!window.confirm(`“${theme.name}” etkinleştirilecek ve ${count} demo sayfa/yazı eklenecek. Aynı adresteki içerik değişmez; demo ana sayfa açılış sayfası olur. Devam edilsin mi?`)) return;
+    startTransition(async () => {
+      try {
+        const res = await activateThemeAction({ themeId: theme.id });
+        if (!res.ok) return notify("err", "Tema etkinleştirilemedi.");
+        const demo = await importThemeDemoAction({ themeId: theme.id });
+        if (demo.ok) notify("ok", `“${theme.name}” etkinleştirildi, ${demo.added} demo içerik eklendi.`);
+        else notify("err", demo.error);
+        router.refresh();
       } catch {
         notify("err", "Bir hata oluştu.");
       }
@@ -460,36 +479,17 @@ export function ThemeGalleryView({
               >
                 <div>
                   {/* Görsel / Banner */}
-                  <div className="relative h-36 bg-muted/60 border-b border-border overflow-hidden">
+                  <div className="relative h-44 bg-muted/60 border-b border-border overflow-hidden">
                     {thm.screenshot ? (
                       <img
                         src={thm.screenshot}
                         alt={thm.name}
                         className="w-full h-full object-cover"
                       />
+                    ) : thm.tokens ? (
+                      <ThemePreviewMock tokens={thm.tokens} name={thm.name} />
                     ) : (
-                      <div className="w-full h-full p-4 flex flex-col justify-between bg-gradient-to-br from-muted/30 to-muted/80">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-muted-foreground">
-                            {thm.isOfficial ? "Official" : "Package"}
-                          </span>
-                          <span className="font-mono text-[10px] rounded bg-background/80 px-1.5 py-0.5 text-muted-foreground border border-border">
-                            v{thm.version}
-                          </span>
-                        </div>
-                        <div className="text-center font-bold text-sm text-foreground">
-                          {thm.name}
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          {thm.swatches.map((c, i) => (
-                            <span
-                              key={i}
-                              className="h-3 w-3 rounded-full border border-black/10"
-                              style={{ backgroundColor: c }}
-                            />
-                          ))}
-                        </div>
-                      </div>
+                      <div className="flex h-full w-full items-center justify-center bg-muted/50 text-sm font-bold text-foreground">{thm.name}</div>
                     )}
 
                     {isCurrentlyActive && (
@@ -590,7 +590,7 @@ export function ThemeGalleryView({
                           className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-[11px] font-bold hover:bg-muted disabled:opacity-50"
                         >
                           <Layers className="h-3 w-3" />
-                          <span>Demo veriyi aktar</span>
+                          <span>Demo aktar</span>
                         </button>
                       ) : null}
                       <Link
@@ -602,14 +602,28 @@ export function ThemeGalleryView({
                       </Link>
                     </div>
                   ) : thm.isOfficial ? (
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => handleActivateOfficial(thm)}
-                      className="inline-flex h-7 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-[11px] font-bold text-white hover:bg-blue-700 transition disabled:opacity-50"
-                    >
-                      <span>Etkinleştir</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      {(thm.demoCount ?? 0) > 0 ? (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleActivateWithDemo(thm)}
+                          title="Temayı etkinleştirir ve örnek sayfa/yazıları ekler"
+                          className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-[11px] font-bold hover:bg-muted disabled:opacity-50"
+                        >
+                          <Layers className="h-3 w-3" />
+                          <span>Demo ile</span>
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => handleActivateOfficial(thm)}
+                        className="inline-flex h-7 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-[11px] font-bold text-white hover:bg-blue-700 transition disabled:opacity-50"
+                      >
+                        <span>Etkinleştir</span>
+                      </button>
+                    </div>
                   ) : (
                     <button
                       type="button"

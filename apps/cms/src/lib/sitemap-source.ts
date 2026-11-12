@@ -1,5 +1,5 @@
 import "server-only";
-import { isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
+import { contentPrefix, isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
@@ -19,10 +19,12 @@ export async function loadSitemap(siteId: string) {
     return { entries: [], files: [], defaultLocale: site?.defaultLocale ?? "tr", prefixless: isPrefixless(site, site?.defaultLocale ?? "tr") };
   }
   const archives = await archiveEntries(siteId, site?.defaultLocale ?? "tr");
-  const entries = [...contentEntries, ...archives];
+  // Önekli özel türlerin kayıtları `/{önek}/{slug}` adresiyle haritaya girer (öneksiz adres yönlendirdiği için listelenmez)
+  const types = settings.general.contentTypes ?? [];
+  const entries = [...contentEntries.map((e) => (contentPrefix(types, e.type) ? { ...e, pathPrefix: contentPrefix(types, e.type) as string } : e)), ...archives];
   return {
     entries,
-    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, "archive"]),
+    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), "archive"]),
     defaultLocale: site?.defaultLocale ?? "tr",
     prefixless: isPrefixless(site, site?.defaultLocale ?? "tr"),
   };
@@ -42,6 +44,15 @@ async function archiveEntries(siteId: string, locale: string): Promise<SitemapEn
     if (items.length === 0) continue;
     const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
     out.push({ contentId: `archive:${t.taxonomyType}:${t.slug}`, type: "archive", locale, region: "", slug: t.slug, pathPrefix: t.taxonomyType === "category" ? "kategori" : "etiket", updatedAt: latest ? new Date(latest) : new Date(0) });
+  }
+  // Özel tür arşivleri (`/{arşiv-adresi}`): açık ve haritaya girmesi istenen, en az bir yayını olan türler
+  const types = resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes ?? [];
+  for (const def of types) {
+    if (!def.archive || !def.archiveSlug || !def.inSitemap) continue;
+    const items = candidates.filter((c) => c.kind === `type:${def.id}`);
+    if (items.length === 0) continue;
+    const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
+    out.push({ contentId: `archive:type:${def.id}`, type: "archive", locale, region: "", slug: def.archiveSlug, updatedAt: latest ? new Date(latest) : new Date(0) });
   }
   return out;
 }

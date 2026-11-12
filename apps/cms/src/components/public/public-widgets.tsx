@@ -453,16 +453,18 @@ export function RenderPublicWidget({
             <li key={lnk.id || idx}>
               <a
                 href={isSafeMenuHref(lnk.href) ? lnk.href : (root || "/")}
-                className="flex items-center justify-between gap-2 opacity-80 transition hover:opacity-100"
+                className="group flex items-center justify-between gap-2"
               >
-                <span className="flex items-center gap-1.5 truncate">
+                {/* Yarı saydamlık yalnızca etikette: rozet metni tam kontrastla kalır */}
+                <span className="flex items-center gap-1.5 truncate opacity-80 transition group-hover:opacity-100">
                   {lnk.icon ? <PublicSvgIcon name={lnk.icon} className="h-3.5 w-3.5 opacity-75" /> : null}
                   <span>{lnk.label}</span>
                 </span>
                 {lnk.badge ? (
                   <span
                     style={{
-                      backgroundColor: tokens.colors.primary,
+                      // Küçük rozet metni AA kontrastı için zemin biraz koyulaştırılır
+                      backgroundColor: `color-mix(in srgb, ${tokens.colors.primary} 82%, #000000)`,
                       color: tokens.colors.primaryForeground,
                     }}
                     className="rounded px-1.5 py-0.5 text-[10px] font-bold"

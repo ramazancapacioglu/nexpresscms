@@ -7,6 +7,7 @@ import { SECTION_LIBRARY_ITEMS } from "./library-sections";
 import { EXTRA_LIBRARY_ITEMS } from "./library-extras";
 import { FRESH_LIBRARY_ITEMS } from "./library-fresh";
 import { VITRIN_LIBRARY_ITEMS } from "./library-vitrin";
+import { CORPORATE_LIBRARY_ITEMS } from "./library-corporate";
 import { SHORT_NAMES } from "./library-names";
 import { MODERN_FORM_ITEMS } from "./library-forms-modern";
 import { categoryFor } from "./library-category-map";
@@ -15,6 +16,7 @@ import type { DesignLibraryItem } from "./library-types";
 /** Tüm tasarım kütüphanesi: temel öğeler + katalog öğeleri. */
 /** Yeni (modern ve yaratıcı) bölümler listenin başında; kısa adlar kartta tek satıra sığar. */
 export const NEXPRESS_DESIGN_LIBRARY: DesignLibraryItem[] = [
+  ...CORPORATE_LIBRARY_ITEMS,
   ...VITRIN_LIBRARY_ITEMS,
   ...FRESH_LIBRARY_ITEMS,
   ...DISCLOSURE_LIBRARY_ITEMS,

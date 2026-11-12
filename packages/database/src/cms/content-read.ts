@@ -100,10 +100,10 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
   public async getContentBySlug(
     slug: string,
     locale = "tr",
-    options?: { publicOnly?: boolean }
+    options?: { publicOnly?: boolean; type?: string }
   ): Promise<ContentWithTranslationDto | null> {
     const all = await this.visibleContents(locale, options?.publicOnly);
-    return all.find((item) => item.slug === slug) ?? null;
+    return all.find((item) => item.slug === slug && (!options?.type || item.type === options.type)) ?? null;
   }
 
   /**
@@ -124,9 +124,9 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
   public async resolveContentBySlug(
     slug: string,
     locale = "tr",
-    options?: { publicOnly?: boolean }
+    options?: { publicOnly?: boolean; type?: string }
   ): Promise<{ content: ContentWithTranslationDto; isRedirect: boolean } | null> {
-    const all = await this.visibleContents(locale, options?.publicOnly);
+    const all = (await this.visibleContents(locale, options?.publicOnly)).filter((item) => !options?.type || item.type === options.type);
     const direct = all.find((item) => item.slug === slug);
     if (direct) return { content: direct, isRedirect: false };
     const old = all.find((item) => resolvePublishing(item.schemaAttributes).slugHistory.includes(slug));

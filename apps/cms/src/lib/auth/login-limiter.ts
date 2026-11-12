@@ -1,23 +1,18 @@
+import { sharedDelete, windowCount, windowIncr } from "@/lib/shared-state";
+
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 8;
-const attempts = new Map<string, { count: number; resetAt: number }>();
+const key = (k: string) => `nx:login:${k}`;
 
-/** Bellek içi deneme sınırı; çok örnekli kurulumda Redis'e taşınmalıdır. */
-export function isLoginBlocked(key: string, now = Date.now()): boolean {
-  const entry = attempts.get(key);
-  if (!entry || entry.resetAt <= now) return false;
-  return entry.count >= MAX_ATTEMPTS;
+/** Giriş deneme sınırı. `REDIS_URL` varsa tüm örnekler ortak sayar; yoksa süreç belleğinde (`shared-state.ts`). */
+export async function isLoginBlocked(k: string): Promise<boolean> {
+  return (await windowCount(key(k))) >= MAX_ATTEMPTS;
 }
 
-export function recordLoginFailure(key: string, now = Date.now()): void {
-  const entry = attempts.get(key);
-  if (!entry || entry.resetAt <= now) {
-    attempts.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return;
-  }
-  entry.count += 1;
+export async function recordLoginFailure(k: string): Promise<void> {
+  await windowIncr(key(k), WINDOW_MS);
 }
 
-export function clearLoginFailures(key: string): void {
-  attempts.delete(key);
+export async function clearLoginFailures(k: string): Promise<void> {
+  await sharedDelete(key(k));
 }

@@ -148,6 +148,27 @@
       "when": 1794225562906,
       "tag": "0020_silent_jackal",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1794495708792,
+      "tag": "0021_aromatic_lord_tyger",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1794496581427,
+      "tag": "0022_old_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1794497976550,
+      "tag": "0023_luxuriant_clea",
+      "breakpoints": true
     }
   ]
 }

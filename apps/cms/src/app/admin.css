@@ -1,3 +1,4 @@
+/* Yönetim paneli ve oturum sayfalarının stil sayfası (tam Tailwind taraması). Ziyaretçi sayfaları `public.css`'i kullanır. */
 @import "tailwindcss";
 @source "../../../../packages/themes/src";
 
@@ -88,7 +89,7 @@
   /* Ziyaretçi yüzeyi anlamsal renkleri: değer site paletinden (CSS değişkeni) okunur; karanlık modda değişkenler değişir */
   --color-nx-fg: var(--nx-fg, #0f172a);
   --color-nx-soft: var(--nx-fg-soft, #334155);
-  --color-nx-muted: var(--nx-muted-fg, #64748b);
+  --color-nx-muted: color-mix(in srgb, var(--nx-muted-fg, #64748b) 80%, #000000);
   --color-nx-card: var(--nx-card, #ffffff);
   --color-nx-subtle: var(--nx-muted, #f1f5f9);
   --color-nx-line: var(--nx-border, #e2e8f0);

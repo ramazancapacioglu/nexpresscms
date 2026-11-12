@@ -255,11 +255,11 @@ export function StudioClient({
               <Palette className="w-5 h-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
-              Tasarım Stüdyosu & Şablon Fabrikası
+              Kütüphane & Yapay Zekâ
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Bölüm ve sayfa üretir, kütüphaneye kaydeder, şablon paketi alır. Tema rengi ve header düzeni burada değildir.
+            Hazır bölüm kütüphanesi, yapay zekâ ile tasarım üretimi, kayıtlı tasarımlar ve özel CSS/JS. Header ve footer için ilgili sekmeleri, sayfa görünümleri için Şablonlar'ı kullanın.
           </p>
         </div>
 
@@ -318,7 +318,7 @@ export function StudioClient({
           }`}
         >
           <LayoutTemplate className="w-4 h-4" />
-          <span>Şablon paketleri ({templates.length})</span>
+          <span>Şablon listesi ({templates.length})</span>
         </button>
 
         <button
@@ -331,7 +331,7 @@ export function StudioClient({
           }`}
         >
           <Wand2 className="w-4 h-4" />
-          <span>🤖 AI Tasarım Asistanı</span>
+          <span>Yapay zekâ ile üret</span>
         </button>
 
         <button
@@ -344,7 +344,7 @@ export function StudioClient({
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Tasarım Kütüphanesi ({library.length})</span>
+          <span>Kayıtlı tasarımlar ({library.length})</span>
         </button>
 
         <button
@@ -357,7 +357,7 @@ export function StudioClient({
           }`}
         >
           <Code2 className="w-4 h-4" />
-          <span>⚙️ Özel Kodlar (Ek CSS & Ek JS)</span>
+          <span>Özel kod (CSS / JS)</span>
         </button>
 
         <button
@@ -370,7 +370,7 @@ export function StudioClient({
           }`}
         >
           <Store className="w-4 h-4" />
-          <span>Şablon paketi</span>
+          <span>İçe / dışa aktar</span>
         </button>
       </div>
 

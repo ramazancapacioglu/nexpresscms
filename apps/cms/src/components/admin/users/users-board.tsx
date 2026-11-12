@@ -12,12 +12,12 @@ import {
 } from "@/app/admin/users/actions";
 import { inviteUserAction, sendResetLinkAction, type InviteResult } from "@/app/admin/users/invite-actions";
 import { adminDisableTwoFactorAction } from "@/app/admin/users/two-factor-actions";
-import { PASSWORD_MIN_LENGTH, type UserRole } from "@nexpress/core";
+import { PASSWORD_MIN_LENGTH, ROLE_LABEL, USER_ROLES, type UserRole } from "@nexpress/core";
+import Link from "next/link";
 import { Mail, UserPlus } from "lucide-react";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const field = `h-8 rounded border ${border} bg-transparent px-2 text-[12px] outline-none focus:ring-1 focus:ring-[#266DF0]`;
-const ROLE_LABEL: Record<UserRole, string> = { admin: "Yönetici", editor: "Editör" };
 const fmt = (d: Date | null) => (d ? new Date(d).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "—");
 
 export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId: string }) {
@@ -52,7 +52,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-[16px] font-bold tracking-tight">Kullanıcılar & Roller</h1>
+        <h1 className="text-[16px] font-bold tracking-tight">Kullanıcılar & Roller <Link href="/admin/users/roles" className="ml-2 align-middle text-[11px] font-medium text-[#266DF0] hover:underline">İzin matrisi →</Link></h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Yönetici her şeyi yönetir; Editör içerik, medya, tema ve katalogla çalışır, ayarlara ve kullanıcılara erişemez.
           Rol, devre dışı bırakma ve parola sıfırlama kullanıcının açık oturumlarını hemen kapatır.
@@ -104,7 +104,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                         }}
                         className={field}
                       >
-                        {(["admin", "editor"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+                        {USER_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
                       </select>
                     </td>
                     <td className="px-3 py-2">
@@ -201,7 +201,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
           <input required type="email" aria-label="E-posta" placeholder="E-posta" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={field} />
           <input aria-label="Ad" placeholder="Ad Soyad" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
           <select aria-label="Rol" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })} className={field}>
-            {(["editor", "admin"] as const).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+            {USER_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
           </select>
           {!byMail && <input required type="password" autoComplete="new-password" aria-label="İlk parola" placeholder={`İlk parola (${PASSWORD_MIN_LENGTH}+ karakter)`} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={field} />}
           <button type="submit" disabled={pending} className="h-8 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-60">{byMail ? "Davet gönder" : "Oluştur"}</button>

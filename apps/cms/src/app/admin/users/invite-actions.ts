@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { UserRole } from "@nexpress/core";
+import { isUserRole, type UserRole } from "@nexpress/core";
 import { hashPassword } from "@nexpress/core/password";
 import { getUserRepository, toSummary, type UserSummaryDto } from "@nexpress/database";
 import { randomBytes } from "node:crypto";
@@ -20,7 +20,7 @@ export async function inviteUserAction(input: { email: string; name: string; rol
   const admin = await requireAdmin("user.invite");
   const email = input.email.trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return { ok: false, error: "Geçerli bir e-posta girin." };
-  if (input.role !== "admin" && input.role !== "editor") return { ok: false, error: "Geçersiz rol." };
+  if (!isUserRole(input.role)) return { ok: false, error: "Geçersiz rol." };
   const repo = getUserRepository(admin.siteId);
   if (await repo.findByEmail(email)) return { ok: false, error: "Bu e-posta ile zaten bir hesap var." };
   const user = await repo.create({ email, name: input.name, role: input.role, passwordHash: await hashPassword(randomBytes(32).toString("base64url")) });

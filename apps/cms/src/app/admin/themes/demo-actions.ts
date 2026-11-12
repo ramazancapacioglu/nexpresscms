@@ -82,6 +82,11 @@ export async function importThemeDemoAction(input: { themeId: string }): Promise
     added++;
   }
 
+  // Demo ana sayfa açılış sayfası olur (ziyaretçi `/` adresinde temanın vitrinini görür)
+  if (pack.homeSlug && (await repo.getContentBySlug(pack.homeSlug, locale))) {
+    await repo.saveSiteSettings({ general: { frontPageSlug: pack.homeSlug } });
+  }
+
   await recordAudit(
     { id: admin.sub, email: admin.email },
     "themes.importDemo",

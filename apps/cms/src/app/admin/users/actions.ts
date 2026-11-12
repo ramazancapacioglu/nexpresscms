@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  isUserRole,
   PASSWORD_PROBLEM_MESSAGES,
   validatePassword,
   wouldRemoveLastAdmin,
@@ -33,7 +34,7 @@ export async function createUserAction(input: {
   const admin = await requireAdmin();
   const email = input.email.trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return fail("Geçerli bir e-posta girin.");
-  if (input.role !== "admin" && input.role !== "editor") return fail("Geçersiz rol.");
+  if (!isUserRole(input.role)) return fail("Geçersiz rol.");
   const pw = passwordError(input.password, email, input.name);
   if (pw) return fail(pw);
 
@@ -53,12 +54,14 @@ async function load(adminSiteId: string, id: string) {
 
 export async function setUserRoleAction(input: { id: string; role: UserRole }): Promise<UserActionResult> {
   const admin = await requireAdmin();
-  if (input.role !== "admin" && input.role !== "editor") return fail("Geçersiz rol.");
+  if (!isUserRole(input.role)) return fail("Geçersiz rol.");
   if (input.id === admin.sub) return fail("Kendi rolünüzü değiştiremezsiniz.");
   const { repo, all, target } = await load(admin.siteId, input.id);
   if (!target) return fail("Kullanıcı bulunamadı.");
   if (wouldRemoveLastAdmin(all, target.id, { role: input.role })) return fail("Son etkin yönetici düşürülemez.");
   await repo.setRole(target.id, input.role);
+  // Oturum belirtecindeki rol eskir: açık oturumlar kapanır, kişi yeni yetkiyle girer
+  await repo.revokeSessions(target.id);
   await recordAudit({ id: admin.sub, email: admin.email }, "user.roleChanged", { target: target.email, detail: `${target.role} → ${input.role}` });
   revalidatePath("/admin/users");
   return { ok: true };

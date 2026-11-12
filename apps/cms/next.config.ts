@@ -36,14 +36,6 @@ const securityHeaders = [
     : []),
 ];
 
-/**
- * Ziyaretçi HTML'i için CDN önbelleği (saniye). 0 = kapalı (varsayılan).
- * Değer derleme anında okunur. Düzenleme sonrası CDN'deki kopya en fazla bu kadar bayat kalır;
- * uygulama içi veri önbelleği ise yazma anında düşer. Mağaza yolları bilerek hariçtir (sepet çerezi).
- */
-const publicCacheSeconds = Number(process.env.PUBLIC_CACHE_SECONDS ?? 0);
-const publicCacheControl = `public, s-maxage=${publicCacheSeconds}, stale-while-revalidate=${publicCacheSeconds * 5}`;
-
 const nextConfig: NextConfig = {
   // Doğrulama/CI için ayrı çıktı klasörü: aynı klasörde çalışan bir `next dev` ile çakışmaz.
   distDir: process.env.NEXT_DIST_DIR || ".next",
@@ -71,16 +63,8 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    const publicHtml =
-      publicCacheSeconds > 0
-        ? ["/:locale(tr)", "/:locale(tr)/:slug((?!magaza(?:/|$)).+)"].map((source) => ({
-            source,
-            headers: [{ key: "Cache-Control", value: publicCacheControl }],
-          }))
-        : [];
     return [
       { source: "/:path*", headers: securityHeaders },
-      ...publicHtml,
       {
         // Yönetim ve giriş sayfaları çerçeveye alınamaz ve önbelleğe alınmaz
         source: "/(admin|login)/:path*",

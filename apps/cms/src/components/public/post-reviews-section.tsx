@@ -84,7 +84,7 @@ export function PostReviewsSection({
         <div className="md:col-span-8 flex flex-col justify-center space-y-2">
           {summary.stars.map((row) => (
             <div key={row.star} className="flex items-center gap-3 text-xs">
-              <span className="w-12 font-semibold text-amber-600 shrink-0">
+              <span className="w-12 font-semibold text-amber-700 shrink-0">
                 {row.star} ★
               </span>
               <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-nx-subtle border border-nx-line">

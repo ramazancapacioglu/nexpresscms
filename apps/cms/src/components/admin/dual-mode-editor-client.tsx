@@ -18,7 +18,7 @@ export function DualModeEditorClient(props: DualModeEditorClientProps) {
       <div className="relative z-0 -m-3 flex h-[calc(100vh-2.5rem)] flex-col overflow-hidden bg-[#F6F7F9] dark:bg-[#0B0C0E]">
         <DualModeEditorBlockCss s={s} />
         <DualModeEditorToast s={s} />
-        <DualModeEditorTopbar s={s} />
+        <DualModeEditorTopbar s={s} canPublish={props.canPublish !== false} />
         {s.recovery && (
           <div role="alert" className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 dark:text-amber-200">
             <span>

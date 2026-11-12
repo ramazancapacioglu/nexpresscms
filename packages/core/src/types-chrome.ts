@@ -1,3 +1,4 @@
+import type { FooterOptions } from "./footer-style";
 import type { FooterLayoutPreset, SiteWidget } from "./widgets";
 
 /**
@@ -81,7 +82,18 @@ export interface HeaderBarSlotConfig {
   mobileRightWidgets?: string[];
 }
 
+/** Header öğelerinin ortak ayarları (yerleşim kurucusu). Hepsi isteğe bağlıdır; eski kayıtlar değişmeden çalışır. */
+export interface HeaderOptions {
+  /** Ana düğmenin biçimi. Varsayılan `solid`. */
+  ctaStyle?: "solid" | "outline" | "ghost";
+  secondaryLabel?: string;
+  secondaryHref?: string;
+  /** `html` öğesinin metni (düz metin, en çok 160 karakter). */
+  htmlText?: string;
+}
+
 export interface HeaderConfig {
+  options?: HeaderOptions;
   topBar: HeaderBarSlotConfig & {
     announcementText?: string;
     contactPhone?: string;
@@ -154,6 +166,8 @@ export interface FooterTopBannerConfig {
 
 export interface FooterConfig {
   layoutPreset?: FooterLayoutPreset;
+  /** Orta ve alt satırın stili (zemin, boşluk, ayraç, genişlik, alt çubuk düzeni). */
+  options?: FooterOptions;
   topBanner?: FooterTopBannerConfig;
   widgets?: SiteWidget[];
   /** Bu dilde kayıtlı menüler. Header menüsü ayrıca `menuItems` alanına yazılır. */

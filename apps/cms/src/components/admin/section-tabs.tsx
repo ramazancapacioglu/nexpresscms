@@ -54,34 +54,24 @@ export const SEO_TABS: SectionTab[] = [
   { href: "/admin/seo/settings", label: "Ayarlar" },
 ];
 
-/** Tema derisi: galeri ve jetonlar. Yerleşim ve şablon burada yok. */
-const THEME_TABS: SectionTab[] = [
-  { href: "/admin/themes", label: "Tema galerisi", match: ["/admin/themes/packages"] },
+/**
+ * Tasarımın tamamı tek çatıdadır ve tek sekme çubuğunu paylaşır: tema, özelleştirici, site iskeleti (header, footer, menü,
+ * kenar çubuğu), sayfa şablonları ve kütüphane/yapay zekâ. Sırası "dıştan içe"dir: önce tema, sonra iskelet, en son içerik tasarımı.
+ */
+const DESIGN_TABS: SectionTab[] = [
+  { href: "/admin/themes", label: "Temalar", match: ["/admin/themes/packages"] },
   { href: "/admin/themes/customize", label: "Özelleştirici" },
-];
-
-/** İçerik tasarımı: üretim, kütüphane ve şablon ataması. Tema rengi burada yok. */
-const STUDIO_TABS: SectionTab[] = [
-  { href: "/admin/studio", label: "Tasarım stüdyosu", match: ["/admin/design-library"] },
-  { href: "/admin/appearance/templates", label: "Şablonlar" },
-];
-
-/** Site iskeleti: header, menü, footer, kenar çubuğu. */
-const CHROME_TABS: SectionTab[] = [
   { href: "/admin/appearance/header", label: "Header" },
-  { href: "/admin/appearance/menus", label: "Menüler", match: ["/admin/appearance/navigation"] },
   { href: "/admin/appearance/footer", label: "Footer" },
+  { href: "/admin/appearance/menus", label: "Menüler", match: ["/admin/appearance/navigation"] },
   { href: "/admin/appearance/sidebar", label: "Kenar çubuğu" },
+  { href: "/admin/appearance/templates", label: "Şablonlar" },
+  { href: "/admin/studio", label: "Kütüphane & AI", match: ["/admin/design-library"] },
 ];
 
 export const SeoTabs = () => <SectionTabs tabs={SEO_TABS} label="SEO bölümleri" />;
 
-/** Bulunulan adresin ailesini gösterir. Tema, stüdyo ve yerleşim aynı çubukta durmaz. */
+/** Tasarım sayfalarının ortak sekme çubuğu (tema, iskelet, şablon, kütüphane). */
 export function AppearanceNav() {
-  const path = usePathname() ?? "";
-  const studio = path.startsWith("/admin/studio") || path.startsWith("/admin/design-library") || path.startsWith("/admin/appearance/templates");
-  const theme = path.startsWith("/admin/themes");
-  const tabs = studio ? STUDIO_TABS : theme ? THEME_TABS : CHROME_TABS;
-  const label = studio ? "Tasarım bölümleri" : theme ? "Tema bölümleri" : "Yerleşim bölümleri";
-  return <SectionTabs tabs={tabs} label={label} />;
+  return <SectionTabs tabs={DESIGN_TABS} label="Tasarım bölümleri" />;
 }

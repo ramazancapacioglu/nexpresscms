@@ -12,7 +12,9 @@ const THEME = getThemeManifest("corporate-aurora");
 export const LIBRARY_PREVIEW_CSS = `${compileDesignTokensToCssVars(THEME.tokens).replaceAll(":root", ".nx-lib-preview")}
 .nx-lib-preview{color-scheme:light;background:#fff;color:#0f172a}
 .nx-lib-preview .nx-block{width:auto!important;left:auto!important;margin-left:0!important}
-.nx-lib-preview *{animation:none!important}`;
+.nx-lib-preview *{animation:none!important}
+.nx-lib-preview [style*="100vw"]{width:100%!important;max-width:100%!important;left:0!important;margin-left:0!important}
+.nx-lib-preview img,.nx-lib-preview svg,.nx-lib-preview video{max-width:100%}`;
 
 /**
  * Kütüphane kartının canlı önizlemesi: bloğun gerçek çıktısı 820 px genişlikte çizilir ve karta sığacak biçimde küçültülür.
@@ -35,7 +37,7 @@ export function LibraryLivePreview({ block, height = 210 }: { block: Omit<BlockN
   }, []);
 
   return (
-    <div ref={host} style={{ height }} className="nx-lib-preview pointer-events-none relative overflow-hidden rounded-xl border border-border bg-white">
+    <div ref={host} style={{ height }} className="nx-lib-preview pointer-events-none relative w-full min-w-0 overflow-hidden rounded-lg border border-border bg-white [contain:paint]">
       {visible ? (
         <div style={{ width: SOURCE_WIDTH, transform: `scale(${scale})`, transformOrigin: "top left" }}>
           <RscBlockRenderer blocks={blocks} themeId="corporate-clean" tokens={THEME.tokens} locale="tr" preview />

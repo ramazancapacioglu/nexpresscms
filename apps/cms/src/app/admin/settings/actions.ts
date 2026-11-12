@@ -1,7 +1,7 @@
 "use server";
 
 import { getThemeManifest } from "@nexpress/themes";
-import { resolveSiteSettings, type LocalizedSiteIdentity } from "@nexpress/core";
+import { resolveSiteSettings, sanitizeCookieConsent, type CookieConsentSettings, type LocalizedSiteIdentity } from "@nexpress/core";
 import { revalidatePath } from "@/lib/cache";
 import { getScopedRepository, getSiteIdentityRepository, getSiteResetRepository, type ContentWipe } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
@@ -86,6 +86,18 @@ export async function saveMaintenanceAction(input: { enabled: boolean; message: 
   await recordAudit({ id: admin.sub, email: admin.email }, "settings.maintenance", {
     detail: input.enabled ? "bakım açık" : "bakım kapalı",
   });
+  await revalidatePath("/admin/settings");
+  await revalidatePath("/tr", "layout");
+  return { ok: true };
+}
+
+/** Çerez onayı bannerı ve betik kapısı. Politika bağlantısı yalnızca site içi yol ya da https olabilir. */
+export async function saveCookieConsentAction(input: CookieConsentSettings): Promise<SettingsResult> {
+  const admin = await requireAdmin("settings.cookieConsent");
+  const cookieConsent = sanitizeCookieConsent(input);
+  if (input.policyHref?.trim() && !cookieConsent.policyHref) return { ok: false, error: "Politika adresi / ile başlayan bir yol ya da https adresi olmalı." };
+  await getScopedRepository(admin.siteId).saveSiteSettings({ general: { cookieConsent } });
+  await recordAudit({ id: admin.sub, email: admin.email }, "settings.cookieConsent", { detail: cookieConsent.enabled ? "çerez onayı açık" : "çerez onayı kapalı" });
   await revalidatePath("/admin/settings");
   await revalidatePath("/tr", "layout");
   return { ok: true };

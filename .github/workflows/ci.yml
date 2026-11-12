@@ -76,6 +76,14 @@ jobs:
           nohup pnpm --filter @nexpress/cms start > server.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:3000/login > /dev/null && exit 0; sleep 2; done
           echo "Uygulama açılmadı"; cat server.log; exit 1
+      - name: SEO sözleşmesi (başlık, tek h1, canonical, JSON-LD, yazı şeması)
+        env:
+          SEO_BASE_URL: http://localhost:3000
+        run: pnpm --filter @nexpress/cms seo:contract
+      - name: Ziyaretçi CSS kapsamı (yönetim CSS'inde olup ziyaretçide eksik sınıf yok)
+        env:
+          SEO_BASE_URL: http://localhost:3000
+        run: pnpm --filter @nexpress/cms css:check
       - name: axe taraması (kritik/ciddi ihlal ve mobil taşma derlemeyi düşürür)
         env:
           A11Y_BASE_URL: http://localhost:3000

@@ -2,17 +2,22 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   contentAccessCookieName,
   evaluateContentAccess,
+  findTypeByArchiveSlug,
+  memberMeetsTier,
+  readPageOptions,
+  resolveSiteSettings,
   resolvePublishing,
   verifyContentAccessToken,
   verifySessionToken,
 } from "@nexpress/core";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
+import { MEMBER_SESSION_COOKIE, getMembership, resolveMemberCookie } from "@/lib/members";
 
 /**
  * ?format=md ve Accept: text/markdown isteklerine veritabanındaki
  * önceden derlenmiş `markdownCache` sütununu 0ms CPU maliyetiyle döndürür.
  */
-import { getPublicContentBySlug } from "@/lib/public-data";
+import { getPublicContentBySlug, getPublicSite } from "@/lib/public-data";
 import { trackBotVisit } from "@/lib/bot-log";
 
 export async function GET(request: NextRequest) {
@@ -24,9 +29,11 @@ export async function GET(request: NextRequest) {
     "/tr";
   const segments = targetPath.split("/").filter(Boolean);
   const locale = segments[0] ?? "tr";
-  const slug = segments[1] ?? "ana-sayfa";
-
-  const content = await getPublicContentBySlug(siteId, slug, locale);
+  // `/{dil}/{slug}` ya da önekli `/{dil}/{önek}/{slug}` (önek, kayıtları önekli açık bir türün arşiv adresidir)
+  const prefix = segments.length >= 3 ? segments[1] : undefined;
+  const slug = segments[prefix ? 2 : 1] ?? "ana-sayfa";
+  const prefixType = prefix ? findTypeByArchiveSlug(resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes, prefix) : undefined;
+  const content = prefix && !prefixType?.prefixed ? null : await getPublicContentBySlug(siteId, slug, locale, prefixType?.id ?? "");
 
   if (!content) {
     return new NextResponse(`# 404 — İçerik Bulunamadı (${slug})\n`, {
@@ -52,11 +59,14 @@ export async function GET(request: NextRequest) {
         request.cookies.get(contentAccessCookieName(content.id))?.value
       )
     : false;
+  const mdMember = await resolveMemberCookie(siteId, request.cookies.get(MEMBER_SESSION_COOKIE)?.value);
+  const hasMemberSession = Boolean(mdMember) && memberMeetsTier((await getMembership(siteId)).tiers, mdMember?.tier, readPageOptions(content.schemaAttributes).memberTier);
   const access = evaluateContentAccess({
     status: content.status,
     visibility: pub.visibility,
     accessPassword: pub.accessPassword,
     hasSession,
+    hasMemberSession,
     hasValidPasswordToken,
   });
 

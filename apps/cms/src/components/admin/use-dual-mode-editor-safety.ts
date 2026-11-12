@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   draftStorageKey,
   parseStoredDraft,
+  readFieldValues,
+  readPageOptions,
   recoveryDecision,
   snapshotToDraftFields,
   type EditorDraftFields,
@@ -47,6 +49,8 @@ export function useDualModeEditorSafety(p: ReturnType<typeof useDualModeEditorSa
     p.setAllowReviews(f.allowReviews);
     p.setShowShareButtons(f.showShareButtons);
     p.setShowFeaturedImage(f.showFeaturedImage !== false);
+    p.setPageOptions(readPageOptions({ _page: f.pageOptions }));
+    p.setFieldValues(readFieldValues(p.customType, { _fields: f.fieldValues }));
     p.setParentId(f.parentId ?? "");
     p.setPillar(f.pillar === true);
   };

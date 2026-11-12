@@ -1,4 +1,8 @@
-import { sanitizeChromeSnapshot, sanitizeReadingSlug, type ChromeSnapshot } from "./reading";
+import { sanitizeInstalledFonts, type InstalledFont } from "./fonts";
+import { sanitizeContentTypes, type CustomContentType } from "./content-types";
+import { DEFAULT_MEMBERSHIP, sanitizeMembership, type MembershipSettings } from "./membership";
+import { DEFAULT_COOKIE_CONSENT, sanitizeCookieConsent, type CookieConsentSettings } from "./consent";
+import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type ChromeSnapshot } from "./reading";
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
@@ -65,6 +69,8 @@ export interface SeoEngineSettings {
   twitterHandle: string;
   organizationName: string;
   organizationLogo: string;
+  /** Site simgesi (favicon, ana ekran simgesi): kare, en az 512 px, kitaplıktan yerel görsel. Boşsa simge yayımlanmaz. */
+  siteIcon: string;
   sameAs: string[];
   robotsTxtExtra: string;
   /**
@@ -141,6 +147,8 @@ export interface SiteCustomizerSettings {
     bodyLineHeight: number | string;
     headingTransform: "none" | "uppercase";
     googleFonts: boolean;
+    /** Sunucuya indirilmiş yazı tipleri (`@font-face` bunlardan üretilir). */
+    fonts?: InstalledFont[];
   };
   layout: {
     contentLayout: "boxed" | "fullwidth";
@@ -246,6 +254,17 @@ export interface GeneralSettings {
   postsPageSlug?: string;
   /** Yazılım Firması kabuğu uygulanmadan önceki şerit, menü ve yerleşim. */
   chromeSnapshot?: ChromeSnapshot | null;
+  /**
+   * Tema başına şerit düzeni: tema değişirken ayrılan temanın başlık/altlık/menü düzeni buraya yazılır,
+   * temaya dönülünce geri gelir. Kayıt yoksa temanın hazır düzeni uygulanır.
+   */
+  themeChrome?: Record<string, ChromeSnapshot>;
+  /** Çerez onayı bannerı ve betik kapısı. Varsayılan kapalı. */
+  cookieConsent?: CookieConsentSettings;
+  /** Yöneticinin tanımladığı özel içerik türleri ve alanları (`content-types.ts`). */
+  contentTypes?: CustomContentType[];
+  /** Ziyaretçi üyeliği: kayıt politikası ve aydınlatma bağlantısı. Varsayılan kapalı. */
+  membership?: MembershipSettings;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
@@ -257,6 +276,10 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
   frontPageSlug: "",
   postsPageSlug: "",
   chromeSnapshot: null,
+  themeChrome: {},
+  cookieConsent: DEFAULT_COOKIE_CONSENT,
+  membership: DEFAULT_MEMBERSHIP,
+  contentTypes: [],
 };
 
 /** E-posta gönderimi (SMTP). `password` veritabanında `secret-box` ile şifreli durur ve panele geri verilmez. */
@@ -342,6 +365,10 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       frontPageSlug: sanitizeReadingSlug(generalRaw.frontPageSlug),
       postsPageSlug: sanitizeReadingSlug(generalRaw.postsPageSlug),
       chromeSnapshot: sanitizeChromeSnapshot(generalRaw.chromeSnapshot),
+      themeChrome: sanitizeThemeChrome(generalRaw.themeChrome),
+      cookieConsent: sanitizeCookieConsent(generalRaw.cookieConsent),
+      membership: sanitizeMembership(generalRaw.membership),
+      contentTypes: sanitizeContentTypes(generalRaw.contentTypes),
     },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
     customizer: {
@@ -349,7 +376,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       darkMode: c.darkMode === "auto" ? "auto" : "off",
       darkColors: Object.fromEntries(Object.entries((c.darkColors && typeof c.darkColors === "object" ? c.darkColors : {}) as Record<string, unknown>).filter(([, v]) => typeof v === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))) as Record<string, string>,
       stylePresets: sanitizeStylePresets(c.stylePresets),
-      typography: mergeSection(d.typography, c.typography),
+      typography: { ...mergeSection(d.typography, c.typography), fonts: sanitizeInstalledFonts((c.typography as { fonts?: unknown } | undefined)?.fonts) },
       layout: mergeSection(d.layout, c.layout),
       buttons: mergeSection(d.buttons, c.buttons),
       header: mergeSection(d.header, c.header),
@@ -426,7 +453,7 @@ export function resolvePublishing(
     accessPassword: pwd,
     password: pwd,
     scheduledAt: String(pub.scheduledAt ?? ""),
-    authorName: String(pub.authorName ?? "Baş Mimari Ekibi"),
+    authorName: String(pub.authorName ?? ""),
     categories: strArr(pub.categories),
     tags: strArr(pub.tags),
     allowComments: pub.allowComments !== false,

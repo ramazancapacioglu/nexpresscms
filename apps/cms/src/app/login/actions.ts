@@ -41,7 +41,7 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
   const limitKey = `${siteId}:${ip}:${email}`;
 
   if (!email || !password) return { error: "E-posta ve parola gerekli." };
-  if (isLoginBlocked(limitKey)) {
+  if (await isLoginBlocked(limitKey)) {
     await recordAudit(null, "auth.login_blocked", { siteId, detail: `${email} — çok fazla deneme` });
     return { error: "Çok fazla deneme. Biraz sonra tekrar deneyin." };
   }
@@ -52,7 +52,7 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
   const ok = user ? await verifyPassword(password, user.passwordHash) : false;
   // Devre dışı hesap, doğru parolayla bile aynı genel hatayı alır (hesap varlığı sızmaz)
   if (!user || !ok || user.status !== "active") {
-    recordLoginFailure(limitKey);
+    await recordLoginFailure(limitKey);
     await recordAudit(null, "auth.login_failed", { siteId, detail: email });
     return { error: "E-posta veya parola hatalı." };
   }
@@ -62,7 +62,7 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
     await startMfaChallenge(siteId, user);
     redirect(`/login/verify?next=${encodeURIComponent(next)}`);
   }
-  clearLoginFailures(limitKey);
+  await clearLoginFailures(limitKey);
   await repo.touchLogin(user.id);
   await issueSession(user);
   await recordAudit({ id: user.id, email: user.email }, "auth.login", { siteId });

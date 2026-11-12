@@ -89,24 +89,6 @@ export async function restoreChromeAfterYazilimFirmasi(siteId: string, locale = 
   });
 }
 
-/**
- * Yazılım Firması açılınca önceki kabuk saklanır, kapanınca o kabuk geri gelir.
- * Renkler `activateTheme` ile yeni temaya aittir.
- */
-export async function switchThemeChrome(siteId: string, previousId: string, nextId: string, locale = "tr") {
-  const nextIsYf = isYazilimFirmasiTheme(nextId);
-  const prevIsYf = isYazilimFirmasiTheme(previousId);
-  if (nextIsYf && !prevIsYf) await captureChromeSnapshot(siteId, previousId || "corporate-aurora", locale);
-  if (nextIsYf) {
-    await applyYazilimFirmasiChrome(siteId, locale);
-    return;
-  }
-  if (prevIsYf) {
-    const restored = await restoreChromeSnapshot(siteId, locale);
-    if (!restored) await restoreChromeAfterYazilimFirmasi(siteId, locale);
-  }
-}
-
 /** Temayı seçince şerit, menü, footer, kenar ve demo formu yayına yazılır. Sayfa içerikleri silinmez. */
 export async function applyYazilimFirmasiChrome(siteId: string, locale = "tr") {
   const repo = getScopedRepository(siteId);

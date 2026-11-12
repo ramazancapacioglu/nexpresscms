@@ -20,7 +20,7 @@ import { StudioViewBar } from "./editor/studio-view-bar";
 import { SearchSnippetBar } from "./editor/search-snippet-bar";
 import type { DualModeEditorState } from "./use-dual-mode-editor";
 
-export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
+export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEditorState; canPublish?: boolean }) {
   const [showSerpPopover, setShowSerpPopover] = useState(false);
 
   const isTemplateMode = s.lockedType === "template";
@@ -215,9 +215,9 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
               onClick={() => s.handleSave("draft")}
             >
               <Save className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Taslak</span>
+              <span className={canPublish ? "hidden sm:inline" : ""}>{canPublish ? "Taslak" : "Taslağı kaydet"}</span>
             </button>
-            <button
+            {canPublish && <button
               type="button"
               className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               disabled={s.isPending}
@@ -225,7 +225,7 @@ export function DualModeEditorTopbar({ s }: { s: DualModeEditorState }) {
             >
               <Send className="h-3.5 w-3.5" />
               {s.isPending ? "Kaydediliyor..." : "Yayınla"}
-            </button>
+            </button>}
             <Link
               href={`/${s.locale}/${s.slug === "home" ? "" : s.slug}`}
               target="_blank"

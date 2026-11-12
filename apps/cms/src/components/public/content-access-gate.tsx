@@ -20,6 +20,7 @@ export async function checkVisitorContentAccess(input: {
   visibility: ContentVisibility;
   accessPassword?: string;
   hasSession: boolean;
+  hasMemberSession?: boolean;
   isDraftPreview?: boolean;
 }): Promise<ContentAccessDecision> {
   const pwd = (input.accessPassword ?? "").trim();
@@ -40,6 +41,7 @@ export async function checkVisitorContentAccess(input: {
     visibility: input.visibility,
     accessPassword: pwd,
     hasSession: input.hasSession,
+    hasMemberSession: input.hasMemberSession,
     hasValidPasswordToken,
     isDraftPreview: input.isDraftPreview,
   });
@@ -58,8 +60,16 @@ export function ContentAccessGate({
   tokens,
   t,
   hasError,
+  memberLoginHref,
+  memberTierNeeded,
+  memberAccountHref,
 }: {
   gate: "password" | "members_only";
+  /** Üyelik açıksa ziyaretçi üye girişi adresi; yoksa panel girişi gösterilir. */
+  memberLoginHref?: string;
+  /** Oturum açık üye ama kademesi yetmiyor: gereken kademenin adı. */
+  memberTierNeeded?: string;
+  memberAccountHref?: string;
   contentId: string;
   locale: string;
   slug: string;
@@ -85,7 +95,7 @@ export function ContentAccessGate({
           {title}
         </h1>
         <p className="text-sm text-nx-soft leading-relaxed">
-          {gate === "password" ? t("content.passwordBody") : t("content.membersOnlyBody")}
+          {gate === "password" ? t("content.passwordBody") : memberTierNeeded ? t("content.membersTierBody", { tier: memberTierNeeded }) : t("content.membersOnlyBody")}
         </p>
       </div>
 
@@ -124,10 +134,14 @@ export function ContentAccessGate({
             {t("content.passwordButton")}
           </button>
         </form>
+      ) : memberTierNeeded ? (
+        <div>
+          <a href={memberAccountHref ?? "/"} className="text-sm font-semibold underline">{t("member.accountTitle")}</a>
+        </div>
       ) : (
         <div>
           <a
-            href={`/login?next=${encodeURIComponent(pagePath)}`}
+            href={memberLoginHref ?? `/login?next=${encodeURIComponent(pagePath)}`}
             style={{
               backgroundColor: tokens.colors.primary,
               color: tokens.colors.primaryForeground,
@@ -135,7 +149,7 @@ export function ContentAccessGate({
             }}
             className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold transition hover:opacity-95"
           >
-            {t("content.membersOnlyCta")}
+            {memberLoginHref ? t("content.membersOnlyMemberCta") : t("content.membersOnlyCta")}
           </a>
         </div>
       )}

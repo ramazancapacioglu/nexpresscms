@@ -8,7 +8,7 @@ const cap = "mb-1 block text-[11px] text-muted-foreground";
 
 /** Dinamik liste (sorgu döngüsü) bloğunun alanları. Liste ziyaretçiye her istekte güncel veriden çizilir; Markdown önbelleğine girmez. */
 export function DynamicListFields() {
-  const { selectedBlock, updateSelectedBlockProps, flatCategoryTree, tags } = useStudioInspector();
+  const { selectedBlock, updateSelectedBlockProps, flatCategoryTree, tags, customTypes } = useStudioInspector();
   if (!selectedBlock) return null;
   const q = normalizeDynamicQuery(selectedBlock.props);
   const set = (patch: Record<string, unknown>) => updateSelectedBlockProps(patch);
@@ -20,7 +20,7 @@ export function DynamicListFields() {
       <div className="grid grid-cols-2 gap-2">
         <div><label className={cap} htmlFor="dl-source">Ne listelensin</label>
           <select id="dl-source" className={box} value={q.source} onChange={(e) => set({ source: e.target.value, category: "", tag: "" })}>
-            <option value="posts">Yazılar</option><option value="pages">Sayfalar</option><option value="products">Ürünler</option>
+            <option value="posts">Yazılar</option><option value="pages">Sayfalar</option><option value="products">Ürünler</option>{(customTypes ?? []).map((ct) => <option key={ct.id} value={`type:${ct.id}`}>{ct.labelPlural}</option>)}
           </select></div>
         <div><label className={cap} htmlFor="dl-order">Sıralama</label>
           <select id="dl-order" className={box} value={q.orderBy} onChange={(e) => set({ orderBy: e.target.value })}>

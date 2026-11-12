@@ -14,6 +14,7 @@ import { Columns, Plus, Sparkles, Trash2 } from "lucide-react";
 import { saveChromeAction } from "@/app/admin/actions";
 import { AppearanceTabs, SaveBar, fieldClass } from "./appearance-ui";
 import { ChromeLibraryModal } from "./chrome-library-modal";
+import { FooterStylePanel } from "./footer-style-panel";
 import { WidgetItemCard, WidgetPickerModal, WidgetPreviewBox } from "./widget-studio";
 
 const FOOTER_WIDGET_PRESETS: Array<{
@@ -473,12 +474,14 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
         })()}
       </section>
 
+      <FooterStylePanel value={footer.options} onChange={(options) => setFooter((prev) => ({ ...prev, options }))} menus={menus} />
+
       {/* 3. Alt Telif & Yasal Satır */}
       <section className="space-y-3 rounded-xl border border-[#E6E7EA] bg-white p-4 text-[12px] dark:border-[#23262E] dark:bg-[#15171C]">
         <div className="text-[13px] font-bold">3. Alt Telif Şeridi ve Yasal Bağlantılar</div>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-[11px] font-semibold">Telif Metni</label>
+            <label className="mb-1 block text-[11px] font-semibold">Telif Metni <span className="font-normal opacity-70">({"{year}"} yıl, {"{site}"} site adı)</span></label>
             <input
               aria-label="Telif metni"
               className={fieldClass}

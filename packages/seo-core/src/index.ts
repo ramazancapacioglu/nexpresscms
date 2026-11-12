@@ -28,12 +28,23 @@ export interface BuildCoreSchemaInput {
     imageAlt?: string | null;
     keywords?: string[];
     articleSection?: string;
+    /** Özel alanlardan gelen Schema.org özellikleri (`fieldSchemaProps`); temel alanları ezmez. */
+    extraProps?: Record<string, string | number | boolean>;
   };
   /** Motor ayarları: bloklardan otomatik FAQPage/HowTo/Review üret. */
   autoSchema?: boolean;
   organization?: { name?: string; logo?: string; sameAs?: string[] };
   breadcrumbs?: Array<{ name: string; url: string }>;
   aggregateRating?: { ratingValue: number; reviewCount: number };
+}
+
+/** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; yalnızca ilkel değerler geçer. */
+const RESERVED_NODE_KEYS = new Set(["name", "headline", "description", "url", "inLanguage", "isPartOf", "publisher", "author", "datePublished", "dateModified", "mainEntityOfPage", "image", "aggregateRating", "sameAs"]);
+function safeExtraProps(extra: Record<string, string | number | boolean> | undefined): Record<string, string | number | boolean> {
+  if (!extra) return {};
+  return Object.fromEntries(
+    Object.entries(extra).filter(([k, v]) => /^[a-z][A-Za-z]{1,40}$/.test(k) && !RESERVED_NODE_KEYS.has(k) && ["string", "number", "boolean"].includes(typeof v))
+  );
 }
 
 /**
@@ -46,6 +57,8 @@ export async function buildPageSchemaGraph(
   input: BuildCoreSchemaInput
 ): Promise<{ "@context": "https://schema.org"; "@graph": SchemaGraphNode[] }> {
   const baseUrl = input.siteUrl.replace(/\/$/, "");
+  // Kök adres `https://x.test#webpage` değil `https://x.test/#webpage` olmalı (tutarlı @id)
+  if (input.pageUrl.replace(/\/$/, "") === baseUrl) input = { ...input, pageUrl: `${baseUrl}/` };
   const orgId = `${baseUrl}/#organization`;
   const websiteId = `${baseUrl}/#website`;
 
@@ -78,8 +91,10 @@ export async function buildPageSchemaGraph(
     const isArticle = /Article|BlogPosting|NewsArticle|TechArticle/i.test(c.schemaType);
     // Editör/CMS iç alanları (yayın ayarları, SEO ayarları, slug geçmişi, zengin şema girdisi, tuval bayrağı) JSON-LD'ye sızmaz
     const INTERNAL_ATTRS = new Set(["publishing", "seo", "slugHistory", "richSchema", "canvas"]);
+    // İçe aktarma izleri (`wpId`, `wpKind`, `migratedFrom`…) Schema.org özelliği değildir; JSON-LD'ye sızmaz
+    const IMPORT_TRACE = /^(wp[A-Z]|wp_|migrated|import(ed)?[A-Z_]|source(Id|Url|System)$)/;
     const cleanAttrs = Object.fromEntries(
-      Object.entries((c.schemaAttributes ?? {}) as Record<string, unknown>).filter(([k]) => !k.startsWith("_") && !INTERNAL_ATTRS.has(k))
+      Object.entries((c.schemaAttributes ?? {}) as Record<string, unknown>).filter(([k]) => !k.startsWith("_") && !INTERNAL_ATTRS.has(k) && !IMPORT_TRACE.test(k))
     );
     const entity: SchemaGraphNode = {
       "@type": c.schemaType || "WebPage",
@@ -95,7 +110,8 @@ export async function buildPageSchemaGraph(
       ...(c.updatedAt ? { dateModified: new Date(c.updatedAt).toISOString() } : {}),
       ...(isArticle
         ? {
-            author: { "@type": "Person", name: c.authorName ?? input.siteName },
+            // Yazar adı yoksa uydurma kişi yazılmaz: yayıncı kuruluş yazar sayılır
+            author: c.authorName?.trim() ? { "@type": "Person", name: c.authorName.trim() } : { "@id": orgId },
             mainEntityOfPage: input.pageUrl,
           }
         : {}),
@@ -115,6 +131,7 @@ export async function buildPageSchemaGraph(
             },
           }
         : {}),
+      ...safeExtraProps(c.extraProps),
       ...cleanAttrs,
     };
     baseNodes.push(entity);

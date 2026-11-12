@@ -25,12 +25,13 @@ async function forVisitor<T>(siteId: string, locale: string, value: T): Promise<
   return isPrefixless(site, locale) ? stripLocaleDeep(value, locale) : value;
 }
 
-export const resolvePublicContent = cachedRead("resolve", async (siteId: string, slug: string, locale: string) =>
-  forVisitor(siteId, locale, await getScopedRepository(siteId).resolveContentBySlug(slug, locale, { publicOnly: true }))
+/** `type` (isteğe bağlı, boş = herhangi): önekli adreslerde (`/referanslar/acme`) aynı slug'a sahip başka türdeki kayıt karışmaz. */
+export const resolvePublicContent = cachedRead("resolve", async (siteId: string, slug: string, locale: string, type = "") =>
+  forVisitor(siteId, locale, await getScopedRepository(siteId).resolveContentBySlug(slug, locale, { publicOnly: true, ...(type ? { type } : {}) }))
 );
 
-export const getPublicContentBySlug = cachedRead("by-slug", async (siteId: string, slug: string, locale: string) =>
-  forVisitor(siteId, locale, await getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true }))
+export const getPublicContentBySlug = cachedRead("by-slug", async (siteId: string, slug: string, locale: string, type = "") =>
+  forVisitor(siteId, locale, await getScopedRepository(siteId).getContentBySlug(slug, locale, { publicOnly: true, ...(type ? { type } : {}) }))
 );
 
 /** Yayındaki içerikler; `private`, `password` ve `members_only` görünürlüklü içerik toplu beslemelere (llms, besleme, arama) girmez. */

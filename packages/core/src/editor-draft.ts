@@ -4,6 +4,7 @@
  */
 import { fnv1a64 } from "./chunker";
 import { resolvePublishing } from "./site-settings";
+import { DEFAULT_PAGE_OPTIONS, type PageOptions } from "./page-options";
 
 /** Düzenlenebilir alanların kaydedilebilir görüntüsü; imza ve yerel taslak bunu kullanır. */
 export interface EditorDraftFields {
@@ -35,10 +36,16 @@ export interface EditorDraftFields {
   richSchema?: Record<string, unknown>;
   /** Seçilen görünüm şablonu ("" varsayılan, "none" yerleşik) */
   templateId?: string;
+  /** Sayfa başına görünüm seçenekleri (yoksa varsayılan). */
+  pageOptions?: PageOptions;
+  /** Özel içerik türünün alan değerleri (yoksa boş). */
+  fieldValues?: Record<string, unknown>;
 }
 
 /** Kararlı imza: alan sırası sabittir, böylece aynı içerik her zaman aynı imzayı verir. */
 export function draftSignature(fields: EditorDraftFields): string {
+  // Sayfa seçenekleri yalnızca varsayılandan farklıysa imzaya girer: eski kayıtların ve yerel taslakların imzası değişmez
+  const pageChanged = fields.pageOptions && JSON.stringify(fields.pageOptions) !== JSON.stringify(DEFAULT_PAGE_OPTIONS);
   return fnv1a64(
     JSON.stringify([
       fields.title, fields.slug, fields.tldr, fields.blocks, fields.metaTitle, fields.metaDescription, fields.canonicalUrl,
@@ -48,6 +55,8 @@ export function draftSignature(fields: EditorDraftFields): string {
       fields.showFeaturedImage !== false, fields.parentId || null, fields.pillar === true,
       fields.richSchema && Object.keys(fields.richSchema).length > 0 ? fields.richSchema : null,
       fields.templateId || null,
+      ...(pageChanged ? [fields.pageOptions] : []),
+      ...(fields.fieldValues && Object.keys(fields.fieldValues).length > 0 ? [{ f: fields.fieldValues }] : []),
     ])
   );
 }

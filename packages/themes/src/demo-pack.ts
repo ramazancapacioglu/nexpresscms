@@ -1,5 +1,9 @@
 import type { BlockNode } from "@nexpress/core";
 import { YF_DEMO, YF_DEMO_HOME_SLUG } from "./yazilim-firmasi-demo";
+import { buildGenericDemo } from "./demo-generic";
+import { AURORA_DEMO, CRIMSON_DEMO, PULSE_DEMO, VELOCITY_DEMO } from "./demo-copy";
+import { INK_GRID_HOME_SLUG, INK_GRID_ID } from "./ink-grid";
+import { INK_GRID_PAGES } from "./ink-grid-pages";
 
 /** Tema kurulunca değil, mağazadaki demo aktarımında yazılan düzenlenebilir içerik. */
 /** `campaign` kaydı Kampanyalar eklentisinin içeriğidir; `campaign_showcase` blokları ve `/kampanyalar` bunları listeler. */
@@ -37,7 +41,22 @@ export interface ThemeDemoPack {
   entries: ThemeDemoEntry[];
 }
 
-const PACKS: ThemeDemoPack[] = [YF_DEMO];
+const INK_GRID_DEMO: ThemeDemoPack = {
+  themeId: INK_GRID_ID,
+  homeSlug: INK_GRID_HOME_SLUG,
+  title: "Ink Grid demo",
+  summary: "Geliştirici ve ürün odaklı, çizgili ve sade bir vitrin: ürün, kurumsal, geliştirici ve doküman sayfaları.",
+  entries: INK_GRID_PAGES.map((page) => ({ type: "page" as const, slug: page.slug, title: page.title, tldr: page.tldr, schemaType: page.schemaType, blocks: page.blocks })),
+};
+
+const PACKS: ThemeDemoPack[] = [
+  buildGenericDemo(AURORA_DEMO),
+  buildGenericDemo(VELOCITY_DEMO),
+  buildGenericDemo(PULSE_DEMO),
+  buildGenericDemo(CRIMSON_DEMO),
+  INK_GRID_DEMO,
+  YF_DEMO,
+];
 
 export function getThemeDemoPack(themeId: string): ThemeDemoPack | null {
   return PACKS.find((pack) => pack.themeId === themeId) ?? null;

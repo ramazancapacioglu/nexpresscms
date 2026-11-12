@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { NextResponse, after, type NextRequest } from "next/server";
 import { FILE_KINDS, buildMediaRef, seoFileSlug, sniffFileMime, titleFromFilename } from "@nexpress/core";
 import { getMediaFolderRepository, getScopedRepository } from "@nexpress/database";
+import { roleCan } from "@nexpress/core";
 import { getSession } from "@/lib/auth/session";
 import { MAX_UPLOAD_BYTES, inspectUpload } from "@/lib/media/process";
 import { prewarmVariants } from "@/lib/media/prewarm";
@@ -21,6 +22,7 @@ function safeFilename(name: string): string {
 export async function POST(request: NextRequest) {
   const session = await getSession();
   if (!session) return fail("Oturum gerekli.", 401);
+  if (!roleCan(session.role, "media.upload")) return fail("Dosya yükleme yetkiniz yok.", 403);
 
   // Çerezli POST için ek CSRF savunması: Origin varsa Host ile eşleşmeli.
   const origin = request.headers.get("origin");

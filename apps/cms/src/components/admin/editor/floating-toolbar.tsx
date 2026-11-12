@@ -93,6 +93,8 @@ export function FloatingToolbar({
 
   const barRef = useRef<HTMLDivElement>(null);
   const [shiftX, setShiftX] = useState(0);
+  /** Üstte araç çubuğuna yer yoksa (ilk blok, bitişik bloklar) çubuk bloğun içinde, sol üstte durur: başlığı/üstteki bloğu örtmez. */
+  const [inside, setInside] = useState(false);
 
   useLayoutEffect(() => {
     const el = barRef.current;
@@ -117,6 +119,9 @@ export function FloatingToolbar({
         nextShift = Math.round(margin - naturalLeft);
       }
       setShiftX((prev) => (prev === nextShift ? prev : nextShift));
+      const above = parentEl.previousElementSibling ?? parentEl.parentElement;
+      const gap = above ? parentRect.top - (parentEl.previousElementSibling ? above.getBoundingClientRect().bottom : above.getBoundingClientRect().top) : 0;
+      setInside(gap < 44);
     };
     updatePosition();
     const win = el.ownerDocument.defaultView;
@@ -130,13 +135,13 @@ export function FloatingToolbar({
       onClick={(e) => e.stopPropagation()}
       onMouseOver={(e) => e.stopPropagation()}
       data-nx-toolbar="block"
-      style={{ left: `${shiftX}px` }}
-      className="
-        absolute -top-10 z-50 flex w-max max-w-[calc(100vw-24px)]
+      style={{ left: `${inside ? shiftX + 8 : shiftX}px` }}
+      className={`
+        absolute ${inside ? "top-2" : "-top-10"} z-50 flex w-max max-w-[calc(100vw-24px)]
         flex-nowrap items-center gap-0.5 overflow-visible rounded-lg
         border border-slate-700/90 bg-slate-900/98 px-1.5 py-1
         text-[11px] whitespace-nowrap text-white shadow-2xl backdrop-blur-md select-none
-      "
+      `}
     >
       {/* Üst Bloğu Seç (Parent Jump) */}
       {parentId && onSelectParent && (

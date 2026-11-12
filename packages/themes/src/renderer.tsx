@@ -8,6 +8,7 @@ import {
   type BlockNode,
   type DesignTokens,
   type DynamicDataMap,
+  type DisplayField,
   type PageSchemaData,
   type SchemaCardKind,
 } from "@nexpress/core";
@@ -21,6 +22,7 @@ import { INK_GRID_ID } from "./ink-grid";
 import { DynamicListView } from "./dynamic-list";
 import { renderTemplateBlock } from "./blocks-template";
 import { SchemaCardView } from "./schema-card";
+import { CustomFieldList } from "./custom-fields";
 import { CampaignShowcaseView } from "./campaign-showcase";
 import type { TemplateRenderContext } from "./block-template-context";
 
@@ -42,6 +44,8 @@ export interface RscBlockRendererProps {
   tpl?: TemplateRenderContext;
   /** `schema_card` blokları için sayfanın şema verisi (SEO sekmesindeki Gelişmiş şema) */
   pageSchema?: PageSchemaData;
+  /** Özel içerik türünün alan değerleri (`custom_fields` bloğu). */
+  customFields?: DisplayField[];
   /** Senkronize modeller (synced_pattern için modelId → BlockNode[] haritası) */
   patterns?: Record<string, BlockNode[]>;
   /** Stüdyo önizlemesi: veri eksik olan şema kartı yönlendirme gösterir (ziyaretçide gizlenir) */
@@ -84,6 +88,7 @@ export function RscBlockRenderer({
   dynamic,
   tpl,
   pageSchema,
+  customFields,
   patterns,
   preview,
 }: RscBlockRendererProps): React.ReactElement {
@@ -116,6 +121,7 @@ export function RscBlockRenderer({
           dynamic={dynamic}
           tpl={tpl}
           pageSchema={pageSchema}
+          customFields={customFields}
           patterns={patterns}
           preview={preview}
         />
@@ -145,6 +151,13 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
         ))}
       </div>
     );
+  }
+  if (input.block.type === "custom_fields") {
+    const rows = input.customFields ?? [];
+    if (rows.length === 0) {
+      return input.preview ? <div className="rounded-xl border-2 border-dashed border-slate-300 p-4 text-xs text-slate-600">Özel alan tablosu: değerler yayında bu içeriğin &quot;Alanlar&quot; sekmesinden gelir.</div> : null;
+    }
+    return <CustomFieldList rows={rows} title={typeof input.block.props?.title === "string" ? input.block.props.title : undefined} />;
   }
   if (input.block.type === "schema_card") return <SchemaCardView kind={(input.block.props?.schema as SchemaCardKind) ?? "software"} data={input.pageSchema} tokens={input.tokens} locale={input.locale} preview={input.preview} />;
   if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
@@ -186,6 +199,7 @@ export function RscSingleBlock({
   dynamic,
   tpl,
   pageSchema,
+  customFields,
   patterns,
   preview,
 }: {
@@ -201,6 +215,7 @@ export function RscSingleBlock({
   dynamic?: DynamicDataMap;
   tpl?: TemplateRenderContext;
   pageSchema?: PageSchemaData;
+  customFields?: DisplayField[];
   patterns?: Record<string, BlockNode[]>;
   preview?: boolean;
 }): React.ReactElement | null {
@@ -217,6 +232,7 @@ export function RscSingleBlock({
     dynamic,
     tpl,
     pageSchema,
+    customFields,
     patterns,
     preview,
   });

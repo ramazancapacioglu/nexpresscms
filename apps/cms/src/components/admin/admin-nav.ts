@@ -1,4 +1,6 @@
 import type { ComponentType } from "react";
+import { isLimitedRole } from "@nexpress/core/permissions";
+import type { UserRole } from "@nexpress/core/session";
 import {
   LayoutGrid,
   Palette,
@@ -35,6 +37,7 @@ import {
   LifeBuoy,
   Archive,
   Megaphone,
+  Boxes,
 } from "lucide-react";
 
 export interface NavItem {
@@ -44,6 +47,8 @@ export interface NavItem {
   shortcut: string;
   count?: string;
   adminOnly?: boolean;
+  /** Sınırlı roller (yazar, katkıcı) de görür. Varsayılan: yalnızca tam panel rolleri. */
+  limited?: boolean;
   /** false: kenar çubuğunda görünmez (üst sekme çubuğundan erişilir) ama komut paletinde ve izlerde kalır */
   sidebar?: boolean;
 }
@@ -71,6 +76,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "İçerik & Yayın",
     items: [
       {
+        href: "/admin/my-content",
+        label: "İçeriklerim",
+        icon: FileText,
+        count: "Kendi yazılarım",
+        shortcut: "G M",
+        limited: true,
+      },
+      {
         href: "/admin/pages",
         label: "Sayfalar",
         icon: FileText,
@@ -90,6 +103,7 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         icon: Sparkles,
         count: "Editör",
         shortcut: "G C",
+        limited: true,
       },
       {
         href: "/admin/taxonomies",
@@ -99,11 +113,20 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G X",
       },
       {
+        href: "/admin/content-types",
+        label: "İçerik Türleri & Alanlar",
+        icon: Boxes,
+        count: "Özel",
+        shortcut: "G I",
+        adminOnly: true,
+      },
+      {
         href: "/admin/media",
         label: "Medya & Görsel SEO",
         icon: ImageIcon,
         count: "Alt/LCP",
         shortcut: "G I",
+        limited: true,
       },
       {
         href: "/admin/comments",
@@ -281,6 +304,14 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         adminOnly: true,
       },
       {
+        href: "/admin/members",
+        label: "Ziyaretçi üyeleri",
+        icon: UsersIcon,
+        count: "Parolasız",
+        shortcut: "G Ü",
+        adminOnly: true,
+      },
+      {
         href: "/admin/users",
         label: "Kullanıcılar & Roller",
         icon: UsersIcon,
@@ -346,28 +377,32 @@ const pick = (hrefs: string[], overrides: Record<string, Partial<NavItem>> = {})
   hrefs.map((h) => ({ ...ITEM_BY_HREF.get(h)!, ...overrides[h] }));
 
 /** Panel menüsü: az grup, ilgili sayfalar tek çatıda. SEO ve Görünüm tek öğedir; alt sayfalar üstteki sekme çubuğundadır. */
+/** Menü ve komut paleti için tek kural: yönetici-yalnız öğeler ve sınırlı rollere kapalı öğeler gizlenir. */
+export function navVisibleForRole(item: Pick<NavItem, "adminOnly" | "limited" | "href">, role: UserRole | undefined): boolean {
+  if (item.adminOnly && role !== "admin") return false;
+  if (isLimitedRole(role)) return item.limited === true;
+  return item.href !== "/admin/my-content";
+}
+
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
-  { label: "İçerik", items: pick(["/admin/pages", "/admin/posts", "/admin/contents", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
+  { label: "İçerik", items: pick(["/admin/my-content", "/admin/pages", "/admin/posts", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
-  {
-    label: "Görünüm",
-    items: pick(
-      ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/footer", "/admin/appearance/sidebar"],
-      {
-        "/admin/themes": { label: "Temalar", count: undefined },
-        "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
-      }
-    ),
-  },
   {
     label: "Tasarım",
     items: [
-      ...pick(["/admin/studio", "/admin/appearance/templates"], {
-        "/admin/studio": { label: "Tasarım stüdyosu", count: undefined },
-        "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
-      }),
-      ...pick(["/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(
+        ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/templates", "/admin/studio"],
+        {
+          "/admin/themes": { label: "Temalar", count: undefined },
+          "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
+          "/admin/appearance/header": { label: "Header & Footer", count: undefined },
+          "/admin/appearance/menus": { label: "Menüler", count: undefined },
+          "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
+          "/admin/studio": { label: "Kütüphane & AI", count: undefined },
+        }
+      ),
+      ...pick(["/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   {
@@ -377,8 +412,21 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
       ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
-  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
+  { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/members", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
 ];
+
+/** Yöneticinin tanımladığı özel türleri "İçerik" grubuna ekler (her tür kendi listesine gider). */
+export function withCustomTypes(
+  sections: Array<{ label: string; items: NavItem[] }>,
+  types: Array<{ id: string; label: string }> | undefined
+): Array<{ label: string; items: NavItem[] }> {
+  if (!types?.length) return sections;
+  return sections.map((section) =>
+    section.label === "İçerik"
+      ? { ...section, items: [...section.items, ...types.map((t): NavItem => ({ href: `/admin/entries/${t.id}`, label: t.label, icon: Boxes, shortcut: "" }))] }
+      : section
+  );
+}
 
 export { NAV_LABEL_KEYS, SECTION_LABEL_KEYS, QUICK_COMMANDS } from "./admin-nav-meta";
 

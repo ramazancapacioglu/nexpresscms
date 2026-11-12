@@ -668,7 +668,7 @@ export const pgUsers = pgTable(
     email: text("email").notNull(),
     name: text("name").default("").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role").$type<"admin" | "editor">().default("editor").notNull(),
+    role: text("role").$type<"admin" | "editor" | "author" | "contributor">().default("editor").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     lastLoginAt: timestamp("last_login_at"),
     sessionVersion: integer("session_version").default(0).notNull(),
@@ -763,6 +763,102 @@ export const pgSitePlugins = pgTable(
   (t) => [
     index("site_plugins_site_id_idx").on(t.siteId),
     uniqueIndex("site_plugins_site_plugin_uidx").on(t.siteId, t.pluginId),
+  ]
+);
+
+/**
+ * VERİ EKLENTİLERİ — panelden yüklenen `.nxplugin` paketleri. Paket kod çalıştırmaz: özel içerik türü tanımları,
+ * başlangıç sayfaları ve giden webhook bildirimleri içerir. Kiracı başına; `enabled` açıkça verilen izinle açılır.
+ */
+export const pgDataPlugins = pgTable(
+  "data_plugins",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    pluginId: text("plugin_id").notNull(),
+    name: text("name").default("").notNull(),
+    version: text("version").default("").notNull(),
+    vendor: text("vendor").default("").notNull(),
+    description: text("description").default("").notNull(),
+    enabled: boolean("enabled").default(false).notNull(),
+    manifest: jsonb("manifest").$type<Record<string, unknown>>().default({}).notNull(),
+    contentTypes: jsonb("content_types").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    pages: jsonb("pages").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    webhooks: jsonb("webhooks").$type<Array<Record<string, unknown>>>().default([]).notNull(),
+    /** verified | signed-untrusted | unsigned */
+    signature: text("signature").default("unsigned").notNull(),
+    publisherKey: text("publisher_key").default("").notNull(),
+    checksum: text("checksum").default("").notNull(),
+    /** Webhook HMAC sırrı (`secret-box` ile şifreli) */
+    webhookSecret: text("webhook_secret").default("").notNull(),
+    lastDelivery: jsonb("last_delivery").$type<Record<string, unknown> | null>(),
+    installedAt: timestamp("installed_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("data_plugins_site_id_idx").on(t.siteId),
+    uniqueIndex("data_plugins_site_plugin_uidx").on(t.siteId, t.pluginId),
+  ]
+);
+
+/**
+ * ZİYARETÇİ ÜYELERİ — `members_only` içeriği açan parolasız (e-posta bağlantılı) hesaplar. Panel kullanıcılarından ayrıdır
+ * (`users`). Yalnızca e-posta, ad ve onay zamanı tutulur (veri azaltma); silme gerçek silmedir.
+ */
+export const pgMembers = pgTable(
+  "members",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    email: text("email").notNull(),
+    name: text("name").default("").notNull(),
+    /** active | pending (e-posta doğrulanmadı) | disabled */
+    status: text("status").default("pending").notNull(),
+    emailVerifiedAt: timestamp("email_verified_at"),
+    /** Giriş bağlantısı sırası: yeni bağlantı/kullanım artırır (yalnızca en son bağlantı, tek kullanım). */
+    linkSeq: integer("link_seq").default(0).notNull(),
+    /** Oturum sürümü: çıkış-tümü, devre dışı bırakma ve silme çerezleri düşürür. */
+    sessionVersion: integer("session_version").default(0).notNull(),
+    /** Üyelik kademesi (`general.membership.tiers` kimliği); boş = kademesiz üye */
+    tier: text("tier").default("").notNull(),
+    /** Aydınlatma metni onayı (KVKK) */
+    consentAt: timestamp("consent_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    lastLoginAt: timestamp("last_login_at"),
+  },
+  (t) => [
+    index("members_site_id_idx").on(t.siteId),
+    uniqueIndex("members_site_email_uidx").on(t.siteId, t.email),
+  ]
+);
+
+/**
+ * EKLENTİ WEBHOOK TESLİMATLARI — giden bildirimlerin kalıcı kuyruğu. Başarısız gönderim üstel bekleme ile yeniden denenir
+ * (zamanlayıcı); `id` her denemede aynıdır (`X-NexPress-Delivery`), alıcı tekrarı eler.
+ */
+export const pgPluginDeliveries = pgTable(
+  "plugin_deliveries",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    pluginId: text("plugin_id").notNull(),
+    webhookId: text("webhook_id").notNull(),
+    event: text("event").notNull(),
+    /** Gönderilecek JSON gövde (içerik metni ve kişisel veri içermez) */
+    body: text("body").notNull(),
+    /** pending | delivered | failed */
+    status: text("status").default("pending").notNull(),
+    attempts: integer("attempts").default(0).notNull(),
+    nextAttemptAt: timestamp("next_attempt_at").notNull(),
+    lastStatus: integer("last_status"),
+    lastError: text("last_error").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    deliveredAt: timestamp("delivered_at"),
+  },
+  (t) => [
+    index("plugin_deliveries_site_id_idx").on(t.siteId),
+    index("plugin_deliveries_due_idx").on(t.siteId, t.status, t.nextAttemptAt),
+    index("plugin_deliveries_plugin_idx").on(t.siteId, t.pluginId, t.createdAt),
   ]
 );
 

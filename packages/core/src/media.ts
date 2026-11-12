@@ -32,9 +32,62 @@ export function buildMediaRef(ref: MediaRef): string {
   return `/media/${ref.id}?w=${ref.width}&h=${ref.height}${ref.hasAlpha ? "&a=1" : ""}`;
 }
 
+/**
+ * Görsel sunum yönergesi: her görsel alanı için kırpma biçimi, kadraj noktası ve yakınlaştırma.
+ * Adresin sonuna `#nx:fit=contain;x=30;y=70;z=1.4` olarak eklenir. Parça sunucuya gitmez, medya başvurusunu
+ * ve dış adresleri bozmaz; yönerge olmayan eski içerik değişmeden çalışır. Çizim `ResponsiveImage`'dadır.
+ */
+export interface ImageDirectives {
+  fit?: "cover" | "contain";
+  /** Kadraj noktası (%), yalnızca `cover` kırpmasında etkilidir. 50/50 varsayılandır. */
+  x?: number;
+  y?: number;
+  /** Yakınlaştırma çarpanı, 1–3. */
+  zoom?: number;
+}
+
+const DIRECTIVE_RE = /#nx:([^#\s]*)$/;
+const clampNum = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+/** Adresi ve yönergeyi ayırır. Bozuk değerler atılır. */
+export function parseImageDirectives(url: string | null | undefined): { url: string; directives: ImageDirectives } {
+  const raw = url ?? "";
+  const m = DIRECTIVE_RE.exec(raw);
+  if (!m) return { url: raw, directives: {} };
+  const directives: ImageDirectives = {};
+  for (const part of m[1]!.split(";")) {
+    const [key, value] = part.split("=");
+    const n = Number(value);
+    if (key === "fit" && (value === "cover" || value === "contain")) directives.fit = value;
+    else if ((key === "x" || key === "y") && Number.isFinite(n)) directives[key] = Math.round(clampNum(n, 0, 100));
+    else if (key === "z" && Number.isFinite(n)) directives.zoom = Math.round(clampNum(n, 1, 3) * 100) / 100;
+  }
+  return { url: raw.slice(0, m.index), directives };
+}
+
+/** Yönergeyi adrese yazar; varsayılan değerler (cover, 50/50, 1×) yazılmaz, hepsi varsayılansa parça kalkar. */
+export function withImageDirectives(url: string, next: ImageDirectives): string {
+  const base = parseImageDirectives(url).url;
+  const parts: string[] = [];
+  if (next.fit === "contain") parts.push("fit=contain");
+  const x = next.x === undefined ? 50 : Math.round(clampNum(next.x, 0, 100));
+  const y = next.y === undefined ? 50 : Math.round(clampNum(next.y, 0, 100));
+  if (x !== 50) parts.push(`x=${x}`);
+  if (y !== 50) parts.push(`y=${y}`);
+  const zoom = next.zoom === undefined ? 1 : Math.round(clampNum(next.zoom, 1, 3) * 100) / 100;
+  if (zoom !== 1) parts.push(`z=${zoom}`);
+  return parts.length ? `${base}#nx:${parts.join(";")}` : base;
+}
+
+/** Yalnızca adres (ör. Markdown, site haritası, paylaşım görseli). */
+export function stripImageDirectives(url: string | null | undefined): string {
+  return parseImageDirectives(url).url;
+}
+
 /** Yerel medya başvurusunu çözer; dış adres veya boyutsuz başvuru için `null`. */
-export function parseMediaRef(url: string | null | undefined): MediaRef | null {
-  if (!url) return null;
+export function parseMediaRef(rawUrl: string | null | undefined): MediaRef | null {
+  if (!rawUrl) return null;
+  const url = stripImageDirectives(rawUrl);
   const m = /^\/media\/([A-Za-z0-9_-]{6,64})\?(.+)$/.exec(url);
   if (!m) return null;
   const q = new URLSearchParams(m[2]);
@@ -88,5 +141,5 @@ export function buildPictureSpec(ref: MediaRef): PictureSpec {
 /** Küçük resim (yönetim listesi) için tek adres. */
 export function thumbnailUrl(url: string, width: 320 | 480 = 320): string {
   const ref = parseMediaRef(url);
-  return ref ? variantPath(ref.id, width, "webp") : url;
+  return ref ? variantPath(ref.id, width, "webp") : stripImageDirectives(url);
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DEFAULT_HEADER_ZONES, deriveMobileZones, resolveHeaderZones, resolveMobileHeaderZones, zonesToWidgets } from "../src/header-layout";
+import { DEFAULT_HEADER_ZONES, deriveMobileZones, resolveHeaderZones, resolveMobileHeaderZones, socialLinksFromSameAs, zonesToWidgets } from "../src/header-layout";
 
 test("boş diziler şerit varsayılanına düşer", () => {
   const zones = resolveHeaderZones({ leftWidgets: [], centerWidgets: [], rightWidgets: [] }, DEFAULT_HEADER_ZONES.main);
@@ -49,4 +49,28 @@ test("yazılı mobil dizi masaüstünü ezer", () => {
     { left: ["logo"], center: ["menu"], right: ["cta"] },
   );
   assert.deepEqual(zones, { left: ["logo", "search"], center: [], right: ["menu"] });
+});
+
+test("yeni öğeler (telefon, e-posta, ikinci düğme, sosyal, sepet, metin, ayırıcı) her şeritte çözülür", () => {
+  const zones = resolveHeaderZones(
+    { leftWidgets: ["logo", "divider"], centerWidgets: ["menu"], rightWidgets: ["phone", "social", "cart", "button2", "cta", "html", "email"] },
+    DEFAULT_HEADER_ZONES.main,
+  );
+  assert.deepEqual(zones, { left: ["logo", "divider"], center: ["menu"], right: ["phone", "social", "cart", "button2", "cta", "html", "email"] });
+});
+
+test("öğe başlıkları her öğe için tanımlı", async () => {
+  const { HEADER_WIDGETS, HEADER_WIDGET_META } = await import("../src/header-layout");
+  for (const id of HEADER_WIDGETS) assert.ok(HEADER_WIDGET_META[id].label.length > 1 && HEADER_WIDGET_META[id].hint.length > 3, id);
+});
+
+test("sosyal bağlantılar: yalnızca https, ad eşlenir, tekrar ve bozuk adres atılır", () => {
+  const out = socialLinksFromSameAs(["https://www.linkedin.com/company/x", "http://insecure.test/a", "javascript:alert(1)", "not a url", "https://x.com/firma", "https://www.linkedin.com/company/x", "https://ornek.org/profil"]);
+  assert.deepEqual(out.map((i) => i.label), ["LinkedIn", "X", "ornek.org"]);
+  assert.deepEqual(socialLinksFromSameAs(undefined), []);
+});
+
+test("telefon düzeni: geniş öğeler (telefon, e-posta, ikinci düğme, sosyal, metin, ayırıcı) kendiliğinden gelmez", () => {
+  const mobile = deriveMobileZones({ left: ["logo"], center: ["menu", "phone", "divider"], right: ["search", "button2", "social", "cta", "cart"] });
+  assert.deepEqual(mobile, { left: ["logo"], center: [], right: ["menu", "search", "cta", "cart"] });
 });

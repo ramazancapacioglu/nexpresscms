@@ -1,5 +1,6 @@
 import {
   DEFAULT_HEADER_ZONES,
+  HEADER_WIDGET_META,
   resolveHeaderZones,
   resolveMobileHeaderZones,
   type HeaderConfig,
@@ -7,15 +8,7 @@ import {
   type HeaderZones,
 } from "@nexpress/core";
 
-const LABEL: Record<HeaderWidgetId, string> = {
-  announcement: "Duyuru",
-  contact: "İletişim",
-  logo: "Logo",
-  menu: "Menü",
-  search: "Ara",
-  cta: "Çağrı",
-  links: "Bağlantı",
-};
+const LABEL = Object.fromEntries(Object.entries(HEADER_WIDGET_META).map(([id, meta]) => [id, meta.label])) as Record<HeaderWidgetId, string>;
 
 function chips(zones: HeaderZones) {
   return (["left", "center", "right"] as const).flatMap((side) =>

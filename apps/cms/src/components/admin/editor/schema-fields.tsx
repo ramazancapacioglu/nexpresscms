@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ImageIcon, Plus, Trash2 } from "lucide-react";
-import { buildEditorFields, emptyItem, getPath, moveItem, setPath, type EditorField, type Path } from "@nexpress/core";
+import { buildEditorFields, emptyItem, getPath, moveItem, parseImageDirectives, setPath, withImageDirectives, type EditorField, type Path } from "@nexpress/core";
 import { MediaPickerDialog } from "../media/media-picker-dialog";
 import { IconPickerField } from "./icon-picker-modal";
+import { ImageAdjust } from "./image-adjust";
 import { LinkField } from "./link-picker";
 
 const input = "h-8 w-full rounded border border-border bg-background px-2 text-[12px]";
@@ -69,13 +70,16 @@ function Control({ f, path, ctx }: { f: EditorField; path: Path; ctx: Ctx }) {
 
 function ImageField({ f, id, value, onChange }: { f: EditorField; id: string; value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  // Yönerge (`#nx:…`) metin kutusunda görünmez; kadraj denetimi onu yönetir
+  const { url, directives } = parseImageDirectives(value);
   return (
     <div>
       <label htmlFor={id} className={cap}>{f.label}</label>
       <div className="flex gap-1">
-        <input id={id} className={`${input} font-mono`} value={value} onChange={(e) => onChange(e.target.value)} placeholder="/media/… veya https://…" />
+        <input id={id} className={`${input} font-mono`} value={url} onChange={(e) => onChange(withImageDirectives(e.target.value, directives))} placeholder="/media/… veya https://…" />
         <button type="button" aria-label={`${f.label}: kitaplıktan seç`} onClick={() => setOpen(true)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border"><ImageIcon className="h-3.5 w-3.5" /></button>
       </div>
+      <ImageAdjust value={value} onChange={onChange} />
       <MediaPickerDialog open={open} onClose={() => setOpen(false)} onPick={(m) => onChange(m.url)} />
     </div>
   );

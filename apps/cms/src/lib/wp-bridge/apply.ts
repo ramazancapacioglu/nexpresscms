@@ -2,7 +2,7 @@ import "server-only";
 import type { BlockNode, NavigationMenuItem, SiteMenuRecord } from "@nexpress/core";
 import { isPluginModuleEnabled } from "@nexpress/core";
 import { getFormDefinitionRepository, getRedirectRepository, getScopedRepository } from "@nexpress/database";
-import { slugify } from "@nexpress/seo-core";
+import { normalizeTitleTemplate, slugify } from "@nexpress/seo-core";
 import { compileRichWpHtml, drawLayout, expandSeoTemplate, hasRichBlockMarkup, parseBridgePush, resolveAssetUrl, rewriteAbsoluteUrl, rewriteBlockLinks, schemaFromBridge, type BridgeContentItem, type BridgeMenuItem, type BridgePush } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { WP_BRIDGE_PLUGIN_ID } from "@/plugins/wp-bridge";
@@ -323,7 +323,8 @@ export async function applyBridgePush(siteId: string, body: unknown, origin: str
   if (push.kind === "seo") {
     await repo.saveSiteSettings({
       seo: {
-        ...(push.titleTemplate.includes("%") ? { titleTemplate: push.titleTemplate } : {}),
+        // WordPress'in ana sayfa başlık şablonu bizde `homeTitleTemplate`tir; sayfa şablonu (`titleTemplate`) olarak yazılırsa her sayfa başlığı bozulurdu
+        ...(push.titleTemplate.includes("%") ? { homeTitleTemplate: normalizeTitleTemplate(push.titleTemplate).replace(/\s+/g, " ").trim() } : {}),
         ...(push.description ? { defaultMetaDescription: push.description } : {}),
         ...(push.organizationName ? { organizationName: push.organizationName } : {}),
         ...(push.organizationLogo.startsWith("https://") ? { organizationLogo: push.organizationLogo } : {}),

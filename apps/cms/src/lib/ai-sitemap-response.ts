@@ -1,4 +1,4 @@
-import { localeBase } from "@nexpress/core";
+import { contentPath, localeBase, resolveSiteSettings } from "@nexpress/core";
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
 import { listPublicEntityLinks, listPublishedContents } from "./public-data";
@@ -14,6 +14,7 @@ export async function aiSitemapResponse(request: NextRequest, forcedLocale?: str
   const contents = await listPublishedContents(siteId, locale);
   const entityLinks = await listPublicEntityLinks(siteId);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const types = resolveSiteSettings(site?.settings).general.contentTypes;
 
   const payload = {
     version: "1.0",
@@ -34,7 +35,7 @@ export async function aiSitemapResponse(request: NextRequest, forcedLocale?: str
       markdownNegotiation: "?format=md or Accept: text/markdown",
     },
     items: contents.map((item) => {
-      const publicUrl = contentUrl(baseUrl, locale, item.slug, localeBase(site, locale));
+      const publicUrl = contentUrl(baseUrl, locale, item.slug === "ana-sayfa" ? item.slug : contentPath(types, item).slice(1), localeBase(site, locale));
       return {
         id: item.id,
         title: item.title,

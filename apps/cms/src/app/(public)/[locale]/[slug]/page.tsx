@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentWidthStyle, hasDynamicQueryParams, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -14,6 +14,7 @@ import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
 import { buildTemplateContext, coverTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
+import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
@@ -26,6 +27,18 @@ import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
 import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
 import { authorSlug } from "@/lib/author-slug";
+import { getMembership, getVisitorMember } from "@/lib/members";
+
+/** Sayfa başlığı zaten h1 ise içerikteki vitrin (hero) başlığı h2'ye düşer: sayfada tek h1 kalır (SEO ve erişilebilirlik). */
+function demoteHeroTitles<T extends { type: string; props: Record<string, unknown>; children?: T[] }>(nodes: T[]): T[] {
+  return nodes.map((node) => ({
+    ...node,
+    ...(node.type === "hero" ? { props: { ...node.props, demoteTitle: true } } : {}),
+    // İçerikteki 1. düzey başlık da h2 olur (sayfa başlığı h1'i tek kalır)
+    ...((node.type === "heading" || node.type === "heading_element") && /^(h?1)$/i.test(String(node.props.level ?? "")) ? { props: { ...node.props, level: typeof node.props.level === "number" ? 2 : "h2" } } : {}),
+    ...(node.children ? { children: demoteHeroTitles(node.children) } : {}),
+  }));
+}
 
 function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
   for (const node of nodes) {
@@ -39,26 +52,32 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ locale: string; slug: string; prefix?: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug, prefix } = await params;
   const sp0 = await searchParams;
   const nx_draft = typeof sp0.nx_draft === "string" ? sp0.nx_draft : undefined;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const lb = await siteLocaleBase(siteId, locale);
   const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
-  const [site, resolved] = await Promise.all([
-    getPublicSite(siteId),
-    draftMeta ? Promise.resolve({ content: draftMeta, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
-  ]);
+  const site = await getPublicSite(siteId);
+  const types = resolveSiteSettings(site?.settings).general.contentTypes;
+  // Önekli adres (`/referanslar/acme`): önek yalnızca kayıtları önekli açık bir türün arşiv adresi olabilir
+  const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
+  const prefixValid = !prefix || prefixDef?.prefixed === true;
+  const resolved = !prefixValid ? null : draftMeta ? { content: draftMeta, isRedirect: false } : await resolvePublicContent(siteId, slug, locale, prefixDef?.id ?? "");
 
   if (!resolved || !resolved.content) {
+    // Özel türün arşiv adresi (aynı adda içerik yoksa)
+    const archive = prefix ? null : await loadTypeArchive(siteId, locale, slug, Number(sp0.sayfa) || 1);
+    if (archive) return typeArchiveMetadata(archive, locale);
     return { title: `${createTranslator(locale)("common.notFoundTitle")} | NexPress CMS` };
   }
 
   const content = resolved.content;
+  const cPath = contentPath(types, content);
   const pub = resolvePublishing(content.schemaAttributes);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
@@ -68,7 +87,7 @@ export async function generateMetadata({
     tagline: localizedSite.tagline,
     baseUrl,
     locale,
-    path: `${lb}/${content.slug}`,
+    path: `${lb}${cPath}`,
     title: content.title,
     tldr: content.tldr,
     excerpt: content.excerpt,
@@ -76,6 +95,9 @@ export async function generateMetadata({
     metaDescription: content.metaDescription,
     canonicalUrl: content.canonicalUrl,
     noIndex: content.noIndex,
+    ogType: content.type === "post" || /Article|BlogPosting/i.test(content.schemaType) ? "article" : "website",
+    publishedTime: content.publishedAt ?? content.createdAt ?? null,
+    modifiedTime: content.updatedAt ?? null,
     imageUrl:
       content.featuredImage ??
       pub.featuredImageUrl ??
@@ -88,7 +110,7 @@ export async function generateMetadata({
     description: seoMeta.description,
     alternates: {
       canonical: seoMeta.canonical,
-      languages: await hreflangAlternates(siteId, content.contentId, baseUrl),
+      languages: await hreflangAlternates(siteId, content.contentId, baseUrl, contentPrefix(types, content.type)),
     },
     robots: draftMeta ? { index: false, follow: false } : hasDynamicQueryParams(sp0) ? { index: false, follow: true } : seoMeta.robots,
     openGraph: {
@@ -99,6 +121,9 @@ export async function generateMetadata({
       locale: seoMeta.openGraph.locale,
       type: seoMeta.openGraph.type,
       images: seoMeta.openGraph.images,
+      ...(seoMeta.openGraph.type === "article"
+        ? { publishedTime: seoMeta.openGraph.publishedTime, modifiedTime: seoMeta.openGraph.modifiedTime }
+        : {}),
     },
     twitter: {
       card: seoMeta.twitter.card,
@@ -113,10 +138,10 @@ export default async function PublicDynamicContentPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
+  params: Promise<{ locale: string; slug: string; prefix?: string }>;
+  searchParams: Promise<{ sayfa?: string; form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { locale, slug, prefix } = await params;
   const sp = await searchParams;
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
@@ -125,17 +150,22 @@ export default async function PublicDynamicContentPage({
   await trackAiReferral();
 
   const draft = await resolveDraftPreview(siteId, locale, slug, sp.nx_draft);
-  const [site, resolved] = await Promise.all([
-    getPublicSite(siteId),
-    draft ? Promise.resolve({ content: draft, isRedirect: false }) : resolvePublicContent(siteId, slug, locale),
-  ]);
+  const site = await getPublicSite(siteId);
+  const types = resolveSiteSettings(site?.settings).general.contentTypes;
+  const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
+  const prefixValid = !prefix || prefixDef?.prefixed === true;
+  const resolved = !prefixValid ? null : draft ? { content: draft, isRedirect: false } : await resolvePublicContent(siteId, slug, locale, prefixDef?.id ?? "");
 
   if (!resolved || !resolved.content) {
-    return redirectOrNotFound(siteId, `${lb}/${slug}`);
+    const archive = prefix ? null : await loadTypeArchive(siteId, locale, slug, Number(sp.sayfa) || 1);
+    if (archive) return <TypeArchiveView data={archive} locale={locale} />;
+    return redirectOrNotFound(siteId, `${lb}/${prefix ? `${prefix}/` : ""}${slug}`);
   }
 
-  if (resolved.isRedirect) {
-    permanentRedirect(`${lb}/${resolved.content.slug}`);
+  // Tek doğru adres: eski slug, önekli türün öneksiz adresi → kalıcı yönlendirme
+  const cPath = contentPath(types, resolved.content);
+  if (resolved.isRedirect || (!draft && !prefix && contentPrefix(types, resolved.content.type))) {
+    permanentRedirect(`${lb}${cPath}`);
   }
 
   const content = resolved.content;
@@ -172,7 +202,7 @@ export default async function PublicDynamicContentPage({
     return <PostsIndex siteId={siteId} locale={locale} title={content.title} tokens={tokens} />;
   }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const pageUrl = `${baseUrl}${lb}/${content.slug}`;
+  const pageUrl = `${baseUrl}${lb}${cPath}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
   const placement = schemaPlacementFor(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
@@ -180,12 +210,94 @@ export default async function PublicDynamicContentPage({
     schemaType: content.schemaType,
     categories: pub.categories,
   });
+  const t = createTranslator(locale);
+  const cover = coverTemplateContext({
+    site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
+    locale,
+    lb,
+    tokens,
+    title: content.title,
+    excerpt: content.tldr,
+    featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
+  });
+  const canvas = content.schemaAttributes?.canvas === true;
+  const pageForms = await loadPageForms(siteId, content.blocks);
+  const canEdit = Boolean(await getSession());
+  // Ziyaretçi üyesi: oturum + (içerik kademe istiyorsa) yeterli kademe
+  const [visitorMember, membership] = await Promise.all([getVisitorMember(), getMembership(siteId)]);
+  const neededTier = readPageOptions(content.schemaAttributes).memberTier;
+  const memberTierOk = memberMeetsTier(membership.tiers, visitorMember?.tier, neededTier);
+  const access = await checkVisitorContentAccess({
+    siteId,
+    contentId: content.id,
+    status: content.status,
+    visibility: pub.visibility,
+    accessPassword: pub.accessPassword,
+    hasSession: canEdit,
+    hasMemberSession: Boolean(visitorMember) && memberTierOk,
+    isDraftPreview: Boolean(draft),
+  });
+  const memberMode = membership.mode;
+  // Özel içerik türü: alan değerleri tanıma göre okunur (`_fields`); tablo ziyaretçiye `custom_fields` bloğu olarak basılır
+  const customDef = findContentType(types, content.type);
+  const customFields = displayFields(customDef, content.schemaAttributes, locale);
+  const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
+  const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
+  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
+  const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale, contentPrefix(types, content.type))} />;
+
+  if (!access.allowed && access.gate !== "none") {
+    return (
+      <>
+        {banner}
+        {switcher}
+        <ContentAccessGate
+          gate={access.gate}
+          contentId={content.id}
+          locale={locale}
+          slug={content.slug}
+          pagePath={`${lb}${cPath}`}
+          title={content.title}
+          tokens={tokens}
+          t={t}
+          hasError={sp.pwd === "error"}
+          memberLoginHref={memberMode !== "closed" ? `${lb}/uye/giris?next=${encodeURIComponent(`${lb}${cPath}`)}` : undefined}
+          memberTierNeeded={visitorMember && !memberTierOk ? membership.tiers.find((x) => x.id === neededTier)?.label : undefined}
+          memberAccountHref={visitorMember ? `${lb}/uye` : undefined}
+        />
+      </>
+    );
+  }
+
+  // Tema oluşturucu şablonu (sayfa / yazı / ürün): tam genişlik tuval tasarımlarında uygulanmaz; sayfada "none" seçilmişse yerleşik görünüm
+  const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
+  const syncedPatterns = await getSyncedPatternsMap(siteId);
+  const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
+  // Sayfa başlığını h1 yapan düzende (yerleşik makale ya da başlık yuvalı şablon) içerikteki vitrin başlığı h2 olur
+  const demotedBlocks = !canvas && (!tpl || treeHas(tpl.blocks, "tpl_post_title")) ? demoteHeroTitles(content.blocks) : content.blocks;
+  // Alan tablosu: içerikte `custom_fields` bloğu yoksa ve sayfa tuval değilse içeriğin başına otomatik eklenir
+  const autoFields = !canvas && customFields.length > 0 && !treeHas(content.blocks, "custom_fields");
+  const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
+  const authorName = pub.authorName || content.authorName;
+  const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
+  const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
+  const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
+  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir
+  const crumbs = [
+    { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+    ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
+    { name: content.title, url: pageUrl },
+  ];
+
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: localizedSite.name,
     siteUrl: baseUrl,
     locale,
     pageUrl,
+    // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
+    breadcrumbs: crumbs,
     autoSchema: localizedSite.seo.autoSchema !== false,
     aggregateRating:
       reviewEntries.length > 0
@@ -202,67 +314,14 @@ export default async function PublicDynamicContentPage({
       schemaAttributes: content.schemaAttributes,
       authorName: pub.authorName || content.authorName,
       updatedAt: content.updatedAt,
+      publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,
-      imageUrl: featuredImageUrl,
+      extraProps: fieldSchemaProps(customDef, content.schemaAttributes, { baseUrl }),
+      // Öne çıkan görsel yoksa meta ile aynı üretilmiş paylaşım görseli (Article için görsel önerilir)
+      imageUrl: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
     },
   });
 
-  const t = createTranslator(locale);
-  const cover = coverTemplateContext({
-    site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
-    locale,
-    lb,
-    tokens,
-    title: content.title,
-    excerpt: content.tldr,
-    featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
-  });
-  const canvas = content.schemaAttributes?.canvas === true;
-  const pageForms = await loadPageForms(siteId, content.blocks);
-  const canEdit = Boolean(await getSession());
-  const access = await checkVisitorContentAccess({
-    siteId,
-    contentId: content.id,
-    status: content.status,
-    visibility: pub.visibility,
-    accessPassword: pub.accessPassword,
-    hasSession: canEdit,
-    isDraftPreview: Boolean(draft),
-  });
-  const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
-  const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
-  const formCtx = { forms: pageForms, path: `${lb}/${content.slug}`, token: createFormToken(`${lb}/${content.slug}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
-  const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
-  const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale)} />;
-
-  if (!access.allowed && access.gate !== "none") {
-    return (
-      <>
-        {banner}
-        {switcher}
-        <ContentAccessGate
-          gate={access.gate}
-          contentId={content.id}
-          locale={locale}
-          slug={content.slug}
-          pagePath={`${lb}/${content.slug}`}
-          title={content.title}
-          tokens={tokens}
-          t={t}
-          hasError={sp.pwd === "error"}
-        />
-      </>
-    );
-  }
-
-  // Tema oluşturucu şablonu (sayfa / yazı / ürün): tam genişlik tuval tasarımlarında uygulanmaz; sayfada "none" seçilmişse yerleşik görünüm
-  const tplKind = content.type === "product" ? "product" : content.type === "campaign" ? "campaign" : content.type === "kb_tech" ? "kb_tech" : content.type === "ai_prompt" ? "ai_prompt" : content.type === "page" ? "page" : "post";
-  const syncedPatterns = await getSyncedPatternsMap(siteId);
-  const tpl = canvas ? null : await templateFor(siteId, tplKind, typeof content.schemaAttributes?._template === "string" ? (content.schemaAttributes._template as string) : null, { locale, slug: content.slug, contentType: content.type, categories: resolvePublishing(content.schemaAttributes).categories, tags: resolvePublishing(content.schemaAttributes).tags });
-  const authorName = pub.authorName || content.authorName;
-  const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
-  const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
-  const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
   const children = pub.pillar ? family.filter((item) => item.id !== content.id && item.status === "published" && resolvePublishing(item.schemaAttributes).parentId === content.id) : [];
   const pillarList = children.length > 0 ? (
     <section className="mx-auto max-w-4xl space-y-3 px-4 py-6">
@@ -321,7 +380,7 @@ export default async function PublicDynamicContentPage({
       allowComments={allowComments}
       allowReviews={allowReviews && (content.type === "product" || reviewEntries.length > 0 || pub.allowReviews === true)}
       sort={sortOrder}
-      pagePath={`${lb}/${content.slug}`}
+      pagePath={`${lb}${cPath}`}
       notice={sp.yorum === "bekliyor" ? t("content.replySent") : null}
     />
   ) : null;
@@ -333,10 +392,10 @@ export default async function PublicDynamicContentPage({
       menu,
       tokens,
       menuLabel: t("site.menu"),
-      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}/${content.slug}` }],
+      breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, ...(parent ? [{ name: parent.title, href: `${lb}/${parent.slug}` }] : []), { name: content.title, href: `${lb}${cPath}` }],
       post: {
         title: content.title,
-        content: <RscBlockRenderer blocks={content.blocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
+        content: <RscBlockRenderer blocks={contentBlocks} themeId={skinId} tokens={tokens} lcp={!featuredImageUrl} mediaFocal={mediaFocal} locale={locale} dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields} patterns={syncedPatterns} form={formCtx} tpl={cover} />,
         featuredImage: featuredImageUrl ? { url: featuredImageUrl, alt: featuredAlt, caption: featuredCaption } : null,
         excerpt: content.tldr,
         date: (content.publishedAt ?? content.createdAt) ? new Date(content.publishedAt ?? content.createdAt).toISOString() : null,
@@ -368,12 +427,12 @@ export default async function PublicDynamicContentPage({
         {banner}
         {switcher}
         <RscBlockRenderer
-          blocks={content.blocks}
+          blocks={contentBlocks}
           themeId={skinId}
           tokens={tokens}
           mediaFocal={mediaFocal}
           locale={locale}
-          dynamic={dynamicData} pageSchema={pageSchema}
+          dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}
           patterns={syncedPatterns}
           form={formCtx}
           tpl={cover}
@@ -394,13 +453,23 @@ export default async function PublicDynamicContentPage({
       <header className="space-y-4 border-b pb-8">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <Link href={(lb || "/")} className="text-nx-muted hover:underline">
-              ← Ana Sayfa
-            </Link>
+            <nav aria-label={t("content.breadcrumb")}>
+              <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
+                {crumbs.map((crumb, i) => {
+                  const last = i === crumbs.length - 1;
+                  return (
+                    <li key={crumb.url} className="flex items-center gap-1.5">
+                      {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
+                      {last ? null : <span aria-hidden="true">›</span>}
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`${lb}/${content.slug}?format=md`}
+              href={`${lb}${cPath}?format=md`}
               className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
             >
               Markdown
@@ -418,7 +487,7 @@ export default async function PublicDynamicContentPage({
 
         <h1
           style={{ fontFamily: tokens.typography.headingFont }}
-          className="text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"
+          className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
         >
           {content.title}
         </h1>
@@ -494,13 +563,13 @@ export default async function PublicDynamicContentPage({
       )}
 
       <RscBlockRenderer
-        blocks={content.blocks}
+        blocks={contentBlocks}
         themeId={skinId}
         tokens={tokens}
         lcp={!featuredImageUrl}
         mediaFocal={mediaFocal}
         locale={locale}
-        dynamic={dynamicData} pageSchema={pageSchema}
+        dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}
         patterns={syncedPatterns}
         form={formCtx}
         tpl={cover}
@@ -511,7 +580,7 @@ export default async function PublicDynamicContentPage({
         <ContentShareBar
           title={content.title}
           pageUrl={pageUrl}
-          markdownHref={`${lb}/${content.slug}?format=md`}
+          markdownHref={`${lb}${cPath}?format=md`}
           borderRadius={tokens.geometry.borderRadius}
           shareHeading={t("content.shareHeading")}
         />

@@ -19,6 +19,7 @@ Next.js uygulamasında bir eklentinin **React/sunucu kodu derleme anında paketl
 | **Veri temaları** | token, header/footer şablonu, başlangıç sayfaları, **CSS-only blok görünümleri**, görseller | zip / JSON içe aktarma | **Evet** (kod çalıştırmaz, doğrulanır) |
 | **Kod temaları** | React blok görünümleri | npm/workspace paketi + yeniden derleme | Hayır (CLI) |
 | **Eklentiler** | hook, slot, rota, tablo, ayar | npm/workspace paketi + yeniden derleme | **Hayır** (CLI); **etkinleştirme/ayar/lisans panelden** |
+| **Veri eklentileri** (`.nxplugin`, 2026-11-12) | özel içerik türü, taslak sayfa, imzalı giden webhook | zip yükleme (`/admin/plugins/packages`) | **Evet** (kod çalıştırmaz; izin özeti + açık onay + isteğe bağlı Ed25519 imza). Sözleşme: `docs/27` |
 
 Yönetilen (barındırılan) kurulumda "Eklenti ekle" düğmesi, derleme hattını tetikleyen bir iş akışına bağlanabilir; bu plan kapsamı dışında.
 

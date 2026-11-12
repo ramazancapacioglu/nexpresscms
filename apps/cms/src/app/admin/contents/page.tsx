@@ -1,8 +1,10 @@
 import React from "react";
 import { headers } from "next/headers";
-import { PluginSlot, type ContentType } from "@nexpress/core";
+import { redirect } from "next/navigation";
+import { BUILT_IN_TYPE_IDS, contentAccess, contentOwnerId, findContentType, isLimitedRole, PluginSlot, roleCan, resolveSiteSettings, type ContentType } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { DualModeEditorClient } from "@/components/admin/dual-mode-editor-client";
+import { requireUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,8 @@ export default async function AdminContentsEditorPage({
 }: {
   searchParams?: Promise<{ id?: string; type?: string; new?: string; locale?: string }>;
 }) {
+  const session = await requireUser({ can: "content.create" });
+  const limited = isLimitedRole(session.role);
   const sp = searchParams ? await searchParams : {};
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
@@ -20,18 +24,28 @@ export default async function AdminContentsEditorPage({
   const siteLocales = site?.supportedLocales ?? [defaultLocale];
   const locale = sp.locale && siteLocales.includes(sp.locale) ? sp.locale : defaultLocale;
   const isTemplate = sp.type === "template";
-  const [contents, taxonomies, mediaAssets] = await Promise.all([
+  const [allContents, taxonomies, mediaAssets] = await Promise.all([
     // Şablonlar yalnızca şablon düzenlenirken listelenir (genel listelerde görünmez)
     repo.listContents(isTemplate ? { locale, type: "template" } : { locale }),
     repo.listTaxonomies(),
     repo.listMediaAssets(),
   ]);
 
+  // Sınırlı roller (yazar, katkıcı) yalnızca kendi içeriklerini görür; başkasının içeriği istemciye hiç gönderilmez
+  const contents = limited ? allContents.filter((c) => contentOwnerId(c.schemaAttributes) === session.sub) : allContents;
+  if (limited) {
+    const target = sp.id ? allContents.find((c) => c.contentId === sp.id) : null;
+    if (sp.id && !contentAccess(session.role, session.sub, target ?? { schemaAttributes: null, status: "published" }).edit) redirect("/admin/my-content");
+    if (sp.type && sp.type !== "page" && sp.type !== "post" && (BUILT_IN_TYPE_IDS as readonly string[]).includes(sp.type)) redirect("/admin/my-content");
+  }
+
   // Çeviri düzenlerken kaynağı da listeden bulunabilsin: seçili içeriğin dil durumu
   const translations = sp.id ? await repo.translationOverview(sp.id) : [];
 
-  const requestedType: ContentType =
-    sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign" || sp.type === "template"
+  const customDef = findContentType(resolveSiteSettings(site?.settings).general.contentTypes, sp.type);
+  const requestedType: ContentType = customDef
+    ? customDef.id
+    : sp.type === "post" || sp.type === "kb_tech" || sp.type === "ai_prompt" || sp.type === "campaign" || sp.type === "template"
       ? (sp.type as ContentType)
       : "page";
 
@@ -59,7 +73,11 @@ export default async function AdminContentsEditorPage({
       translations={translations}
       initialSelectedId={sp.id}
       initialContextType={requestedType}
+      customTypes={resolveSiteSettings(site?.settings).general.contentTypes}
+      memberTiers={resolveSiteSettings(site?.settings).general.membership?.tiers}
+      customType={customDef ?? findContentType(resolveSiteSettings(site?.settings).general.contentTypes, contents.find((c) => c.contentId === sp.id)?.type)}
       startNew={sp.new === "1"}
+      canPublish={roleCan(session.role, "content.publish")}
       siteTokens={site?.designTokens}
       inspectorSlot={
         <PluginSlot

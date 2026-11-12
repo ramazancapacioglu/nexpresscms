@@ -23,7 +23,7 @@ export async function verifySecondFactorAction(_prev: VerifyState, form: FormDat
   const user = await pendingMfaUser(siteId);
   if (!user) redirect("/login");
   const limitKey = `mfa:${siteId}:${ip}:${user.id}`;
-  if (isLoginBlocked(limitKey)) {
+  if (await isLoginBlocked(limitKey)) {
     await recordAudit({ id: user.id, email: user.email }, "auth.mfa_blocked", { siteId });
     return { error: "Çok fazla deneme. Biraz sonra tekrar deneyin." };
   }
@@ -31,11 +31,11 @@ export async function verifySecondFactorAction(_prev: VerifyState, form: FormDat
 
   const kind = await checkSecondFactor(siteId, user, input);
   if (!kind) {
-    recordLoginFailure(limitKey);
+    await recordLoginFailure(limitKey);
     await recordAudit({ id: user.id, email: user.email }, "auth.mfa_failed", { siteId });
     return { error: "Kod hatalı veya süresi dolmuş." };
   }
-  clearLoginFailures(limitKey);
+  await clearLoginFailures(limitKey);
   await clearMfaChallenge();
   const repo = getUserRepository(siteId);
   await repo.touchLogin(user.id);

@@ -1,7 +1,8 @@
+import type { MembershipTier } from "@nexpress/core";
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { DEFAULT_STUDIO_TOKENS } from "@/components/admin/editor/studio-model";
 import { useRouter } from "next/navigation";
-import { ensureUniqueBlockIds, repairBlockNesting, slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type DesignTokens } from "@nexpress/core";
+import { ensureUniqueBlockIds, repairBlockNesting, slugFromTitle, type BlockNode, type ContentStatus, type ContentType, type CustomContentType, type DesignTokens } from "@nexpress/core";
 import type { ContentDto, MediaAssetDto, TaxonomyDto, TranslationOverviewRow } from "@nexpress/database";
 
 export interface DualModeEditorClientProps {
@@ -10,6 +11,14 @@ export interface DualModeEditorClientProps {
   initialMediaAssets: MediaAssetDto[];
   initialSelectedId?: string;
   initialContextType?: ContentType;
+  /** Düzenlenen içeriğin özel türü (yerleşik türlerde yok): "Alanlar" sekmesini açar. */
+  /** false: kullanıcı yayınlayamaz (katkıcı); yalnızca taslak kaydedilir. */
+  canPublish?: boolean;
+  customType?: CustomContentType;
+  /** Sitedeki tüm özel türler (liste bloğu kaynağı seçimi için). */
+  customTypes?: CustomContentType[];
+  /** Üyelik kademeleri (düşükten yükseğe); boşsa içerikte kademe seçimi gösterilmez. */
+  memberTiers?: MembershipTier[];
   startNew?: boolean;
   siteTokens?: DesignTokens;
   inspectorSlot?: React.ReactNode;
@@ -29,6 +38,9 @@ export function useDualModeEditorDocument({
   initialMediaAssets,
   initialSelectedId,
   initialContextType = "page",
+  customType,
+  customTypes,
+  memberTiers,
   startNew = false,
   siteTokens = DEFAULT_STUDIO_TOKENS,
   inspectorSlot,
@@ -180,5 +192,5 @@ export function useDualModeEditorDocument({
     restoreHistory(historyIdxRef.current + 1);
   };
 
-  return { isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug: setSlugManual, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId, locale, defaultLocale, siteLocales, translations };
+  return { customType, customTypes, memberTiers, isPending, startTransition, contentId, setContentId, title, setTitle, slug, setSlug: setSlugManual, tldr, setTldr, status, setStatus, schemaType, setSchemaType, importanceScore, setImportanceScore, blocks, setBlocksState, history, setHistory, historyIdx, setHistoryIdx, proseSyncToken, setProseSyncToken, router, initialDoc, lockedType, blankBlocks, initialBlocks, slugSeeded, blocksRef, historyRef, historyIdxRef, historyTimer, rememberHistory, setBlocks, flushHistory, canUndo, canRedo, restoreHistory, handleUndo, handleRedo, initialContents, initialTaxonomies, initialMediaAssets, initialSelectedId, initialContextType, startNew, siteTokens, inspectorSlot, siteId, locale, defaultLocale, siteLocales, translations };
 }

@@ -21,6 +21,117 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-12] — Küçük borçların kapatılması
+- ✅ **Footer alt çubuk:** sosyal bağlantılar (https) ve alt çubuk menüsü (`docs/03`).
+- ✅ **CDN temizleme:** Cloudflare ya da imzalı webhook; `content:afterPublish` kancasında, zamanlanmış yayın ve yayından kalkma dahil; 1,5 sn birleştirme, 30'luk parçalama, hata bildirimi (`packages/core/src/cdn-purge.ts`, `lib/cdn-purge.ts`).
+- ✅ **Webhook yeniden deneme kuyruğu:** `plugin_deliveries` tablosu, üstel bekleme (1 dk…6 sa, 6 deneme), kalıcı hatada vazgeçme, koşullu sonuç yazımı, zamanlayıcı entegrasyonu, panelde kuyruk ve "Yeniden dene". Zamanlanmış yayın da bildirir.
+- ✅ **Üyelik kademesi ve profil:** en çok 5 kademe, içerik başına gereken kademe, yönetici ataması, ad düzenleme, tüm cihazlardan çıkış. `members.tier` (göç `0023`).
+- ✅ **Redis / çok örnekli:** isteğe bağlı `REDIS_URL`; bağımlılıksız RESP2 istemcisi (`redis-client.ts`), paylaşımlı hız sınırı (giriş ve üye bağlantısı), ortak önbellek dönemi (başka örneğin yazması ≤1 sn içinde görülür). Redis yoksa/erişilemezse süreç belleğine düşer (fail-open).
+- 🧪 `redis-client.test.ts` (RESP kodlama/çözme, zaman aşımı, geri çekilme, sahte sunucuyla), `cdn-purge.test.ts`, `plugin-deliveries.test.ts` (kuyruk, yarış, kiracı), `membership.test.ts` (kademe), `footer-style.test.ts`, `data-plugin.test.ts` (yeniden deneme). Tarayıcıda: footer X bağlantısı (`javascript:` olan basılmadı), kademe akışı (kademesiz/gümüş/altın), profil ve tüm cihazlardan çıkış, hız sınırı sayaçları Redis'te, webhook teslimatı `pending` → zamanlayıcıyla 2. deneme.
+- ⚠️ **Gerçek Redis, Cloudflare ve genel https alıcıyla denenmedi** (ortamda docker/ağ yok): Redis istemcisi RESP2'ye göre yazıldı ve sahte sunucuyla uygulamaya bağlı hâlde doğrulandı; Cloudflare isteği resmi şemaya göre kuruldu.
+
+### [2026-11-12] — Ziyaretçi üyeliği (parolasız, e-posta bağlantılı)
+- ✅ Kararlar (kullanıcıyla): giriş **e-posta bağlantısı** (parola yok), kayıt politikası **yönetici ayarı** (kapalı / açık / davetle; varsayılan kapalı).
+- ✅ Çekirdek: `membership.ts` (ayar, e-posta, güvenli dönüş adresi), `member-token.ts` (bağlantı + oturum belirteci, alan ayrımlı HMAC), `content-access` üye kuralı. Veritabanı: `members` tablosu (iki motor, göç `0022`), `MemberRepository` (atomik tek kullanım, kiracı kapsamlı).
+- ✅ Ziyaretçi: `/uye/giris`, `/uye/dogrula` (GET tüketmez), `/uye` (çıkış, veri indir, hesabı sil), `/api/members/*`; içerik kapısı üye girişine yönlenir (üyelik açıksa); `?format=md` üyeye açılır. i18n `member.*` (tr/en).
+- ✅ Yönetim: `/admin/members` (politika, aydınlatma adresi, davet, devre dışı, silme; e-posta kurulu değilse uyarı ve açma engeli).
+- 🐞 Testler iki gerçek hata yakaladı: üye kimliğindeki `_` belirteç biçimine uymuyordu; `no-referrer` sayfası `Origin: null` gönderip çapraz kaynak denetiminde 500 üretiyordu (denetim artık patlamaz, `referrer: origin`).
+- 🧪 `membership.test.ts`, `members.test.ts` (depo, yarış, kiracı ayrımı), `content-access.test.ts`, `html-cache.test.ts`. Tarayıcıda (SMTP yakalayıcıyla): kapı → kayıt → e-posta → GET tüketmez → POST ile giriş (HttpOnly Lax çerez) → içerik açıldı → bağlantı yeniden kullanılamadı → hesap/veri indirme → markdown üyeye açık, anonime 403 → panele giremez → çıkış → devre dışı bırakınca oturum düştü → hız sınırı → kapalı mod → rıza olmadan/çapraz kaynak reddedildi.
+
+### [2026-11-12] — Dışarıdan eklenti yükleme: bildirimsel veri eklentileri (.nxplugin)
+- ✅ Karar: sunucuda yüklenen kodu çalıştırmak yerine **kod içermeyen veri eklentisi** (`.nxtheme` ile aynı güven modeli). Sözleşme `docs/27`.
+- ✅ Çekirdek (`packages/core/src/data-plugin.ts`, saf): manifest, webhook (https/443/alan adı), özel tür ve webhook doğrulama, Ed25519 imza (`verifyPackageSignature`; `PLUGIN_TRUSTED_KEYS`), HMAC webhook imzası, izin özeti. `CustomContentType.plugin` (eklentiye ait tür işareti).
+- ✅ Veritabanı: `data_plugins` tablosu (iki motor, göç `0021`), `CmsDataPluginRepository`; yedekte `webhookSecret` maskelenir.
+- ✅ Sunucu: `lib/data-plugin.ts` (zip bombası denetimi, kod/HTML/svg/wasm reddi, yol gezinmesi, SHA-256 bütünlük, imza), `lib/plugin-webhooks.ts` (mevcut `postPublicJson`/`safe-fetch` üzerinden: bağlantı anında IP doğrulama, yönlendirme yok), `saveContentAction` yayında bildirir. Eylemler: etkinleştir (açık onay), devre dışı (türde içerik varsa reddedilir), sil, sırrı göster (denetim günlüğü).
+- ✅ Arayüz: `/admin/plugins/packages` (yükleme, imza rozeti, izin özeti, onay kutusu, son bildirim); eklenti türü tür yöneticisinde kilitli. Yazar aracı `scripts/nxplugin.mjs` (keygen/pack/imza).
+- 🧪 `data-plugin.test.ts`. Tarayıcıda: kod içeren, iç ağ IP'li webhook, yol gezinmeli, boş ve kurcalanmış imzalı paket **reddedildi**; imzasız/imzalı kuruldu, güvenilen anahtarla "Doğrulanmış yayıncı"; onaysız etkinleştirme kapalı; etkinleştirince tür, arşiv ve sır; yayında bildirim denendi (kayıt altı başarısızlık gösterildi); türde içerik varken devre dışı reddedildi; CLI'nin paketi sunucuda doğrulandı; oturumsuz yükleme 401.
+- ⚠️ Gerçek bir alıcıya (genel https) teslimat uçtan uca denenmedi (ortam çevrimdışı); gönderim yolu mevcut `postPublicJson` testli koruma katmanını kullanır.
+
+### [2026-11-12] — CrUX alan verisi (ölçülen) ve Perfornext "tahmin / ölçülen" ayrımı
+- ✅ `packages/core/src/crux.ts` (saf): eşikler, yanıt çözümü (CLS yüzdeliği metin gelir), Core Web Vitals geçti/kaldı, hata sınıflandırma (404 = veri yok), anahtar maskesi. `apps/cms/src/lib/perfornext/crux.ts`: Google CrUX API çağrısı (3 cihaz türü, 10 sn zaman aşımı), şifreli anahtar, anlık görüntü saklama. Ziyaretçiye betik yok.
+- ✅ `/admin/perfornext`: "Gerçek Kullanıcı Verisi (CrUX)" bölümü (Ölçülen rozeti; p75, iyi/geliştirilmeli/kötü dağılım çubuğu, dönem, CWV sonucu) ve anahtar/adres formu; içerik ağırlığı raporu "Tahmin" rozetiyle ayrıldı. Eylemler denetim günlüğünde.
+- ✅ `/admin/plugins` istemciye yalnızca bildirilen ayar alanlarını gönderir (saklanan sır/önbellek sızmaz).
+- 🧪 `crux.test.ts`. Sahte CrUX sunucusuyla tarayıcıda: yanlış anahtar → anahtar hatası (sayfada anahtar yok), doğru anahtar → tüm cihazlar geçti, telefon kaldı (LCP 4,6 sn), masaüstü veri yok iletisi; anahtar maskeli, eklentiler sayfasında şifreli değer ve ölçüm önbelleği yok.
+- ⚠️ Gerçek Google anahtarıyla canlıda denenmedi (anahtar gerekir); istek biçimi resmi şemaya göre ve sahte sunucuyla doğrulandı.
+
+### [2026-11-12] — Özel türler: kayıt öneki, kart alanları, alanlardan JSON-LD
+- ✅ `prefixed` (arşiv açıkken): kayıtlar `/{arşiv-adresi}/{slug}`; `contentPrefix` / `contentPath` tek doğru adres. Öneksiz adres 308 ile yönlenir, yanlış önek 404. `resolveContentBySlug`/`getContentBySlug` türe duyarlı (`type` seçeneği) → farklı türlerde aynı slug karışmaz. Rota `[locale]/[slug]/[child]` (Next, aynı düzeyde farklı dinamik ad kabul etmez). Arşiv adresi ≥ 3 karakter.
+- ✅ Adres üreticileri güncellendi: sayfa kanoniği/JSON-LD/kırıntı/`?format=md`, hreflang ve dil değiştirici, site haritası (`pathPrefix`), `ai-sitemap.json`, `llms.txt`, `llms-full.txt`, dinamik aday listesi, bağlantı seçici, `markdown-negotiation`, yayında yeniden doğrulama.
+- ✅ Kartlarda ilk üç alan (arşiv ve `type:` listesi), kapak yoksa ilk görsel alan.
+- ✅ Alanda `schemaProp`: değer sayfanın JSON-LD varlığına yazılır (`fieldSchemaProps`, korumalı özellikler ezilemez).
+- 🧪 `content-types.test.ts` (önek, JSON-LD). Tarayıcıda: tür tanımı → kayıt yayını → `/referanslar/acme-perakende` 200 (tek h1, kanonik önekli, JSON-LD `telephone`/`alumniOf`, alan tablosu), `/acme-perakende` 308, yanlış önek 404, arşiv kartında alan, `?format=md`, site haritası, `ai-sitemap`, `llms.txt`. Üretim derlemesinde bütçe, `css:check` ve `seo-contract` geçti.
+
+### [2026-11-12] — Ziyaretçi HTML önbelleği: çalışma zamanı ve güvenli kural
+- ✅ Eski kural derleme zamanında okunuyor ve yalnızca `/tr` ile `/tr/{slug}` yollarını eşliyordu: ön eksiz (tek dil) adreslerde **hiç çalışmıyordu**. Yerine `packages/core/src/html-cache.ts` (`htmlCacheControl`) ve `middleware.ts` kuralı geldi: `PUBLIC_CACHE_SECONDS` çalışma zamanında okunur, tüm dillerde ve ön eksiz adreslerde çalışır.
+- ✅ Güvenlik: `nx_*` çerezi (oturum, çerez onayı, içerik parolası, önizleme) taşıyan, çıktıyı değiştiren sorgu parametresi içeren, `utm_source` (yapay zeka yönlendirme izleme), mağaza/arama/kampanya/dosya yollarındaki istekler ve noindex siteler asla `public` işaretlenmez.
+- ✅ `scripts/nginx-nexpress.conf` sonuna isteğe bağlı nginx `proxy_cache` bloğu (çerez atlama, `stale-while-revalidate`, `X-Cache-Status`).
+- 🧪 `html-cache.test.ts`; üretim derlemesinde `PUBLIC_CACHE_SECONDS=60` ile başlıklar yol yol doğrulandı (ana sayfa/slug/`?sayfa=2` public; çerezli, `?q=`, `utm_source`, `/magaza`, `/admin` özel).
+- ⚠️ CDN isabeti uygulamaya ulaşmaz: bot/yapay zeka telemetrisi eksik sayılır; 404 yanıtları da N sn önbellekte kalır.
+
+### [2026-11-12] — Roller ve izinler (author, contributor + izin matrisi)
+- ✅ `packages/core/src/permissions.ts`: `USER_ROLES` (admin, editor, author, contributor), `CAPABILITIES`, `ROLE_CAPABILITIES`, `roleCan`, `isLimitedRole`, `canOpenAdminPath`, `contentOwnerId`, `contentAccess`. `UserRole` genişledi; **oturum belirteci doğrulayıcısı eski iki rolü sabit yazıyordu**, `USER_ROLE_IDS` ile düzeltildi (regresyon testi). DB'de rol sütunu düz metin: göç yok.
+- ✅ Sunucu: `requireUser({ can })`; `saveContentAction` izne bağlı, sahiplik ve yayın yetkisi sunucuda (katkıcı → taslak, yazar yalnızca kendi içeriği; yalnızca sayfa/yazı/özel tür). İçerik sahibi `_ownerId`. Sınırlı roller için middleware yol beyaz listesi, `/admin/contents` yalnızca kendi içerik listesini istemciye verir, API kapıları (`panel.full`, `media.upload`). Rol değişince oturumlar kapanır.
+- ✅ Arayüz: `/admin/my-content` ("İçeriklerim"), `/admin/users/roles` izin matrisi, kullanıcı formunda dört rol, sınırlı rollerde menü/komut paleti süzülür ve eklenti kenar yuvası gizlenir, katkıcıda "Yayınla" düğmesi yok.
+- 🧪 `permissions.test.ts`, `auth.test.ts` (rol belirteci). Tarayıcıda: yazar/katkıcı girişi, yetkisiz yollar → içeriklerim, katkıcı yazısı taslak (ziyaretçide 404), yazar yazısı yayında, başkasının içeriği/şablon/ürün editörü reddedildi, API 403. Üretim derlemesinde bütçe, `css:check` ve `seo-contract` geçti.
+
+### [2026-11-12] — Özel tür arşiv sayfaları
+- ✅ `CustomContentType` yeni alanlar: `archive`, `archiveSlug`, `archiveIntro`. Adres boşsa çoğul addan türer (`termSlug`); sistem rotaları (`RESERVED_ARCHIVE_SLUGS`: kategori, etiket, magaza, ara, yazar, kampanya…), başka türün adresi ya da geçersiz biçim reddedilir (önce çoğul ada düşer, o da çakışırsa arşiv kapanır; `droppedArchives` kayıtta yöneticiye bildirir). Eski kayıtlar kapalı kalır.
+- ✅ Ziyaretçi: `/{arşiv-adresi}` (`[slug]` rotasında, **aynı adda içerik yoksa**) sayfalı (`?sayfa=N`, 12 kayıt) liste; tek h1, tanıtım metni, `CollectionPage` + `ItemList` JSON-LD, kanonik adres, boş arşiv `noindex`. Bileşen `components/public/type-archive.tsx`. JS yok.
+- ✅ Site haritası: açık ve `inSitemap` olan, en az bir yayını olan türün arşivi `archive-N.xml` içine girer.
+- ✅ Yönetim: `/admin/content-types` içinde "Arşiv (liste) sayfası oluştur", adres ve tanıtım alanları (yeni tür varsayılanı açık).
+- 🧪 `content-types.test.ts` (arşiv adresi, çakışma, çift adres). Tarayıcıda: tür tanımı → iki kayıt yayını → `/referanslar` (h1, JSON-LD, kanonik, sitemap); `/magaza` ve olmayan adres davranışı değişmedi. Üretim derlemesinde bütçe, `css:check` (26 sayfa) ve `seo-contract` (18 adres) geçti.
+
+### [2026-11-12] — Footer satır stilleri (Kadence tarzı yönetim)
+- ✅ `packages/core/src/footer-style.ts`: `FooterConfig.options` (orta satır ve alt çubuk için zemin, özel renk, dikey boşluk, ayraç, tam/kapsayıcı genişlik; alt çubuk düzeni `split|centered`, "Başa dön"; sütun boşluğu). `resolveFooterStyle` çizimde beyaz listeye indirir, `footerRowColors` zemine göre okunaklı yazı rengi seçer, `expandFooterText` telifte `{year}` / `{site}` doldurur. Eski kayıtlar değişmeden aynı görünür.
+- ✅ Ziyaretçi `SiteFooter`: üç satır (üst bant, orta, alt çubuk) ayrı zemin ve boşlukla çizilir; JS yok (başa dön düz çapa). `/admin/appearance/footer` içinde yeni **Satır Stilleri** paneli (canlı şerit önizlemesi), `footer-style-panel.tsx`.
+- 🧪 `footer-style.test.ts`. Üretim derlemesinde bütçe (106,3 kB, rota kodu 0,73 kB), `css:check` (24 sayfa, eksik 0) ve `seo-contract` (16 adres) geçti; tarayıcıda stil kaydedilip ziyaretçi sayfasında doğrulandı.
+
+### [2026-11-12] — Özel içerik türleri ve özel alanlar (docs/26 §3 boşluğu)
+- ✅ `packages/core/src/content-types.ts`: `general.contentTypes` altında tür tanımı (en çok 12 tür × 30 alan; metin, uzun metin, sayı, evet/hayır, seçenek, tarih, bağlantı, e-posta, görsel). `sanitizeContentTypes`, `sanitizeFieldValues` (alan türüne göre doğrulama, `javascript:` bağlantısı yok), `displayFields`, `fieldsMarkdown`. Değerler `contents.schemaAttributes._fields` altındadır; `contents.type` düz metin olduğundan **veritabanı göçü yok**.
+- ✅ Yönetim: `/admin/content-types` (yalnızca yönetici; tür/alan oluşturma), `/admin/entries/[type]` (tür listesi), yan menüde tür başına bağlantı. Editörde yalnızca özel türde **Alanlar** sekmesi; kayıtta `saveContentAction` türü ve değerleri sunucuda doğrular (zorunlu alan yayında zorunlu, taslakta serbest).
+- ✅ Ziyaretçi: alanlar `custom_fields` bloğu (`nx-custom-fields`, JS'siz tablo) olarak içeriğin başına otomatik eklenir; `?format=md` / `/llms.txt` / RAG için `markdownCache` sonuna `## Özellikler` bölümü yazılır (`appendix`). Site haritasına tür başına `referans-N.xml` girer (`inSitemap`), `/ai-sitemap.json` türü taşır.
+- ✅ Dinamik liste kaynağı `type:<kimlik>`; blok `custom_fields` katalog dışıdır (docs/23 §5.2).
+- ⚠️ v1 sınırları: tür başına arşiv/rota yok (içerik `/{slug}` altında); özel alanlardan JSON-LD üretilmez; dinamik liste kartı alan göstermez; tür başına sınıflandırma yok.
+- 🧪 Test: `content-types.test.ts`, `dynamic-content.test.ts` (`type:`). Tarayıcıda uçtan uca doğrulandı: tür tanımı → editör Alanlar sekmesi → yayın → ziyaretçi tablosu (tek h1), `?format=md`, site haritası.
+
+### [2026-11-11] — Erişilebilirlik, kırıntı ve editör ince ayarları
+- **Kontrast:** Lighthouse'ın işaretlediği tüm `color-contrast` ihlalleri kapandı (yerelde erişilebilirlik 96 → 100): `text-amber-600` → `700`, `text-slate-400` rol etiketi → `text-nx-muted`, `--color-nx-muted` yüzde 20 koyulaştırıldı, bağlantı listesindeki rozet artık yarı saydam bağlantının içinde değil (opaklık yalnızca etikette) ve zemini AA için biraz koyu.
+- **Görünür kırıntı:** Yerleşik makale düzeninde "← Ana sayfa" yerine `Ana sayfa › (üst sayfa) › sayfa` (`nav aria-label`, son öğe `aria-current`); JSON-LD `BreadcrumbList` ile aynı listeden gelir.
+- **Editör:** Kayan blok araç çubuğu üstte 44 px yer yoksa (ilk blok, bitişik bloklar) bloğun içinde sol üstte durur, başlığı örtmez. Başlık alanı genişlik/yazı tipi değişince yeniden ölçülür (iki satırlı başlık kırpılmıyordu).
+- **Perfornext:** "Core Web Vitals" adı "risk tahmini" oldu (içerikten tahmin; ölçüm değil); gerçek ölçüm için PageSpeed/Lighthouse yönlendirmesi eklendi.
+
+### [2026-11-11] — Çerez onayı (KVKK/GDPR) ve ziyaretçi CSS'inin ayrılması
+- **Çerez onayı:** `/admin/settings` › Çerez onayı: banner metni ve politika adresi. Açıkken ziyaretçi, JS'siz bir formla (`POST /api/consent`, `nx_consent` çerezi, 180 gün) "Tümünü kabul" ya da "Yalnızca zorunlu" seçer; seçim sonrası "Çerez tercihleri" düğmesi seçimi sıfırlar. Google Analytics ve özel baş/son betikler yalnızca "tümü" ile yüklenir; zorunlu çerezler (oturum, sepet, faydalı oyu) onaysız çalışır. Geri dönüş adresi yalnızca aynı site (açık yönlendirme yok). Metinler `consent.*` i18n anahtarlarıdır. Saf mantık `@nexpress/core/consent` (testli). Banner kişiye göre değiştiğinden CDN HTML önbelleği çerezli isteklerde atlanmalıdır.
+- **CSS ayrımı:** `globals.css` → `admin.css` (yönetim ve oturum sayfaları, tam Tailwind taraması) + `public.css` (ziyaretçi; `source(none)` + açık `@source` listesi, yönetim paneli yardımcı sınıfları yok). Ziyaretçi CSS'i 158 KB → 80 KB ham, ~24 KB → ~13 KB gzip. `pnpm --filter @nexpress/cms css:check` ziyaretçi HTML'indeki hiçbir sınıfın yönetim CSS'inde olup ziyaretçi CSS'inde eksik kalmadığını denetler (24 sayfada 0 eksik; CI'da koşar). Yeni ziyaretçi kaynak klasörü `public.css` `@source` listesine eklenmelidir.
+- **JS bütçesi ölçütü:** "rota/düzen kodu" ölçümü sayfa kodunu değil webpack parça kimliği listelerini ve istemci kaydı saplarını topladığından 0,7–1,0 kB arasında oynuyordu; sınır 1,5 kB'a alındı (toplam tavan 108 kB, yasak kütüphane denetimi aynen geçerli; ölçülen 106,6 kB).
+
+### [2026-11-11] — SEO düzeltmeleri (inceleme raporu `docs/26` §2)
+- **`<title>`:** Köprü WordPress'in ana sayfa başlık şablonunu site geneli `titleTemplate` yazıyor, bilinmeyen değişkenler boşalıp her iç sayfa başlığı `|` oluyordu. Köprü artık `homeTitleTemplate`'e yazar; `normalizeTitleTemplate` başka SEO eklentilerinin değişkenlerini (`%sitename%`, `%%title%%`…) çevirir, tanınmayanı atar; sonuç boş/yalnız ayraçsa `başlık | site` yedeğine düşülür (canlıdaki bozuk kayıt veri değişmeden düzelir).
+- **Şema:** `datePublished`, `BreadcrumbList` (Ana sayfa › üst sayfa › sayfa), `og:type=article` + `article:published/modified_time`, görseli olmayan içerikte üretilmiş paylaşım görseli. İçe aktarma izleri (`wpId`, `wpKind`, `migratedFrom`…) JSON-LD'ye sızmaz. Uydurma varsayılan yazar kaldırıldı: yazar adı yoksa yayıncı kuruluş yazar sayılır. Kök `@id` eğik çizgili.
+- **Çözümleyici:** zengin metindeki (`html`) iç/dış bağlantılar sayılır, `heading_element`/`paragraph_element`/`text_div` ve tanınmayan blokların metni ve bağlantıları analize girer; başlık düzeyi `"h2"` çözülür.
+- **Meta açıklama:** 150+ karakter olup cümleyle bitmeyen (yarıda kesilmiş) açıklama son cümleye/sözcüğe toparlanır ve `…` eklenir; köprü artık sözcük sınırında keser.
+- **Tek h1:** sayfa başlığı h1 olan düzende içerikteki vitrin ve 1. düzey başlık h2'ye düşer.
+- **Site simgesi:** SEO > Motor > Ayarlar'da kitaplıktan simge seçilir; `/favicon.ico`, `/apple-touch-icon.png`, `/manifest.webmanifest`, `/api/site-icon/{192|512}` yayımlanır, `<link>` etiketleri basılır (simge yoksa hiçbiri). Ara katman eşleyicisi `favicon.ico`'yu artık dışlamaz (kiracı başlığı için).
+- **Sözleşme testi:** `apps/cms/scripts/seo-contract.mjs` (`pnpm --filter @nexpress/cms seo:contract`) çalışan uygulamada her içerik için başlık, tek h1, canonical, og:title, JSON-LD geçerliliği/sızıntısı ve yazı şemasını denetler; CI'a eklendi.
+
+### [2026-11-11] — Sayfa bazlı görünüm seçenekleri
+- **Editör › Sayfa Ayarları › Görünüm:** header (site ayarı / şeffaf / gizli; şeffafta açık-koyu yazı rengi), footer gizleme, içerik genişliği (dar 760, geniş 1440, tam), kenar çubuğu (site ayarı / yok / sol / sağ), üst-alt boşluğu kaldırma, sayfa başlığını gizleme. Değerler `schemaAttributes._page` altındadır; yalnızca varsayılandan farklılar yazılır (`@nexpress/core/page-options`, testli). Eski `_sidebar` anahtarı okunur ve yeni anahtarla değiştirilir.
+- **Ziyaretçi:** `[locale]/layout.tsx` içerik seçeneklerini önbellekli okumayla çözer (ana sayfa için `lib/home-slug.ts`). Şeffaf header içeriğin üstüne biner (`SiteHeader overlay`, `data-nx-overlay`). Başlık gizleme h1'i `sr-only` bırakır (SEO). Yerleşik makale düzeninde çalışır; şablonlu sayfada başlık/kenar çubuğu şablondan gelir.
+- **Editör güvenlik ağı:** sayfa seçenekleri kirli-değişiklik imzasına yalnızca varsayılandan farklıysa girer (eski yerel taslak imzaları değişmez).
+
+### [2026-11-11] — Yazı tipi sistemi ve yandan açılan mobil menü
+- **Yazı tipi:** Özelleştirici › Yazı Tipi'nde başlık/gövde/kod yazı tipi seçilir (25 ailelik katalog, `@nexpress/core/fonts`). Seçilen aile bir kez Google Fonts'tan indirilir (`apps/cms/src/lib/fonts.ts`; yalnızca `latin` + `latin-ext`, Türkçeyi kapsar) ve `{MEDIA_DIR}/{siteId}/fonts` altına yazılır; ziyaretçi `/api/fonts/{dosya}` ile kendi alan adımızdan alır (`immutable`, `font-display: swap`, gövde yazı tipi `preload`). Ziyaretçi üçüncü taraf istek yapmaz; CSP `font-src 'self'` değişmedi. `customizer.typography.fonts` yalnızca katalog ailelerini ve geçerli dosya adlarını saklar (testli). Hazır font çiftleri de seçilince dosyaları indirir. Eskiden `googleFonts` bayrağı hiçbir şey yapmıyordu.
+- **Mobil menü:** `<details>` açılır liste yerine yandan açılan panel (`popover`, JS'siz; dışarı tıklama/Esc kapatır; kapatma düğmesi; hareket azaltma desteği). Popover desteği olmayan eski tarayıcıda menü satır içi açık liste kalır. Yazılım Firması teması CSS'i yeni sınıflara (`.nx-mobile-toggle`, `.nx-offcanvas`) uyarlandı.
+
+### [2026-11-11] — Tema, tasarım yapısı ve editör toparlaması
+- **Tema hemen etkin:** Site satırı önbelleği (`packages/database/src/cms/site.ts`) modül düzeyindeydi; Next, sunucu eylemi ile sayfa rotasını ayrı paketlerde derleyince iki kopya olup eylemdeki temizlik sayfaya ulaşmıyordu (tema 15 sn geç yansıyordu). `globalThis` üzerinde tek Map olur, `activateTheme` yazmadan sonra da temizler, `invalidateSite` aynı önbelleği düşürür. Tarayıcıda doğrulandı: DB ve ziyaretçi çıktısı aynı anda değişir.
+- **Tema başına şerit:** Resmi temalar başlık/altlık/düğme düzenini getirir (`theme-chrome.ts`). Tema değişince ayrılan temanın düzeni `general.themeChrome` altına saklanır, dönülünce geri gelir (`theme-chrome-switch.ts`, testli). Ana header satırı dikey ortalanmıyordu (`h-full` + `min-height`); düzeltildi.
+- **Demo içerik:** Tüm resmi temalara demo paketi (`demo-generic.ts`, `demo-copy.ts`); aktarım demo ana sayfayı açılış sayfası yapar; kartta **Demo ile** tek adım; tema kartlarında jetonlardan çizilen maket önizleme.
+- **Tasarım yapısı:** Görünüm + Tasarım grupları tek **Tasarım** grubu ve tek sekme çubuğu oldu (Temalar, Özelleştirici, Header, Footer, Menüler, Kenar çubuğu, Şablonlar, Kütüphane & AI). Stüdyo sekmeleri yeniden adlandırıldı.
+- **Header yerleşim kurucusu:** `/admin/appearance/header` sürükle-bırak kurucu oldu (3 şerit × 3 bölge, masaüstü/mobil, öğe ayar paneli). 7 yeni öğe (`phone`, `email`, `button2`, `social`, `cart`, `html`, `divider`) ve `HeaderConfig.options`; mobil türetmede geniş öğeler atlanır. Özel header şablonu açıksa sayfa uyarır.
+- **Kütüphane:** Kart ızgarası 4 sütun, tek satır ad ve ilk cümle (tam metin `title`'da); önizleme kutusu taşmayı keser. 12 yeni kurumsal bölüm (`lib_corp_*`, tema rengine uyumlu).
+- **Görsel kadrajı:** Her görsel alanına kadraj noktası, kırp/sığdır ve yakınlaştırma (`#nx:` yönergesi, `ImageDirectives`, testli); tüm bloklarda `ResponsiveImage` ile çalışır.
+
 ### [2026-11-10] — Öne çıkan sayfa, blog sayfası ve tema kabuğu
 - **Sayfalar:** Öne çıkan sayfa ana sayfayı, blog sayfası yazı listesini belirler. Tema demosu yalnızca öne çıkan sayfa boşken kullanılır.
 - **Köprü 0.3.1:** WordPress ana sayfa ve yazı sayfası bayrakları okunur. Veri kümesindeki `blog` adresi yazı sayfası olur ve o andaki menü/şerit tema değişince geri gelsin diye saklanır.

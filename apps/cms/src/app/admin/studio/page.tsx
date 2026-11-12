@@ -9,7 +9,7 @@ import { StudioClient, type StudioTemplateItem, type StudioLibraryItem } from ".
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Tasarım Stüdyosu & Şablon Fabrikası | NexPress CMS",
+  title: "Kütüphane & Yapay Zekâ | NexPress CMS",
   description: "Tüm site şablonları, senkronize modeller, yapay zeka tasarımları ve özel CSS/JS kodları.",
 };
 

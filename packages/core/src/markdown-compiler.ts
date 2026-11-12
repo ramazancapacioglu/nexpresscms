@@ -1,4 +1,5 @@
 import { blockPlainText } from "./inline-html";
+import { stripImageDirectives } from "./media";
 import type { BlockNode } from "./types";
 
 function catalogBlockToMarkdown(props: Record<string, unknown>): string {
@@ -44,7 +45,7 @@ function catalogBlockToMarkdown(props: Record<string, unknown>): string {
  */
 export function compileBlocksToMarkdown(
   blocks: BlockNode[],
-  options?: { title?: string; tldr?: string | null }
+  options?: { title?: string; tldr?: string | null; /** Blokların sonuna eklenen Markdown (ör. özel alan listesi). */ appendix?: string }
 ): string {
   const sections: string[] = [];
 
@@ -62,6 +63,8 @@ export function compileBlocksToMarkdown(
       sections.push(rendered.trim());
     }
   }
+
+  if (options?.appendix && options.appendix.trim()) sections.push(options.appendix.trim());
 
   return sections.join("\n\n").trim() + "\n";
 }
@@ -103,7 +106,7 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
 
     case "image_figure": {
       const alt = String(p.altText ?? p.alt ?? "Görsel");
-      const url = String(p.url ?? "");
+      const url = stripImageDirectives(String(p.url ?? ""));
       const caption = p.caption ? `\n*${String(p.caption)}*` : "";
       return `![${alt}](${url})${caption}`;
     }

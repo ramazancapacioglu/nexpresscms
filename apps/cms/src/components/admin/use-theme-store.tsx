@@ -2,6 +2,9 @@ import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   DEFAULT_CUSTOMIZER_SETTINGS,
+  catalogEntry,
+  fontStack,
+  primaryFamily,
   type DesignTokens,
   type SiteCustomizerSettings,
   type SiteSettings,
@@ -9,6 +12,7 @@ import {
 } from "@nexpress/core";
 import { GLOBAL_TYPOGRAPHY_PAIRS, type ThemeManifest } from "@nexpress/themes";
 import { saveThemeCustomizerAction } from "@/app/admin/actions";
+import { installFontAction } from "@/app/admin/themes/font-actions";
 
 export interface CustomizerTemplateSummary {
   id: string;
@@ -96,6 +100,30 @@ export function useThemeStore({
     showToast("Global renk paleti uygulandı.");
   };
 
+  /** Katalogdaki aileleri sunucuya indirir (zaten inenler atlanır) ve özelleştirici ayarına işler. */
+  const ensureFonts = async (families: string[]) => {
+    const have = new Set((customizer.typography.fonts ?? []).map((f) => f.family));
+    for (const family of new Set(families)) {
+      if (!catalogEntry(family) || have.has(family)) continue;
+      const res = await installFontAction({ family });
+      if (!res.ok) {
+        showToast(`${family}: ${res.error}`);
+        continue;
+      }
+      setCustomizer((prev) => ({ ...prev, typography: { ...prev.typography, fonts: [...(prev.typography.fonts ?? []).filter((f) => f.family !== family), res.font] } }));
+    }
+  };
+
+  /** Başlık, gövde veya kod yazı tipini katalogdan seçer; dosya inene kadar sistem yedeği görünür. */
+  const setFontFamily = (role: "headingFont" | "bodyFont" | "monoFont", family: string) => {
+    const stack = fontStack(family);
+    if (!stack) return;
+    setTokens((prev) => ({ ...prev, typography: { ...prev.typography, [role]: stack } }));
+    startTransition(async () => {
+      await ensureFonts([family]);
+    });
+  };
+
   const handleApplyTypographyPair = (
     pair: (typeof GLOBAL_TYPOGRAPHY_PAIRS)[number]
   ) => {
@@ -110,6 +138,9 @@ export function useThemeStore({
       },
     }));
     showToast(`"${pair.name}" tipografi çifti uygulandı.`);
+    startTransition(async () => {
+      await ensureFonts([primaryFamily(pair.headingFont), primaryFamily(pair.bodyFont), primaryFamily(pair.monoFont)]);
+    });
   };
 
   const handleSaveAll = () => {
@@ -166,6 +197,7 @@ export function useThemeStore({
     handleSelectTheme,
     handleApplyPalette,
     handleApplyTypographyPair,
+    setFontFamily,
     handleSaveAll,
     btnRadius,
   };

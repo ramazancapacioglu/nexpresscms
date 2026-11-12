@@ -116,3 +116,12 @@ describe("content-access (parola ve üye korumalı içerik kapısı)", () => {
     assert.equal(enId.seo.titleTemplate, "%title% — %site%");
   });
 });
+
+it("ziyaretçi üyesi: üyelere özel ve kısıtlı içeriği açar; parola korumalı ve taslak kapılarını açmaz", () => {
+  const base = { hasSession: false, hasValidPasswordToken: false };
+  assert.deepEqual(evaluateContentAccess({ ...base, status: "published", visibility: "members_only", hasMemberSession: true }), { allowed: true, gate: "none" });
+  assert.deepEqual(evaluateContentAccess({ ...base, status: "published", visibility: "members_only" }), { allowed: false, gate: "members_only" });
+  assert.deepEqual(evaluateContentAccess({ ...base, status: "restricted", visibility: "public", hasMemberSession: true }), { allowed: true, gate: "none" });
+  assert.deepEqual(evaluateContentAccess({ ...base, status: "published", visibility: "password", accessPassword: "x", hasMemberSession: true }), { allowed: false, gate: "password" }, "üyelik parola kapısını açmaz");
+  assert.deepEqual(evaluateContentAccess({ ...base, status: "restricted", visibility: "public", accessPassword: "x", hasMemberSession: true }), { allowed: false, gate: "password" });
+});

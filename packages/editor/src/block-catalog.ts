@@ -102,6 +102,7 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     children: [{ id: "tpl_sh", type: "heading", props: { level: 2, text: "Bölüm başlığı" } }, { id: "tpl_sp", type: "paragraph", props: { text: "Bölüm içi açıklama." } }],
   })),
   item("divider", "Ayırıcı", "layout", "Çizgi ya da boşluk", node("divider_spacer", { style: "line", spacingPx: 32 })),
+  item("custom_fields", "Özel alan tablosu", "data", "Bu içeriğin özel alanları (özel içerik türleri)", node("custom_fields", { title: "Özellikler" })),
   item("synced_pattern", "Senkronize model", "layout", "Kayıtlı model: tek yerden düzenlenir, tüm sayfalarda anında güncellenir", node("synced_pattern", { patternId: "", title: "Kayıtlı Model" })),
   item("anchor_nav", "Yapışkan çapa menüsü (Bölüm gezgini)", "layout", "Hero altında yapışkan yatay bölüm bağlantıları (#genel-bakis, #urunler, #ozellikler…)", node("anchor_nav", {
     title: "Bölümler",

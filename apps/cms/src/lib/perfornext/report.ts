@@ -45,7 +45,7 @@ export interface BudgetReport {
   customizer: CustomizerPerformanceAudit;
 }
 
-/** Yayındaki sayfa ve yazıların ağırlığı ve Core Web Vitals (CLS/LCP/DOM) sinyalleri. Şablonlar listeye girmez. */
+/** Yayındaki sayfa ve yazıların ağırlığı ve Core Web Vitals risk işaretleri (CLS/LCP/DOM; içerikten tahmin, laboratuvar/alan ölçümü değildir). Şablonlar listeye girmez. */
 export async function contentReport(siteId: string, locale: string): Promise<ContentReport> {
   const rows = await getScopedRepository(siteId).listContents({ locale, status: "published" });
   const weighed = rows.map((row) => {

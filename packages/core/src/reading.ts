@@ -48,3 +48,16 @@ export function sanitizeChromeSnapshot(value: unknown): ChromeSnapshot | null {
   if (!themeId) return null;
   return value as unknown as ChromeSnapshot;
 }
+
+/** Tema başına saklanan şerit düzenleri (tema kimliği → anlık görüntü). En çok 16 tema, bozuk kayıtlar atılır. */
+export function sanitizeThemeChrome(value: unknown): Record<string, ChromeSnapshot> {
+  if (!isRecord(value)) return {};
+  const out: Record<string, ChromeSnapshot> = {};
+  for (const [id, snap] of Object.entries(value).slice(0, 16)) {
+    if (!/^[a-z0-9][a-z0-9-]{0,79}$/i.test(id)) continue;
+    const ok = sanitizeChromeSnapshot(snap);
+    if (ok) out[id] = ok;
+  }
+  return out;
+}
+

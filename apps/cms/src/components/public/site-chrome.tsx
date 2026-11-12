@@ -2,6 +2,9 @@ import React from "react";
 import {
   DEFAULT_HEADER_ZONES,
   FOOTER_LAYOUT_PRESETS,
+  expandFooterText,
+  footerRowColors,
+  resolveFooterStyle,
   isSafeMenuHref,
   resolveFooterWidgets,
   hasExplicitMobileZones,
@@ -34,12 +37,18 @@ interface HeaderProps {
   menuLabel: string;
   menuAllLabel: string;
   searchLabel: string;
+  /** "Sepet" öğesinin etiketi. */
+  cartLabel?: string;
+  /** "Sosyal bağlantılar" öğesi: SEO > Kuruluş > sameAs adreslerinden türetilir. */
+  social?: Array<{ label: string; href: string }>;
   /** Yazılım firması teması: arama ikonu sayfa yerine canlı sonuç penceresi açar. */
   liveSearch?: boolean;
+  /** Sayfa seçeneği "şeffaf header": şerit içeriğin üstüne biner, yazı rengi `light` (beyaz) veya `dark` (koyu). */
+  overlay?: "light" | "dark";
 }
 
 /** Üst çubuk + ana şerit + menü (RSC). Geliştirme amaçlı rozet, tema bilgisi ve yönetim bağlantısı ziyaretçiye gösterilmez. */
-export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, liveSearch }: HeaderProps) {
+export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, header, custom, menuLabel, menuAllLabel, searchLabel, cartLabel = "Sepet", social = [], liveSearch, overlay }: HeaderProps) {
   const main = header?.mainBar;
   const top = header?.topBar;
   const bottom = header?.bottomBar;
@@ -47,6 +56,10 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const ctaLabel = (custom.ctaLabel || main?.ctaLabel || "").trim();
   const ctaHref = (custom.ctaHref || main?.ctaHref || "").trim();
   const showCta = custom.showCta !== false && ctaLabel !== "" && isSafeMenuHref(ctaHref) && !ctaHref.startsWith("/admin");
+  const options = header?.options ?? {};
+  const secondaryHref = (options.secondaryHref ?? "").trim();
+  const secondaryLabel = (options.secondaryLabel ?? "").trim();
+  const showSecondary = secondaryLabel !== "" && isSafeMenuHref(secondaryHref) && !secondaryHref.startsWith("/admin");
   const logoText = custom.logoText.trim() || siteName;
   const sticky = main?.sticky ?? custom.sticky;
   const glass = main?.glassmorphism ?? custom.glass;
@@ -57,9 +70,6 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
   const bottomZones = resolveHeaderZones(bottom, DEFAULT_HEADER_ZONES.bottom);
   const topMobile = resolveMobileHeaderZones(top, topZones);
   const bottomMobile = resolveMobileHeaderZones(bottom, bottomZones);
-  const zoneHas = (zones: HeaderZones, id: HeaderWidgetId) =>
-    zones.left.includes(id) || zones.center.includes(id) || zones.right.includes(id);
-
   const widget = (id: HeaderWidgetId, viewport: "desktop" | "mobile") => {
     if (id === "announcement") return top?.announcementText ? <span className="font-medium">{top.announcementText}</span> : null;
     if (id === "contact") {
@@ -116,15 +126,60 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       );
     }
     if (id === "cta" && showCta) {
+      const variant = ink ? "outline" : options.ctaStyle ?? "solid";
+      const filled = variant === "solid";
       return (
         <a
           href={ctaHref}
-          style={{ backgroundColor: ink ? "transparent" : tokens.colors.primary, color: ink ? tokens.colors.foreground : tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius, border: ink ? "1px solid rgba(255,255,255,0.2)" : undefined }}
-          className="inline-flex items-center px-4 py-2 text-sm font-semibold"
+          style={{
+            backgroundColor: filled ? tokens.colors.primary : "transparent",
+            color: filled ? tokens.colors.primaryForeground : ink ? tokens.colors.foreground : tokens.colors.primary,
+            borderRadius: tokens.geometry.borderRadius,
+            border: variant === "ghost" ? "1px solid transparent" : filled ? "1px solid transparent" : ink ? "1px solid rgba(255,255,255,0.25)" : `1px solid ${tokens.colors.primary}`,
+          }}
+          className="nx-header-cta inline-flex items-center whitespace-nowrap px-4 py-2 text-sm font-semibold"
         >
           {ctaLabel}
         </a>
       );
+    }
+    if (id === "button2" && showSecondary) {
+      return (
+        <a
+          href={secondaryHref}
+          style={{ color: ink ? tokens.colors.foreground : tokens.colors.primary, borderRadius: tokens.geometry.borderRadius, border: `1px solid ${ink ? "rgba(255,255,255,0.25)" : tokens.colors.primary}` }}
+          className="nx-header-button2 inline-flex items-center whitespace-nowrap px-4 py-2 text-sm font-semibold"
+        >
+          {secondaryLabel}
+        </a>
+      );
+    }
+    if (id === "phone") {
+      const phone = top?.contactPhone?.trim();
+      return phone ? <a className="nx-header-phone whitespace-nowrap text-sm font-medium" href={`tel:${phone.replace(/[^\d+]/g, "")}`}>{phone}</a> : null;
+    }
+    if (id === "email") {
+      const email = top?.contactEmail?.trim();
+      return email ? <a className="nx-header-email whitespace-nowrap text-sm font-medium" href={`mailto:${email}`}>{email}</a> : null;
+    }
+    if (id === "social") {
+      return social.length > 0 ? (
+        <span className="nx-header-social flex items-center gap-3 text-sm font-medium">
+          {social.map((item) => (
+            <a key={item.href} href={item.href} rel="noopener noreferrer me" target="_blank" className="opacity-80 hover:opacity-100">{item.label}</a>
+          ))}
+        </span>
+      ) : null;
+    }
+    if (id === "cart") {
+      return <a href={`${lb ?? `/${locale}`}/magaza/sepet`} className="nx-header-cart whitespace-nowrap text-sm font-medium opacity-80 hover:opacity-100">{cartLabel}</a>;
+    }
+    if (id === "html") {
+      const text = (options.htmlText ?? "").trim();
+      return text ? <span className="nx-header-text text-sm">{text}</span> : null;
+    }
+    if (id === "divider") {
+      return <span aria-hidden="true" className="nx-header-divider h-5 w-px bg-current opacity-20" />;
     }
     if (id === "links" && bottomLinks.length > 0) {
       return (
@@ -164,13 +219,28 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       </div>
     );
   };
-  const topVisible = Boolean(top?.enabled && (top.announcementText || top.contactPhone || top.contactEmail));
+  /** Şeritte gerçekten çizilecek bir öğe var mı (boş duyuru/telefon şeridi görünmez). */
+  const hasContent = (zones: HeaderZones) =>
+    [...zones.left, ...zones.center, ...zones.right].some((id) => {
+      if (id === "announcement") return Boolean(top?.announcementText);
+      if (id === "contact") return Boolean(top?.contactPhone || top?.contactEmail);
+      if (id === "phone") return Boolean(top?.contactPhone);
+      if (id === "email") return Boolean(top?.contactEmail);
+      if (id === "links") return bottomLinks.length > 0;
+      if (id === "social") return social.length > 0;
+      if (id === "html") return Boolean((options.htmlText ?? "").trim());
+      if (id === "button2") return showSecondary;
+      if (id === "cta") return showCta;
+      return true;
+    });
+  const topVisible = Boolean(top?.enabled && hasContent(topZones));
+  const bottomVisible = Boolean(bottom?.enabled && hasContent(bottomZones));
   const shell = ink ? "100%" : tokens.geometry.containerMaxWidth;
 
   const shellSticky = sticky !== false && !ink;
   const searchAction = `${lb ?? `/${locale}`}/ara`;
   return (
-    <div className={shellSticky ? "nx-header-shell sticky top-0 z-40" : "nx-header-shell"}>
+    <div className={overlay ? "nx-header-shell absolute inset-x-0 top-0 z-40" : shellSticky ? "nx-header-shell sticky top-0 z-40" : "nx-header-shell"}>
       {liveSearch ? (
         <div id="nx-yf-search" popover="auto" className="nx-yf-search">
           <form action={searchAction} method="get" role="search" className="nx-yf-search-panel">
@@ -195,40 +265,45 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       ) : null}
 
       <header
-        style={{ borderColor: tokens.colors.border, backgroundColor: ink || glass === false ? tokens.colors.background : `color-mix(in srgb, ${tokens.colors.background} 92%, transparent)` }}
+        data-nx-overlay={overlay}
+        style={
+          overlay
+            ? { borderColor: "transparent", backgroundColor: "transparent", color: overlay === "dark" ? "#0b0d12" : "#ffffff" }
+            : { borderColor: tokens.colors.border, backgroundColor: ink || glass === false ? tokens.colors.background : `color-mix(in srgb, ${tokens.colors.background} 92%, transparent)` }
+        }
         className={
           ink
             ? "nx-public-header sticky top-0 z-40 border-b"
-            : `nx-public-header relative z-40 border-b ${glass === false ? "" : "backdrop-blur-md"}`
+            : `nx-public-header relative z-40 border-b ${glass === false || overlay ? "" : "backdrop-blur-md"}`
         }
       >
-        <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto px-4 sm:px-6">
-          {row(mainZones, "hidden h-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
-          {row(mobileZones, "grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
+        <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">
+          {row(mainZones, "hidden w-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
+          {row(mobileZones, "grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
-        {bottom?.enabled && bottomLinks.length > 0 && hasExplicitMobileZones(bottom) ? (
-          <>
-            {zoneHas(bottomZones, "links") ? (
+        {bottomVisible ? (
+          hasExplicitMobileZones(bottom) ? (
+            <>
               <div className="hidden border-t border-white/10 text-xs md:block">
                 <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
                   {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
                 </div>
               </div>
-            ) : null}
-            {zoneHas(bottomMobile, "links") ? (
-              <div className="border-t border-white/10 text-xs md:hidden">
-                <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2">
-                  {row(bottomMobile, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "mobile")}
+              {hasContent(bottomMobile) ? (
+                <div className="border-t border-white/10 text-xs md:hidden">
+                  <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2">
+                    {row(bottomMobile, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "mobile")}
+                  </div>
                 </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="border-t border-white/10 text-xs">
+              <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
+                {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
               </div>
-            ) : null}
-          </>
-        ) : bottom?.enabled && bottomLinks.length > 0 ? (
-          <div className="border-t border-white/10 text-xs">
-            <div style={{ maxWidth: shell }} className="mx-auto px-4 py-2 sm:px-6">
-              {row(bottomZones, "grid grid-cols-[1fr_auto_1fr] items-center gap-3", "desktop")}
             </div>
-          </div>
+          )
         ) : null}
       </header>
     </div>
@@ -243,6 +318,7 @@ export function SiteFooter({
   tokens,
   footer,
   fallbackText,
+  backToTopLabel,
   widgetFeed,
   menuLibrary,
 }: {
@@ -253,6 +329,7 @@ export function SiteFooter({
   tokens: DesignTokens;
   footer: FooterConfig | undefined;
   fallbackText: string;
+  backToTopLabel: string;
   widgetFeed?: PublicWidgetFeed;
   menuLibrary?: Record<string, NavigationLink[]>;
 }) {
@@ -260,85 +337,145 @@ export function SiteFooter({
     FOOTER_LAYOUT_PRESETS.find((p) => p.id === (footer?.layoutPreset ?? "brand-wide-4")) ??
     FOOTER_LAYOUT_PRESETS[0]!;
   const allWidgets = resolveFooterWidgets(footer, siteName, siteDna || fallbackText);
+  const style = resolveFooterStyle(footer?.options);
+  const mainColors = footerRowColors(style.main, tokens.colors);
+  const bottomColors = footerRowColors(style.bottom, tokens.colors);
+  // Alt çubuk menüsü: yalnızca güvenli adresler, ilk düzey, en çok 6 öğe
+  const bottomMenu = (style.bottom.menuId ? (menuLibrary?.[style.bottom.menuId] ?? []) : []).filter((l) => isSafeMenuHref(l.href)).slice(0, 6);
+  const copyright = expandFooterText(footer?.copyrightText, siteName, new Date().getFullYear());
+  const maxWidth = tokens.geometry.containerMaxWidth;
+  const rowBox = (r: typeof style.main, c: ReturnType<typeof footerRowColors>) => ({
+    outer: { borderColor: tokens.colors.border } as const,
+    // `contained`: zemin kapsayıcı genişliğinde ve köşeleri yuvarlak; `full`: ekranın tamamı
+    inner: {
+      maxWidth: r.full ? undefined : maxWidth,
+      backgroundColor: c.background ?? undefined,
+      color: c.color ?? undefined,
+      borderRadius: r.full || !c.background ? undefined : tokens.geometry.borderRadius,
+      paddingTop: r.paddingY,
+      paddingBottom: r.paddingY,
+    },
+  });
+  const main = rowBox(style.main, mainColors);
+  const bottom = rowBox(style.bottom, bottomColors);
 
   return (
-    <footer style={{ borderColor: tokens.colors.border }} className="mt-16 border-t px-4 py-12 sm:px-6">
+    <footer className="nx-footer mt-16">
       {footer?.topBanner?.enabled ? (
-        <div
-          style={{
-            maxWidth: tokens.geometry.containerMaxWidth,
-            backgroundColor: tokens.colors.primary,
-            color: tokens.colors.primaryForeground,
-            borderRadius: tokens.geometry.borderRadius,
-          }}
-          className="mx-auto mb-10 flex flex-wrap items-center justify-between gap-4 px-6 py-5"
-        >
-          <div className="space-y-1">
-            {footer.topBanner.badge ? (
-              <span className="inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                {footer.topBanner.badge}
-              </span>
-            ) : null}
-            <div className="text-base font-bold">{footer.topBanner.title}</div>
-            {footer.topBanner.subtitle ? (
-              <p className="text-xs opacity-90">{footer.topBanner.subtitle}</p>
+        <div className="px-4 sm:px-6">
+          <div
+            style={{
+              maxWidth,
+              backgroundColor: tokens.colors.primary,
+              color: tokens.colors.primaryForeground,
+              borderRadius: tokens.geometry.borderRadius,
+            }}
+            className="mx-auto mb-10 flex flex-wrap items-center justify-between gap-4 px-6 py-5"
+          >
+            <div className="space-y-1">
+              {footer.topBanner.badge ? (
+                <span className="inline-block rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                  {footer.topBanner.badge}
+                </span>
+              ) : null}
+              <div className="text-base font-bold">{footer.topBanner.title}</div>
+              {footer.topBanner.subtitle ? (
+                <p className="text-xs opacity-90">{footer.topBanner.subtitle}</p>
+              ) : null}
+            </div>
+            {footer.topBanner.ctaLabel && isSafeMenuHref(footer.topBanner.ctaHref) ? (
+              <a
+                href={footer.topBanner.ctaHref}
+                className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-900"
+              >
+                {footer.topBanner.ctaLabel} →
+              </a>
             ) : null}
           </div>
-          {footer.topBanner.ctaLabel && isSafeMenuHref(footer.topBanner.ctaHref) ? (
-            <a
-              href={footer.topBanner.ctaHref}
-              className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-900"
-            >
-              {footer.topBanner.ctaLabel} →
-            </a>
-          ) : null}
         </div>
       ) : null}
 
       <div
-        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
-        className="mx-auto grid grid-cols-1 gap-8 md:grid-cols-12"
+        data-footer-row="main"
+        style={{ ...main.outer, backgroundColor: style.main.full ? (mainColors.background ?? undefined) : undefined, color: style.main.full ? (mainColors.color ?? undefined) : undefined }}
+        className={`${style.main.divider ? "border-t" : ""} px-4 sm:px-6`}
       >
-        {layout.colSpans.map((span, colIdx) => {
-          const colWidgets = allWidgets.filter(
-            (w) =>
-              w.enabled &&
-              Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
-          );
-          return (
-            <div
-              key={colIdx}
-              style={{ gridColumn: `span ${span} / span ${span}` }}
-              className="space-y-5"
-            >
-              {colWidgets.map((w) => (
-                <RenderPublicWidget
-                  key={w.id}
-                  widget={w}
-                  locale={locale}
-                  lb={lb}
-                  tokens={tokens}
-                  feed={widgetFeed}
-                  cardStyle="footer"
-                  menuLibrary={menuLibrary}
-                />
-              ))}
-            </div>
-          );
-        })}
+        <div
+          style={{ ...main.inner, ...(style.main.full ? { backgroundColor: undefined, color: undefined } : {}) }}
+          className={`mx-auto ${style.main.full || !mainColors.background ? "" : "px-6"}`}
+        >
+          <div
+            style={{ maxWidth: style.main.full ? maxWidth : undefined, columnGap: style.gapPx, rowGap: style.gapPx }}
+            className="mx-auto grid grid-cols-1 md:grid-cols-12"
+          >
+            {layout.colSpans.map((span, colIdx) => {
+              const colWidgets = allWidgets.filter(
+                (w) =>
+                  w.enabled &&
+                  Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
+              );
+              return (
+                <div
+                  key={colIdx}
+                  style={{ gridColumn: `span ${span} / span ${span}` }}
+                  className="space-y-5"
+                >
+                  {colWidgets.map((w) => (
+                    <RenderPublicWidget
+                      key={w.id}
+                      widget={w}
+                      locale={locale}
+                      lb={lb}
+                      tokens={tokens}
+                      feed={widgetFeed}
+                      cardStyle="footer"
+                      menuLibrary={menuLibrary}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div
-        style={{ maxWidth: tokens.geometry.containerMaxWidth }}
-        className="mx-auto mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-current/10 pt-6 text-xs opacity-70"
+        data-footer-row="bottom"
+        style={{ ...bottom.outer, backgroundColor: style.bottom.full ? (bottomColors.background ?? undefined) : undefined, color: style.bottom.full ? (bottomColors.color ?? undefined) : undefined }}
+        className={`${style.bottom.divider ? "border-t" : ""} px-4 sm:px-6`}
       >
-        <span>{footer?.copyrightText}</span>
-        <div className="flex gap-3">
-          {(footer?.bottomLinks ?? []).map((link) => (
-            <a key={`${link.href}|${link.label}`} href={link.href}>
-              {link.label}
-            </a>
-          ))}
+        <div
+          style={{ ...bottom.inner, ...(style.bottom.full ? { backgroundColor: undefined, color: undefined } : {}) }}
+          className={`mx-auto ${style.bottom.full || !bottomColors.background ? "" : "px-6"}`}
+        >
+          <div
+            style={{ maxWidth: style.bottom.full ? maxWidth : undefined }}
+            className={`mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 text-xs ${style.bottom.centered ? "justify-center text-center" : "justify-between"}`}
+          >
+            <span className="opacity-80">{copyright}</span>
+            <div className={`flex flex-wrap gap-x-4 gap-y-1 ${style.bottom.centered ? "justify-center" : ""}`}>
+              {(footer?.bottomLinks ?? []).map((link) => (
+                <a key={`${link.href}|${link.label}`} href={link.href} className="underline-offset-2 hover:underline">
+                  {link.label}
+                </a>
+              ))}
+              {bottomMenu.map((link) => (
+                <a key={link.id} href={link.href} {...(link.target === "_blank" ? { target: "_blank", rel: "noopener" } : {})} className="underline-offset-2 hover:underline">
+                  {link.label}
+                </a>
+              ))}
+              {style.bottom.socials.map((s) => (
+                <a key={s.id} href={s.href} rel="noopener me" aria-label={s.label} className="underline-offset-2 hover:underline">
+                  {s.label}
+                </a>
+              ))}
+              {style.bottom.backToTop ? (
+                <a href="#" className="underline-offset-2 hover:underline">
+                  {backToTopLabel}
+                </a>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </footer>

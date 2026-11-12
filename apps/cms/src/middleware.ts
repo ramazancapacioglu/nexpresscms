@@ -3,11 +3,13 @@ import { resolveLocaleMode, type LocaleMode } from "@nexpress/core/locale-path";
 import { sanitizePermalinkStructure, stripPermalinkPrefix, type PermalinkStructure } from "@nexpress/core/permalinks";
 import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
+import { canOpenAdminPath, isLimitedRole } from "@nexpress/core/permissions";
+import { htmlCacheControl } from "@nexpress/core/html-cache";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
-const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations"];
+const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations", "/admin/content-types", "/admin/users/roles", "/admin/plugins/packages", "/admin/members"];
 
 type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure };
 
@@ -109,6 +111,13 @@ export async function middleware(request: NextRequest) {
       url.search = `?next=${encodeURIComponent(pathname)}`;
       return seal(NextResponse.redirect(url));
     }
+    // Sınırlı roller (yazar, katkıcı): yalnızca kendi içerik yolları; kök "içeriklerim"e yönlenir
+    if (isLimitedRole(session.role) && !canOpenAdminPath(session.role, pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/my-content";
+      url.search = "";
+      return seal(NextResponse.redirect(url));
+    }
     // Yönetici bölümleri: editör için anında 307 (sayfa içinde de veritabanı rolüyle ayrıca denetlenir)
     if (session.role !== "admin" && ADMIN_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
       const url = request.nextUrl.clone();
@@ -163,6 +172,18 @@ export async function middleware(request: NextRequest) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  // Paylaşımlı (CDN/vekil) HTML önbelleği: çalışma zamanında `PUBLIC_CACHE_SECONDS`; yalnızca herkese aynı çıktı veren istekler
+  if (!previewing && !searchParams.has("nx_draft")) {
+    const cacheControl = htmlCacheControl({
+      method: request.method,
+      path: internalPath,
+      searchParams,
+      cookieNames: request.cookies.getAll().map((c) => c.name),
+      ttlSeconds: Number(process.env.PUBLIC_CACHE_SECONDS ?? 0),
+    });
+    // Kapalı siteler (noindex) paylaşımlı önbelleğe girmez: kapı kararı değişince bayat kopya kalmasın
+    if (cacheControl && indexing) response.headers.set("Cache-Control", cacheControl);
+  }
   // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
   if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);
@@ -171,5 +192,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // favicon.ico dışarıda bırakılmaz: kiracı başlığı (x-nexpress-site-id) simge rotasına da ulaşmalı
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };

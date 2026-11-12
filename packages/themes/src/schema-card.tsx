@@ -44,7 +44,7 @@ export function SchemaCardView({ kind, data, tokens, locale = "tr", preview = fa
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tokens.colors.primary }}>Yazılım Çözümü</span>
               {sw.ratingValue ? (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                   ★ {sw.ratingValue} {sw.ratingCount ? `(${sw.ratingCount} değerlendirme)` : ""}
                 </span>
               ) : null}
@@ -183,7 +183,7 @@ export function SchemaCardView({ kind, data, tokens, locale = "tr", preview = fa
         <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-dashed" style={{ borderColor: tokens.colors.border }}>
           {o.gift ? (
             <div className="p-3 rounded-lg bg-background border border-border">
-              <span className="text-xs font-bold uppercase tracking-wider block text-amber-600">🎁 Hediye & Avantaj</span>
+              <span className="text-xs font-bold uppercase tracking-wider block text-amber-700">🎁 Hediye & Avantaj</span>
               <p className="text-sm font-medium">{o.gift}</p>
             </div>
           ) : null}

@@ -1,5 +1,6 @@
 import {
   DEFAULT_SEO_SETTINGS,
+  blockPlainText,
   countWords,
   flattenBlocks,
   type BlockNode,
@@ -133,17 +134,26 @@ export function extractContentStats(blocks: BlockNode[]): ContentStats {
     const p = b.props ?? {};
     switch (b.type) {
       case "heading":
-        headings.push({ level: Number(p.level ?? 2), text: String(p.text ?? "") });
-        texts.push(String(p.text ?? ""));
+      case "heading_element": {
+        // Düzey `2` ya da `"h2"` olabilir; metin zengin (`html`) ya da düz (`text`) gelebilir
+        const level = Number(/\d/.exec(String(p.level ?? 2))?.[0] ?? 2);
+        const text = stripInlineMarkdown(blockPlainText(p, "text"));
+        headings.push({ level, text });
+        texts.push(text);
         break;
+      }
       case "hero":
         headings.push({ level: 1, text: String(p.title ?? "") });
         texts.push(String(p.title ?? ""), String(p.subtitle ?? ""));
         addHref(p.primaryCtaHref);
         addHref(p.secondaryCtaHref);
         break;
-      case "paragraph": {
-        const raw = String(p.text ?? "");
+      case "paragraph":
+      case "paragraph_element":
+      case "text_div": {
+        // Editör düz metni `text`'e, bağlantılı zengin metni `html`'e yazar: bağlantılar yalnızca `html`'de olabilir.
+        // `blockPlainText` ikisini de Markdown'a çevirir, böylece iç/dış bağlantılar doğru sayılır.
+        const raw = blockPlainText(p, "text");
         countLinks(raw);
         const plain = stripInlineMarkdown(raw);
         if (!firstParagraph && plain.trim()) firstParagraph = plain;
@@ -182,8 +192,14 @@ export function extractContentStats(blocks: BlockNode[]): ContentStats {
       case "callout":
         texts.push(String(p.text ?? ""));
         break;
-      default:
-        if (typeof p.text === "string") texts.push(p.text);
+      default: {
+        // Tanınmayan bloklar (bilgi kutusu, çağrı bandı, sekmeler…): bilinen metin alanları ve bağlantı adresleri sayılır
+        for (const key of ["title", "text", "subtitle", "description", "summary", "body", "question", "answer"]) {
+          if (typeof p[key] === "string" && p[key]) texts.push(String(p[key]));
+        }
+        if (typeof p.html === "string" && p.html) texts.push(stripInlineMarkdown(blockPlainText(p, "text")));
+        for (const key of ["href", "buttonHref"]) addHref(p[key]);
+      }
     }
   }
 
@@ -441,8 +457,48 @@ export function truncateSmart(text: string, max: number): string {
   return (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[,;:\-–—]+$/, "") + "…";
 }
 
+/** Başka SEO eklentilerinin değişken adları kendi kümemize çevrilir; tanınmayan değişken atılır (boş yazmaz, başlığı bozmaz). */
+const TOKEN_ALIASES: Record<string, string> = {
+  title: "title", page_title: "title", pagetitle: "title", post_title: "title", page: "title",
+  site: "site", sitename: "site", site_name: "site", site_title: "site", sitetitle: "site",
+  tagline: "tagline", sitedesc: "tagline", site_description: "tagline", sitedescription: "tagline",
+  sep: "sep", separator: "sep",
+};
+
+/** `%%title%% %%sep%% %%sitename%%` ve `%sitename%` gibi yazımları `%title% %sep% %site%` biçimine getirir. */
+export function normalizeTitleTemplate(tpl: string): string {
+  return tpl.replace(/%%([a-z_]+)%%/gi, "%$1%").replace(/%([a-z_]+)%/gi, (_full, key: string) => {
+    const canonical = TOKEN_ALIASES[key.toLowerCase()];
+    return canonical ? `%${canonical}%` : "";
+  });
+}
+
 function applyTemplate(tpl: string, vars: Record<string, string>): string {
-  return tpl.replace(/%(\w+)%/g, (_, k: string) => vars[k] ?? "");
+  return normalizeTitleTemplate(tpl).replace(/%(\w+)%/g, (_, k: string) => vars[k] ?? "");
+}
+
+/** Yalnız ayraç/boşluk kalan veya baş-sonda ayraç taşıyan başlığı temizler. */
+function tidyTitle(value: string): string {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/(?:\s+[|·•:–—-]\s+|\s*[|·•]\s*){2,}/g, " | ")
+    .replace(/^[\s|·•]+|[\s|·•]+$/g, "")
+    .replace(/^[–—-]\s+|\s+[–—-]$/g, "")
+    .trim();
+}
+
+/**
+ * İçe aktarma veya elle girişle yarıda kesilmiş açıklamayı toparlar: 150+ karakter olup cümle işaretiyle bitmiyorsa
+ * son cümleye ya da son sözcüğe kadar kısaltılır ve "…" eklenir. Kısa ve noktalı açıklamalara dokunulmaz.
+ */
+export function healCutDescription(text: string): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length < 150 || /[.!?…"'”’)]$/.test(clean)) return clean;
+  const sentenceEnd = Math.max(clean.lastIndexOf(". "), clean.lastIndexOf("! "), clean.lastIndexOf("? "));
+  if (sentenceEnd >= clean.length * 0.6) return clean.slice(0, sentenceEnd + 1);
+  const lastSpace = clean.lastIndexOf(" ");
+  const head = lastSpace > clean.length * 0.6 ? clean.slice(0, lastSpace) : clean;
+  return `${head.replace(/[,;:\-–—]+$/, "")}…`;
 }
 
 export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
@@ -461,8 +517,11 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
   } else if (input.isHome) {
     title = applyTemplate(s.homeTitleTemplate, vars).replace(/\s+—\s*$/, "").trim() || input.siteName;
   } else {
-    title = applyTemplate(s.titleTemplate, vars).trim();
+    title = applyTemplate(s.titleTemplate, vars);
   }
+  title = tidyTitle(title);
+  // Şablon boş ya da yalnız ayraç üretirse (bozuk içe aktarılmış şablon) sayfa başlığına ve site adına düşülür
+  if (!/[\p{L}\p{N}]/u.test(title)) title = tidyTitle(`${vars.title} | ${input.siteName}`) || input.siteName;
 
   const rawDesc =
     input.metaDescription?.trim() ||
@@ -474,7 +533,7 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
           : input.tldr || input.excerpt || input.firstParagraph
       : "") ||
     "";
-  const description = truncateSmart(rawDesc, 160);
+  const description = truncateSmart(healCutDescription(rawDesc), 160);
 
   const pageUrl = `${base}${input.path}`;
   const canonical = input.canonicalUrl?.trim() || (s.autoCanonical ? pageUrl : undefined);

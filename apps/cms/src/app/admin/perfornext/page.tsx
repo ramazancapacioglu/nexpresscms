@@ -7,6 +7,8 @@ import { requireAdminPage } from "@/lib/auth/session";
 import { cacheSnapshot } from "@/lib/cache";
 import { pluginEnabled } from "@/lib/plugin-gate";
 import { hydratePerfornextCache } from "@/lib/perfornext/hydrate";
+import { loadCruxState } from "@/lib/perfornext/crux";
+import { CruxSection } from "./crux-section";
 import {
   budgetPerformanceReport,
   contentReport,
@@ -63,20 +65,21 @@ function resolveNotice(done: string | undefined, settings: Record<string, unknow
   }
 }
 
-export default async function PerfornextPage({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
+export default async function PerfornextPage({ searchParams }: { searchParams: Promise<{ done?: string; m?: string }> }) {
   const me = await requireAdminPage();
   const siteId = (await headers()).get("x-nexpress-site-id") ?? me.siteId;
   if (!(await pluginEnabled(siteId, PERFORNEXT_PLUGIN_ID))) {
     return (
       <div className="space-y-2">
         <h1 className="text-[18px] font-semibold">Perfornext kapalı</h1>
-        <p className="text-[13px] text-[#5F6570]">Önbellek, veritabanı bakımı ve Core Web Vitals denetimi bu eklentidedir.</p>
+        <p className="text-[13px] text-[#5F6570]">Önbellek, veritabanı bakımı ve içerik ağırlığı (Core Web Vitals risk tahmini) bu eklentidedir. Gerçek ölçüm için PageSpeed Insights / Lighthouse kullanın.</p>
         <Link href="/admin/plugins" className="text-[13px] text-[#1D5ED8] hover:underline">Eklentiler</Link>
       </div>
     );
   }
   await hydratePerfornextCache(siteId);
-  const done = (await searchParams).done;
+  const sp = await searchParams;
+  const done = sp.done;
   const site = await getScopedRepository(siteId).getSite();
   const defaultLocale = site?.defaultLocale ?? "tr";
   const baseHref = localeBase(site, defaultLocale);
@@ -111,7 +114,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
   const lastWarmAt = String(settings.lastWarmAt ?? "");
   const lastWarmMs = settings.lastWarmMs != null ? `${Number(settings.lastWarmMs)} ms` : "—";
   const keepRevisions = Number(settings.keepRevisionsCount ?? 10) || 10;
-  const notice = resolveNotice(done, settings);
+  const notice = done === "crux" ? String(sp.m ?? "").slice(0, 200) : resolveNotice(done, settings);
+  const crux = await loadCruxState(siteId);
 
   return (
     <div className="space-y-6">
@@ -119,7 +123,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
         <div>
           <h1 className="text-[18px] font-semibold tracking-tight">Perfornext · Performans ve Hız Merkezi</h1>
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            0-KB RSC bütçe denetimi, çok dilli önbellek ön ısıtma, veritabanı şişkinlik bakımı, medya hattı ve Core Web Vitals ağırlık analizi.
+            0-KB RSC bütçe denetimi, çok dilli önbellek ön ısıtma, veritabanı şişkinlik bakımı, medya hattı ve Core Web Vitals risk tahmini (içerikten; ölçüm değil) analizi.
           </p>
         </div>
         <Link href="/admin/plugins" className={`rounded-md border ${border} px-3 py-1.5 text-[12px] hover:bg-black/5 dark:hover:bg-white/5`}>
@@ -131,6 +135,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
           {notice}
         </p>
       ) : null}
+
+      <CruxSection state={crux} />
 
       {modBudget ? (
         <section className="space-y-2">
@@ -310,7 +316,8 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
         <section className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570]">
-              İçerik Ağırlığı & Core Web Vitals ({defaultLocale.toUpperCase()})
+              İçerik Ağırlığı & CWV Risk Tahmini ({defaultLocale.toUpperCase()})
+              <span className="ml-2 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">Tahmin</span>
             </h2>
             <form action={recompileMarkdownAction}>
               <button type="submit" className={`rounded-md border ${border} px-3 py-1.5 text-[12px] hover:bg-black/5 dark:hover:bg-white/5`}>
@@ -337,7 +344,7 @@ export default async function PerfornextPage({ searchParams }: { searchParams: P
             ))}
           </dl>
           {content.heaviest.length === 0 ? (
-            <p className="text-[12px] text-[#5F6570]">Ağır veya Core Web Vitals uyarısı olan yayın yok.</p>
+            <p className="text-[12px] text-[#5F6570]">Ağır ya da CLS/LCP risk işareti taşıyan yayın yok.</p>
           ) : (
             <ul className={`divide-y rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
               {content.heaviest.map((row) => {

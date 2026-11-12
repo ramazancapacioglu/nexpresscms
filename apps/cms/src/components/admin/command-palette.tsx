@@ -4,7 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Search } from "lucide-react";
 import { ADMIN_SEARCH_GROUP_ORDER, normalizeSearch, type AdminSearchGroup, type AdminSearchHit } from "@nexpress/core";
-import { WORKSPACE_SECTIONS } from "./admin-nav";
+import { WORKSPACE_SECTIONS, navVisibleForRole } from "./admin-nav";
+import type { UserRole } from "@nexpress/core/session";
 
 interface Entry { key: string; group: string; title: string; subtitle: string; href: string; hint?: string }
 
@@ -12,7 +13,7 @@ const GROUP_LABEL: Record<AdminSearchGroup, string> = { content: "İçerik", for
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 
 /** ⌘K komut paleti: panel sayfaları (anında) + veri araması (içerik, form, medya…). Klavyeyle tam kullanılır (combobox/listbox). */
-export function CommandPalette({ open, onClose, role, hiddenHrefs = [] }: { open: boolean; onClose: () => void; role?: "admin" | "editor"; hiddenHrefs?: string[] }) {
+export function CommandPalette({ open, onClose, role, hiddenHrefs = [] }: { open: boolean; onClose: () => void; role?: UserRole; hiddenHrefs?: string[] }) {
   const router = useRouter();
   const uid = useId();
   const listId = `${uid}-list`;
@@ -24,7 +25,7 @@ export function CommandPalette({ open, onClose, role, hiddenHrefs = [] }: { open
   const [active, setActive] = useState(0);
 
   const pages = useMemo<Entry[]>(
-    () => WORKSPACE_SECTIONS.flatMap((s) => s.items).filter((i) => (!i.adminOnly || role === "admin") && !hiddenHrefs.includes(i.href)).map((i) => ({ key: `p:${i.href}`, group: "Sayfalar", title: i.label, subtitle: i.href, href: i.href, hint: i.shortcut })),
+    () => WORKSPACE_SECTIONS.flatMap((s) => s.items).filter((i) => navVisibleForRole(i, role) && !hiddenHrefs.includes(i.href)).map((i) => ({ key: `p:${i.href}`, group: "Sayfalar", title: i.label, subtitle: i.href, href: i.href, hint: i.shortcut })),
     [role, hiddenHrefs]
   );
   const q = normalizeSearch(query);

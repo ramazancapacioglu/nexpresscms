@@ -10,13 +10,19 @@ import {
   NEXPRESS_STARTER_PAGE_PACKS,
   type StarterPagePack,
 } from "@nexpress/editor";
-import { Check, Layers, LayoutTemplate, Plus, Search, Sparkles, X } from "lucide-react";
+import { Check, LayoutTemplate, Plus, Search, Sparkles, X } from "lucide-react";
 import { LIBRARY_PREVIEW_CSS, LibraryLivePreview } from "./library-preview";
 import { BLOCK_TYPE_LABELS } from "./studio-model";
 import { exportPromptAction, validateDesignJsonAction } from "@/app/admin/design-library/actions";
 import { listPatternsAction } from "@/app/admin/appearance/templates/actions";
 
 type LibraryTab = "sections" | "packs" | "mine" | "ai_import";
+
+/** Kartta tek satır: ilk cümle, en çok 64 karakter. Tam metin kartın `title` özniteliğindedir. */
+function briefText(text: string): string {
+  const first = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  return first.length > 64 ? `${first.slice(0, 61).trimEnd()}…` : first;
+}
 
 interface SavedDesign {
   id: string;
@@ -228,57 +234,33 @@ export function DesignLibraryModal({
               aria-label="Hazır bölümler listesi"
             >
               <style>{LIBRARY_PREVIEW_CSS}</style>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {items.map((item) => {
-                  const childCount = Array.isArray(item.block.children)
-                    ? item.block.children.length
-                    : 0;
-                  const typeLabel =
-                    BLOCK_TYPE_LABELS[item.block.type] ?? item.block.type;
-                  return (
-                    <div
-                      key={item.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => onInsert(item.block)}
-                      onKeyDown={(e) => {
-                        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
-                          e.preventDefault();
-                          onInsert(item.block);
-                        }
-                      }}
-                      className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-border bg-card p-3.5 text-left shadow-2xs transition hover:-translate-y-0.5 hover:border-blue-500 hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600"
-                    >
-                      <div>
-                        <LibraryLivePreview block={item.block} />
-                        <div className="mt-3 flex items-start justify-between gap-2">
-                          <h3 className="truncate text-[12.5px] font-bold leading-snug group-hover:text-blue-600" title={item.name}>
-                            {item.name}
-                          </h3>
-                          {item.badge ? (
-                            <span className="shrink-0 rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300">
-                              {item.badge}
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-
-                      <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-2.5 text-[10px]">
-                        <span className="inline-flex items-center gap-1 font-medium text-muted-foreground">
-                          <Layers className="h-3 w-3" />
-                          {typeLabel}
-                          {childCount > 0 ? ` • ${childCount} alt kapsayıcı` : " • 0-KB RSC"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-md bg-blue-600/10 px-2 py-0.5 font-semibold text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
-                          <Plus className="h-3 w-3" /> Kanvasa Ekle
-                        </span>
-                      </div>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    title={`${item.name} — ${item.description}`}
+                    onClick={() => onInsert(item.block)}
+                    onKeyDown={(e) => {
+                      if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                        e.preventDefault();
+                        onInsert(item.block);
+                      }
+                    }}
+                    className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card p-2.5 text-left shadow-2xs transition hover:-translate-y-0.5 hover:border-blue-500 hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600"
+                  >
+                    <LibraryLivePreview block={item.block} height={132} />
+                    <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
+                      <h3 className="min-w-0 truncate text-[12px] font-bold leading-tight group-hover:text-blue-600">{item.name}</h3>
+                      {item.badge ? <span className="shrink-0 rounded-full bg-blue-500/10 px-1.5 py-px text-[9px] font-bold text-blue-700 dark:text-blue-300">{item.badge}</span> : null}
                     </div>
-                  );
-                })}
+                    <p className="mt-0.5 truncate text-[10.5px] text-muted-foreground">{briefText(item.description)}</p>
+                    <span className="mt-2 inline-flex items-center justify-center gap-1 rounded-md bg-blue-600/10 py-1 text-[11px] font-semibold text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
+                      <Plus className="h-3 w-3" /> Ekle
+                    </span>
+                  </div>
+                ))}
               </div>
               {items.length === 0 ? (
                 <p className="py-12 text-center text-xs text-muted-foreground">

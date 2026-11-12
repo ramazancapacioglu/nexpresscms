@@ -9,3 +9,8 @@ test("panel, API, medya, oturum ve kök dosyalar ön ek kuralının dışındad�
 test("herkese açık sayfa yolları ön eksiz moda girer (arama ve mağaza dahil)", () => {
   for (const p of ["/", "/hakkimizda", "/ara", "/magaza/sepet", "/kategori/yazilim", "/kampanya/bahar", "/yazi-adi-ile-uzun-bir-adres"]) assert.equal(isReservedPath(p), false, p);
 });
+
+test("manifest ve simge adresleri dil ön ekine girmez", async () => {
+  const { isReservedPath } = await import("../src/lib/public-paths");
+  for (const path of ["/manifest.webmanifest", "/favicon.ico", "/apple-touch-icon.png"]) assert.equal(isReservedPath(path), true, path);
+});
