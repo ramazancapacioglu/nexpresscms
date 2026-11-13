@@ -78,7 +78,7 @@ const MAX_LONG = 5000;
 /** Arşiv adresi olamayan adlar: yerleşik rotalar, yönetim ve sistem uç noktaları. */
 export const RESERVED_ARCHIVE_SLUGS: readonly string[] = [
   "kategori", "etiket", "magaza", "ara", "yazar", "kampanya", "kampanyalar", "sepet", "odeme", "hesap",
-  "admin", "api", "login", "og", "sitemap", "sitemaps", "llms", "llms-full", "robots", "feed", "ai-sitemap", "blog", "uye",
+  "admin", "api", "login", "og", "sitemap", "sitemaps", "llms", "llms-full", "robots", "feed", "ai-sitemap", "blog", "uye", "sorular",
 ];
 const ARCHIVE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 // En az 3 karakter: 2 harfli adresler dil kodu (`/hr/…`) ile karışır

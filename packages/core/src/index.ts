@@ -16,6 +16,7 @@ export * from "./permalinks";
 export * from "./reading";
 export * from "./fonts";
 export * from "./consent";
+export * from "./qa";
 export * from "./content-types";
 export * from "./page-options";
 export * from "./taxonomy";

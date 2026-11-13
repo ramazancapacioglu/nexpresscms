@@ -176,6 +176,11 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
     history.delete(input.slug);
     if (history.size > 0) schemaAttributes.slugHistory = Array.from(history);
     else delete schemaAttributes.slugHistory;
+    // Ziyaretçi soruları editör anlık görüntüsünden gelmez; kayıt anındaki sunucu kopyası durur
+    const keptQa = existing?.schemaAttributes && typeof existing.schemaAttributes === "object"
+      ? (existing.schemaAttributes as Record<string, unknown>)._qa
+      : undefined;
+    if (keptQa !== undefined) schemaAttributes._qa = keptQa;
 
     // --- SEO MOTORU: analiz ---
     const pub = resolvePublishing(schemaAttributes);
@@ -406,6 +411,24 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       .update(t.contentTranslations)
       .set(translation)
       .where(and(eq(t.contentTranslations.contentId, input.contentId), eq(t.contentTranslations.siteId, this.siteId), eq(t.contentTranslations.locale, input.locale)));
+    return true;
+  }
+
+  /** Soru-cevap durumu (`_qa`) içerik satırında durur; editör kaydı bunu ezmez. */
+  public async saveQaState(contentId: string, qa: unknown): Promise<boolean> {
+    const { db, t } = this.backend;
+    const [row] = await db
+      .select({ schemaAttributes: t.contents.schemaAttributes })
+      .from(t.contents)
+      .where(and(eq(t.contents.id, contentId), eq(t.contents.siteId, this.siteId)))
+      .limit(1);
+    if (!row) return false;
+    const attrs = { ...(row.schemaAttributes ?? {}) } as Record<string, unknown>;
+    attrs._qa = qa;
+    await db
+      .update(t.contents)
+      .set({ schemaAttributes: attrs, updatedAt: new Date() })
+      .where(and(eq(t.contents.id, contentId), eq(t.contents.siteId, this.siteId)));
     return true;
   }
 }

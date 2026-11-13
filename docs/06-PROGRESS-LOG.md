@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-13] — Etiket kaldırma ve soru-cevap eklentisi
+- **Editör:** Seçili etiketler mavi rozet olur ve çarpı ile kalkar. Listede olmayan (eski) etiket de kaldırılabilir. Kayıt `_publishing.tags` dizisini olduğu gibi yazar.
+- **Soru-cevap (`@nexpress/plugin-qa`):** WordPress AI Prompt eklentisinin ziyaretçi yüzü. `/sorular` yayındaki `ai_prompt` sayfalarını listeler. Sayfa altında cevaplanmış sorular, faydalı oyu ve soru formu vardır; üçü de düz formdur, ziyaretçiye betik eklenmez. Bekleyen sorular `/admin/questions` gelen kutusundan cevaplanır veya silinir. Durum içerik satırında `_qa` alanındadır; editör kaydı bu alanı ezmez. Tekil adres `/{slug}` kalır (`/soru/{slug}` açılmaz).
+
 ### [2026-11-12] — Üretilen `.htaccess` depoya girmesin
 - Kalıcı bağlantı kaydı `apps/cms/public/.htaccess` yazar. Kök `.gitignore` yalnızca `public/.htaccess` diyordu; paket yolu eşleşmediği için dosya `main`'e girdi. Sunucuda aynı yol zaten vardı, `git pull` "üzerine yazılır" diye durdu ve canlı aktarım 4 saniyede düştü (göç ve derleme başlamadı).
 - `**/public/.htaccess` ve `.claude/` yok sayılır. Dosya dizinden çıkarıldı. `scripts/update-host.sh` pull öncesi bu dosyayı siler (`--ff-only`). Nginx dosyayı okumaz; sonraki panel kaydı yeniden üretir.

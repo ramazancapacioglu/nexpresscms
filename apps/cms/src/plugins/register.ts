@@ -16,6 +16,7 @@ import { WP_BRIDGE_MANIFEST } from "./wp-bridge";
 import { COMMERCE_PLUGIN_MANIFEST } from "./commerce";
 import { MARKETPLACE_PLUGIN_MANIFEST } from "./marketplaces";
 import { PERFORNEXT_MANIFEST } from "./perfornext";
+import { QA_PLUGIN_MANIFEST } from "./qa";
 
 /**
  * Açık çekirdeğin tek kompozisyon kökü (çekirdek IndexNow dahil).
@@ -60,6 +61,7 @@ export function registerWorkspacePlugins(): void {
   pluginRegistry.register(COMMERCE_PLUGIN_MANIFEST);
   pluginRegistry.register(MARKETPLACE_PLUGIN_MANIFEST);
   pluginRegistry.register(PERFORNEXT_MANIFEST);
+  pluginRegistry.register(QA_PLUGIN_MANIFEST);
   installPluginGate();
   registerIndexNow();
   registerCdnPurge();

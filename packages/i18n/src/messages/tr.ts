@@ -269,6 +269,27 @@ export const tr = {
     postalCode: "Posta kodu",
     coupon: "Kupon kodu",
   },
+  qa: {
+    archiveTitle: "Sorular",
+    archiveIntro: "Uzmanların yanıtladığı sorular. Aradığınız yoksa ilgili sayfadan sorunuzu bırakın.",
+    empty: "Henüz yayında soru yok.",
+    section: "Soru ve cevap",
+    answeredTitle: "Ziyaretçi soruları ve cevaplar",
+    helpful: "Bu içerik faydalı mı?",
+    votes: "{n} kişi faydalı buldu",
+    voted: "Görüşünüz alındı.",
+    askTitle: "Aradığınız cevabı bulamadınız mı?",
+    askIntro: "Sorunuzu yazın. Cevaplanınca bu sayfada yayınlanır.",
+    name: "Adınız (isteğe bağlı)",
+    question: "Sorunuz",
+    captchaLabel: "Güvenlik: {a} + {b} kaç eder?",
+    send: "Soruyu gönder",
+    thanks: "Teşekkürler. Sorunuz alındı; cevaplanınca bu sayfada görünecek.",
+    captcha: "Güvenlik sorusunu doğru cevaplayın.",
+    short: "Soruyu biraz daha açık yazın (en az 10 karakter).",
+    rate: "Çok sık soru gönderiyorsunuz. Birkaç dakika sonra yeniden deneyin.",
+    error: "Soru kaydedilemedi. Sayfayı yenileyip yeniden deneyin.",
+  },
 } as const;
 
 type Widen<T> = T extends string ? string : { -readonly [K in keyof T]: Widen<T[K]> };

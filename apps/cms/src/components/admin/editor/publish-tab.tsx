@@ -195,30 +195,39 @@ export function PublishTab() {
                     <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">
                       Etiketler (Tags)
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {tags.map((t) => {
-                        const active = selectedTags.includes(t.slug);
-                        return (
-                          <button
-                            key={t.id}
-                            type="button"
-                            onClick={() =>
-                              setSelectedTags((prev) =>
-                                active
-                                  ? prev.filter((x) => x !== t.slug)
-                                  : [...prev, t.slug]
-                              )
-                            }
-                            className={`rounded-md border px-2 py-0.5 text-[11px] font-medium transition ${
-                              active
-                                ? "border-blue-600 bg-blue-600 text-white"
-                                : "border-border bg-muted/40 text-foreground"
-                            }`}
-                          >
-                            #{t.name}
-                          </button>
-                        );
-                      })}
+                    {selectedTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedTags.map((slug) => {
+                          const known = tags.find((t) => t.slug === slug);
+                          return (
+                            <span key={slug} className="inline-flex items-center gap-1 rounded-md border border-blue-600 bg-blue-600 pl-2 pr-1 py-0.5 text-[11px] font-medium text-white">
+                              #{known?.name ?? slug}
+                              <button
+                                type="button"
+                                aria-label={`${known?.name ?? slug} etiketini kaldır`}
+                                onClick={() => setSelectedTags((prev) => prev.filter((x) => x !== slug))}
+                                className="inline-flex h-4 w-4 items-center justify-center rounded hover:bg-white/20"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">Henüz etiket seçilmedi.</p>
+                    )}
+                    <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
+                      {tags.filter((t) => !selectedTags.includes(t.slug)).map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setSelectedTags((prev) => (prev.includes(t.slug) ? prev : [...prev, t.slug]))}
+                          className="rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-foreground"
+                        >
+                          + #{t.name}
+                        </button>
+                      ))}
                     </div>
                     <div className="flex gap-1.5">
                       <input

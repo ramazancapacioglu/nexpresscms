@@ -14,6 +14,8 @@ import { templateFor, getSyncedPatternsMap } from "@/lib/templates";
 import { buildTemplateContext, coverTemplateContext } from "@/lib/template-context";
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
+import { QaFooter } from "@/components/public/qa-footer";
+import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
@@ -63,6 +65,10 @@ export async function generateMetadata({
   const lb = await siteLocaleBase(siteId, locale);
   const draftMeta = await resolveDraftPreview(siteId, locale, slug, nx_draft);
   const site = await getPublicSite(siteId);
+  if (!prefix && !nx_draft && slug === "sorular") {
+    const qaMeta = await questionsArchiveMetadata(siteId, locale);
+    if (qaMeta) return qaMeta;
+  }
   const types = resolveSiteSettings(site?.settings).general.contentTypes;
   // Önekli adres (`/referanslar/acme`): önek yalnızca kayıtları önekli açık bir türün arşiv adresi olabilir
   const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
@@ -139,7 +145,7 @@ export default async function PublicDynamicContentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string; prefix?: string }>;
-  searchParams: Promise<{ sayfa?: string; form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string }>;
+  searchParams: Promise<{ sayfa?: string; form?: string; fb?: string; nx_draft?: string; yorum?: string; pwd?: string; c_sort?: string; qa?: string }>;
 }) {
   const { locale, slug, prefix } = await params;
   const sp = await searchParams;
@@ -150,6 +156,9 @@ export default async function PublicDynamicContentPage({
   await trackAiReferral();
 
   const draft = await resolveDraftPreview(siteId, locale, slug, sp.nx_draft);
+  if (!prefix && !draft && slug === "sorular" && (await questionsArchiveOn(siteId))) {
+    return <QuestionsArchive siteId={siteId} locale={locale} />;
+  }
   const site = await getPublicSite(siteId);
   const types = resolveSiteSettings(site?.settings).general.contentTypes;
   const prefixDef = prefix ? findTypeByArchiveSlug(types, prefix) : undefined;
@@ -586,6 +595,7 @@ export default async function PublicDynamicContentPage({
         />
       )}
 
+      {content.type === "ai_prompt" ? <QaFooter siteId={siteId} contentId={content.id} t={t} notice={sp.qa} /> : null}
       {pillarList}
       {discussion}
     </article>
