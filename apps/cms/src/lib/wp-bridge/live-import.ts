@@ -85,6 +85,7 @@ interface Prepared {
   excerpt: string;
   html: string;
   date: string;
+  link: string;
   linkPath: string;
   featured: string;
   categories: string[];
@@ -206,6 +207,7 @@ function prepare(item: WpItem, kind: Prepared["kind"], frontId: number, terms: M
     excerpt: plainText(item.excerpt?.rendered ?? "", 500),
     html: item.content?.rendered ?? "",
     date: item.date ?? "",
+    link: item.link,
     linkPath: pathOf(item.link),
     featured: featuredUrl(item.featured_image_src_large),
     categories: (item.categories ?? []).map((id) => terms.get(id)).filter((slug): slug is string => Boolean(slug)),
