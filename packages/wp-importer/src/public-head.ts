@@ -1,3 +1,26 @@
+const PRIVATE_HOST = /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?)/i;
+
+/**
+ * Herkese açık WordPress kök adresi. Yalnızca https ve varsayılan kapı.
+ * İç ağ, kullanıcı bilgisi ve yol atılır. Geçersizse `null`.
+ */
+export function normalizePublicOrigin(input: string): string | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  let url: URL;
+  try {
+    url = new URL(raw.includes("://") ? raw : `https://${raw}`);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  if (url.username || url.password) return null;
+  if (url.port && url.port !== "443") return null;
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (PRIVATE_HOST.test(host) || host.endsWith(".local") || host.endsWith(".internal")) return null;
+  return url.origin;
+}
+
 /** Yayımlanmış sayfanın başlığından okunan SEO ve şema. WordPress yönetimine girilmez. */
 
 export interface PublicHeadFaq {

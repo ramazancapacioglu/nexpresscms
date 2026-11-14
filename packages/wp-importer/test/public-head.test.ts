@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { BlockNode } from "@nexpress/core";
 import { restoreRemoteMedia } from "../src/links";
-import { parsePublicHead, pickPageSoftware, plainText } from "../src/public-head";
+import { normalizePublicOrigin, parsePublicHead, pickPageSoftware, plainText } from "../src/public-head";
+import { menuFromPublicHtml } from "../src/shell";
 
 const html = `<!doctype html><html><head>
 <title>Wolvox ERP | Akınsoft İzmir</title>
@@ -58,6 +59,23 @@ test("katalogdaki uzun yazılım listesi sayfa şemasına yazılmaz", () => {
 
 test("düz metin etiketi ve varlığı temizler", () => {
   assert.equal(plainText("<p>E-Dönüşüm &amp; ERP</p>"), "E-Dönüşüm & ERP");
+});
+
+test("genel adres yalnızca herkese açık https kökünü bırakır", () => {
+  assert.equal(normalizePublicOrigin("https://www.ornek.com/blog"), "https://www.ornek.com");
+  assert.equal(normalizePublicOrigin("ornek.com"), "https://ornek.com");
+  assert.equal(normalizePublicOrigin("http://ornek.com"), null);
+  assert.equal(normalizePublicOrigin("https://127.0.0.1"), null);
+  assert.equal(normalizePublicOrigin("https://kullanici:sifre@ornek.com"), null);
+});
+
+test("üst menü alt öğeyi korur ve adresi yerel yola çevirir", () => {
+  const html = `<header id="masthead"><ul class="primary-menu"><li><a href="https://www.ornek.com/erp">ERP</a><ul class="sub-menu"><li><a href="https://www.ornek.com/wolvox">Wolvox</a></li></ul></li><li><a href="mailto:bilgi@ornek.com">E-posta</a></li></ul></header>`;
+  const menu = menuFromPublicHtml(html, "https://www.ornek.com");
+  assert.equal(menu[0]?.label, "ERP");
+  assert.equal(menu[0]?.href, "/erp");
+  assert.equal(menu[0]?.children?.[0]?.href, "/wolvox");
+  assert.equal(menu[1]?.href, "mailto:bilgi@ornek.com");
 });
 
 test("ortam dosyası kaynak sitede kalır, sayfa yolu yerel kalır", () => {

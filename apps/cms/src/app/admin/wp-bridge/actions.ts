@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/session";
+import { importPublicWordPress } from "@/lib/wp-bridge/live-import";
 import { reconstructRichSiteDataset } from "@/lib/wp-bridge/reconstruct";
 import { redrawFlatPages } from "@/lib/wp-bridge/redraw";
 import { repairImportedAssets } from "@/lib/wp-bridge/repair";
@@ -11,6 +12,30 @@ export async function issueBridgeCodeAction(): Promise<{ ok: true; code: string;
   const admin = await requireAdmin("wp-bridge.code");
   const issued = await issueBridgeCode(admin.siteId);
   return { ok: true, ...issued };
+}
+
+/**
+ * Herkese açık WordPress adresini tarar ve yapıyı bozmadan yazar.
+ * Onay sözcüğü yoksa hiçbir kayıt silinmez. Arama indeksi açılmaz.
+ */
+export async function importPublicWordPressAction(input: { origin: string; phrase: string }): Promise<
+  | { ok: true; pages: number; posts: number; prompts: number; comments: number; authors: number; images: number; redirects: number }
+  | { ok: false; error: string }
+> {
+  const admin = await requireAdmin("wp-bridge.import");
+  if (input.phrase.trim() !== "SIFIRLA") return { ok: false, error: "Onay için SIFIRLA yazın. Hiçbir kayıt silinmedi." };
+  const result = await importPublicWordPress(admin.siteId, { origin: input.origin });
+  if (!result.ok) return { ok: false, error: result.error ?? "Aktarım tamamlanamadı. Hiçbir kayıt silinmediyse kaynak okunamadı." };
+  return {
+    ok: true,
+    pages: result.pages,
+    posts: result.posts,
+    prompts: result.prompts,
+    comments: result.comments,
+    authors: result.authors,
+    images: result.images,
+    redirects: result.redirects,
+  };
 }
 
 /** Zengin blok derleyicisiyle depodaki aktarım veri kümesini yeniden yazar. */

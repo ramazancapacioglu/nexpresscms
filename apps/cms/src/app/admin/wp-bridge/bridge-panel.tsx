@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { wipeContentAction } from "@/app/admin/settings/actions";
-import { issueBridgeCodeAction, reconstructBridgeDatasetAction, repairBridgeAction } from "./actions";
+import { importPublicWordPressAction, issueBridgeCodeAction, reconstructBridgeDatasetAction, repairBridgeAction } from "./actions";
 
 type BridgeReportView = {
   at: string;
@@ -20,6 +20,9 @@ type BridgeReportView = {
 /** İndirme, eşleştirme kodu, son aktarım sayıları ve sıfırlama. */
 export function BridgePanel({ version, report, pluginOn }: { version: string; report: BridgeReportView | null; pluginOn: boolean }) {
   const [phrase, setPhrase] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [scanPhrase, setScanPhrase] = useState("");
+  const [scanning, setScanning] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,28 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
       setError("Yeniden derleme sırasında hata oluştu.");
     } finally {
       setReconstructing(false);
+    }
+  };
+
+  const scan = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setScanning(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await importPublicWordPressAction({ origin, phrase: scanPhrase });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setScanPhrase("");
+      setMessage(
+        `${result.pages} sayfa, ${result.posts} yazı, ${result.prompts} soru, ${result.comments} yorum, ${result.authors} yazar, ${result.images} görsel, ${result.redirects} yönlendirme. Arama indeksi açılmadı.`
+      );
+    } catch {
+      setError("Tarama yarım kaldı. Kaynak büyükse bir kez daha deneyin.");
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -113,6 +138,32 @@ export function BridgePanel({ version, report, pluginOn }: { version: string; re
         >
           nexpress-bridge-{version}.zip indir
         </a>
+      </section>
+
+      <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">
+        <h2 className="text-[15px] font-semibold">Siteyi tara ve aktar</h2>
+        <p className="mt-1 text-[13px] text-[#5F6570] dark:text-[#8C9099]">
+          Herhangi bir herkese açık WordPress adresi. Sayfa, yazı, blog, özel içerik, kategori, etiket, yorum, yazar adı, SEO başlığı ve şema okunur. Yerleşim satır ve sütun yapısı bozulmadan çizilir. Menü ve telefon ana sayfadan alınır. Palet, kaynakta renk değişkeni varsa yazılır. Kullanılan görsellerin ilk 80 tanesi kitaplığa iner. E-ticaret, form gelen kutusu, e-posta ve parola gelmez; giriş hesabı açılmaz. Şablon ve tasarım kütüphanesi durur. Onay sözcüğü yazılmadan hiçbir kayıt silinmez. Arama indeksi açılmaz.
+        </p>
+        <form onSubmit={scan} className="mt-3 flex flex-wrap items-center gap-2">
+          <input
+            value={origin}
+            onChange={(event) => setOrigin(event.target.value)}
+            placeholder="https://siteadi.com"
+            className="h-9 min-w-[240px] rounded-md border border-[#E6E7EA] bg-white px-2 text-[13px] dark:border-[#23262E] dark:bg-[#14151A]"
+            autoComplete="off"
+          />
+          <input
+            value={scanPhrase}
+            onChange={(event) => setScanPhrase(event.target.value)}
+            placeholder="SIFIRLA"
+            className="h-9 w-28 rounded-md border border-[#E6E7EA] bg-white px-2 text-[13px] dark:border-[#23262E] dark:bg-[#14151A]"
+            autoComplete="off"
+          />
+          <button type="submit" disabled={scanning} className="rounded-md bg-[#14151A] px-3 py-1.5 text-[13px] font-medium text-white dark:bg-[#F3F4F6] dark:text-[#14151A]">
+            {scanning ? "Taranıyor…" : "Tara ve aktar"}
+          </button>
+        </form>
       </section>
 
       <section className="rounded-lg border border-[#E6E7EA] p-4 dark:border-[#23262E]">

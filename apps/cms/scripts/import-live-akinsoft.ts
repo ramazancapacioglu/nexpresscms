@@ -34,11 +34,13 @@ const origLoad = (Module as unknown as { _load: (request: string, parent: unknow
 };
 
 async function main() {
-  const { importLiveAkinsoft } = await import("../src/lib/wp-bridge/live-import");
+  const { importPublicWordPress, LIVE_IMPORT_ORIGIN } = await import("../src/lib/wp-bridge/live-import");
   const dryRun = process.argv.includes("--dry-run");
   const siteFlag = process.argv.indexOf("--site");
   const siteId = siteFlag >= 0 ? process.argv[siteFlag + 1] || "default" : "default";
-  const result = await importLiveAkinsoft(siteId, { dryRun });
+  const originFlag = process.argv.indexOf("--origin");
+  const origin = originFlag >= 0 ? process.argv[originFlag + 1] || LIVE_IMPORT_ORIGIN : LIVE_IMPORT_ORIGIN;
+  const result = await importPublicWordPress(siteId, { origin, dryRun });
   console.log(JSON.stringify(result, null, 2));
   if (!result.ok) process.exit(1);
 }

@@ -11,19 +11,24 @@ import {
   compileRichWpHtml,
   convertWpHtml,
   hasRichBlockMarkup,
+  menuFromPublicHtml,
+  normalizePublicOrigin,
+  paletteFromHtml,
   parsePublicHead,
   pickPageSoftware,
   plainText,
   restoreRemoteMedia,
   rewriteBlockLinks,
   schemaFromBridge,
+  tokensFromPalette,
   type PublicHead,
 } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { fetchPublicHtml } from "@/lib/safe-fetch";
 import { removeAsset } from "@/lib/media/storage";
-import { applyDatasetChrome, DATASET_PALETTE } from "./dataset-chrome";
+import { applyDatasetChrome } from "./dataset-chrome";
 import { appendDatasetLists } from "./dataset-images";
+import { ingestImages, remapContentImages } from "./media";
 
 /** Kaynak site. Yalnızca bu alan adı okunur. */
 export const LIVE_IMPORT_ORIGIN = "https://www.akinsoftizmir.com.tr";
@@ -35,6 +40,8 @@ export interface LiveImportResult {
   posts: number;
   prompts: number;
   comments: number;
+  authors: number;
+  images: number;
   redirects: number;
   seoHeads: number;
   templates: number;
@@ -58,6 +65,12 @@ interface WpItem {
   featured_image_src_large?: string | string[] | { url?: string } | null;
   categories?: number[];
   tags?: number[];
+  author?: number;
+}
+
+interface WpUser {
+  id: number;
+  name?: string;
 }
 
 interface WpTerm {
@@ -72,6 +85,7 @@ interface WpComment {
   id: number;
   post: number;
   parent: number;
+  author?: number;
   author_name?: string;
   content?: WpRendered;
   status?: string;
@@ -90,13 +104,35 @@ interface Prepared {
   featured: string;
   categories: string[];
   tags: string[];
+  authorName: string;
   head: PublicHead | null;
   front: boolean;
 }
 
-const FIELDS = "id,slug,link,date,status,title,excerpt,content,featured_image_src_large,categories,tags";
+const FIELDS = "id,slug,link,date,status,title,excerpt,content,featured_image_src_large,categories,tags,author";
 
-function featuredUrl(value: WpItem["featured_image_src_large"]): string {
+const SKIP_TYPE = new Set([
+  "attachment",
+  "nav_menu_item",
+  "wp_block",
+  "wp_template",
+  "wp_template_part",
+  "wp_global_styles",
+  "wp_navigation",
+  "wp_font_family",
+  "wp_font_face",
+  "rank_math_schema",
+  "product",
+  "product_variation",
+  "shop_order",
+  "shop_coupon",
+  "shop_order_refund",
+  "web-story",
+  "web-story-font",
+  "web-story-page",
+]);
+
+function readFeatured(value: WpItem["featured_image_src_large"]): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return typeof value[0] === "string" ? value[0] : "";
   if (value && typeof value === "object" && typeof value.url === "string") return value.url;
@@ -117,11 +153,11 @@ async function fetchJson(url: string): Promise<string> {
   return fetchPublicHtml(url, { allow: "json", maxBytes: 12_000_000, timeoutMs: 40_000 });
 }
 
-async function fetchAll<T>(restPath: string): Promise<T[]> {
+async function fetchAll<T>(origin: string, restPath: string): Promise<T[]> {
   const out: T[] = [];
-  for (let page = 1; page <= 40; page++) {
+  for (let page = 1; page <= 80; page++) {
     const join = restPath.includes("?") ? "&" : "?";
-    const url = `${LIVE_IMPORT_ORIGIN}/wp-json/wp/v2/${restPath}${join}per_page=8&page=${page}`;
+    const url = `${origin}/wp-json/wp/v2/${restPath}${join}per_page=8&page=${page}`;
     let text = "";
     try {
       text = await fetchJson(url);
@@ -138,6 +174,14 @@ async function fetchAll<T>(restPath: string): Promise<T[]> {
   return out;
 }
 
+async function fetchAllOptional<T>(origin: string, restPath: string): Promise<T[]> {
+  try {
+    return await fetchAll<T>(origin, restPath);
+  } catch {
+    return [];
+  }
+}
+
 async function mapPool<T>(items: T[], limit: number, run: (item: T) => Promise<void>): Promise<void> {
   let index = 0;
   const workers = Array.from({ length: limit }, async () => {
@@ -150,18 +194,51 @@ async function mapPool<T>(items: T[], limit: number, run: (item: T) => Promise<v
   await Promise.all(workers);
 }
 
-function compileBlocks(html: string, faqs: PublicHead["faqs"], wpId: number): BlockNode[] {
+function compileBlocks(html: string, faqs: PublicHead["faqs"], wpId: number, origin: string, palette: Record<string, string>, datasetLists: boolean): BlockNode[] {
   let blocks: BlockNode[] = [];
   try {
     blocks = hasRichBlockMarkup(html)
-      ? compileRichWpHtml(html, { baseUrl: LIVE_IMPORT_ORIGIN, palette: DATASET_PALETTE }).blocks
-      : convertWpHtml(html, { baseUrl: LIVE_IMPORT_ORIGIN }).blocks;
+      ? compileRichWpHtml(html, { baseUrl: origin, palette }).blocks
+      : convertWpHtml(html, { baseUrl: origin }).blocks;
   } catch {
-    blocks = convertWpHtml(html.slice(0, 100_000), { baseUrl: LIVE_IMPORT_ORIGIN }).blocks;
+    blocks = convertWpHtml(html.slice(0, 100_000), { baseUrl: origin }).blocks;
   }
-  const rewritten = restoreRemoteMedia(rewriteBlockLinks(blocks, LIVE_IMPORT_ORIGIN, "").blocks, LIVE_IMPORT_ORIGIN);
-  const withLists = appendDatasetLists(rewritten);
+  const rewritten = restoreRemoteMedia(rewriteBlockLinks(blocks, origin, "").blocks, origin);
+  const withLists = datasetLists ? appendDatasetLists(rewritten) : rewritten;
   return ensureFaqs(withLists, faqs, wpId);
+}
+
+function collectUploadUrls(blocks: BlockNode[], origin: string, into: Set<string>): void {
+  const walk = (value: unknown) => {
+    if (typeof value === "string") {
+      const found = value.match(/https?:\/\/[^"'()\s]+\/wp-content\/uploads\/[^"'()\s]+/gi) ?? [];
+      for (const url of found) {
+        if (url.startsWith(origin)) into.add(url.split("?")[0] ?? url);
+      }
+      return;
+    }
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === "object") Object.values(value as Record<string, unknown>).forEach(walk);
+  };
+  for (const block of blocks) {
+    walk(block.props);
+    if (block.children) collectUploadUrls(block.children, origin, into);
+  }
+}
+
+function contentKind(slug: string): Prepared["kind"] | null {
+  if (
+    SKIP_TYPE.has(slug) ||
+    slug.startsWith("wp_") ||
+    slug.startsWith("kadence_") ||
+    slug.startsWith("web-story") ||
+    slug.startsWith("jp_") ||
+    slug.startsWith("jetpack_") ||
+    slug === "feedback"
+  ) return null;
+  if (slug === "page") return "page";
+  if (/prompt|faq|soru|question/.test(slug)) return "ai_prompt";
+  return "post";
 }
 
 function ensureFaqs(blocks: BlockNode[], faqs: PublicHead["faqs"], wpId: number): BlockNode[] {
@@ -198,7 +275,7 @@ function ensureFaqs(blocks: BlockNode[], faqs: PublicHead["faqs"], wpId: number)
   ];
 }
 
-function prepare(item: WpItem, kind: Prepared["kind"], frontId: number, terms: Map<number, string>, tagSlugs: Map<number, string>): Prepared {
+function prepare(item: WpItem, kind: Prepared["kind"], frontId: number, terms: Map<number, string>, tagSlugs: Map<number, string>, authors: Map<number, string>): Prepared {
   return {
     wpId: item.id,
     kind,
@@ -209,22 +286,26 @@ function prepare(item: WpItem, kind: Prepared["kind"], frontId: number, terms: M
     date: item.date ?? "",
     link: item.link,
     linkPath: pathOf(item.link),
-    featured: featuredUrl(item.featured_image_src_large),
+    featured: readFeatured(item.featured_image_src_large),
     categories: (item.categories ?? []).map((id) => terms.get(id)).filter((slug): slug is string => Boolean(slug)),
     tags: (item.tags ?? []).map((id) => tagSlugs.get(id)).filter((slug): slug is string => Boolean(slug)),
+    authorName: item.author ? authors.get(item.author) ?? "" : "",
     head: null,
-    front: item.id === frontId,
+    front: kind === "page" && (item.id === frontId || pathOf(item.link) === "/"),
   };
 }
 
 /**
- * akinsoftizmir.com.tr yayımlanmış içeriğini, şemasını ve SEO alanlarını yazar.
- * Şablon ve tasarım kütüphanesine dokunmaz. Arama indeksi açılmaz.
- * Canonical eski alan adına kilitlenmez; bu sitenin kendi adresi üretilir.
+ * Herkese açık bir WordPress sitesini tarar. Sayfa yapısını bozmadan bloklara çizer.
+ * SEO, yorum, yazar adı, blog ve kullanılan görseller gelir. Şablon ve tasarım kütüphanesi durur.
+ * Arama indeksi açılmaz. Canonical eski alan adına kilitlenmez.
+ * Giriş hesabı açılmaz: WordPress e-posta ve parolayı yayımlamaz.
  */
-export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boolean }): Promise<LiveImportResult> {
-  const dryRun = opts?.dryRun === true;
-  const empty: LiveImportResult = { ok: false, dryRun, pages: 0, posts: 0, prompts: 0, comments: 0, redirects: 0, seoHeads: 0, templates: 0, designs: 0 };
+export async function importPublicWordPress(siteId: string, opts: { origin: string; dryRun?: boolean }): Promise<LiveImportResult> {
+  const origin = normalizePublicOrigin(opts.origin);
+  const dryRun = opts.dryRun === true;
+  const empty: LiveImportResult = { ok: false, dryRun, pages: 0, posts: 0, prompts: 0, comments: 0, authors: 0, images: 0, redirects: 0, seoHeads: 0, templates: 0, designs: 0 };
+  if (!origin) return { ...empty, error: "Adres herkese açık bir https sitesi olmalı." };
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
   if (!site) return { ...empty, error: "Site kaydı yok." };
@@ -232,47 +313,78 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
   const templatesBefore = (await repo.listContents({ locale, type: "template" })).length;
   const designsBefore = (await getDesignLibraryRepository(siteId).list()).length;
 
-  const homeHtml = await fetchPublicHtml(`${LIVE_IMPORT_ORIGIN}/`);
+  const homeHtml = await fetchPublicHtml(`${origin}/`);
   const homeHead = parsePublicHead(homeHtml);
   const frontId = Number(/page-id-(\d+)/.exec(homeHtml)?.[1] ?? "0");
-  const index = JSON.parse(await fetchJson(`${LIVE_IMPORT_ORIGIN}/wp-json/`)) as { name?: string; description?: string };
-  const [pages, posts, prompts, categories, tags] = await Promise.all([
-    fetchAll<WpItem>(`pages?_fields=${FIELDS}`),
-    fetchAll<WpItem>(`posts?_fields=${FIELDS}`),
-    fetchAll<WpItem>(`ai_prompt?_fields=${FIELDS}`),
-    fetchAll<WpTerm>("categories?_fields=id,slug,name,description,parent"),
-    fetchAll<WpTerm>("tags?_fields=id,slug,name,description"),
+  const index = JSON.parse(await fetchJson(`${origin}/wp-json/`)) as { name?: string; description?: string; namespaces?: string[] };
+  if (!index.namespaces?.includes("wp/v2") && !/wp-json/i.test(homeHtml) && !/wordpress/i.test(homeHtml)) {
+    return { ...empty, error: "Bu adres WordPress gibi görünmüyor. Hiçbir kayıt silinmedi." };
+  }
+  let typeIndex: Record<string, { slug?: string; rest_base?: string }> = {};
+  try {
+    typeIndex = JSON.parse(await fetchJson(`${origin}/wp-json/wp/v2/types`)) as Record<string, { slug?: string; rest_base?: string }>;
+  } catch {
+    typeIndex = {};
+  }
+  const extras = Object.values(typeIndex)
+    .map((row) => ({ slug: row.slug ?? "", rest: row.rest_base ?? "" }))
+    .filter((row) => row.rest && row.slug !== "page" && row.slug !== "post" && contentKind(row.slug));
+  const [pages, posts, categories, tags, users] = await Promise.all([
+    fetchAll<WpItem>(origin, `pages?_fields=${FIELDS}`),
+    fetchAll<WpItem>(origin, `posts?_fields=${FIELDS}`),
+    fetchAll<WpTerm>(origin, "categories?_fields=id,slug,name,description,parent"),
+    fetchAll<WpTerm>(origin, "tags?_fields=id,slug,name,description"),
+    fetchAllOptional<WpUser>(origin, "users?_fields=id,name"),
   ]);
-  if (pages.length < 60 || posts.length < 40) {
-    return { ...empty, pages: pages.length, posts: posts.length, prompts: prompts.length, error: "Kaynak eksik göründü. Hiçbir kayıt silinmedi." };
+  const extraItems: Array<{ item: WpItem; kind: Prepared["kind"] }> = [];
+  for (const extra of extras) {
+    const kind = contentKind(extra.slug);
+    if (!kind) continue;
+    const rows = await fetchAllOptional<WpItem>(origin, `${extra.rest}?_fields=${FIELDS}`);
+    for (const item of rows) extraItems.push({ item, kind });
+  }
+  if (pages.length < 1) {
+    return { ...empty, pages: pages.length, posts: posts.length, prompts: extraItems.length, error: "Yayımlanmış sayfa bulunamadı. Hiçbir kayıt silinmedi." };
   }
 
   const catSlug = new Map(categories.map((term) => [term.id, term.slug]));
   const tagSlug = new Map(tags.map((term) => [term.id, term.slug]));
+  const authors = new Map<number, string>();
+  for (const user of users) {
+    const name = plainText(user.name ?? "", 120);
+    if (name) authors.set(user.id, name);
+  }
+  const prompts = extraItems.filter((row) => row.kind === "ai_prompt").length;
   const items = [
-    ...pages.map((item) => prepare(item, "page", frontId, catSlug, tagSlug)),
-    ...posts.map((item) => prepare(item, "post", frontId, catSlug, tagSlug)),
-    ...prompts.map((item) => prepare(item, "ai_prompt", frontId, catSlug, tagSlug)),
+    ...pages.map((item) => prepare(item, "page", frontId, catSlug, tagSlug, authors)),
+    ...posts.map((item) => prepare(item, "post", frontId, catSlug, tagSlug, authors)),
+    ...extraItems.map((row) => prepare(row.item, row.kind, frontId, catSlug, tagSlug, authors)),
   ];
   await mapPool(items, 4, async (item) => {
     try {
-      const html = await fetchPublicHtml(item.link || `${LIVE_IMPORT_ORIGIN}/${item.slug}/`);
+      const html = await fetchPublicHtml(item.link || `${origin}/${item.slug}/`);
       item.head = parsePublicHead(html);
     } catch {
       item.head = null;
     }
   });
-  const seoHeads = items.filter((item) => item.head?.title).length;
-  if (seoHeads < Math.floor(items.length * 0.8)) {
-    return { ...empty, pages: pages.length, posts: posts.length, prompts: prompts.length, seoHeads, error: "SEO başlıklarının çoğu okunamadı. Hiçbir kayıt silinmedi." };
+  if (!items.some((item) => item.front) && homeHead.title) {
+    const titled = items.find((item) => item.kind === "page" && item.title && (homeHead.title.startsWith(item.title) || item.title.startsWith(homeHead.title.slice(0, 48))));
+    if (titled) titled.front = true;
   }
+  const seoHeads = items.filter((item) => item.head?.title).length;
+  if (items.length > 4 && seoHeads < Math.floor(items.length * 0.5)) {
+    return { ...empty, pages: pages.length, posts: posts.length, prompts, seoHeads, error: "SEO başlıklarının çoğu okunamadı. Hiçbir kayıt silinmedi." };
+  }
+  const palette = paletteFromHtml(homeHtml);
+  const datasetLists = origin.includes("akinsoftizmir.com.tr");
   const front = items.find((item) => item.front) ?? items.find((item) => item.kind === "page");
-  const frontBlocks = front ? compileBlocks(front.html, front.head?.faqs ?? [], front.wpId) : [];
+  const frontBlocks = front ? compileBlocks(front.html, front.head?.faqs ?? [], front.wpId, origin, palette, datasetLists) : [];
   if (!front?.head?.title || frontBlocks.length === 0) {
-    return { ...empty, pages: pages.length, posts: posts.length, prompts: prompts.length, seoHeads, error: "Ana sayfa yerleşimi kurulamadı. Hiçbir kayıt silinmedi." };
+    return { ...empty, pages: pages.length, posts: posts.length, prompts, seoHeads, authors: authors.size, error: "Ana sayfa yerleşimi kurulamadı. Hiçbir kayıt silinmedi." };
   }
   if (dryRun) {
-    return { ok: true, dryRun, pages: pages.length, posts: posts.length, prompts: prompts.length, comments: 0, redirects: 0, seoHeads, templates: templatesBefore, designs: designsBefore };
+    return { ok: true, dryRun, pages: pages.length, posts: posts.length, prompts, comments: 0, authors: authors.size, images: 0, redirects: 0, seoHeads, templates: templatesBefore, designs: designsBefore };
   }
 
   const wiped = await getSiteResetRepository(siteId).wipeContent("everything");
@@ -330,6 +442,7 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
     });
   }
 
+  const uploadUrls = new Set<string>();
   const templateSlugs = new Set((await repo.listContents({ locale, type: "template" })).map((row) => row.slug));
   const usedSlugs = new Set<string>(templateSlugs);
   const redirects = getRedirectRepository(siteId);
@@ -344,7 +457,7 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
       suffix += 1;
     }
     usedSlugs.add(slug);
-    if (item.kind === "page" && item.slug === "blog") blogSlug = slug;
+    if (item.kind === "page" && /^(blog|haberler|yazilar|news)$/.test(item.slug)) blogSlug = slug;
     const head = item.head;
     const software = pickPageSoftware(head?.software ?? []);
     const schemaKind = item.kind === "post" ? "post" : "page";
@@ -371,12 +484,18 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
       faqs: head?.faqs ?? [],
       slug,
     });
-    const featured = item.featured.startsWith("/") ? `${LIVE_IMPORT_ORIGIN}${item.featured}` : item.featured;
+    const imageUrl: string = item.featured.startsWith("/") ? `${origin}${item.featured}` : item.featured;
+    if (imageUrl.startsWith(origin) && imageUrl.includes("/wp-content/uploads/")) {
+      uploadUrls.add(imageUrl.split("?")[0] ?? imageUrl);
+    }
+    const blocks = compileBlocks(item.html, head?.faqs ?? [], item.wpId, origin, palette, datasetLists);
+    collectUploadUrls(blocks, origin, uploadUrls);
     const date = item.date ? new Date(item.date) : null;
     const type: ContentType = item.kind;
     await repo.saveContent({
       contentId: `cnt_wp_${item.wpId}`,
       type,
+      authorName: item.authorName || undefined,
       status: "published",
       importanceScore: item.front ? 10 : item.kind === "page" ? 8 : 6,
       schemaType: mapped.schemaType,
@@ -389,17 +508,17 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
           visibility: "public",
           categories: item.categories,
           tags: item.tags,
-          featuredImageUrl: featured || undefined,
+          featuredImageUrl: imageUrl || undefined,
           allowComments: true,
         },
       },
-      featuredImage: featured || null,
+      featuredImage: imageUrl || null,
       locale,
       slug,
       title: item.title,
       excerpt: item.excerpt || undefined,
       tldr: (head?.description || item.excerpt || item.title).slice(0, 260),
-      blocks: compileBlocks(item.html, head?.faqs ?? [], item.wpId),
+      blocks,
       metaTitle: head?.title || item.title,
       metaDescription: head?.description || (item.excerpt ? truncateSmart(item.excerpt, 160) : undefined),
       noIndex: head?.noindex === true,
@@ -412,7 +531,15 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
     }
   }
 
-  await applyDatasetChrome(siteId, locale);
+  if (datasetLists) await applyDatasetChrome(siteId, locale);
+  else await applyScannedChrome(siteId, locale, homeHtml, origin);
+  let images = 0;
+  const queue = [...uploadUrls].slice(0, 80).map((url) => ({ url, alt: "" }));
+  if (queue.length > 0) {
+    const ingested = await ingestImages(siteId, queue);
+    images = ingested.downloaded;
+    if (ingested.downloaded > 0) await remapContentImages(siteId, locale);
+  }
   const siteName = homeHead.siteName || index.name || site.name;
   await getSiteIdentityRepository(siteId).update({ name: siteName, tagline: plainText(index.description ?? site.tagline ?? "", 180) || null });
   const org = homeHead.organization;
@@ -436,7 +563,7 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
   let comments = 0;
   const importedIds = new Set(items.map((item) => item.wpId));
   try {
-    const rows = await fetchAll<WpComment>("comments?_fields=id,post,parent,author_name,content,status");
+    const rows = await fetchAll<WpComment>(origin, "comments?_fields=id,post,parent,author_name,content,status");
     const ordered = [...rows].sort((a, b) => a.parent - b.parent);
     for (const comment of ordered) {
       if (!importedIds.has(comment.post)) continue;
@@ -468,12 +595,46 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
     dryRun: false,
     pages: pages.length,
     posts: posts.length,
-    prompts: prompts.length,
+    prompts,
     comments,
+    authors: authors.size,
+    images,
     redirects: redirectCount,
     seoHeads,
     templates: templatesAfter,
     designs: designsAfter,
-    ...(designsAfter === designsBefore ? {} : { error: "Tasarım kütüphanesi sayısı değişti." }),
+    ...(designsAfter === designsBefore && templatesAfter === templatesBefore
+      ? {}
+      : { error: designsAfter === designsBefore ? "Şablon sayısı değişti." : "Tasarım kütüphanesi sayısı değişti." }),
   };
+}
+
+/** Eski tek site çağrısı. Genel tarayıcıyı bu köke bağlar. */
+export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boolean }): Promise<LiveImportResult> {
+  return importPublicWordPress(siteId, { origin: LIVE_IMPORT_ORIGIN, dryRun: opts?.dryRun });
+}
+
+async function applyScannedChrome(siteId: string, locale: string, homeHtml: string, origin: string): Promise<void> {
+  const menu = menuFromPublicHtml(homeHtml, origin).map((item, index) => ({ ...item, id: `m_scan_${index}` }));
+  const repo = getScopedRepository(siteId);
+  const nav = await repo.getNavigationLayout(locale);
+  const phone = (homeHtml.match(/tel:(\+?[0-9][0-9\s()-]{7,20})/)?.[1] ?? "").replace(/\s+/g, " ").trim().slice(0, 24);
+  const email = (homeHtml.match(/mailto:([^"'?\s>]+)/)?.[1] ?? "").slice(0, 120);
+  if (nav && menu.length > 0) {
+    await repo.saveNavigationLayout({
+      locale,
+      headerConfig: {
+        ...nav.headerConfig,
+        topBar: {
+          ...nav.headerConfig.topBar,
+          enabled: Boolean(phone || email || nav.headerConfig.topBar.enabled),
+          ...(phone ? { contactPhone: phone } : {}),
+          ...(email.includes("@") ? { contactEmail: email } : {}),
+        },
+      },
+      menuItems: menu,
+      menus: [{ id: "menu_wp_header", name: "Ana Menü", header: true, items: menu }],
+    });
+  }
+  if (Object.keys(paletteFromHtml(homeHtml)).length > 0) await repo.saveDesignTokens(tokensFromPalette(homeHtml));
 }

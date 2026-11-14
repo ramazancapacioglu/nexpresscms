@@ -33,6 +33,10 @@ WXR dosyası renk, menü ve sayfa düzenini taşımaz. Yayımlanmış HTML'den k
 
 Toplu deneme: `apps/cms/scripts/redraw-public-site.ts`. Klasördeki her `*.txt` iki satırdır (tür ve adres); aynı adlı `*.html` gövdedir. Ana sayfa ve en az 40 başarılı dönüşüm yoksa hiçbir kayıt silinmez. Yeterliyse yalnızca `page` ve `post` silinir, jetonlar ve üst/alt şerit yazılır. Ürün, şablon, medya ve kullanıcı durur.
 
+## Herkese açık tarama
+
+`/admin/wp-bridge` adresindeki **Siteyi tara ve aktar**, `https` kök adresini ister. WordPress eklentisi kurulmadan sayfa, yazı, blog, herkese açık özel içerik, kategori, etiket, yorum, yazar adı, SEO başlığı, açıklama, noindex ve JSON-LD şema okunur. Yerleşim `compileRichWpHtml` ile satır ve sütun bozulmadan çizilir. Menü alt öğeleri ve telefon ana sayfadan gelir. Palet yalnızca kaynakta renk değişkeni varsa yazılır. Kullanılan görsellerin ilk 80 tanesi medya kitaplığına alınır. E-ticaret, form gelen kutusu, e-posta ve parola gelmez; giriş hesabı açılmaz. Şablon ve tasarım kütüphanesi silinmez. Onay sözcüğü `SIFIRLA` değilse hiçbir kayıt silinmez. Site geneli arama indeksi bu işlemle açılmaz. Canonical eski alan adına yazılmaz.
+
 ## Canlı genel aktarım
 
 `apps/cms/scripts/import-live-akinsoft.ts` yalnızca `https://www.akinsoftizmir.com.tr` adresini okur. Yönetim paneline girmez. Sayfa, yazı, soru kaydı, kategori ve etiket REST’ten gelir. Başlık, açıklama, noindex ve JSON-LD şema (SSS, yazılım, kuruluş) yayımlanmış HTML başlığından yazılır. Sayfa yerleşimi zengin blok derleyicisinden kurulur; birebir kopya değildir. Görsel adresi kaynak sitede kalır, iç bağlantı yerel yola döner. Şablon ve tasarım kütüphanesi silinmez. Site geneli arama indeksi bu betikle açılmaz. Canonical eski alan adına yazılmaz; bu sitenin kendi adresi üretilir.

@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-14] — Herkese açık WordPress taraması
+- Köprü paneli herhangi bir `https` WordPress kökünü tarar. Sayfa, yazı, blog, herkese açık özel tür, kategori, etiket, yorum, yazar adı, SEO ve şema gelir. Yerleşim satır ve sütun bozulmadan çizilir. Menü ve telefon ana sayfadan alınır. Palet yalnızca kaynakta renk değişkeni varsa yazılır. İlk 80 kullanılan görsel kitaplığa iner. E-posta, parola, form gelen kutusu ve e-ticaret gelmez. Şablon ve tasarım kütüphanesi durur. İndeks açılmaz. Onay sözcüğü `SIFIRLA`. Silmeden deneme: akinsoftizmir.com.tr 69 sayfa, 51 yazı, 12 soru, 132 SEO başlığı; ryelle.codes 11 sayfa, 93 yazı, 2 yazar, 104 SEO başlığı.
+
 ### [2026-11-14] — akinsoftizmir.com.tr temiz aktarım
 - Yayımlanmış sayfa, yazı ve soru kayıtları REST ile, başlık/açıklama/robots ve JSON-LD şema ise sayfanın kendi başlığından okunur. Başlık şablonu `%title%` kalır; kaynak başlık ikinci kez sarılmaz. Yazılım sayfasında şema türü SoftwareApplication, SSS blokları ayrıca FAQ üretir. Şablon ve tasarım kütüphanesi silinmez. Arama indeksi açılmaz. Canonical eski alan adına kilitlenmez. Görseller kaynak adreste kalır. Betik: `apps/cms/scripts/import-live-akinsoft.ts`. İşaret dosyası canlıda bir kez çalıştı ve depodan kaldırıldı; sonraki açılış içeriği yeniden silmez. SQLite ve derleme aşaması girmez.
 

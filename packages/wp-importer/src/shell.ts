@@ -2,6 +2,7 @@ import { DomUtils, parseDocument } from "htmlparser2";
 import type { AnyNode, Element } from "domhandler";
 import type { BlockNode, DesignTokens, FooterConfig, HeaderConfig, NavigationMenuItem } from "@nexpress/core";
 import { convertWpHtml } from "./html";
+import { rewriteAbsoluteUrl } from "./links";
 
 /**
  * Yayımlanmış sayfanın kabuğunu NexPress jeton, üst/alt şerit ve bloklarına çevirir.
@@ -50,7 +51,7 @@ function localHref(raw: string, origin: string, locale: string): string {
   }
 }
 
-function palette(html: string): Record<string, string> {
+export function paletteFromHtml(html: string): Record<string, string> {
   const out: Record<string, string> = {};
   for (const m of html.matchAll(/(--global-palette\d+)\s*:\s*(#[0-9a-fA-F]{6})/g)) out[m[1]!] = m[2]!.toLowerCase();
   return out;
@@ -58,7 +59,7 @@ function palette(html: string): Record<string, string> {
 
 /** Kadence paletinden jeton. Yazı tipi dosyası istenmez; sistem yığını kullanılır. */
 export function tokensFromPalette(html: string): DesignTokens {
-  const p = palette(html);
+  const p = paletteFromHtml(html);
   const primary = p["--global-palette1"] ?? "#0c644e";
   const accent = p["--global-palette2"] ?? "#09589a";
   const foreground = p["--global-palette3"] ?? "#1a202c";
@@ -254,6 +255,47 @@ function footerColumns(footer: Element | null, origin: string, locale: string): 
     if (links.length) columns.push({ id: `f_${i + 1}`, title: links[0]!.label.slice(0, 40), colSpan: 1, links });
   });
   return columns;
+}
+
+function menuHref(raw: string, origin: string): string {
+  const value = raw.trim();
+  if (!value || value.startsWith("#") || /^javascript:/i.test(value)) return "";
+  if (/^(tel:|mailto:)/i.test(value)) return value;
+  return rewriteAbsoluteUrl(value, origin, "");
+}
+
+function readMenuList(ul: Element, origin: string, depth: number): NavigationMenuItem[] {
+  if (depth > 2) return [];
+  const items: NavigationMenuItem[] = [];
+  for (const node of ul.children) {
+    if (node.type !== "tag" || node.name !== "li") continue;
+    const link = node.children.find((child) => child.type === "tag" && child.name === "a") as Element | undefined;
+    const nested = node.children.find((child) => child.type === "tag" && child.name === "ul") as Element | undefined;
+    const label = link ? textOf(link.children).slice(0, 80) : "";
+    if (!label) continue;
+    const children = nested ? readMenuList(nested, origin, depth + 1).slice(0, 24) : [];
+    items.push({
+      id: `m_${depth}_${items.length}`,
+      label,
+      href: link ? menuHref(link.attribs.href ?? "", origin) || "/" : "/",
+      source: { kind: "custom" },
+      ...(children.length ? { children } : {}),
+    });
+    if (items.length >= 16) break;
+  }
+  return items;
+}
+
+/** Üst menüyü alt öğeleriyle okur. Adres yerel yola iner; başka site, telefon ve e-posta durur. */
+export function menuFromPublicHtml(html: string, origin: string): NavigationMenuItem[] {
+  const doc = parseDocument(html.replace(/<script[\s\S]*?<\/script>/gi, ""), { decodeEntities: true });
+  const header = find(doc.children, (el) => el.name === "header" || cls(el).includes("site-header") || el.attribs.id === "masthead");
+  if (!header) return [];
+  const list =
+    find([header], (el) => el.name === "ul" && /menu|primary|nav/i.test(`${cls(el)} ${el.attribs.id ?? ""}`)) ??
+    find([header], (el) => el.name === "ul");
+  if (!list) return [];
+  return readMenuList(list, origin, 0);
 }
 
 /** Ana sayfa HTML'inden tema kabuğu ve gövde blokları. Yazma yapmaz. */
