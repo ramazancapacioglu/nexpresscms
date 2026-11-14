@@ -4,7 +4,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
-import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
+import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, YB_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { getSyncedPatternsMap } from "@/lib/templates";
 import { coverTemplateContext } from "@/lib/template-context";
@@ -95,7 +95,7 @@ export default async function PublicHomePage({
   const preview = await getPreviewTheme(siteId);
   const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
   const isInk = skinId === INK_GRID_ID;
-  const isYf = skinId === YF_THEME_ID;
+  const isYf = skinId === YF_THEME_ID || skinId === YB_THEME_ID;
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale, site?.settings), locale);
   const mediaFocal = await getPublicMediaFocal(siteId);

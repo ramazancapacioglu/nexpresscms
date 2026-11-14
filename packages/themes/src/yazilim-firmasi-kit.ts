@@ -11,8 +11,8 @@ export const heading = (text: string, align?: "center", level = "h2") => node("h
 export const text = (value: string) => node("paragraph_element", { text: value });
 export const button = (label: string, href: string, styleVariant: "primary" | "outline" = "primary", align: "left" | "center" = "left") =>
   node("button_element", { label, href, styleVariant, align });
-export const image = (name: string, alt: string, wide = false) =>
-  node("image_figure", { url: `${YF_ART}/${name}.svg`, altText: alt, borderRadius: "lg", aspectRatio: "3:2", ...(wide ? { maxWidth: "900px", align: "center" } : {}) });
+export const image = (name: string, alt: string, wide = false, base = YF_ART) =>
+  node("image_figure", { url: `${base}/${name}.svg`, altText: alt, borderRadius: "lg", aspectRatio: "3:2", ...(wide ? { maxWidth: "900px", align: "center" } : {}) });
 export const tag = (label: string) => node("paragraph_element", { text: label }, { style: { cssClass: "yf-tag" } });
 
 /** Tam genişlikli bant. `dark | soft | navy | ""` sınıfı skin CSS'inden gelir; metinler `center` ile ortalanır. */
@@ -32,12 +32,12 @@ export const row = (cols: BlockNode[], layout?: string, vAlign: "center" | "top"
 
 /** Kart ızgarası: dörtlü satırlar halinde. */
 export interface Card { title: string; text: string; href?: string; art?: string; cta?: string; badge?: string }
-export function cards(items: Card[], per = 3): BlockNode[] {
+export function cards(items: Card[], per = 3, base = YF_ART): BlockNode[] {
   const rows: BlockNode[] = [];
   for (let i = 0; i < items.length; i += per) {
     const slice = items.slice(i, i + per);
     const cols = slice.map((c) => column([
-      ...(c.art ? [image(c.art, c.title)] : []),
+      ...(c.art ? [image(c.art, c.title, false, base)] : []),
       ...(c.badge ? [tag(c.badge)] : []),
       heading(c.title, undefined, "h3"),
       text(c.text),

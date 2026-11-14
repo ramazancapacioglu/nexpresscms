@@ -13,8 +13,10 @@ flowchart LR
         T2["Commerce Velocity (E-Ticaret / Katalog)"]
         T3["Editorial Pulse (Haber / Bilgi Bankası)"]
         T4["Ink Grid (Siyah ürün vitrini)"]
-        T5["Crimson ERP & Muhasebe (Kurumsal ERP & Yazılım)"]
+        T5["Crimson ERP (beyaz şerit, kırmızı kapsül, üç parçalı vitrin)"]
         T6["Yazılım Firması Teması (cam şerit, siyah vitrin, mega menü, dizin footer, sağ form)"]
+        T7["Kuzey Atölye (kâğıt zemin, serif, tek yeşil, üç sütun footer)"]
+        T8["Sera Ajans (gül zemin, iri başlık, siyah kapsül, iş listesi)"]
     end
 
     subgraph ThemeContract [Tema Paketi Yapısı (theme.json)]
@@ -28,7 +30,7 @@ flowchart LR
         BlockMap["Aktif Temanın RSC Bileşen Haritası"]
     end
 
-    T1 & T2 & T3 & T4 & T5 --> Tokens & Skins & Presets
+    T1 & T2 & T3 & T4 & T5 & T6 & T7 & T8 --> Tokens & Skins & Presets
     Tokens --> CSSVars
     Skins & Presets --> BlockMap
 ```

@@ -76,7 +76,8 @@ async function applyPreset(repo: Repo, themeId: string, locale: string): Promise
     copyrightText: filled(curFooter.copyrightText) ? curFooter.copyrightText : preset.footer.copyrightText,
   };
 
-  await repo.saveNavigationLayout({ locale, headerConfig: header, menuItems: nav.menuItems, footerConfig: footer, sidebarConfig: nav.sidebarConfig });
+  const menuItems = nav.menuItems?.length ? nav.menuItems : (preset.menuItems ?? nav.menuItems);
+  await repo.saveNavigationLayout({ locale, headerConfig: header, menuItems, footerConfig: footer, sidebarConfig: nav.sidebarConfig });
   await repo.saveSiteSettings({ customizer: preset.customizer });
   return true;
 }

@@ -20,6 +20,14 @@ import {
   getThemeManifest,
   YF_CSS,
   YF_THEME_ID,
+  KA_CSS,
+  KA_THEME_ID,
+  SA_CSS,
+  SA_THEME_ID,
+  CR_CSS,
+  CR_THEME_ID,
+  YB_CSS,
+  YB_THEME_ID,
   INK_GRID_CSS,
   INK_GRID_ID,
 } from "@nexpress/themes";
@@ -86,6 +94,10 @@ export default async function PublicLocaleLayout({
   const skinId = officialPreviewId(preview?.themeId) ?? activeTheme.id;
   const isInk = skinId === INK_GRID_ID;
   const isYf = skinId === YF_THEME_ID;
+  const isKa = skinId === KA_THEME_ID;
+  const isSa = skinId === SA_THEME_ID;
+  const isCr = skinId === CR_THEME_ID;
+  const isBayi = skinId === YB_THEME_ID;
   const savedBg = site?.designTokens?.colors.background?.toLowerCase() ?? "";
   const savedIsLight = savedBg === "" || savedBg.startsWith("#fff") || savedBg === "#fcfcfd";
   const tokens = preview?.tokens ?? (isInk && savedIsLight ? activeTheme.tokens : (site?.designTokens ?? activeTheme.tokens));
@@ -273,7 +285,7 @@ export default async function PublicLocaleLayout({
 
   return (
     <div
-      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : isYf ? YF_THEME_ID : undefined)}
+      data-nx-skin={skin?.themeId ?? (isInk ? "ink" : isYf ? YF_THEME_ID : isKa ? KA_THEME_ID : isSa ? SA_THEME_ID : isCr ? CR_THEME_ID : isBayi ? YB_THEME_ID : undefined)}
       style={{
         backgroundColor: vt.colors.background,
         color: vt.colors.foreground,
@@ -299,6 +311,10 @@ export default async function PublicLocaleLayout({
       ) : null}
       {isInk ? <style dangerouslySetInnerHTML={{ __html: INK_GRID_CSS }} /> : null}
       {isYf ? <style dangerouslySetInnerHTML={{ __html: YF_CSS }} /> : null}
+      {isKa ? <style dangerouslySetInnerHTML={{ __html: KA_CSS }} /> : null}
+      {isSa ? <style dangerouslySetInnerHTML={{ __html: SA_CSS }} /> : null}
+      {isCr ? <style dangerouslySetInnerHTML={{ __html: CR_CSS }} /> : null}
+      {isBayi ? <style dangerouslySetInnerHTML={{ __html: YB_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
       {ga4MeasurementId ? (
         <>

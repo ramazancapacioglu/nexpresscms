@@ -6,6 +6,9 @@ import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
 import { invalidateSite, revalidatePath } from "@/lib/cache";
 import { applyYazilimFirmasiChrome } from "@/lib/apply-yazilim-firmasi-theme";
+import { applyKuzeyAtolyeChrome, isKuzeyAtolyeTheme } from "@/lib/apply-kuzey-atolye-theme";
+import { applySeraAjansChrome, isSeraAjansTheme } from "@/lib/apply-sera-ajans-theme";
+import { applyCrimsonErpChrome, isCrimsonErpTheme } from "@/lib/apply-crimson-erp-theme";
 
 export type DemoImportResult =
   | { ok: true; added: number; skipped: string[] }
@@ -28,6 +31,9 @@ export async function importThemeDemoAction(input: { themeId: string }): Promise
 
   const locale = site.defaultLocale || "tr";
   if (input.themeId === YF_THEME_ID) await applyYazilimFirmasiChrome(admin.siteId, locale);
+  if (isKuzeyAtolyeTheme(input.themeId)) await applyKuzeyAtolyeChrome(admin.siteId, locale);
+  if (isSeraAjansTheme(input.themeId)) await applySeraAjansChrome(admin.siteId, locale);
+  if (isCrimsonErpTheme(input.themeId)) await applyCrimsonErpChrome(admin.siteId, locale);
 
   const skipped: string[] = [];
   let added = 0;

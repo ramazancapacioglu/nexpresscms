@@ -3,6 +3,10 @@ import { createTranslator } from "@nexpress/i18n";
 import { ICON_PATHS } from "@nexpress/core";
 import type { BlockRenderContext } from "./block-context";
 import { YF_THEME_ID } from "./yazilim-firmasi";
+import { KA_THEME_ID } from "./kuzey-atolye";
+import { SA_THEME_ID } from "./sera-ajans";
+import { CR_PHONE, CR_THEME_ID } from "./crimson-erp";
+import { YB_THEME_ID } from "./yazilim-bayi";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
@@ -14,6 +18,92 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
   switch (block.type) {
     case "hero": {
+      if (themeId === YB_THEME_ID) {
+        const mosaic = Array.isArray(p.mosaic) ? p.mosaic.filter((u): u is string => typeof u === "string").slice(0, 3) : [];
+        return (
+          <section className="nx-yb-hero">
+            <div className={mosaic.length > 0 ? "nx-yb-hero-in" : "mx-auto max-w-[1180px]"}>
+              <div>
+                {typeof p.badge === "string" && p.badge ? <p><span className="nx-yb-badge">{p.badge}</span></p> : null}
+                {createElement(p.demoteTitle === true ? "h2" : "h1", {}, String(p.title ?? ""))}
+                {typeof p.subtitle === "string" ? <p>{p.subtitle}</p> : null}
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {typeof p.primaryCtaLabel === "string" ? <a href={String(p.primaryCtaHref ?? "/tr/iletisim")} className="nx-yb-btn">{p.primaryCtaLabel}</a> : null}
+                  {typeof p.secondaryCtaLabel === "string" ? <a href={String(p.secondaryCtaHref ?? "/tr/iletisim")} className="nx-yb-btn nx-yb-btn-ghost">{p.secondaryCtaLabel}</a> : null}
+                </div>
+              </div>
+              {mosaic.length > 0 ? (
+                <div className="nx-yb-mosaic">
+                  {mosaic.map((url, i) => <img key={url} src={url} alt="" width={640} height={420} loading={i === 0 ? "eager" : "lazy"} decoding="async" />)}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        );
+      }
+      if (themeId === CR_THEME_ID && block.variant === "band") {
+        return (
+          <section className="nx-cr-hero">
+            <div>
+              <p className="nx-cr-kicker">Demo verisi</p>
+              {createElement(p.demoteTitle === true ? "h2" : "h1", null, String(p.title ?? ""))}
+              {typeof p.subtitle === "string" ? <p className="nx-cr-lead">{p.subtitle}</p> : null}
+              {typeof p.primaryCtaLabel === "string" ? (
+                <a className="nx-cr-pill" href={String(p.primaryCtaHref ?? "/tr/crimson-e-donusum")}>{p.primaryCtaLabel}</a>
+              ) : null}
+              {typeof p.secondaryCtaLabel === "string" ? (
+                <a className="nx-cr-text" href={String(p.secondaryCtaHref ?? "/tr/crimson-kampanyalar")}>{p.secondaryCtaLabel}</a>
+              ) : null}
+            </div>
+            <div className="nx-cr-stage">
+              <img src="/demo/crimson-erp/ofis.jpg" alt="Açık ofis. Örnek görsel, Unsplash lisansı." />
+            </div>
+            <aside className="nx-cr-call">
+              <p>İşletmenize uygun çözüm için sizi arayalım</p>
+              <span>{CR_PHONE}</span>
+              <a href="/tr/crimson-iletisim">Fiyat alın</a>
+            </aside>
+          </section>
+        );
+      }
+      if (themeId === CR_THEME_ID) {
+        return (
+          <section className="nx-cr-page">
+            <p className="nx-cr-kicker">Demo verisi</p>
+            {createElement(p.demoteTitle === true ? "h2" : "h1", null, String(p.title ?? ""))}
+            {typeof p.subtitle === "string" ? <p className="nx-cr-lead">{p.subtitle}</p> : null}
+            {typeof p.primaryCtaLabel === "string" ? (
+              <a className="nx-cr-pill" href={String(p.primaryCtaHref ?? "/tr/crimson-iletisim")}>{p.primaryCtaLabel}</a>
+            ) : null}
+          </section>
+        );
+      }
+      if (themeId === SA_THEME_ID) {
+        return (
+          <section className="nx-sa-hero">
+            <p className="nx-sa-kicker">Demo verisi</p>
+            {createElement(p.demoteTitle === true ? "h2" : "h1", null, String(p.title ?? ""))}
+            {typeof p.subtitle === "string" ? <p className="nx-sa-lead">{p.subtitle}</p> : null}
+            <div className="nx-sa-actions">
+              {typeof p.primaryCtaLabel === "string" ? <a className="nx-sa-btn" href={String(p.primaryCtaHref ?? "/tr/sera-iletisim")}>{p.primaryCtaLabel}</a> : null}
+              {typeof p.secondaryCtaLabel === "string" ? <a className="nx-sa-textlink" href={String(p.secondaryCtaHref ?? "/tr/sera-isler")}>{p.secondaryCtaLabel}</a> : null}
+            </div>
+          </section>
+        );
+      }
+      if (themeId === KA_THEME_ID) {
+        return (
+          <section className="nx-ka-hero">
+            <p className="nx-ka-kicker">Demo verisi</p>
+            {createElement(p.demoteTitle === true ? "h2" : "h1", null, String(p.title ?? ""))}
+            {typeof p.subtitle === "string" ? <p className="nx-ka-lead">{p.subtitle}</p> : null}
+            <div className="nx-ka-actions">
+              {typeof p.primaryCtaLabel === "string" ? <a className="nx-ka-btn" href={String(p.primaryCtaHref ?? "/tr/kuzey-iletisim")}>{p.primaryCtaLabel}</a> : null}
+              {typeof p.secondaryCtaLabel === "string" ? <a className="nx-ka-textlink" href={String(p.secondaryCtaHref ?? "/tr/kuzey-hizmetler")}>{p.secondaryCtaLabel}</a> : null}
+            </div>
+          </section>
+        );
+      }
       if (themeId === INK_GRID_ID) return renderInkHero(p, tokens);
       if (themeId === YF_THEME_ID) {
         return (
@@ -97,6 +187,27 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
     }
 
     case "tldr_box": {
+      if (themeId === CR_THEME_ID) {
+        return (
+          <aside aria-label="Kısa yanıt" className="nx-cr-tldr">
+            <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
+          </aside>
+        );
+      }
+      if (themeId === SA_THEME_ID) {
+        return (
+          <aside aria-label="Kısa yanıt" className="nx-sa-tldr">
+            <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
+          </aside>
+        );
+      }
+      if (themeId === KA_THEME_ID) {
+        return (
+          <aside aria-label="Kısa yanıt" className="nx-ka-tldr">
+            <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
+          </aside>
+        );
+      }
       return (
         <aside
           aria-label="Answer-First Özet (TL;DR)"
@@ -371,6 +482,33 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
     }
 
     case "cta_banner": {
+      if (themeId === CR_THEME_ID) {
+        return (
+          <section className="nx-cr-cta">
+            <h2>{String(p.title ?? "")}</h2>
+            {typeof p.subtitle === "string" ? <p>{p.subtitle}</p> : null}
+            {typeof p.buttonLabel === "string" ? <a href={String(p.buttonHref ?? "/tr/crimson-iletisim")}>{p.buttonLabel}</a> : null}
+          </section>
+        );
+      }
+      if (themeId === SA_THEME_ID) {
+        return (
+          <section className="nx-sa-cta">
+            <h2>{String(p.title ?? "")}</h2>
+            {typeof p.subtitle === "string" ? <p>{p.subtitle}</p> : null}
+            {typeof p.buttonLabel === "string" ? <a href={String(p.buttonHref ?? "/tr/sera-iletisim")}>{p.buttonLabel}</a> : null}
+          </section>
+        );
+      }
+      if (themeId === KA_THEME_ID) {
+        return (
+          <section className="nx-ka-cta">
+            <h2>{String(p.title ?? "")}</h2>
+            {typeof p.subtitle === "string" ? <p>{p.subtitle}</p> : null}
+            {typeof p.buttonLabel === "string" ? <a href={String(p.buttonHref ?? "/tr/kuzey-iletisim")}>{p.buttonLabel}</a> : null}
+          </section>
+        );
+      }
       if (themeId === INK_GRID_ID) return renderInkCta(p, tokens);
       return (
         <section

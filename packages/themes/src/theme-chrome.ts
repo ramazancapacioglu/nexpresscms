@@ -1,6 +1,10 @@
-import type { FooterConfig, HeaderConfig, SiteCustomizerSettings } from "@nexpress/core";
+import type { FooterConfig, HeaderConfig, NavigationMenuItem, SiteCustomizerSettings } from "@nexpress/core";
 import { FOOTER_LIBRARY, HEADER_LIBRARY } from "./chrome-library";
 import { INK_GRID_FOOTER, INK_GRID_ID } from "./ink-grid";
+import { KA_FOOTER, KA_HEADER, KA_THEME_ID } from "./kuzey-atolye";
+import { SA_FOOTER, SA_HEADER, SA_THEME_ID } from "./sera-ajans";
+import { CR_FOOTER, CR_HEADER, CR_THEME_ID } from "./crimson-erp";
+import { YB_BRAND, YB_FOOTER, YB_HEADER, YB_HEADER_MENU, YB_LOGO, YB_THEME_ID } from "./yazilim-bayi";
 
 /**
  * Resmi temanın kendi başlık/altlık düzeni ve düğme/başlık davranışı.
@@ -10,6 +14,8 @@ import { INK_GRID_FOOTER, INK_GRID_ID } from "./ink-grid";
 export interface ThemeChromePreset {
   header: HeaderConfig;
   footer: FooterConfig;
+  /** Site menüsü boşken yazılan ana menü. Dolu menüye dokunulmaz. */
+  menuItems?: NavigationMenuItem[];
   customizer: {
     buttons: Partial<SiteCustomizerSettings["buttons"]>;
     header: Partial<SiteCustomizerSettings["header"]>;
@@ -57,12 +63,40 @@ const PRESETS: Record<string, () => ThemeChromePreset> = {
       layout: { contentLayout: "boxed", articleWidth: "760px" },
     },
   }),
-  "crimson-erp": () => ({
-    header: headerById("header-docs"),
-    footer: footerById("footer-vitrin"),
+  [CR_THEME_ID]: () => ({
+    header: structuredClone(CR_HEADER),
+    footer: structuredClone(CR_FOOTER),
     customizer: {
-      buttons: { style: "solid" },
-      header: { height: 64, sticky: true, glass: false, menuAlign: "center" },
+      buttons: { style: "pill" },
+      header: { height: 72, sticky: true, glass: false, menuAlign: "center" },
+      layout: { contentLayout: "boxed", sidebarOnPage: false, articleWidth: "760px" },
+    },
+  }),
+  [SA_THEME_ID]: () => ({
+    header: structuredClone(SA_HEADER),
+    footer: structuredClone(SA_FOOTER),
+    customizer: {
+      buttons: { style: "pill" },
+      header: { height: 72, sticky: true, glass: false, menuAlign: "center" },
+      layout: { contentLayout: "boxed", sidebarOnPage: false, articleWidth: "720px" },
+    },
+  }),
+  [KA_THEME_ID]: () => ({
+    header: structuredClone(KA_HEADER),
+    footer: structuredClone(KA_FOOTER),
+    customizer: {
+      buttons: { style: "sharp" },
+      header: { height: 72, sticky: true, glass: false, menuAlign: "left" },
+      layout: { contentLayout: "boxed", sidebarOnPage: false, articleWidth: "680px" },
+    },
+  }),
+  [YB_THEME_ID]: () => ({
+    header: structuredClone(YB_HEADER),
+    footer: structuredClone(YB_FOOTER),
+    menuItems: structuredClone(YB_HEADER_MENU),
+    customizer: {
+      buttons: { style: "sharp" },
+      header: { height: 64, sticky: true, glass: false, menuAlign: "left", logoImage: YB_LOGO, logoText: YB_BRAND },
       layout: { contentLayout: "boxed" },
     },
   }),

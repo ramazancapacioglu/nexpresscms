@@ -1,6 +1,9 @@
 import type { FooterConfig, HeaderConfig } from "@nexpress/core";
 import { FOOTER_TEMPLATES, HEADER_TEMPLATES } from "./chrome-templates";
 import { YF_FOOTER, YF_HEADER } from "./yazilim-firmasi";
+import { KA_FOOTER, KA_HEADER } from "./kuzey-atolye";
+import { SA_FOOTER, SA_HEADER } from "./sera-ajans";
+import { CR_FOOTER, CR_HEADER } from "./crimson-erp";
 import { MODERN_FOOTERS, MODERN_HEADERS } from "./chrome-library-modern";
 
 export type ChromeLibraryKind = "header" | "footer";
@@ -133,6 +136,9 @@ export const HEADER_LIBRARY: ChromeLibraryItem<HeaderConfig>[] = [
     header(item.id, item.name, item.description, categoryForHeader(item.id), previewForHeader(item.id), item.value)
   ),
   header("header-yazilim-vitrin", "Yazılım firması mega menü", "Buzlu yapışkan şerit, ortada dört sütunlu mega menü, sağda telefon ve demo düğmesi.", "vitrin", "bar-center", YF_HEADER),
+  header("header-kuzey-atolye", "Kuzey Atölye şeridi", "İnce üst satırda telefon, altta serif logo, solda menü, sağda çerçeveli Yazın.", "sade", "bar-plain", KA_HEADER),
+  header("header-sera-ajans", "Sera Ajans şeridi", "Solda logo, ortada menü, sağda telefon ve siyah kapsül teklif düğmesi.", "vitrin", "bar-center", SA_HEADER),
+  header("header-crimson-erp", "Crimson ERP şeridi", "Beyaz şerit: solda kırmızı sözcük, ortada menü, sağda arama ve kırmızı kapsül.", "vitrin", "bar-center", CR_HEADER),
   ...MODERN_HEADERS.map((h) => header(...h)),
   header("header-center", "Orta menü", "Logo solda, menü ortada, çağrı sağda. Üst şerit yok.", "vitrin", "bar-center", {
     topBar: { ...off },
@@ -197,6 +203,9 @@ export const HEADER_LIBRARY: ChromeLibraryItem<HeaderConfig>[] = [
 
 export const FOOTER_LIBRARY: ChromeLibraryItem<FooterConfig>[] = [
   footer("footer-yazilim-dizin", "Yazılım firması dizini", "Sekiz bölümlü geniş bağlantı dizini: çözümler, e-dönüşüm, kurumsal, destek.", "kolon", "foot-columns", YF_FOOTER),
+  footer("footer-kuzey-atolye", "Kuzey Atölye altlığı", "Üç sakin sütun: iş, atölye, yazışma. Bülten yok.", "kolon", "foot-columns", KA_FOOTER),
+  footer("footer-sera-ajans", "Sera Ajans altlığı", "Siyah zemin, dört sütun: işler, hizmet, ajans, yazışma.", "kolon", "foot-columns", SA_FOOTER),
+  footer("footer-crimson-erp", "Crimson ERP dizini", "Açık zemin, dört sütun: ürün, dağıtım, kurum, destek.", "kolon", "foot-columns", CR_FOOTER),
   ...FOOTER_TEMPLATES.map((item) =>
     footer(item.id, item.name, item.description, categoryForFooter(item.id), previewForFooter(item.id), item.value)
   ),

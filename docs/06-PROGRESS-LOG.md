@@ -21,6 +21,26 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-14] — Yazılım Bayi teması (resmi tema)
+- ✅ `yazilim-bayi` resmi temaya eklendi: iki katmanlı başlık (hızlı bağlantı, telefon, arama + ana menü), görsel mozaikli vitrin, 6 kartlı çözüm ızgarası, mavi demo bandı, görsel+metin şeritleri, kampanya vitrini, SSS, 6 sütunlu dizin altlığı; yeşil/lacivert palet.
+- ✅ Demo paketi (`yb-` adresleri): 18 ürün, 5 çözüm ailesi, çözüm dizini, kurumsal, iletişim, demo/destek formları, blog + 4 yazı, 3 kampanya; 21 temsili SVG `apps/cms/public/demo/yazilim-bayi/`.
+- ✅ Altlık altı sütunu ziyaretçi yüzünde widget olarak da yazılıyor. Üst şeritte arama var. Dolu menü tema değişince korunur; menü boşsa kaynak menü yazılır.
+- ✅ Hero bloğu bu temada isteğe bağlı `mosaic` görsel listesi alır; tema düzeni `menuItems` taşıyabilir (yalnızca boş menüye yazılır).
+- ✅ Test: `demo-pack.test.ts` (adresler, görseller, kampanya, yazılar, menü/altlık bağlantıları). Doküman: `docs/23`.
+- ✅ Başlık, ana menü, altlık, iletişim, logo ve sosyal bağlantılar kaynak siteden (akinsoftizmir.com.tr) alındı; logo dosyaları `apps/cms/public/demo/yazilim-bayi/`.
+
+### [2026-11-14] — Crimson ERP demo doldu
+- Aynı temaya Unsplash lisanslı sekiz görsel (`apps/cms/public/demo/crimson-erp`), sütunlu mega menü, fiyat penceresi, kapsam diyaloğu, üç kampanya kaydı, galeri, ürün kartları ve altı yazı eklendi. 32 kayıt. Oran ve müşteri adı yok. Aynı adresteki eski demo aktarımda atlanır.
+
+### [2026-11-14] — Crimson ERP vitrini
+- Mevcut resmi tema `crimson-erp` kurumsal yazılım vitrinine çekildi. Beyaz şerit, kırmızı kapsül, üç parçalı ana sayfa (cümle, çizim kart, kırmızı arama kutusu), dört sütun dizin altlık. 21 demo kaydı (18 sayfa, 3 yazı). Adresler `crimson-` ile başlar. İndirim oranı ve müşteri adı yok; kicker `Demo verisi`. Demo aktarımı menüyü de yazar. Etkinleştirmek tek başına mevcut menüyü silmez.
+
+### [2026-11-14] — Sera Ajans teması
+- Resmi tema `sera-ajans`. Açık gül zemin, iri başlık, siyah kapsül düğme, çizgi daire, iş listesi, siyah altlık. 15 demo kaydı. Adresler `sera-` ile başlar. Ödül ve müşteri adı yok; kicker `Demo verisi`. Demo aktarımı menüyü de yazar.
+
+### [2026-11-14] — Kuzey Atölye teması
+- Resmi tema `kuzey-atolye`. Kâğıt zemin, sistem serifi, tek çam yeşili. Header, üç sütun footer, yazı kenarı ve 12 demo kaydı (9 sayfa, 3 yazı). Adresler `kuzey-` ile başlar. Rakam ve müşteri adı yok; kicker `Demo verisi`. Demo aktarımı menüyü de yazar. Etkinleştirmek tek başına mevcut menüyü silmez. Yazı tipi dosyası yok.
+
 ### [2026-11-14] — Herkese açık WordPress taraması
 - Köprü paneli herhangi bir `https` WordPress kökünü tarar. Sayfa, yazı, blog, herkese açık özel tür, kategori, etiket, yorum, yazar adı, SEO ve şema gelir. Yerleşim satır ve sütun bozulmadan çizilir. Menü ve telefon ana sayfadan alınır. Palet yalnızca kaynakta renk değişkeni varsa yazılır. İlk 80 kullanılan görsel kitaplığa iner. E-posta, parola, form gelen kutusu ve e-ticaret gelmez. Şablon ve tasarım kütüphanesi durur. İndeks açılmaz. Onay sözcüğü `SIFIRLA`. Silmeden deneme: akinsoftizmir.com.tr 69 sayfa, 51 yazı, 12 soru, 132 SEO başlığı; ryelle.codes 11 sayfa, 93 yazı, 2 yazar, 104 SEO başlığı.
 

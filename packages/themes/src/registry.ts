@@ -1,15 +1,22 @@
 import { darkModeCss, type DesignTokens, type SiteCustomizerSettings, type SiteProfile } from "@nexpress/core";
 import { YF_LEGACY_THEME_ID, YF_THEME_ID, YF_TOKENS } from "./yazilim-firmasi";
 import { INK_GRID_ID, INK_GRID_TOKENS } from "./ink-grid";
+import { KA_THEME_ID, KA_TOKENS } from "./kuzey-atolye";
+import { SA_THEME_ID, SA_TOKENS } from "./sera-ajans";
+import { CR_THEME_ID, CR_TOKENS } from "./crimson-erp";
+import { YB_THEME_ID, YB_TOKENS } from "./yazilim-bayi";
 
 export interface ThemeManifest {
   id:
     | "corporate-aurora"
     | "commerce-velocity"
     | "editorial-pulse"
-    | "crimson-erp"
+    | typeof CR_THEME_ID
     | typeof INK_GRID_ID
-    | typeof YF_THEME_ID;
+    | typeof YF_THEME_ID
+    | typeof KA_THEME_ID
+    | typeof SA_THEME_ID
+    | typeof YB_THEME_ID;
   name: string;
   tagline: string;
   description: string;
@@ -173,48 +180,21 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
     tokens: INK_GRID_TOKENS,
   },
   {
-    id: "crimson-erp",
+    id: CR_THEME_ID,
     name: "Crimson ERP & Muhasebe",
-    tagline: "Kurumsal Yazılım, ERP, e-Dönüşüm ve Muhasebe Çözüm Platformları İçin",
+    tagline: "Beyaz şerit, yakut kırmızı kapsül, ERP ve e-dönüşüm vitrini",
     description:
-      "Yakut kırmızısı (#C8102E) ve koyu arduvaz kurumsal kimlik, hero içinde sağ sütun 'Sizi Arayalım' teklif formu, yapışkan HTML çapa (sticky anchor) kategori gezgini, Bulut/On-Premise çözüm sekmeleri ve işletme ölçeğine göre karşılaştırma matrisi.",
-    version: "1.0.0",
+      "Kurumsal yazılım vitrini: beyaz yapışkan şerit, solda kırmızı sözcük, ortada menü, sağda arama ve kapsül düğme. Ana sayfa üç parçadır: cümle, örnek görsel kart, kırmızı arama kutusu. Ürün, ölçek, bulut, yerinde kurulum, kampanya ve destek sayfaları demo olarak gelir. İndirim oranı ve müşteri adı yoktur.",
+    version: "1.1.0",
     author: "NexPress Design Lab",
     recommendedProfile: "corporate",
     features: [
-      "Yapışkan HTML Çapa (Sticky Anchor) Kategori Gezgini",
-      "Bölünmüş Hero + Hızlı Teklif & Demo Talep Kartı",
-      "Bulut / On-Premise Çözüm Ailesi Sekmeleri",
-      "İşletme Ölçeğine Göre Paket Karşılaştırma Matrisi",
+      "Beyaz şerit ve kırmızı kapsül",
+      "Üç parçalı vitrin",
+      "Ürün menüsü",
+      "Dört sütun dizin altlık",
     ],
-    tokens: {
-      colors: {
-        primary: "#c8102e",
-        primaryForeground: "#ffffff",
-        secondary: "#111827",
-        secondaryForeground: "#f9fafb",
-        accent: "#991b1b",
-        accentForeground: "#ffffff",
-        background: "#ffffff",
-        foreground: "#111827",
-        muted: "#f7f8fa",
-        mutedForeground: "#4b5563",
-        border: "#e5e7eb",
-      },
-      typography: {
-        headingFont: "Plus Jakarta Sans, Inter, sans-serif",
-        bodyFont: "Inter, system-ui, sans-serif",
-        monoFont: "JetBrains Mono, monospace",
-        baseSizePx: 16,
-        scaleRatio: 1.25,
-      },
-      geometry: {
-        borderRadius: "0.75rem",
-        containerMaxWidth: "1320px",
-        sectionSpacingY: "4.5rem",
-        cardShadow: "md",
-      },
-    },
+    tokens: CR_TOKENS,
   },
   {
     id: YF_THEME_ID,
@@ -233,6 +213,42 @@ export const OFFICIAL_THEME_STORE: ThemeManifest[] = [
       "Yazı kenar çubuğu",
     ],
     tokens: YF_TOKENS,
+  },
+  {
+    id: KA_THEME_ID,
+    name: "Kuzey Atölye",
+    tagline: "Kâğıt zemin, serif başlık, tek çam yeşili — yazılım atölyesi",
+    description:
+      "Orta ölçekli işletmeye iş yazılımı yazan atölye vitrini. Cam ve gradyan yok. Header, footer, yazı kenarı ve demo sayfalar temayla gelir. Demo verisi diye işaretlidir.",
+    version: "1.0.0",
+    author: "NexPress Design Lab",
+    recommendedProfile: "corporate",
+    features: ["Kâğıt zemin", "Serif başlık", "Tek vurgu rengi", "Yazı kenarı", "0 KB istemci JS"],
+    tokens: KA_TOKENS,
+  },
+  {
+    id: SA_THEME_ID,
+    name: "Sera Ajans",
+    tagline: "Açık gül zemin, iri başlık, siyah kapsül — dijital ajans",
+    description:
+      "Marka, site ve ölçümü aynı masada tutan ajans vitrini. Çizgi daire, iş listesi, siyah altlık. Demo verisi diye işaretlidir. Ödül ve müşteri adı yoktur.",
+    version: "1.0.0",
+    author: "NexPress Design Lab",
+    recommendedProfile: "corporate",
+    features: ["Gül zemin", "İri başlık", "Siyah kapsül düğme", "İş listesi", "0 KB istemci JS"],
+    tokens: SA_TOKENS,
+  },
+  {
+    id: YB_THEME_ID,
+    name: "Yazılım Bayi Teması",
+    tagline: "Yetkili yazılım bayisi ve çözüm ortağı siteleri için",
+    description:
+      "İki katmanlı başlık (bayi adı, hızlı bağlantılar, telefon ve ana menü), sol metin + sağ görsel mozaikli vitrin, altı kartlı çözüm ızgarası, mavi demo/hemen ara bandı, muhasebe, sektörel ve e-dönüşüm şeritleri, kampanya vitrini, SSS ve çok sütunlu dizin altlığı. Yeşil ve lacivert kurumsal palet.",
+    version: "1.0.0",
+    author: "NexPress Design Lab",
+    recommendedProfile: "corporate",
+    features: ["İki katmanlı başlık", "Görsel mozaikli vitrin", "Altı kartlı çözüm ızgarası", "Demo / Hemen ara bandı", "Dizin altlığı"],
+    tokens: YB_TOKENS,
   },
 ];
 
