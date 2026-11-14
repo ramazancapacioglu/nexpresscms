@@ -1,7 +1,8 @@
 import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { isValidMediaId, resolveObjectStorageConfig } from "@nexpress/core";
+import { isValidMediaId } from "@nexpress/core";
+import { resolveObjectStorageConfig } from "@nexpress/core/object-storage";
 import * as s3 from "./s3-storage";
 
 /**

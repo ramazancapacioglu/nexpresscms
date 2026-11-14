@@ -1,5 +1,5 @@
 import "server-only";
-import { resolveObjectStorageConfig, signObjectRequest } from "@nexpress/core";
+import { resolveObjectStorageConfig, signObjectRequest } from "@nexpress/core/object-storage";
 
 function asArrayBuffer(data: Uint8Array): ArrayBuffer {
   const copy = new ArrayBuffer(data.byteLength);

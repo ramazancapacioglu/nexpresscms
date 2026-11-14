@@ -29,7 +29,6 @@ export * from "./membership";
 export * from "./cdn-purge";
 export * from "./host-redirect";
 export * from "./security-txt";
-export * from "./object-storage";
 export * from "./json-dates";
 export * from "./ai-bots";
 export * from "./robots";

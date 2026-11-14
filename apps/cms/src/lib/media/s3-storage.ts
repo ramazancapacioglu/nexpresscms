@@ -1,5 +1,5 @@
 import "server-only";
-import { resolveObjectStorageConfig, signObjectRequest, type ObjectStorageConfig } from "@nexpress/core";
+import { resolveObjectStorageConfig, signObjectRequest, type ObjectStorageConfig } from "@nexpress/core/object-storage";
 
 /** Fetch gövdesi `ArrayBuffer` ister; `Uint8Array` dilim paylaşımlı tampon olabiliyor. */
 function asArrayBuffer(data: Uint8Array): ArrayBuffer {
