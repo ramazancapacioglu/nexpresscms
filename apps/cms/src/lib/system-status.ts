@@ -2,7 +2,7 @@ import "server-only";
 import { statfs } from "node:fs/promises";
 import { access, constants } from "node:fs";
 import { promisify } from "node:util";
-import { evaluateEnv, evaluateIndex, type HealthCheck } from "@nexpress/core";
+import { evaluateEnv, evaluateIndex, evaluateLaunch, resolveSiteSettings, type HealthCheck } from "@nexpress/core";
 import { getBotStatsRepository, getChunkRepository, getFormSubmissionRepository, getDbDialect, getAgentRequestRepository, getRedirectRepository, getScopedRepository, migrationStatus } from "@nexpress/database";
 import { providerFromEnv } from "@nexpress/rag";
 import { latestBackup } from "@/lib/backup-schedule";
@@ -39,6 +39,17 @@ export async function collectSystemStatus(siteId: string): Promise<{ checks: Hea
 
   // Ortam
   checks.push(...evaluateEnv(process.env, process.env.NODE_ENV === "production"));
+  if (site.ok && site.value) {
+    const settings = resolveSiteSettings(site.value.settings);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() ?? "";
+    checks.push(...evaluateLaunch({
+      indexing: settings.seo.searchIndexing !== false,
+      maintenance: settings.general.maintenanceEnabled === true,
+      hasContact: Boolean(process.env.SECURITY_CONTACT?.trim() || settings.general.contactEmail.trim()),
+      hasIndexNow: Boolean(process.env.INDEXNOW_API_KEY?.trim()),
+      httpsAppUrl: /^https:\/\//i.test(appUrl),
+    }));
+  }
 
   // Disk / medya
   const media = mediaRoot();

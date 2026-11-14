@@ -5,6 +5,7 @@ import { resolveSiteIdFromHost } from "@nexpress/core/tenancy";
 import { verifySessionToken } from "@nexpress/core/session";
 import { canOpenAdminPath, isLimitedRole } from "@nexpress/core/permissions";
 import { htmlCacheControl } from "@nexpress/core/html-cache";
+import { canonicalHostRedirect } from "@nexpress/core/host-redirect";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
@@ -47,6 +48,12 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const host = request.headers.get("host");
+  // www ↔ apeks: kanonik adres NEXT_PUBLIC_APP_URL. Kiracı alt alanına ve localhost'a uygulanmaz.
+  const canonicalOrigin = canonicalHostRedirect(host, process.env.NEXT_PUBLIC_APP_URL);
+  if (canonicalOrigin) {
+    const dest = new URL(`${pathname}${request.nextUrl.search}`, canonicalOrigin);
+    return NextResponse.redirect(dest, 308);
+  }
   const siteId = resolveSiteIdFromHost(host);
 
   // Tek dilli sitede dil ön eki yoktur: `/tr/x` → 308 `/x`; ön eksiz yol içeride `/tr/x` olarak yeniden yazılır.

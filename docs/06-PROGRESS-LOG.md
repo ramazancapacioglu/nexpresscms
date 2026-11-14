@@ -21,6 +21,19 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-14] — Siteden yanıt ve yayın kapıları
+- `/ara` sorusu `OPENAI_API_KEY` varsa yalnızca bulunan sayfalardan yanıtlanır (`groundedAnswerRequest` / `parseGroundedAnswer`). Kaynak numarası listede yoksa çıktı atılır ve özete düşülür. Anahtar yoksa özet aynı kalır. Süre 4 sn, yeniden deneme yok. Ziyaretçi betiği yok.
+- Sistem durumu **Yayın** grubu: bakım, indeks, https, security.txt iletişimi, IndexNow. İndeksi kendisi açmaz. Açmak: SEO motoru › Sitemap ve robots › Açık › kaydet.
+
+### [2026-11-14] — Yayın yüzü, opsiyonel nesne deposu ve opsiyonel CDN temizleme
+- **www → apeks:** `canonicalHostRedirect` ara katmanda 308. Yalnızca `NEXT_PUBLIC_APP_URL` ile `www` farkı; kiracı alt alanı ve localhost hariç. Nginx şablonunda `www` ayrı sunucu bloğu. İndeks açılmadı.
+- **security.txt:** `/.well-known/security.txt`. `SECURITY_CONTACT` ya da site iletişim e-postası; ikisi de yoksa 404.
+- **IndexNow:** kod zaten vardı (`/indexnow-key.txt`). Anahtar ortamda yoksa 404 kalır; sistem durumu bunu yazar.
+- **Medya:** `MEDIA_DRIVER=s3` (R2/MinIO/AWS, SigV4). Varsayılan disk. Bozuk ayar diske düşmez.
+- **Yedek kopyası:** `BACKUP_COPY=s3` zamanlanmış yedeği `backups/{site}/{dosya}` altına yazar. Kapalıysa yalnızca yerel dosya. Kopya hatası yerel yedeği silmez.
+- **CDN:** çöpe taşıma (önce) ve toplu taslağa alma, sağlayıcı tanımlıysa temizler. `CDN_PURGE_PROVIDER` yoksa ağ çağrısı yok.
+- Kök düzen hâlâ `headers()` okur; sayfalar bu yüzden dinamik. Tam ISR ayrı iş (adreslere kiracı kesiti eklenmeden olmuyor).
+
 ### [2026-11-13] — Etiket kaldırma ve soru-cevap eklentisi
 - **Editör:** Seçili etiketler mavi rozet olur ve çarpı ile kalkar. Listede olmayan (eski) etiket de kaldırılabilir. Kayıt `_publishing.tags` dizisini olduğu gibi yazar.
 - **Soru-cevap (`@nexpress/plugin-qa`):** WordPress AI Prompt eklentisinin ziyaretçi yüzü. `/sorular` yayındaki `ai_prompt` sayfalarını listeler. Sayfa altında cevaplanmış sorular, faydalı oyu ve soru formu vardır; üçü de düz formdur, ziyaretçiye betik eklenmez. Bekleyen sorular `/admin/questions` gelen kutusundan cevaplanır veya silinir. Durum içerik satırında `_qa` alanındadır; editör kaydı bu alanı ezmez. Tekil adres `/{slug}` kalır (`/soru/{slug}` açılmaz).

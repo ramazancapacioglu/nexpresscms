@@ -18,7 +18,8 @@ export const tr = {
     placeholder: "Aramak istediğiniz sözcükler",
     button: "Ara",
     noResults: "“{q}” için sonuç bulunamadı.",
-    directAnswer: "Doğrudan yanıt özeti",
+    directAnswer: "Siteden yanıt",
+    answerHint: "Yanıt yalnızca bu sitede yayımlanmış sayfalardan kurulur.",
     sources: "Kaynaklar",
   },
   content: {

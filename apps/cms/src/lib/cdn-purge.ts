@@ -48,6 +48,21 @@ export function queueCdnPurge(siteId: string, urls: string[]): void {
   timer.unref?.();
 }
 
+/**
+ * İçeriğin her dilindeki adresini temizler. CDN kapalıysa hemen döner.
+ * Çöpe taşımadan önce çağrılmalıdır: çöpteki satır ziyaretçi listesinde yoktur.
+ */
+export async function purgeContentLocales(siteId: string, contentId: string): Promise<void> {
+  if (!cdnPurgeEnabled()) return;
+  try {
+    const translations = await getScopedRepository(siteId).getTranslationsForContent(contentId);
+    const locales = [...new Set(translations.map((row) => row.locale))];
+    for (const locale of locales.length > 0 ? locales : ["tr"]) await purgeContentCaches(siteId, { contentId, locale });
+  } catch (error) {
+    console.warn("[cdn-purge]", error instanceof Error ? error.message : error);
+  }
+}
+
 /** Bir içeriğin etkilenen adreslerini hesaplayıp temizler (yayın, güncelleme, yayından kaldırma sonrası). */
 export async function purgeContentCaches(siteId: string, ref: { contentId: string; locale: string }): Promise<void> {
   if (!cdnPurgeEnabled()) return;

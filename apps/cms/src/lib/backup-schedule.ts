@@ -2,6 +2,7 @@ import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { buildBackup } from "@/lib/backup";
+import { copyBackupOffsite } from "@/lib/backup-copy";
 import { BACKUP_KEEP_DEFAULT, backupFileName, isBackupFileName, pickBackupsToDelete } from "./backup-names";
 
 /** Zamanlanmış yedeklerin yazıldığı klasör (`BACKUP_DIR`; yoksa uygulama verisi altında `data/backups`). */
@@ -14,6 +15,8 @@ export interface ScheduledBackupResult {
   bytes: number;
   kept: number;
   deleted: string[];
+  /** `off` kopya kapalı, `ok` nesne deposuna yazıldı, aksi halde kısa hata. Yerel yedek her durumda durur. */
+  copy: "off" | "ok" | string;
 }
 
 /** Kiracı yedeğini klasöre yazar (geçici dosya + yeniden adlandırma) ve en yeni `keep` kadarını tutar. */
@@ -28,7 +31,8 @@ export async function runScheduledBackup(siteId: string, opts: { media: boolean;
   const names = (await fs.readdir(dir)).filter((n) => isBackupFileName(n, siteId));
   const doomed = pickBackupsToDelete(names, opts.keep ?? BACKUP_KEEP_DEFAULT);
   for (const n of doomed) await fs.rm(path.join(dir, n), { force: true });
-  return { file, bytes: bytes.length, kept: names.length - doomed.length, deleted: doomed };
+  const copy = await copyBackupOffsite(siteId, file, bytes);
+  return { file, bytes: bytes.length, kept: names.length - doomed.length, deleted: doomed, copy: copy === null ? "off" : copy.ok ? "ok" : copy.error };
 }
 
 /** Son yedeğin adı ve yaşı (sistem durumu için); klasör yoksa null. */

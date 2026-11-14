@@ -116,7 +116,7 @@ Ziyaretçi trafiği dakikada bir zamanlayıcıyı tetikler; trafiksiz sitede yay
 17 3 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" "https://alanadiniz.com/api/cron/backup?media=1" > /dev/null
 ```
 
-Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne depolama, sağlayıcı anlık görüntüsü). Aşağıdakiler de geçerli:
+Yedek dosyasını sunucu dışına almak için `BACKUP_COPY=s3` (aynı `S3_*` ayarı, anahtar `backups/{site}/{dosya}`). Boşsa kopya yapılmaz; rsync veya disk anlık görüntüsü yine kullanılabilir. Aşağıdakiler de geçerli:
 
 - Panel: **Yedek** → `.nxbackup` (içerik, çeviri, taksonomi, menü, ayarlar, tema, görsel özgünleri). **Belge/video/ses dosyaları, kullanıcılar, parolalar, oturumlar, denetim günlüğü ve ticaret yedeğe girmez.**
 - Bu yüzden ayrıca **veritabanı** (SQLite dosyası ya da `pg_dump`) ve **`MEDIA_DIR` klasörü** sunucu düzeyinde yedeklenmeli. Komut satırından kiracı JSON yedeği almak ve geri yüklemek için `pnpm db:export -- --site=default --out=./backup.json` ve `pnpm db:import -- --site=default --in=./backup.json` komutları da kullanılabilir.
@@ -130,7 +130,10 @@ Yedek dosyasını **sunucu dışına** kopyalamak sizin işinizdir (rsync, nesne
 - [ ] SMTP tanımlı ve **Formlar → E-posta → Test e-postası** başarılı (davet ve parola sıfırlama buna bağlı).
 - [ ] `robots.txt`, `/sitemap.xml`, `/llms.txt` beklenen adrese işaret ediyor; Search Console / Bing'e site haritası eklendi.
 - [ ] Veritabanı ve `MEDIA_DIR` yedeği ayrı bir yere alınıyor; geri yükleme bir kez denendi.
-- [ ] Çoklu sunucu (yük dengeli) kuruyorsanız: giriş/sıfırlama hız sınırları ve ön yüz önbelleği **süreç başınadır**; ortak Redis katmanı henüz yok. Tek sunucuyla başlayın.
+- [ ] `www` alan adı apeks adrese 308 ile gider (`scripts/nginx-nexpress.conf` ve uygulama ara katmanı). `NEXT_PUBLIC_APP_URL` kanonik adrestir.
+- [ ] `/.well-known/security.txt` iletişim adresi döner (`SECURITY_CONTACT` veya Ayarlar › iletişim e-postası).
+- [ ] İndeks açılacaksa `INDEXNOW_API_KEY` tanımlı ve `/indexnow-key.txt` 200.
+- [ ] Çoklu sunucu (yük dengeli): `REDIS_URL` hız sınırı ve önbellek dönemini paylaşır. Medya için `MEDIA_DRIVER=s3`. CDN temizleme isteğe bağlıdır (`CDN_PURGE_PROVIDER`). Veri önbelleğinin kendisi (`unstable_cache`) hâlâ örnek başınadır.
 
 ## 8. ileriseo.com otomatik aktarım
 
@@ -140,4 +143,4 @@ Canlı veritabanı PostgreSQL 16 + pgvector 0.6 (`nexpress_cms`, yalnızca `127.
 
 ## 9. Bilinen sınırlar
 
-Bkz. `docs/12-ROADMAP.md`: Redis/S3/kuyruk (çok sunuculu kurulum), CLI yedek, Lighthouse CI, Search Console bağlantısı ve "Yakında" eklenti modülleri.
+Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.

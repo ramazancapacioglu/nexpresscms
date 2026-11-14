@@ -375,7 +375,7 @@ function SettingsView({
           </select>
         </label>
         <p className="text-[11px] leading-relaxed text-[#5F6570] dark:text-[#8C9099]">
-          Kapalıyken her sayfa noindex olur, site haritası boş döner ve robots.txt siteyi kapatır. Kopya veya deneme adresinde kapalı tutun; kaydı unutmayın.
+          Kapalıyken her sayfa noindex olur, site haritası boş döner ve robots.txt siteyi kapatır. Yayına almak için Açık seçip kaydedin. Sistem durumu ekranındaki Yayın grubu eksik kapıları listeler. Kopya içerikte kapalı tutun.
         </p>
         <div className="flex flex-wrap gap-2">
           {TYPES.map((type) => {

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { evaluateEnv, evaluateIndex } from "../src";
+import { evaluateEnv, evaluateIndex, evaluateLaunch } from "../src";
 
 const level = (checks: ReturnType<typeof evaluateEnv>, id: string) => checks.find((c) => c.id === id)!.level;
 
@@ -21,6 +21,15 @@ test("ortam denetimi çıktısı hiçbir sır değerini içermez", () => {
   const env = { AUTH_SECRET: "gizli-deger-".repeat(5), OPENAI_API_KEY: "sk-GIZLI123", MCP_AGENT_KEY: "agent-GIZLI", CRON_SECRET: "cron-GIZLI", INDEXNOW_API_KEY: "ix-GIZLI" };
   const text = JSON.stringify(evaluateEnv(env, true));
   for (const v of Object.values(env)) assert.equal(text.includes(v), false);
+});
+
+test("yayın kapıları indeksi kendiliğinden açmaz", () => {
+  const closed = evaluateLaunch({ indexing: false, maintenance: false, hasContact: true, hasIndexNow: false, httpsAppUrl: true });
+  assert.equal(closed.find((c) => c.id === "launch-index")?.level, "warn");
+  const open = evaluateLaunch({ indexing: true, maintenance: true, hasContact: false, hasIndexNow: true, httpsAppUrl: false });
+  assert.equal(open.find((c) => c.id === "launch-maintenance")?.level, "fail");
+  assert.equal(open.find((c) => c.id === "launch-index")?.level, "ok");
+  assert.equal(open.find((c) => c.id === "launch-contact")?.level, "warn");
 });
 
 test("dizin sağlığı: yok, eksik, tam, eski model", () => {

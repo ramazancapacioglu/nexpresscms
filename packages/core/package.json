@@ -13,6 +13,7 @@
     "./session": "./src/session-token.ts",
     "./permissions": "./src/permissions.ts",
     "./html-cache": "./src/html-cache.ts",
+    "./host-redirect": "./src/host-redirect.ts",
     "./password": "./src/password.ts",
     "./secret-box": "./src/secret-box.ts",
     "./draft-preview": "./src/draft-preview.ts",

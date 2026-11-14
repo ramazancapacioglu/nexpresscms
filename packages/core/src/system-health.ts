@@ -32,9 +32,47 @@ export function evaluateEnv(env: Record<string, string | undefined>, isProductio
   add("openai", "OPENAI_API_KEY", has("OPENAI_API_KEY") ? "ok" : "info", has("OPENAI_API_KEY") ? "Tanımlı: gerçek gömme ve AI yazım asistanı açık." : "Tanımlı değil: arama yerel gömmeyle çalışır, AI yazım asistanı kapalı.");
   add("mcp-key", "MCP_AGENT_KEY", has("MCP_AGENT_KEY") ? "ok" : "info", has("MCP_AGENT_KEY") ? "Tanımlı: ajan talepleri (lead/destek/demo) kabul edilir." : "Tanımlı değil: ajan yazma araçları anahtarsız reddeder.");
   add("cron", "CRON_SECRET", has("CRON_SECRET") ? "ok" : "info", has("CRON_SECRET") ? "Tanımlı: /api/cron/scheduled kesin zamanlama için açık." : "Tanımlı değil: zamanlanmış yayın yalnızca ziyaretçi trafiğiyle (dakikada bir) tetiklenir.");
-  add("indexnow", "INDEXNOW_API_KEY", has("INDEXNOW_API_KEY") ? "ok" : "info", has("INDEXNOW_API_KEY") ? "Tanımlı." : "Tanımlı değil: Bing/Yandex'e anında bildirim kapalı.");
+  add("indexnow", "INDEXNOW_API_KEY", has("INDEXNOW_API_KEY") ? "ok" : "info", has("INDEXNOW_API_KEY") ? "Tanımlı. Anahtar /indexnow-key.txt adresinde sunulur." : "Tanımlı değil: Bing/Yandex'e anında bildirim kapalı, /indexnow-key.txt 404 döner.");
+  add("security-contact", "security.txt", has("SECURITY_CONTACT") ? "ok" : "info", has("SECURITY_CONTACT") ? "SECURITY_CONTACT tanımlı." : "Tanımlı değil: site iletişim e-postası kullanılır; o da boşsa /.well-known/security.txt 404 döner.");
+  const mediaDriver = (env.MEDIA_DRIVER ?? "local").trim().toLowerCase() || "local";
+  const s3Ready = Boolean(env.S3_ENDPOINT?.trim() && env.S3_BUCKET?.trim() && env.S3_ACCESS_KEY_ID?.trim() && env.S3_SECRET_ACCESS_KEY?.trim());
+  if (mediaDriver === "s3") add("media-driver", "Medya deposu", s3Ready ? "ok" : "fail", s3Ready ? "S3 uyumlu depo açık." : "MEDIA_DRIVER=s3 ama uç nokta, kova veya anahtar eksik.");
+  else if (mediaDriver !== "local") add("media-driver", "Medya deposu", "fail", "MEDIA_DRIVER local veya s3 olmalı.");
+  else add("media-driver", "Medya deposu", "ok", "Yerel disk. Çok sunucu için MEDIA_DRIVER=s3.");
+  const backupCopy = (env.BACKUP_COPY ?? "").trim().toLowerCase();
+  if (!backupCopy) add("backup-copy", "Yedek kopyası", "info", "Kapalı: yedek yalnızca sunucuda. BACKUP_COPY=s3 ile nesne deposuna da yazılır.");
+  else if (backupCopy === "s3") add("backup-copy", "Yedek kopyası", s3Ready ? "ok" : "warn", s3Ready ? "Zamanlanmış yedek S3 kovasına da yazılır." : "BACKUP_COPY=s3 ama S3 ayarı eksik; kopya atlanır, yerel yedek durur.");
+  else add("backup-copy", "Yedek kopyası", "warn", "Yalnızca s3 desteklenir.");
   const dialect = env.DB_DIALECT?.trim().toLowerCase() === "sqlite" ? "sqlite" : "postgresql";
   if (dialect === "postgresql" && !has("DATABASE_URL")) add("database-url", "DATABASE_URL", "fail", "PostgreSQL seçili ama DATABASE_URL tanımlı değil.");
+  return out;
+}
+
+export interface LaunchInput {
+  /** `seo.searchIndexing === false` ise kapalı. */
+  indexing: boolean;
+  maintenance: boolean;
+  /** Site ayarı veya `SECURITY_CONTACT`. */
+  hasContact: boolean;
+  hasIndexNow: boolean;
+  httpsAppUrl: boolean;
+}
+
+/** Yayına alma kapıları. İndeksi kendisi açmaz; paneldeki anahtarın durumunu yazar. */
+export function evaluateLaunch(input: LaunchInput): HealthCheck[] {
+  const out: HealthCheck[] = [];
+  const add = (id: string, label: string, level: HealthLevel, detail: string) => out.push({ id, group: "Yayın", label, level, detail });
+  if (input.maintenance) add("launch-maintenance", "Bakım modu", "fail", "Açık. Ziyaretçi siteyi görmez. Ayarlar’dan kapatın.");
+  else add("launch-maintenance", "Bakım modu", "ok", "Kapalı.");
+  if (!input.indexing) add("launch-index", "Arama indeksi", "warn", "Kapalı: robots.txt siteyi kapatır, site haritası boştur. Açmak için SEO motoru › Sitemap ve robots › Açık, sonra kaydedin.");
+  else add("launch-index", "Arama indeksi", "ok", "Açık. Sayfalar indekslenebilir.");
+  if (input.indexing && !input.httpsAppUrl) add("launch-https", "Kanonik adres", "warn", "İndeks açıkken NEXT_PUBLIC_APP_URL https olmalı.");
+  else if (input.httpsAppUrl) add("launch-https", "Kanonik adres", "ok", "https.");
+  else add("launch-https", "Kanonik adres", "info", "Yerel veya http adres. Üretimde https yapın.");
+  if (!input.hasContact) add("launch-contact", "Güvenlik iletişimi", "warn", "security.txt için SECURITY_CONTACT veya Ayarlar › iletişim e-postası gerekli.");
+  else add("launch-contact", "Güvenlik iletişimi", "ok", "security.txt yayınlanabilir.");
+  if (input.indexing && !input.hasIndexNow) add("launch-indexnow", "IndexNow", "info", "INDEXNOW_API_KEY yok. Bing ve Yandex anında haberdar edilmez; site haritası yine çalışır.");
+  else if (input.hasIndexNow) add("launch-indexnow", "IndexNow", "ok", "Anahtar tanımlı. /indexnow-key.txt yayınlanır.");
   return out;
 }
 

@@ -8,7 +8,7 @@ import { revalidatePath } from "@/lib/cache";
 import { headers } from "next/headers";
 import { getMediaAdminRepository, getScopedRepository, type MediaUsageDto } from "@nexpress/database";
 import { dispatchPluginWebhooks } from "@/lib/plugin-webhooks";
-import { purgeContentCaches } from "@/lib/cdn-purge";
+import { purgeContentCaches, purgeContentLocales } from "@/lib/cdn-purge";
 import { getThemeManifest } from "@nexpress/themes";
 import { switchThemeChrome } from "@/lib/theme-chrome-switch";
 import { writePermalinkHtaccess } from "@/lib/permalink-htaccess";
@@ -304,7 +304,10 @@ export async function bulkContentAction(input: {
 
   if (input.operation === "delete") {
     // Silme artık çöp kutusuna taşır (30 gün geri alınabilir); kalıcı silme Çöp Kutusu sayfasındadır.
-    const deletedCount = await repo.trashContents(input.contentIds, session.email);
+    // CDN kapalıysa purge hemen döner. Çöpten sonra satır listelenmediği için temizleme önce yapılır.
+    const ids = input.contentIds.slice(0, 200);
+    for (const id of ids) await purgeContentLocales(siteId, id);
+    const deletedCount = await repo.trashContents(ids, session.email);
     await revalidatePath("/admin");
     await revalidatePath("/admin/pages");
     await revalidatePath("/admin/posts");
@@ -320,6 +323,7 @@ export async function bulkContentAction(input: {
       affected++;
     } else if (input.operation === "draft") {
       await repo.patchContent(id, { status: "draft" });
+      await purgeContentLocales(siteId, id);
       affected++;
     } else if (input.operation === "scheduled") {
       // Tarih gerekir: toplu işlemde tarih alınmaz, yalnızca tarihi olan içerik zamanlanır

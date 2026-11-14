@@ -2,7 +2,8 @@ import React from "react";
 import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { bm25Rank, makeSnippet, resolvePublishing, synthesizeSearchAnswer, templateHasBlock } from "@nexpress/core";
+import { bm25Rank, makeSnippet, resolvePublishing, templateHasBlock } from "@nexpress/core";
+import { answerFromSite } from "@/lib/grounded-answer";
 import { createTranslator } from "@nexpress/i18n";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 import { Link } from "@/components/public/link";
@@ -54,7 +55,7 @@ export default async function SearchPage({
       }
     }
   }
-  const directAnswer = q && results.length > 0 ? synthesizeSearchAnswer(results, q) : null;
+  const directAnswer = q && results.length > 0 ? await answerFromSite(siteId, q, results) : null;
 
   const tpl = await templateFor(siteId, "search", null, { locale, slug: "ara" });
   if (tpl && templateHasBlock(tpl.blocks, "tpl_archive_list")) {
@@ -70,7 +71,7 @@ export default async function SearchPage({
       breadcrumbs: [{ name: "Ana sayfa", href: (lb || "/") }, { name: t("search.title"), href: `${lb}/ara` }],
       archive: {
         title: q ? `"${q}" — ${t("search.title")}` : t("search.title"),
-        description: q ? `${results.length} sonuç bulundu.` : t("search.placeholder"),
+        description: directAnswer ? directAnswer.summary : q ? `${results.length} sonuç bulundu.` : t("search.placeholder"),
         kindLabel: t("search.title"),
         items: results.map((r) => ({
           id: r.id,
@@ -108,6 +109,7 @@ export default async function SearchPage({
         <aside className="rounded-lg border p-4 space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{t("search.directAnswer")}</p>
           <p className="text-sm leading-relaxed">{directAnswer.summary}</p>
+          <p className="text-xs opacity-60">{t("search.answerHint")}</p>
           <div className="flex flex-wrap gap-2 pt-1 text-xs">
             <span className="opacity-70">{t("search.sources")}:</span>
             {directAnswer.citations.map((c) => (

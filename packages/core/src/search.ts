@@ -134,3 +134,64 @@ export function synthesizeSearchAnswer(
     citations,
   };
 }
+
+const GROUNDED_SYSTEM = [
+  "Yalnızca verilen site sayfalarındaki bilgiyle yanıt ver.",
+  "Sayfada olmayan olgu, fiyat, tarih veya ad uydurma.",
+  "Her cümlenin sonuna kullandığın kaynak numarasını [1] biçiminde yaz.",
+  "Kaynaklar yanıtı taşımıyorsa summary boş dizi olsun.",
+  "JSON: {\"summary\":\"...\",\"used\":[1]}",
+].join(" ");
+
+/** Modele gidecek güvenli istek. Kaynak gövdesi kısaltılır; anahtar veya gizli metin eklenmez. */
+export function groundedAnswerRequest(query: string, sources: DirectAnswerSource[]): { system: string; user: string } | null {
+  const q = query.trim().slice(0, 120);
+  const picked = sources.slice(0, 4).filter((doc) => doc.title.trim() && (doc.body.trim() || doc.tldr?.trim()));
+  if (!q || picked.length === 0) return null;
+  const blocks = picked.map((doc, index) => {
+    const text = (doc.tldr?.trim() || doc.body).replace(/\s+/g, " ").trim().slice(0, 900);
+    return `[${index + 1}] ${doc.title.trim().slice(0, 140)}\n${text}`;
+  });
+  return { system: GROUNDED_SYSTEM, user: `Soru: ${q}\n\nSayfalar:\n${blocks.join("\n\n")}` };
+}
+
+function stripTags(value: string): string {
+  return value.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Model JSON'unu kaynak listesine bağlar. Var olmayan kaynak numarası ve boş yanıt elenir.
+ * Geçersiz çıktı `null` döner; çağıran özete düşer.
+ */
+export function parseGroundedAnswer(raw: string, sources: DirectAnswerSource[]): SynthesizedSearchAnswer | null {
+  let parsed: { summary?: unknown; used?: unknown };
+  try {
+    parsed = JSON.parse(raw) as { summary?: unknown; used?: unknown };
+  } catch {
+    return null;
+  }
+  const summary = typeof parsed.summary === "string" ? stripTags(parsed.summary).slice(0, 600) : "";
+  if (!summary) return null;
+  const allowed = new Set<number>();
+  if (Array.isArray(parsed.used)) {
+    for (const item of parsed.used) {
+      const n = typeof item === "number" ? item : Number(item);
+      if (Number.isInteger(n) && n >= 1 && n <= Math.min(sources.length, 4)) allowed.add(n);
+    }
+  }
+  for (const match of summary.matchAll(/\[(\d+)\]/g)) {
+    const n = Number(match[1]);
+    if (n < 1 || n > Math.min(sources.length, 4)) return null;
+    allowed.add(n);
+  }
+  if (allowed.size === 0) return null;
+  const citations = [...allowed]
+    .sort((a, b) => a - b)
+    .map((index) => {
+      const doc = sources[index - 1];
+      return doc ? { index, title: doc.title.trim().slice(0, 140), slug: doc.slug } : null;
+    })
+    .filter((item): item is { index: number; title: string; slug: string } => Boolean(item?.title && item.slug));
+  if (citations.length === 0) return null;
+  return { summary, citations };
+}

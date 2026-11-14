@@ -66,7 +66,10 @@ Kural: saf mantık (SEO, derleyici, kiracı, kimlik) testsiz birleştirilmez.
 | `EMBEDDING_PROVIDER` / `EMBEDDING_MODEL` / `OPENAI_BASE_URL` | arama dizini gömme sağlayıcısı (boşsa `OPENAI_API_KEY` varsa openai, yoksa yerel) |
 | `REQUIRE_ADMIN_2FA` | `1` ise iki adımlı doğrulaması olmayan yönetici yalnızca `/admin/profile` ve kurulum eylemlerine erişir (diğer admin sayfaları ve eylemleri profile yönlendirir); editörleri etkilemez |
 | `SMTP_URL` | form e-postaları için yedek SMTP bağlantısı (`smtp://kullanici:parola@sunucu:587`); panelden SMTP açıksa o kullanılır |
-| `MEDIA_DIR` | yüklenen görseller ve türevleri (kalıcı birim; varsayılan `./data/media`) |
+| `MEDIA_DIR` | yüklenen görseller ve türevleri (kalıcı birim; varsayılan `./data/media`). `MEDIA_DRIVER=s3` ise kullanılmaz |
+| `MEDIA_DRIVER` | `local` (varsayılan) veya `s3`. s3: `S3_ENDPOINT` (https; yerel MinIO için `S3_ALLOW_PRIVATE=1`), `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, isteğe bağlı `S3_REGION` (varsayılan `auto`) ve `S3_FORCE_PATH_STYLE` |
+| `BACKUP_COPY` | boşsa yedek yalnızca sunucuda. `s3` ise zamanlanmış yedek aynı nesne ayarıyla `backups/{site}/{dosya}` altına da yazılır; hata yerel dosyayı silmez |
+| `SECURITY_CONTACT` | `/.well-known/security.txt` iletişim adresi (`mailto:` veya `https:`). Boşsa site iletişim e-postası; o da boşsa 404 |
 | `REDIS_URL` | **isteğe bağlı** paylaşımlı durum (`redis://[:parola@]sunucu:6379[/db]`, TLS için `rediss://`): hız sınırları (giriş, üye bağlantısı) ve önbellek dönemi tüm örneklerde ortak olur. Tanımsızsa ya da Redis erişilemezse **süreç belleğine düşer** (istek patlamaz; sınır yalnızca süreç başına). Bağımlılık eklenmez: `packages/core/src/redis-client.ts` küçük RESP2 istemcisidir |
 | `CDN_PURGE_PROVIDER` | yayında CDN önbelleği temizleme: `cloudflare` (`CLOUDFLARE_ZONE_ID` 32 onaltılık, `CLOUDFLARE_API_TOKEN`) ya da `webhook` (`CDN_PURGE_WEBHOOK_URL` https, `CDN_PURGE_WEBHOOK_SECRET` ≥16; gövde `{type:"purge",urls,at}`, `X-NexPress-Signature: sha256=HMAC(sır, zaman.gövde)`) |
 | `PLUGIN_TRUSTED_KEYS` | veri eklentisi (`.nxplugin`) güvenilen yayıncı Ed25519 açık anahtarları (virgülle; `docs/27`) |
@@ -83,7 +86,7 @@ Güvenlik: bağlantı `<üye>.<bağSırası>.<bitiş>.<hmac>`; sıra veritabanı
 
 **Webhook yeniden deneme kuyruğu:** giden bildirim önce `plugin_deliveries` tablosuna yazılır ve hemen denenir; geçici hatada (ağ, 408/425/429, 5xx) zamanlayıcı (`runScheduler`, dakikada bir ya da `/api/cron/scheduled`) 1 dk, 5 dk, 30 dk, 2 sa, 6 sa beklemeyle en çok 6 deneme yapar; kalıcı istemci hatalarında (400, 401, 403, 404…) vazgeçilir. `X-NexPress-Delivery` her denemede aynıdır (alıcı tekrarı eler); sonuç koşullu `UPDATE` ile yazılır (iki süreç aynı kaydı işlerse tek sonuç). Eklenti kartında son 5 teslimat ve "Yeniden dene". Tamamlananlar 14 gün sonra silinir. Zamanlanmış yayın da webhook tetikler.
 
-**CDN temizleme:** `CDN_PURGE_PROVIDER` tanımlıysa içerik yayınlanınca/güncellenince (`content:afterPublish`, zamanlanmış yayın dahil) ve yayından kalkınca etkilenen adresler (sayfa, ana sayfa, tür arşivi, `sitemap.xml`, `llms.txt`, yazıysa beslemeler) 1,5 sn birleştirilerek temizlenir. Başarısızlık içerik akışını bozmaz, panele bildirim düşer. Çöpe taşıma ve toplu durum değişimi şimdilik TTL'ye (`PUBLIC_CACHE_SECONDS`) bırakılmıştır.
+**CDN temizleme:** `CDN_PURGE_PROVIDER` tanımlıysa içerik yayınlanınca/güncellenince (`content:afterPublish`, zamanlanmış yayın dahil), yayından kalkınca, toplu taslağa alınca ve çöpe taşınınca etkilenen adresler (sayfa, ana sayfa, tür arşivi, `sitemap.xml`, `llms.txt`, yazıysa beslemeler) 1,5 sn birleştirilerek temizlenir. Sağlayıcı yoksa hiçbir ağ çağrısı yapılmaz. Başarısızlık içerik akışını bozmaz, panele bildirim düşer. Çöpe taşıma temizlemeyi kayıttan önce yapar (çöp satırı listelenmez).
 
 ## 7a. Perfornext
 
