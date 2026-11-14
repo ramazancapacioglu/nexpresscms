@@ -42,5 +42,16 @@ else
     echo -e "${YELLOW}PM2 veya systemd servisi bulunamadı. Lütfen sunucu sürecini elle yeniden başlatın.${NC}"
 fi
 
+# Tek seferlik içerik aktarımı. İşaret dosyası duruyorsa ve daha önce bitmediyse çalışır.
+# Şablon ve tasarım kütüphanesi silinmez. Başarısız olursa işaret durur, sonraki güncelleme yeniden dener.
+DONE_FLAG="$ROOT_DIR/.import-akinsoft-done"
+ONCE="$ROOT_DIR/scripts/import-akinsoft-izmir.once"
+if [ -f "$ONCE" ] && [ ! -f "$DONE_FLAG" ]; then
+  echo -e "${YELLOW}Akınsoft İzmir içeriği aktarılıyor (şablon ve tasarım kütüphanesi durur)...${NC}"
+  (cd "$ROOT_DIR/apps/cms" && pnpm exec tsx scripts/import-live-akinsoft.ts)
+  touch "$DONE_FLAG"
+  echo -e "${GREEN}✓ İçerik aktarımı bitti.${NC}"
+fi
+
 echo -e "${GREEN}=== NexPress CMS Güncellemesi Başarıyla Tamamlandı! ===${NC}"
 

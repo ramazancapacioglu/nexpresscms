@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-14] — akinsoftizmir.com.tr temiz aktarım
+- Yayımlanmış sayfa, yazı ve soru kayıtları REST ile, başlık/açıklama/robots ve JSON-LD şema ise sayfanın kendi başlığından okunur. Şablon ve tasarım kütüphanesi silinmez. Arama indeksi açılmaz. Canonical eski alan adına kilitlenmez. Görseller kaynak adreste kalır. Betik: `apps/cms/scripts/import-live-akinsoft.ts`. Sunucu güncellemesi `scripts/import-akinsoft-izmir.once` duruyorsa bir kez çalıştırır.
+
 ### [2026-11-14] — Siteden yanıt ve yayın kapıları
 - `/ara` sorusu `OPENAI_API_KEY` varsa yalnızca bulunan sayfalardan yanıtlanır (`groundedAnswerRequest` / `parseGroundedAnswer`). Kaynak numarası listede yoksa çıktı atılır ve özete düşülür. Anahtar yoksa özet aynı kalır. Süre 4 sn, yeniden deneme yok. Ziyaretçi betiği yok.
 - Sistem durumu **Yayın** grubu: bakım, indeks, https, security.txt iletişimi, IndexNow. İndeksi kendisi açmaz. Açmak: SEO motoru › Sitemap ve robots › Açık › kaydet.

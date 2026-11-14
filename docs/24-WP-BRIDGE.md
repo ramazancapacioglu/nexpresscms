@@ -2,7 +2,7 @@
 
 > Durum: **0.3.1 (2026-11-10).** 0.3.0 derleyicisi durur. 0.3.1 WordPress ana sayfa ve yazı sayfası bayraklarını panele yazar. Zengin blok derleyicisi (`compileRichWpHtml`) satır içi `<style>` okur, 350 KB HTML sınırında kalır, iç içe sütunu düzleştirir ve masaüstü ızgarayı `8+4`, `4+8`, `6+6`, `4+4+4`, `3+3+3+3` olarak kurar. Bilgi kartları `bento_features`, ikon listesi, kolaj, `faq_accordion`, `form_block` ve `map_embed` buradan çıkar. Derleyici satır kimliği, marka adı veya sabit düğme adresi yazmaz. Taban adres yoksa göreli yol olduğu gibi kalır. Koyu bantta tek başlık ve tek düğme `cta_banner` olur; metin kaynaktan gelir.
 
-Panelde iki iş ayrıdır. **Veri kümesini zengin yerleşimle derle** yalnızca depodaki `docs/akinsoftizmir-com-tr-aktarim` dosyasını okur (`reconstructRichSiteDataset`); eşleşmiş siteyi okumaz, çöp ve taslağı yayına almaz. **Eksikleri tamamla** eşleşmiş sitedeki göreli görseli, yapışık başlığı ve boş yerleşimi onarır; veri kümesini çağırmaz.
+Panelde iki iş ayrıdır. **Veri kümesini zengin yerleşimle derle** yalnızca depodaki `docs/akinsoftizmir-com-tr-aktarim` dosyasını okur (`reconstructRichSiteDataset`); eşleşmiş siteyi okumaz, çöp ve taslağı yayına almaz. **Eksikleri tamamla** eşleşmiş sitedeki göreli görseli, yapışık başlığı ve boş yerleşimi onarır; veri kümesini çağırmaz. Kaynak sitenin güncel yayımlanmış içeriği ve SEO başlığı `importLiveAkinsoft` ile okunur (`docs/17`, canlı genel aktarım). Bu yol eşleştirme kodu istemez.
 
 ## 1. Neden ayrı eklenti
 

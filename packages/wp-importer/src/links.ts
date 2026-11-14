@@ -106,3 +106,28 @@ export function rewriteBlockLinks(blocks: BlockNode[], origin: string, base: str
   });
   return { blocks: blocks.map(walk), count: tally.count };
 }
+
+/**
+ * İç bağlantı tarandıktan sonra ortam dosyasının yolu kaynak sitede kalır.
+ * Sayfa adresi yerel yola dönmüş olur; `/wp-content/` tekrar mutlak adrese bağlanır.
+ */
+export function restoreRemoteMedia(blocks: BlockNode[], origin: string): BlockNode[] {
+  const root = origin.replace(/\/$/, "");
+  const fix = (value: string) => value.replace(/(^|[\s"'=(])(\/wp-content\/)/gi, `$1${root}$2`);
+  const walkValue = (value: unknown): unknown => {
+    if (typeof value === "string") return fix(value);
+    if (Array.isArray(value)) return value.map(walkValue);
+    if (value && typeof value === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [key, item] of Object.entries(value as Record<string, unknown>)) out[key] = walkValue(item);
+      return out;
+    }
+    return value;
+  };
+  const walk = (block: BlockNode): BlockNode => ({
+    ...block,
+    props: walkValue(block.props ?? {}) as BlockNode["props"],
+    children: block.children?.map(walk),
+  });
+  return blocks.map(walk);
+}

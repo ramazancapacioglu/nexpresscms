@@ -33,6 +33,10 @@ WXR dosyası renk, menü ve sayfa düzenini taşımaz. Yayımlanmış HTML'den k
 
 Toplu deneme: `apps/cms/scripts/redraw-public-site.ts`. Klasördeki her `*.txt` iki satırdır (tür ve adres); aynı adlı `*.html` gövdedir. Ana sayfa ve en az 40 başarılı dönüşüm yoksa hiçbir kayıt silinmez. Yeterliyse yalnızca `page` ve `post` silinir, jetonlar ve üst/alt şerit yazılır. Ürün, şablon, medya ve kullanıcı durur.
 
+## Canlı genel aktarım
+
+`apps/cms/scripts/import-live-akinsoft.ts` yalnızca `https://www.akinsoftizmir.com.tr` adresini okur. Yönetim paneline girmez. Sayfa, yazı, soru kaydı, kategori ve etiket REST’ten gelir. Başlık, açıklama, noindex ve JSON-LD şema (SSS, yazılım, kuruluş) yayımlanmış HTML başlığından yazılır. Sayfa yerleşimi zengin blok derleyicisinden kurulur; birebir kopya değildir. Görsel adresi kaynak sitede kalır, iç bağlantı yerel yola döner. Şablon ve tasarım kütüphanesi silinmez. Site geneli arama indeksi bu betikle açılmaz. Canonical eski alan adına yazılmaz; bu sitenin kendi adresi üretilir.
+
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
 

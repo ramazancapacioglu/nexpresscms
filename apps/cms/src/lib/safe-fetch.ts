@@ -73,10 +73,11 @@ function decodeBody(data: Buffer, encoding: string): Buffer {
   return data;
 }
 
-/** Yayımlanmış sayfa HTML'i. Görsel indirmeden ayrıdır: metin kabul edilir, sıkıştırma açılır, CSS/JS istenmez. */
-export async function fetchPublicHtml(url: string, opts?: { maxBytes?: number; timeoutMs?: number }): Promise<string> {
+/** Yayımlanmış sayfa HTML'i. Görsel indirmeden ayrıdır: metin kabul edilir, sıkıştırma açılır, CSS/JS istenmez. `allow: "json"` REST gövdesi içindir. */
+export async function fetchPublicHtml(url: string, opts?: { maxBytes?: number; timeoutMs?: number; allow?: "html" | "json" }): Promise<string> {
   const maxBytes = opts?.maxBytes ?? 1_500_000;
   const timeoutMs = opts?.timeoutMs ?? 25_000;
+  const wantJson = opts?.allow === "json";
   let current = url;
   for (let hop = 0; hop <= 3; hop++) {
     const u = new URL(current);
@@ -87,7 +88,7 @@ export async function fetchPublicHtml(url: string, opts?: { maxBytes?: number; t
     if (net.isIP(host) && !isPublicIp(host)) throw new FetchBlocked("Adres genel internete ait değil.");
     const res = await new Promise<{ status: number; location: string; type: string; encoding: string; data: Buffer }>((resolve, reject) => {
       const lib = u.protocol === "https:" ? https : http;
-      const req = lib.request(u, { method: "GET", lookup: guardedLookup as never, timeout: timeoutMs, headers: { "user-agent": "NexPress-Importer/1.0", accept: "text/html,application/xhtml+xml", "accept-encoding": "gzip, deflate, br" } }, (r) => {
+      const req = lib.request(u, { method: "GET", lookup: guardedLookup as never, timeout: timeoutMs, headers: { "user-agent": "NexPress-Importer/1.0", accept: wantJson ? "application/json,text/plain" : "text/html,application/xhtml+xml", "accept-encoding": "gzip, deflate, br" } }, (r) => {
         const status = r.statusCode ?? 0;
         if (status >= 300 && status < 400) { r.resume(); return resolve({ status, location: String(r.headers.location ?? ""), type: "", encoding: "", data: Buffer.alloc(0) }); }
         if (status !== 200) { r.resume(); return reject(new Error(`HTTP ${status}`)); }
@@ -110,7 +111,11 @@ export async function fetchPublicHtml(url: string, opts?: { maxBytes?: number; t
       current = new URL(res.location, u).toString();
       continue;
     }
-    if (!res.type.toLowerCase().includes("text/html") && !res.type.toLowerCase().includes("application/xhtml")) throw new FetchBlocked("Yanıt HTML değil.");
+    const mime = res.type.toLowerCase();
+    const mimeOk = wantJson
+      ? mime.includes("json") || mime.includes("text/plain") || mime.includes("javascript")
+      : mime.includes("text/html") || mime.includes("application/xhtml");
+    if (!mimeOk) throw new FetchBlocked(wantJson ? "Yanıt JSON değil." : "Yanıt HTML değil.");
     const text = decodeBody(res.data, res.encoding).toString("utf8");
     if (text.length > maxBytes * 4) throw new Error("Sayfa boyut sınırını aşıyor.");
     return text;

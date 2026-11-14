@@ -18,6 +18,7 @@ data/*.db-shm
 
 # Environment
 .env
+.import-akinsoft-done
 .env*.local
 !.env.example
 
