@@ -354,10 +354,10 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
         ? "FAQPage"
         : item.kind === "post"
           ? "Article"
-          : declared.includes("FAQPage") || declared.includes("QAPage")
-            ? "FAQPage"
-            : software || declared.includes("SoftwareApplication")
-              ? "SoftwareApplication"
+          : software || declared.includes("SoftwareApplication")
+            ? "SoftwareApplication"
+            : declared.includes("FAQPage") || declared.includes("QAPage")
+              ? "FAQPage"
               : declared.find((type) => type === "AboutPage" || type === "ContactPage" || type === "Service") ?? "";
     const mapped = schemaFromBridge({
       kind: schemaKind,
@@ -418,6 +418,9 @@ export async function importLiveAkinsoft(siteId: string, opts?: { dryRun?: boole
   const org = homeHead.organization;
   await repo.saveSiteSettings({
     seo: {
+      // Kaynak başlık zaten tam başlıktır. Şablon yeniden sararsa marka iki kez yazılır.
+      titleTemplate: "%title%",
+      homeTitleTemplate: "%title%",
       ...(org?.name ? { organizationName: org.name } : {}),
       ...(org?.logo.startsWith("https://") ? { organizationLogo: org.logo } : {}),
       ...(org && org.sameAs.length > 0 ? { sameAs: org.sameAs } : {}),

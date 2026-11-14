@@ -22,7 +22,7 @@ export async function runPendingLiveImport(): Promise<void> {
     dir = parent;
   }
   if (!marker) return;
-  const flag = path.resolve(process.cwd(), process.env.MEDIA_DIR || "data/media", ".import-akinsoft-done");
+  const flag = path.resolve(process.cwd(), process.env.MEDIA_DIR || "data/media", ".import-akinsoft-done-v2");
   if (fs.existsSync(flag)) return;
   const { importLiveAkinsoft } = await import("./lib/wp-bridge/live-import");
   const result = await importLiveAkinsoft("default");
