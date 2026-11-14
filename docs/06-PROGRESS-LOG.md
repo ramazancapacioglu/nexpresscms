@@ -22,7 +22,7 @@
 ## 📝 Detaylı Günlük
 
 ### [2026-11-14] — akinsoftizmir.com.tr temiz aktarım
-- Yayımlanmış sayfa, yazı ve soru kayıtları REST ile, başlık/açıklama/robots ve JSON-LD şema ise sayfanın kendi başlığından okunur. Başlık şablonu `%title%` kalır; kaynak başlık ikinci kez sarılmaz. Yazılım sayfasında şema türü SoftwareApplication, SSS blokları ayrıca FAQ üretir. Şablon ve tasarım kütüphanesi silinmez. Arama indeksi açılmaz. Canonical eski alan adına kilitlenmez. Görseller kaynak adreste kalır. Betik: `apps/cms/scripts/import-live-akinsoft.ts`. İşaret dosyası duruyorsa üretimdeki Postgres süreci açılışta bir kez çalıştırır. SQLite ve derleme aşaması girmez.
+- Yayımlanmış sayfa, yazı ve soru kayıtları REST ile, başlık/açıklama/robots ve JSON-LD şema ise sayfanın kendi başlığından okunur. Başlık şablonu `%title%` kalır; kaynak başlık ikinci kez sarılmaz. Yazılım sayfasında şema türü SoftwareApplication, SSS blokları ayrıca FAQ üretir. Şablon ve tasarım kütüphanesi silinmez. Arama indeksi açılmaz. Canonical eski alan adına kilitlenmez. Görseller kaynak adreste kalır. Betik: `apps/cms/scripts/import-live-akinsoft.ts`. İşaret dosyası canlıda bir kez çalıştı ve depodan kaldırıldı; sonraki açılış içeriği yeniden silmez. SQLite ve derleme aşaması girmez.
 
 ### [2026-11-14] — Siteden yanıt ve yayın kapıları
 - `/ara` sorusu `OPENAI_API_KEY` varsa yalnızca bulunan sayfalardan yanıtlanır (`groundedAnswerRequest` / `parseGroundedAnswer`). Kaynak numarası listede yoksa çıktı atılır ve özete düşülür. Anahtar yoksa özet aynı kalır. Süre 4 sn, yeniden deneme yok. Ziyaretçi betiği yok.
