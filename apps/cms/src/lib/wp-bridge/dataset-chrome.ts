@@ -158,7 +158,7 @@ export async function applyDatasetChrome(siteId: string, locale: string): Promis
     customizer: {
       header: {
         logoText: "Akınsoft İzmir Ana Bayi",
-        logoImage: "/images/akinsoft-izmir-logo-5.webp",
+        logoImage: "/images/akinsoft-logo-yatay-ba35022.webp",
       },
       layout: {
         articleWidth: "1290px",

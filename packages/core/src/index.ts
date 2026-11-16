@@ -12,6 +12,7 @@ export * from "./style-presets";
 export * from "./inline-text";
 export * from "./slug";
 export * from "./site-settings";
+export * from "./organization-schema";
 export * from "./permalinks";
 export * from "./reading";
 export * from "./fonts";

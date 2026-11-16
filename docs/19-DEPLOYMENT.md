@@ -141,6 +141,10 @@ Yedek dosyasını sunucu dışına almak için `BACKUP_COPY=s3` (aynı `S3_*` ay
 
 Canlı veritabanı PostgreSQL 16 + pgvector 0.6 (`nexpress_cms`, yalnızca `127.0.0.1:5432`). `DB_DIALECT=postgresql`. RAG vektör sütunu `vector(1536)` ve HNSW indeksi bu kurulumdadır. SQLite dosyası durur, uygulama onu okumaz.
 
+## 8b. Ters vekil ve `request.url` (2026-11-16)
+
+Next (`next start`), `Host` başlığını `request.url` için kullanmaz; vekil arkasında adres `localhost:PORT` olur. Ziyaretçiye dönen mutlak yönlendirmeler `lib/public-url.ts` (`publicUrl(path, request)`) ile kurulur; `Host`/`X-Forwarded-Host` ve `X-Forwarded-Proto` başlıkları okunur. Vekil `proxy_set_header Host $host` ve `X-Forwarded-Proto $scheme` göndermelidir (Plesk için örnek `scripts/nginx-nexpress.conf`). Yeni route'larda `new URL(x, request.url)` yerine `publicUrl` kullanın.
+
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.

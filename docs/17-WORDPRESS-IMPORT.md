@@ -41,6 +41,29 @@ Toplu deneme: `apps/cms/scripts/redraw-public-site.ts`. Klasördeki her `*.txt` 
 
 `apps/cms/scripts/import-live-akinsoft.ts` yalnızca `https://www.akinsoftizmir.com.tr` adresini okur. Yönetim paneline girmez. Sayfa, yazı, soru kaydı, kategori ve etiket REST’ten gelir. Başlık, açıklama, noindex ve JSON-LD şema (SSS, yazılım, kuruluş) yayımlanmış HTML başlığından yazılır. Sayfa yerleşimi zengin blok derleyicisinden kurulur; birebir kopya değildir. Görsel adresi kaynak sitede kalır, iç bağlantı yerel yola döner. Şablon ve tasarım kütüphanesi silinmez. Site geneli arama indeksi bu betikle açılmaz. Canonical eski alan adına yazılmaz; bu sitenin kendi adresi üretilir.
 
+## Yönetici verisi aktarımı (`import-wp-extras.ts`)
+
+Herkese açık tarama ve köprünün taşımadığı veriyi, WordPress yönetici hesabıyla **yalnızca okuyarak** aktarır. Çalıştırma (sunucuda, site kullanıcısıyla, `apps/cms` içinde):
+
+```bash
+WP_ADMIN_USER=… WP_ADMIN_PASS=… tsx scripts/import-wp-extras.ts --origin https://www.ornek.com [--only users,forms,content,entries,redirects,drafts,comments,reviews,seo,media] [--dry-run]
+```
+
+| Adım | Ne yapar |
+| :-- | :-- |
+| `users` | Kullanıcılar listesinden (REST kapalıdır) kayıt açar: rol `editor`, durum `disabled`, parola özeti rastgele ve kullanılamaz. Giriş yapan teknik hesap alınmaz. |
+| `forms` | `kadence_form` yazıları → `forms` tablosu (`frm_wp_<id>`): alan türü, zorunluluk, seçenek, alıcı e-posta, konu, başarı iletisi. Abonelik/kopya formlar `paused`. |
+| `content` | Yayındaki içeriğe yazar adı; sayfadaki `form_block` doğru forma bağlanır; SSS listeli sayfa `WebPage` olur. |
+| `entries` | Kadence form girdileri → gelen kutusu. Bot yığını `spam`, gerisi `read`. 365 günden eski girdi yazılmaz (zamanlayıcı siler). Yalnızca panelde görünür. |
+| `redirects` | Rank Math yönlendirmeleri (tam eşleşme) + arşiv adresleri. Kalıp (regex, içerir) olanlar yazılmaz, sayılır. |
+| `drafts` | Taslak, bekleyen, zamanlanmış sayfa/yazı/soru `draft` olarak gelir; başlığı boş olanlar atlanır. SEO başlığı önizleme sayfasından okunur. |
+| `comments` | Özgün tarih; yıldızlı yorum kartı `review` (puan + başlık), site yanıtı ve düz yorum `comment`. Spam ve çöp alınmaz. |
+| `reviews` | Google yorumları (`aseo_review`) ana sayfaya `google` etiketli yorum olarak; kaynakta puan olmadığından yıldız yazılmaz. |
+| `seo` | Ana sayfanın JSON-LD'sinden `seo.organizationSchema`, sameAs ve logo. |
+| `media` | Kitaplığın tamamı (görseller); daha önce inenlerin boş alt metni/başlığı doldurulur. |
+
+Her adım yeniden çalıştırılabilir (kimlikler `cnt_wp_<id>`, `cmt_wp_<id>`, `frm_wp_<id>`). Çıktı yalnızca sayıdır; girdi içeriği günlüğe yazılmaz.
+
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
 

@@ -33,9 +33,18 @@ export interface BuildCoreSchemaInput {
   };
   /** Motor ayarları: bloklardan otomatik FAQPage/HowTo/Review üret. */
   autoSchema?: boolean;
-  organization?: { name?: string; logo?: string; sameAs?: string[] };
+  organization?: { name?: string; logo?: string; sameAs?: string[]; /** Yerel işletme alanları; `@type` dizisi `LocalBusiness` içerebilir. */ schema?: Record<string, unknown> };
   breadcrumbs?: Array<{ name: string; url: string }>;
   aggregateRating?: { ratingValue: number; reviewCount: number };
+}
+
+/** Kuruluş düğümüne yerel işletme alanları: temel kimlik alanlarını ezmez, `@type` Organization ile birleşir. */
+function organizationExtras(schema: Record<string, unknown> | undefined): Record<string, unknown> {
+  if (!schema) return {};
+  const { "@type": rawType, ...rest } = schema;
+  const types = (Array.isArray(rawType) ? rawType : rawType ? [rawType] : []).filter((type): type is string => typeof type === "string");
+  const merged = [...new Set([...types.filter((type) => type !== "Organization"), "Organization"])];
+  return { ...Object.fromEntries(Object.entries(rest).filter(([key]) => !RESERVED_NODE_KEYS.has(key))), ...(merged.length > 1 ? { "@type": merged } : {}) };
 }
 
 /** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; yalnızca ilkel değerler geçer. */
@@ -69,11 +78,12 @@ export async function buildPageSchemaGraph(
       name: input.organization?.name || input.siteName,
       url: baseUrl,
       ...(input.organization?.logo
-        ? { logo: { "@type": "ImageObject", url: input.organization.logo } }
+        ? { logo: { "@type": "ImageObject", url: input.organization.logo.startsWith("/") ? `${baseUrl}${input.organization.logo}` : input.organization.logo } }
         : {}),
       ...(input.organization?.sameAs && input.organization.sameAs.length > 0
         ? { sameAs: input.organization.sameAs }
         : {}),
+      ...organizationExtras(input.organization?.schema),
     },
     {
       "@type": "WebSite",
@@ -168,22 +178,34 @@ export async function buildPageSchemaGraph(
         ...(o.discount ? { description: `${o.discount} indirim. ${o.terms ?? ""}`.trim() } : {}),
       });
     }
+    let faqNodeDone = false;
     if (rich.qa) {
       const q = rich.qa;
-      baseNodes.push({
-        "@type": "Question",
-        "@id": `${input.pageUrl}#question`,
-        name: c.title,
-        text: c.tldr || c.title,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: q.shortAnswer || c.tldr || c.title,
-        },
-      });
+      const list: Array<{ question?: unknown; answer?: unknown }> = Array.isArray(q.faqList) ? q.faqList : [];
+      const pairs = list.filter((item) => typeof item?.question === "string" && typeof item?.answer === "string" && item.question.trim() && item.answer.trim()).slice(0, 30);
+      if (pairs.length > 0) {
+        // Sayfada soru listesi varsa tek bir FAQPage düğümü: sayfa başlığından uydurulmuş tek soru yerine gerçek sorular.
+        faqNodeDone = true;
+        const mainEntity = pairs.map((item) => ({ "@type": "Question", name: String(item.question).trim(), acceptedAnswer: { "@type": "Answer", text: String(item.answer).trim() } }));
+        // Varlık zaten FAQPage ise sorular onun içine girer (aynı @id ikinci kez yazılmaz).
+        if (c.schemaType === "FAQPage") entity.mainEntity = mainEntity;
+        else baseNodes.push({ "@type": "FAQPage", "@id": `${input.pageUrl}#faqpage`, mainEntity });
+      } else {
+        baseNodes.push({
+          "@type": "Question",
+          "@id": `${input.pageUrl}#question`,
+          name: c.title,
+          text: c.tldr || c.title,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: q.shortAnswer || c.tldr || c.title,
+          },
+        });
+      }
     }
 
     if (input.autoSchema !== false && c.blocks) {
-      baseNodes.push(...deriveAutoSchemaNodes(c.blocks, input.pageUrl));
+      baseNodes.push(...deriveAutoSchemaNodes(c.blocks, input.pageUrl).filter((node) => !(faqNodeDone && node["@type"] === "FAQPage")));
     }
   }
 

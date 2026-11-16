@@ -7,6 +7,7 @@ import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalink
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
+import { sanitizeOrganizationSchema } from "./organization-schema";
 
 export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
 
@@ -72,6 +73,8 @@ export interface SeoEngineSettings {
   /** Site simgesi (favicon, ana ekran simgesi): kare, en az 512 px, kitaplıktan yerel görsel. Boşsa simge yayımlanmaz. */
   siteIcon: string;
   sameAs: string[];
+  /** Kuruluş düğümüne eklenen yerel işletme bilgisi (adres, saat, telefon…); izin listeli (`sanitizeOrganizationSchema`). */
+  organizationSchema?: Record<string, unknown>;
   robotsTxtExtra: string;
   /**
    * Arama motoru indeksi. `false` iken tüm site `noindex`, site haritası boş
@@ -358,6 +361,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
     seo: {
       ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
       schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements),
+      organizationSchema: sanitizeOrganizationSchema(seoRaw.organizationSchema),
       permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
     },
     general: {

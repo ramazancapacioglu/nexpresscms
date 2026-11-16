@@ -5,6 +5,7 @@ import { getMemberRepository } from "@nexpress/database";
 import { getAuthSecret } from "@/lib/auth/config";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { memberCookieOptions, newSessionToken, sameOriginPost } from "@/lib/members";
+import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
 
@@ -22,11 +23,11 @@ export async function POST(request: NextRequest) {
   const parsed = verifyMemberLinkToken(getAuthSecret(), siteId, token);
   const member = parsed ? await getMemberRepository(siteId).consumeLink(parsed.memberId, parsed.linkSeq) : null;
   if (!member) {
-    const bad = new URL(`${lb}/uye/dogrula`, request.url);
+    const bad = publicUrl(`${lb}/uye/dogrula`, request);
     bad.searchParams.set("bad", "1");
     return NextResponse.redirect(bad, 303);
   }
-  const response = NextResponse.redirect(new URL(safeMemberNext(form.get("next"), `${lb}/uye`), request.url), 303);
+  const response = NextResponse.redirect(publicUrl(safeMemberNext(form.get("next"), `${lb}/uye`), request), 303);
   response.cookies.set(MEMBER_SESSION_COOKIE, newSessionToken(siteId, member), memberCookieOptions());
   response.headers.set("Cache-Control", "private, no-store");
   return response;

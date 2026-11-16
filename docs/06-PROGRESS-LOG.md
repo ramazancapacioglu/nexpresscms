@@ -21,6 +21,17 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-16] — Akınsoft İzmir tam aktarımı (yönetici verisi, şema, yönlendirme)
+- ✅ Üretim sunucusunda temel aktarım koştu (`import-live-akinsoft.ts`): 69 sayfa, 51 yazı, 12 soru kaydı, 53 yorum, 4 kategori, 23 etiket, 13 yönlendirme, 132 SEO başlığı.
+- ✅ Yeni `apps/cms/scripts/import-wp-extras.ts` (`src/lib/wp-bridge/extras/*`): WordPress yöneticisinden yalnızca okuyarak yazar adı, 9 Kadence form tanımı (alan, alıcı, başarı iletisi), form girdileri, Rank Math yönlendirmeleri (kalıp olanlar sayılır, yazılmaz), arşiv yönlendirmeleri (`/makaleler/` → `/kategori/…`, `/tag/…` → `/etiket/…`, `/ai-prompts/` → `/sorular`), 50+ taslak, yorum tarihi/puanı, Google yorumları, tüm medya (alt metin dahil) ve kuruluş şeması. Kimlik bilgisi yalnızca ortam değişkeninde (`WP_ADMIN_USER`, `WP_ADMIN_PASS`).
+- ✅ Saf ayrıştırıcılar `packages/wp-importer/src/kadence.ts` (form, girdi, yönlendirme, yorum kartı) + testler.
+- ✅ Kuruluş şeması: `seo.organizationSchema` (izin listeli yerel işletme alanları: adres, saat, telefon, koordinat…) `LocalBusiness` olarak Organization düğümüne işlenir; logo ve sameAs artık gerçekten şemaya basılır (önceden çağıranlar `organization` vermiyordu). Test: `organization-schema.test.ts`, `schema-graph.test.ts`.
+- ✅ Hata: ters vekil arkasında `request.url` `localhost:3001` veriyordu; `/media/<id>` yönlendirmesi ve form/üye/onay yönlendirmeleri ziyaretçiyi `localhost`a gönderirdi. `lib/public-url.ts` (`publicUrl`) ile düzeltildi; `/media/<id>?w=` artık göreli ve genişliğe uygun türeve gider.
+- ✅ Hata: koyu bantta `textColor` açık zeminli kartın yazısını da beyaza çekiyordu (kart boş görünüyordu); `block-style` kart içini kapsam dışı bırakır.
+- ✅ Hata: ana sayfa SSS listesi yüzünden `FAQPage` varlığı olmuştu; sayfa türü `WebPage`, SSS düğümü bloklardan gelir.
+- ✅ Form girdileri 365 günden eskiyse yazılmaz (zamanlayıcı siler; KVKK). Girdi ve yorum kayıtları özgün zamanı taşır (`createdAt`).
+- ⚠️ Bilinçli yapılmayanlar: kullanıcılar giriş kapalı (`disabled`, parola özeti yok); teknik hesap alınmadı; WP'deki elle yazılmış `aggregateRating` (5 / 89) taşınmadı (ön yüzde uydurma puan yok); arama indeksi kapalı, alan adı yönlendirmesi yapılmadı.
+
 ### [2026-11-14] — Yazılım Bayi teması (resmi tema)
 - ✅ `yazilim-bayi` resmi temaya eklendi: iki katmanlı başlık (hızlı bağlantı, telefon, arama + ana menü), görsel mozaikli vitrin, 6 kartlı çözüm ızgarası, mavi demo bandı, görsel+metin şeritleri, kampanya vitrini, SSS, 6 sütunlu dizin altlığı; yeşil/lacivert palet.
 - ✅ Demo paketi (`yb-` adresleri): 18 ürün, 5 çözüm ailesi, çözüm dizini, kurumsal, iletişim, demo/destek formları, blog + 4 yazı, 3 kampanya; 21 temsili SVG `apps/cms/public/demo/yazilim-bayi/`.

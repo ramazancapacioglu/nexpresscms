@@ -6,6 +6,7 @@ import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, YB_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
+import { organizationFor } from "@/lib/organization-schema";
 import { getSyncedPatternsMap } from "@/lib/templates";
 import { coverTemplateContext } from "@/lib/template-context";
 import type { Metadata } from "next";
@@ -109,6 +110,7 @@ export default async function PublicHomePage({
     siteUrl: baseUrl,
     locale,
     pageUrl: `${baseUrl}${lb}`,
+    organization: organizationFor(localizedSite.seo),
     content: homeContent
       ? {
           id: homeContent.id,

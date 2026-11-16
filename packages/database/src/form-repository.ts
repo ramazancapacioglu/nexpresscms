@@ -40,6 +40,8 @@ export interface FormSubmissionInput {
   status?: FormStatus;
   ipHash?: string;
   notifyStatus?: NotifyStatus;
+  /** İçe aktarılan kayıtta özgün zaman; boşsa şimdi. */
+  createdAt?: Date;
 }
 
 /** Form gelen kutusu; her sorgu `siteId` kapsamlıdır. */
@@ -67,7 +69,7 @@ export class FormSubmissionRepository {
       status: input.status ?? "new",
       ipHash: input.ipHash ?? "",
       notifyStatus: input.notifyStatus ?? "",
-      createdAt: new Date(),
+      createdAt: input.createdAt ?? new Date(),
     });
     return id;
   }

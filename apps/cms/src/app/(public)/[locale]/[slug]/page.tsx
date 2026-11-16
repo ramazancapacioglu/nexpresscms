@@ -18,6 +18,7 @@ import { QaFooter } from "@/components/public/qa-footer";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
+import { organizationFor } from "@/lib/organization-schema";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
@@ -308,6 +309,7 @@ export default async function PublicDynamicContentPage({
     // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
     breadcrumbs: crumbs,
     autoSchema: localizedSite.seo.autoSchema !== false,
+    organization: organizationFor(localizedSite.seo),
     aggregateRating:
       reviewEntries.length > 0
         ? {

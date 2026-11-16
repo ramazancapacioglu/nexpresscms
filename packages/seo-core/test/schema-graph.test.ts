@@ -44,3 +44,31 @@ test("yazar adı varsa Person; kök adreste @id eğik çizgili", async () => {
   const page = home["@graph"].find((n) => n["@type"] === "WebPage") as Record<string, unknown>;
   assert.equal(page["@id"], "https://ornek.test/#webpage");
 });
+
+test("kuruluş düğümü logo, sameAs ve yerel işletme alanlarını taşır; temel kimlik ezilmez", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    organization: {
+      name: "Örnek Bayi",
+      logo: "https://ornek.test/logo.png",
+      sameAs: ["https://facebook.com/ornek"],
+      schema: { "@type": ["LocalBusiness", "Organization"], telephone: "+902320000000", priceRange: "₺₺", url: "https://kotu.test", name: "Ezme" },
+    },
+  } as never);
+  const org = graph["@graph"].find((n) => n["@id"] === "https://ornek.test/#organization") as Record<string, unknown>;
+  assert.deepEqual(org["@type"], ["LocalBusiness", "Organization"]);
+  assert.equal(org.name, "Örnek Bayi");
+  assert.equal(org.url, "https://ornek.test");
+  assert.equal(org.telephone, "+902320000000");
+  assert.deepEqual(org.sameAs, ["https://facebook.com/ornek"]);
+});
+
+test("sayfada soru listesi varsa tek FAQPage düğümü üretilir, başlıktan uydurma soru yazılmaz", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    content: { ...input.content, schemaType: "WebPage", schemaAttributes: { richSchema: { qa: { enabled: true, faqList: [{ question: "Neden biz?", answer: "Hızlıyız." }, { question: "", answer: "boş" }] } } } },
+  } as never);
+  const faq = graph["@graph"].find((n) => n["@type"] === "FAQPage") as { mainEntity: Array<{ name: string }> };
+  assert.deepEqual(faq.mainEntity.map((q) => q.name), ["Neden biz?"]);
+  assert.equal(graph["@graph"].some((n) => n["@type"] === "Question"), false);
+});

@@ -5,6 +5,7 @@ import { revalidatePath } from "@/lib/cache";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { QA_PLUGIN_ID } from "@/plugins/qa";
 import { appendPendingQuestion, qaCaptchaOk, readQa, writeQa } from "@/lib/qa-store";
+import { publicUrl } from "@/lib/public-url";
 
 const askLimit = createRateLimiter("qa-ask", 5, 10 * 60 * 1000);
 const VOTE_COOKIE = "nx_qav";
@@ -13,9 +14,9 @@ function back(request: Request, flag: string): URL {
   const referer = request.headers.get("referer");
   let url: URL;
   try {
-    url = new URL(referer && new URL(referer).host === request.headers.get("host") ? referer : "/", request.url);
+    url = publicUrl(referer && new URL(referer).host === request.headers.get("host") ? referer : "/", request);
   } catch {
-    url = new URL("/", request.url);
+    url = publicUrl("/", request);
   }
   url.searchParams.set("qa", flag);
   return url;

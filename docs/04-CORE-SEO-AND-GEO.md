@@ -165,6 +165,10 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
   - `/admin/seo` sayfasına `SearchConsolePanel` entegre edildi: 4'lü metrik özeti (Toplam Tık, Gösterim, Ortalama TO, Ortalama Sıralama), ilk sayfaya yükselme fırsatları (Striking Distance: Pozisyon 4-15) ve düşük tıklama oranına sahip başlık optimizasyon fırsatları (Pozisyon 1-5, CTR < %3).
   - `@nexpress/seo-basic` manifestosundaki `search-console` modülü `status: "ready"` durumuna getirildi.
 
+## 11b. Kuruluş şeması ve yerel işletme (2026-11-16)
+
+`seo.organizationName`, `organizationLogo` ve `sameAs` artık her sayfanın `Organization` düğümüne basılır (`lib/organization-schema.ts`; varsayılan "NexPress CMS" adı site adını ezmez, göreli logo mutlak yapılır). `seo.organizationSchema` yerel işletme alanlarını taşır: `@type` (ör. `["LocalBusiness","Organization"]`), `telephone`, `email`, `address`, `geo`, `openingHours`, `priceRange`, `areaServed`, `taxID`, `knowsAbout` vb. Serbest JSON-LD değildir: `sanitizeOrganizationSchema` (`packages/core/src/organization-schema.ts`) izin listesiyle süzer, `@id`/`url`/`logo`/`sameAs` gibi kimlik alanlarını ve düğüm göndermelerini atar, 8 KB'ı aşanı reddeder. WordPress aktarımı bu alanı kaynağın JSON-LD'sinden doldurur.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:
