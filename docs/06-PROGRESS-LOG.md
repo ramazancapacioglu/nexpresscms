@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-16] — Blog yazısı düzeni, kırıntı, kampanya karoseli
+- ✅ Blog yazısı WordPress düzenine yaklaştı: kırıntı `Ana sayfa › Blog › Kategori › Yazı` (JSON-LD BreadcrumbList aynı listeden), kategori etiketi, künye (yazar · yayın · güncelleme · yorum sayısı), öne çıkan görsel başlığın yanında; altta etiketler, önceki/sonraki yazı ve "Benzer yazılar" (3 kart). Bileşenler `components/public/post-extras.tsx`; metinler `@nexpress/i18n` (`content.updatedOn`, `commentCount`, `prevPost`, `nextPost`, `relatedHeading`, `blogCrumb`, `markdownLink`).
+- ✅ Kırıntı başlık bloğunun içinde, başlığın üstünde; Markdown bağlantısı karşısında sade (küçük, çerçevesiz). Sayfalarda başlık altına kısa açıklama (`tldr`) gelir.
+- ✅ Güncelleme tarihi: sonraki adımlar içeriği yeniden yazınca `updatedAt` yazma gününe kayıyordu (künye ve `dateModified` yanlıştı). `SaveContentInput.updatedAt` eklendi; `import-wp-extras --only dates` (en son çalışmalı) kaynaktaki `modified_gmt` değerini geri yazar (183 içerik).
+- ✅ Üst şerit "Kurumsal" açılır menüsü: beyaz zeminde beyaz yazı okunmuyordu; bağlantılar lacivert.
+- ✅ Ana sayfa kampanyaları: makale kartları yerine gerçek kampanyalar (`campaign_showcase`, atlıkarınca, 9 kampanya, yalnızca süresi dolmamış). Rozet ve hediye renkleri tema paletinden. Betiksiz kaydırma-yakalama; Chrome'un yerel `::scroll-button` / `::scroll-marker` özelliği varsa önceki/sonraki düğmeleri ve noktalar çıkar. Adım: `import-wp-extras --only campaigns`.
+
 ### [2026-11-16] — İçerik renkleri, akordiyon, çapa menüsü ve altlık
 - ✅ Palet: kaynaktaki turuncu (`#f76a0c`, 877 yerde) ve diğer palet dışı doygun renkler 107 içerikten kaldırıldı (878 değer); metin tema rengine döndü. Nötr (gri, beyaz, siyaha yakın) ve palete yakın renkler kalır (`colorInPalette`, `sanitizeBlockColors`, testli).
 - ✅ SSS/akordiyon: 122 maddede görünür `<strong>` yazısı temizlendi (soru düz metin, cevap süzülmüş satır içi HTML). Akordiyon varsayılan olarak tek açık (`<details name>`, betik yok); kart tarzı, artı/eksi simgesi. `FaqAnswer` cevabı `sanitizeInlineHtml` ile basar.

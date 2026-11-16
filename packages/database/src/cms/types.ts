@@ -160,6 +160,8 @@ export interface SaveContentInput {
   type: ContentType;
   /** Yazı satırındaki görünen yazar. Boşsa mevcut ad korunur. */
   authorName?: string;
+  /** İçe aktarılan kayıtta özgün güncelleme zamanı; boşsa şimdi. */
+  updatedAt?: Date;
   status?: ContentStatus;
   importanceScore?: number;
   schemaType?: string;

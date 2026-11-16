@@ -15,6 +15,7 @@ import { buildTemplateContext, coverTemplateContext } from "@/lib/template-conte
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
+import { PostByline, PostFooter } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -298,12 +299,37 @@ export default async function PublicDynamicContentPage({
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
-  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir
+  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
+  const scoped = getScopedRepository(siteId);
+  const taxonomyRows = content.type === "post" ? await scoped.listTaxonomies() : [];
+  const termName = (kind: "category" | "tag", slug: string) => taxonomyRows.find((row) => row.taxonomyType === kind && row.slug === slug)?.name ?? slug;
   const crumbs = [
     { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+    ...(content.type === "post"
+      ? [
+          { name: t("content.blogCrumb"), url: `${baseUrl}${lb}/${postsPageSlug || "blog"}` },
+          ...(categories[0] ? [{ name: termName("category", categories[0]), url: `${baseUrl}${lb}/kategori/${categories[0]}` }] : []),
+        ]
+      : []),
     ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
     { name: content.title, url: pageUrl },
   ];
+  // Önceki / sonraki ve benzer yazılar (yalnızca herkese açık, yayında yazılar)
+  const peers =
+    content.type === "post"
+      ? (await scoped.listContents({ locale, type: "post", status: "published" }))
+          .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public")
+          .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
+      : [];
+  const asPeer = (row: (typeof peers)[number]) => ({ slug: row.slug, title: row.title, image: row.featuredImage ?? null, date: row.publishedAt ? new Date(row.publishedAt) : null });
+  const peerAt = peers.findIndex((row) => row.id === content.id);
+  const prevPost = peerAt >= 0 && peers[peerAt + 1] ? asPeer(peers[peerAt + 1]!) : null;
+  const nextPost = peerAt > 0 && peers[peerAt - 1] ? asPeer(peers[peerAt - 1]!) : null;
+  const relatedPosts = peers
+    .filter((row) => row.id !== content.id)
+    .sort((a, b) => Number(resolvePublishing(b.schemaAttributes).categories.includes(categories[0] ?? "")) - Number(resolvePublishing(a.schemaAttributes).categories.includes(categories[0] ?? "")))
+    .slice(0, 3)
+    .map(asPeer);
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -466,112 +492,99 @@ export default async function PublicDynamicContentPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
-      <header className="space-y-4 border-b pb-8">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <nav aria-label={t("content.breadcrumb")}>
-              <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
-                {crumbs.map((crumb, i) => {
-                  const last = i === crumbs.length - 1;
-                  return (
-                    <li key={crumb.url} className="flex items-center gap-1.5">
-                      {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
-                      {last ? null : <span aria-hidden="true">›</span>}
-                    </li>
-                  );
-                })}
-              </ol>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href={`${lb}${cPath}?format=md`}
-              className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
+      <header className="border-b pb-8">
+        <div className={headerImage ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
+          <div className="space-y-4">
+            {/* Kırıntı başlığın üstünde, Markdown bağlantısı karşısında sade durur */}
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <nav aria-label={t("content.breadcrumb")}>
+                <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
+                  {crumbs.map((crumb, i) => {
+                    const last = i === crumbs.length - 1;
+                    return (
+                      <li key={crumb.url} className="flex items-center gap-1.5">
+                        {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
+                        {last ? null : <span aria-hidden="true">›</span>}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </nav>
+              <div className="flex shrink-0 items-center gap-3">
+                <Link href={`${lb}${cPath}?format=md`} className="font-mono text-[11px] text-nx-muted hover:text-nx-fg hover:underline">
+                  {t("content.markdownLink")}
+                </Link>
+                {canEdit ? (
+                  <Link href={`/admin/contents?id=${content.id}&type=${content.type}`} className="text-[11px] font-medium text-nx-link hover:underline">
+                    ✏️ Düzenle
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+
+            {content.type === "post" && categories[0] ? (
+              <a href={`${lb}/kategori/${categories[0]}`} style={{ color: tokens.colors.primary }} className="inline-block text-xs font-bold uppercase tracking-wider hover:underline">
+                {termName("category", categories[0])}
+              </a>
+            ) : null}
+            <h1
+              style={{ fontFamily: tokens.typography.headingFont }}
+              className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
             >
-              Markdown
-            </Link>
-            {canEdit ? (
-            <Link
-              href={`/admin/contents?id=${content.id}&type=${content.type}`}
-              className="rounded border px-2.5 py-1 text-xs font-medium text-nx-link bg-blue-50 hover:bg-blue-100"
-            >
-              ✏️ Editörde Düzenle
-            </Link>
+              {content.title}
+            </h1>
+            {content.type === "post" ? (
+              <PostByline
+                t={t}
+                locale={locale}
+                authorName={authorName ?? ""}
+                authorHref={authorHref}
+                publishedAt={content.publishedAt ? new Date(content.publishedAt) : null}
+                updatedAt={content.updatedAt ? new Date(content.updatedAt) : null}
+                commentCount={commentEntries.length}
+              />
+            ) : null}
+            {content.type === "page" && content.tldr && !readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? (
+              <p className="max-w-2xl text-base leading-relaxed text-nx-soft">{content.tldr}</p>
+            ) : null}
+            {parent ? <p className="text-sm"><a className="hover:underline" href={`${lb}/${parent.slug}`}>{t("content.parentPage")}: {parent.title}</a></p> : null}
+
+            {content.type !== "post" && (categories.length > 0 || tags.length > 0 || reviewEntries.length > 0) ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  {categories.map((cat) => (
+                    <span key={cat} style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded px-2.5 py-0.5 font-semibold">{cat}</span>
+                  ))}
+                  {tags.map((tg) => (
+                    <span key={tg} className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 font-mono text-[11px] text-nx-soft">#{tg}</span>
+                  ))}
+                </div>
+                {reviewEntries.length > 0 && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-nx-line bg-nx-subtle px-3 py-1 text-xs font-semibold text-nx-fg">
+                    <span style={{ color: tokens.colors.primary }}>★★★★★</span>
+                    <span>{t("content.ratingSummary", { avg: avgRating, n: reviewEntries.length })}</span>
+                  </div>
+                )}
+              </div>
             ) : null}
           </div>
-        </div>
-
-        <div className={headerImage ? "grid gap-8 pt-2 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
-        <div className="space-y-4">
-        <h1
-          style={{ fontFamily: tokens.typography.headingFont }}
-          className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
-        >
-          {content.title}
-        </h1>
-        {content.type === "post" && authorName ? <p className="text-sm text-nx-soft"><a href={authorHref ?? "#"} className="hover:underline">{t("content.authorBy", { name: authorName })}</a></p> : null}
-        {parent ? <p className="text-sm"><a className="hover:underline" href={`${lb}/${parent.slug}`}>{t("content.parentPage")}: {parent.title}</a></p> : null}
-
-        {/* Kategori, Etiket ve AggregateRating Özet Şeridi */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            {categories.map((cat) => (
-              <span
-                key={cat}
-                style={{
-                  backgroundColor: tokens.colors.primary,
-                  color: tokens.colors.primaryForeground,
-                }}
-                className="rounded px-2.5 py-0.5 font-semibold"
-              >
-                {cat}
-              </span>
-            ))}
-            {tags.map((tg) => (
-              <span
-                key={tg}
-                className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 font-mono text-[11px] text-nx-soft"
-              >
-                #{tg}
-              </span>
-            ))}
-          </div>
-
-          {reviewEntries.length > 0 && (
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
-              <span className="text-amber-500">★★★★★</span>
-              <span>
-                {t("content.ratingSummary", { avg: avgRating, n: reviewEntries.length })}
-              </span>
-            </div>
+          {/* Öne çıkan görsel başlığın yanında (geniş bant değil); görsel SEO için alt ve açıklama */}
+          {headerImage && featuredImageUrl && (
+            <figure className="space-y-2">
+              <div style={{ borderRadius: tokens.geometry.borderRadius }} className="overflow-hidden border border-nx-line bg-nx-subtle">
+                <ResponsiveImage
+                  src={featuredImageUrl}
+                  alt={featuredAlt}
+                  title={featuredTitle}
+                  priority
+                  focal={mediaFocal}
+                  sizes="(min-width: 768px) 400px, 100vw"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+              </div>
+              {featuredCaption && <figcaption className="text-center text-xs italic text-nx-muted">{featuredCaption}</figcaption>}
+            </figure>
           )}
-        </div>
-
-        </div>
-        {/* Öne çıkan görsel başlığın yanında (geniş bant değil); görsel SEO için alt ve açıklama */}
-        {headerImage && featuredImageUrl && (
-          <figure className="space-y-2">
-            <div
-              style={{ borderRadius: tokens.geometry.borderRadius }}
-              className="overflow-hidden border border-nx-line bg-slate-950"
-            >
-              <ResponsiveImage
-                src={featuredImageUrl}
-                alt={featuredAlt}
-                title={featuredTitle}
-                priority
-                focal={mediaFocal}
-                sizes="(min-width: 768px) 400px, 100vw"
-                className="aspect-[4/3] w-full object-cover"
-              />
-            </div>
-            {featuredCaption && (
-              <figcaption className="text-xs text-nx-muted text-center italic">
-                {featuredCaption}
-              </figcaption>
-            )}
-          </figure>
-        )}
         </div>
       </header>
 
@@ -605,6 +618,18 @@ export default async function PublicDynamicContentPage({
           shareHeading={t("content.shareHeading")}
         />
       )}
+
+      {content.type === "post" ? (
+        <PostFooter
+          t={t}
+          locale={locale}
+          lb={lb}
+          tags={tags.map((slug) => ({ slug, name: termName("tag", slug) }))}
+          prev={prevPost}
+          next={nextPost}
+          related={relatedPosts}
+        />
+      ) : null}
 
       {content.type === "ai_prompt" ? <QaFooter siteId={siteId} contentId={content.id} t={t} notice={sp.qa} /> : null}
       {pillarList}

@@ -1,4 +1,5 @@
 import "server-only";
+import type { BlockNode } from "@nexpress/core";
 import { getRedirectRepository, getScopedRepository } from "@nexpress/database";
 import { parseCampaignText } from "@nexpress/wp-importer";
 
@@ -57,4 +58,50 @@ export async function importCampaigns(siteId: string, categoryPattern = /kampany
     if (row.status === "published" && (await redirects.save({ fromPath: `/${row.slug}`, toPath: `/kampanya/${row.slug}`, code: 301, note: "Kampanya adresi" })).ok) redirectCount += 1;
   }
   return { converted, withDiscount, withDates, redirects: redirectCount };
+}
+
+/**
+ * Kampanya kategorisindeki yazıları listeleyen `dynamic_list` (yazı kartları) yerine gerçek kampanyaları gösteren
+ * `campaign_showcase` atlıkarıncası yazılır: indirim rozeti, hediye, CTA; yalnızca süresi dolmamış kampanyalar.
+ */
+export async function useCampaignShowcase(siteId: string, categoryPattern = /kampanya/i): Promise<{ replaced: number }> {
+  const repo = getScopedRepository(siteId);
+  const locale = (await repo.getSite())?.defaultLocale || "tr";
+  let replaced = 0;
+  const swap = (nodes: BlockNode[]): BlockNode[] =>
+    nodes.map((node) => {
+      if (node.type === "dynamic_list" && node.props?.source === "posts" && typeof node.props.categorySlug === "string" && categoryPattern.test(node.props.categorySlug)) {
+        replaced += 1;
+        return {
+          id: node.id.replace("list", "showcase"),
+          type: "campaign_showcase",
+          props: { layout: "carousel", columns: 3, limit: 9, filter: "active", showDiscountBadge: true, showCountdown: false, showGift: true, showCta: true, emptyText: "" },
+        };
+      }
+      return node.children ? { ...node, children: swap(node.children) } : node;
+    });
+  for (const row of await repo.listContents({ locale })) {
+    const blocks = swap(row.blocks);
+    if (JSON.stringify(blocks) === JSON.stringify(row.blocks)) continue;
+    await repo.saveContent({
+      contentId: row.id,
+      type: row.type,
+      status: row.status,
+      importanceScore: row.importanceScore,
+      schemaType: row.schemaType,
+      schemaAttributes: row.schemaAttributes,
+      featuredImage: row.featuredImage,
+      locale: row.locale,
+      slug: row.slug,
+      title: row.title,
+      excerpt: row.excerpt ?? undefined,
+      tldr: row.tldr ?? undefined,
+      blocks,
+      metaTitle: row.metaTitle ?? undefined,
+      metaDescription: row.metaDescription ?? undefined,
+      canonicalUrl: row.canonicalUrl ?? undefined,
+      noIndex: row.noIndex,
+    });
+  }
+  return { replaced };
 }

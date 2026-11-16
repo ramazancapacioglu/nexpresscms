@@ -240,7 +240,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
         publishedAt: input.publishedAt ?? now,
         createdAt: input.publishedAt ?? now,
-        updatedAt: now,
+        updatedAt: input.updatedAt ?? now,
       })
       .onConflictDoUpdate({
         target: t.contents.id,
@@ -253,7 +253,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           schemaAttributes,
           featuredImage: input.featuredImage ?? null,
           ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
-          updatedAt: now,
+          updatedAt: input.updatedAt ?? now,
         },
       });
 
@@ -285,7 +285,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         sourceLocale: input.sourceLocale ?? null,
         sourceHash: input.sourceHash ?? null,
         attributes: localizedAttributes,
-        updatedAt: now,
+        updatedAt: input.updatedAt ?? now,
       })
       .onConflictDoUpdate({
         target: t.contentTranslations.id,
@@ -306,7 +306,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           translationStatus,
           attributes: localizedAttributes,
           ...(input.sourceHash ? { sourceLocale: input.sourceLocale ?? null, sourceHash: input.sourceHash } : {}),
-          updatedAt: now,
+          updatedAt: input.updatedAt ?? now,
         },
       });
   

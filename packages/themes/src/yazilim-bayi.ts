@@ -226,6 +226,9 @@ ${S} .nx-utility-link:hover { color:#0c644e; }
 /* Koyu üst şeritte hızlı bağlantılar açık renk olmalı; koyu yazı lacivert zeminde görünmez kalırdı */
 ${S} .nx-header-top .nx-utility-link { color:#ffffff; }
 ${S} .nx-header-top .nx-utility-link:hover { color:#9fe0c8; }
+/* Açılır menü beyaz zeminlidir: bağlantılar üst şeritten beyaz yazı rengini devralmasın */
+${S} .nx-utility-links .bg-white a { color:#042646; font-weight:500; }
+${S} .nx-utility-links .bg-white a:hover { background:#eef5f8; color:#0c644e; }
 ${S} .nx-public-header nav a { font-size:14px; font-weight:600; color:#042646; }
 ${S} .nx-public-header nav a:hover { color:#0c644e; }
 ${S} .nx-public-header a[href^="tel:"] { color:#0c644e; font-weight:700; font-size:16px; }
