@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-16] — İçerik renkleri, akordiyon, çapa menüsü ve altlık
+- ✅ Palet: kaynaktaki turuncu (`#f76a0c`, 877 yerde) ve diğer palet dışı doygun renkler 107 içerikten kaldırıldı (878 değer); metin tema rengine döndü. Nötr (gri, beyaz, siyaha yakın) ve palete yakın renkler kalır (`colorInPalette`, `sanitizeBlockColors`, testli).
+- ✅ SSS/akordiyon: 122 maddede görünür `<strong>` yazısı temizlendi (soru düz metin, cevap süzülmüş satır içi HTML). Akordiyon varsayılan olarak tek açık (`<details name>`, betik yok); kart tarzı, artı/eksi simgesi. `FaqAnswer` cevabı `sanitizeInlineHtml` ile basar.
+- ✅ Çapa menüsü: bölüm bağlantıları olan 7 sayfaya yapışkan `anchor_nav`, içindekiler listesi olan 14 yazı/sayfaya başlık çapaları + çok sütunlu `toc`. Yapışkan menü başlığın (üst şerit + ana şerit) altında kalır; ilk madde sabit vurgulanmaz.
+- ✅ Sayfa başlığı: geniş görsel bandı kalktı; öne çıkan görsel başlığın yanında (4:3, 400 px) çizilir. Başlığı gizli sayfalarda (içerik kendi hero'suyla açılıyor) çizilmez.
+- ✅ Altlık: yuvarlak Akınsoft logosu, kısa tanıtım, iki telefon, e-posta, adres, demo/destek düğmeleri ve beş çözüm sütunu; lacivert zemin. `about_brand` bileşenine `logo` ayarı eklendi.
+- ✅ Başlık: ana şeritte orta ve sağ bölge boşken tek hücre çizilir (logo dikey ortalı); içerik yazısında tek bağlantı rengi ve lacivert başlıklar.
+
 ### [2026-11-16] — Kampanyalar, öne çıkan görseller, Yazılım Bayi teması yayında
 - ✅ "Kampanya" kategorisindeki yazılar `campaign` türüne çevrildi (23 kayıt; `extras/campaigns.ts`): `/kampanyalar` arşivi, `/kampanya/<adres>` sayfası, Offer şeması. İndirim ve tarih başlık/açıklamadan okunur (`parseCampaignText`, testli); bulunamayan alan boş kalır. Kökteki eski adres `/kampanya/<adres>`e 301 gider; `/akinsoft-kampanyalar/` arşivi `/kampanyalar`a.
 - ✅ Öne çıkan görsel: önceki aktarım hiçbir içeriğe yazmamıştı (kartlar ve paylaşım görseli boştu). 99 içerik için kaynaktaki `featured_media` yerel kopyaya bağlandı (`extras/images.ts`). Sayfalarda yerleşik öne çıkan banner artık çizilmez (içerik kendi görselini taşır).

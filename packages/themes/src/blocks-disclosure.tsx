@@ -1,5 +1,5 @@
 import React from "react";
-import { ICON_PATHS, safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/core";
+import { ICON_PATHS, safeBlockDomId, sanitizeInlineHtml, type BlockNode, type DesignTokens } from "@nexpress/core";
 
 /**
  * Sekme ve akordeon blokları: yalnızca CSS ile çalışır (radyo düğmesi ve `<details>`), istemci JavaScript'i yoktur.
@@ -8,6 +8,11 @@ import { ICON_PATHS, safeBlockDomId, type BlockNode, type DesignTokens } from "@
 const text = (value: unknown, fallback = ""): string => (typeof value === "string" && value.trim() ? value : fallback);
 const rows = (value: unknown): Array<Record<string, unknown>> =>
   Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => !!item && typeof item === "object") : [];
+
+/** Cevap metni: etiket içeriyorsa izinli satır içi HTML'e süzülür (`<strong>` görünür yazı kalmaz), değilse düz metindir. */
+export function FaqAnswer({ value, className }: { value: string; className?: string }) {
+  return /<[a-z]/i.test(value) ? <div className={className} dangerouslySetInnerHTML={{ __html: sanitizeInlineHtml(value) }} /> : <div className={className}>{value}</div>;
+}
 
 export const ACCORDION_STYLES = ["classic", "cards", "flush", "filled", "accent", "numbered", "pills", "bold"] as const;
 export const TAB_STYLES = ["pills", "underline", "boxed", "segmented", "vertical", "cards", "steps"] as const;
@@ -22,6 +27,7 @@ function accordionCss(cls: string, style: string, tokens: DesignTokens, icon: st
     .${cls} summary::-webkit-details-marker{display:none}
     .${cls} .nx-acc-q{flex:1}
     .${cls} .nx-acc-a{line-height:1.7;opacity:.85}
+    .${cls} .nx-acc-a p{margin:0 0 .6em} .${cls} .nx-acc-a ul,.${cls} .nx-acc-a ol{margin:.4em 0 .6em;padding-left:1.25em;list-style:revert} .${cls} .nx-acc-a a{color:${primary};text-decoration:underline}
     .${cls} .nx-acc-i{flex:none;width:20px;height:20px;position:relative;transition:transform .2s}
     ${
       icon === "plus"
@@ -54,7 +60,7 @@ export function AccordionView({ block, tokens, items }: { block: BlockNode; toke
   const style = (ACCORDION_STYLES as readonly string[]).includes(String(p.accordionStyle)) ? String(p.accordionStyle) : "classic";
   const icon = p.icon === "plus" || p.icon === "none" ? String(p.icon) : "chevron";
   const openMode = p.openMode === "none" || p.openMode === "all" ? String(p.openMode) : p.openFirst === false ? "none" : "first";
-  const exclusive = p.exclusive === true && openMode !== "all";
+  const exclusive = p.exclusive !== false && openMode !== "all";
   const cls = `nx-acc-${safeBlockDomId(block.id)}`;
   return (
     <div className="space-y-4">
@@ -67,7 +73,7 @@ export function AccordionView({ block, tokens, items }: { block: BlockNode; toke
               <span className="nx-acc-q">{item.q}</span>
               <span className="nx-acc-i" aria-hidden="true" />
             </summary>
-            <p className="nx-acc-a">{item.a}</p>
+            <FaqAnswer value={item.a} className="nx-acc-a" />
           </details>
         ))}
         <style>{accordionCss(cls, style, tokens, icon)}</style>

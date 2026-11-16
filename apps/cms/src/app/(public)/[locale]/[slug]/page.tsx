@@ -202,6 +202,8 @@ export default async function PublicDynamicContentPage({
   const featuredAlt = String(pub.featuredImageAlt ?? content.title);
   const featuredTitle = String(pub.featuredImageAlt ?? content.title);
   const featuredCaption = String(pub.featuredImageCaption ?? "");
+  // Başlığın yanında görünen öne çıkan görsel: içerik zaten kendi başlık bandıyla açılıyorsa (başlık gizli sayfa) çizilmez
+  const headerImage = Boolean(featuredImageUrl) && !(content.type === "page" && readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle);
   const showShareBar = pub.showShareButtons !== false;
   const allowReviews = pub.allowReviews !== false;
   const allowComments = pub.allowComments !== false;
@@ -499,6 +501,8 @@ export default async function PublicDynamicContentPage({
           </div>
         </div>
 
+        <div className={headerImage ? "grid gap-8 pt-2 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
+        <div className="space-y-4">
         <h1
           style={{ fontFamily: tokens.typography.headingFont }}
           className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
@@ -543,9 +547,10 @@ export default async function PublicDynamicContentPage({
           )}
         </div>
 
-        {/* Öne Çıkan Görsel (Featured Image + Görsel SEO Figcaption) */}
-        {featuredImageUrl && (content.type !== "page" || pub.showFeaturedImage === true) && (
-          <figure className="pt-3 space-y-2">
+        </div>
+        {/* Öne çıkan görsel başlığın yanında (geniş bant değil); görsel SEO için alt ve açıklama */}
+        {headerImage && featuredImageUrl && (
+          <figure className="space-y-2">
             <div
               style={{ borderRadius: tokens.geometry.borderRadius }}
               className="overflow-hidden border border-nx-line bg-slate-950"
@@ -556,8 +561,8 @@ export default async function PublicDynamicContentPage({
                 title={featuredTitle}
                 priority
                 focal={mediaFocal}
-                sizes="(min-width: 1024px) 896px, 100vw"
-                className="w-full max-h-[420px] object-cover"
+                sizes="(min-width: 768px) 400px, 100vw"
+                className="aspect-[4/3] w-full object-cover"
               />
             </div>
             {featuredCaption && (
@@ -567,6 +572,7 @@ export default async function PublicDynamicContentPage({
             )}
           </figure>
         )}
+        </div>
       </header>
 
       {/* Kısıtlı / Taslak Yayın Bildirimi */}

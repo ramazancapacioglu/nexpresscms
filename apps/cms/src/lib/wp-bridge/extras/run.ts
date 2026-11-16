@@ -3,6 +3,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { plainText } from "@nexpress/wp-importer";
 import { importFeatured, importFiles, localizeUploads } from "./images";
 import { applyDealerTheme, tidyPageLayout } from "./theme";
+import { tidyContentDesign } from "./tidy";
 import { importCampaigns } from "./campaigns";
 import { enrichPublished, importDrafts, importMedia } from "./content";
 import { importEntries, importForms } from "./forms";
@@ -47,6 +48,7 @@ export async function importWpExtras(siteId: string, opts: { origin: string; use
   if (want("uploads")) steps.uploads = await localizeUploads(siteId, session.origin);
   if (want("campaigns")) steps.campaigns = await importCampaigns(siteId);
   if (want("theme")) steps.theme = await applyDealerTheme(siteId);
+  if (want("design")) steps.design = await tidyContentDesign(session, siteId);
   if (want("layout")) steps.layout = await tidyPageLayout(siteId);
   if (want("seo")) steps.seo = await importSiteSeo(session, siteId);
   if (want("media")) steps.media = await importMedia(session, siteId);

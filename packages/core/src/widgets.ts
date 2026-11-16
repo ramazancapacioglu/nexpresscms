@@ -92,6 +92,8 @@ export const FOOTER_LAYOUT_PRESETS: FooterLayoutPresetMeta[] = [
 ];
 
 export interface SiteWidgetSettings {
+  /** Marka bileşeninde yuvarlak çerçevede çizilen logo (site içi yol ya da https adresi). */
+  logo?: string;
   subtitle?: string;
   count?: number;
   showCount?: boolean;

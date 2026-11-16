@@ -65,6 +65,7 @@ WP_ADMIN_USER=… WP_ADMIN_PASS=… tsx scripts/import-wp-extras.ts --origin htt
 | `uploads` | Bloklarda kalan `wp-content/uploads` adresleri yerele alınır; boyutlu kopya özgün dosyaya eşlenir; kaynakta 404 olan görsel/galeri öğesi atılır. |
 | `campaigns` | "Kampanya" kategorisindeki yazılar `campaign` türüne çevrilir (indirim ve tarih metinden), eski kök adres 301. |
 | `theme` | Yazılım Bayi temasını yayına alır (başlık, menü, altlık, 1280 px). |
+| `design` | Palet dışı renkleri kaldırır, SSS metnini temizler, çapa menüsü / içindekiler ekler (tekrar çalıştırılabilir). |
 | `layout` | İçerik kendi başlığıyla açılıyorsa sayfa başlık satırını gizler. |
 | `media` | Kitaplığın tamamı (görseller); daha önce inenlerin boş alt metni/başlığı doldurulur. |
 

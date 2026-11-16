@@ -278,7 +278,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
         }
       >
         <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">
-          {row(mainZones, `hidden w-full items-center gap-4 md:grid ${mainZones.center.length === 0 && mainZones.right.length === 0 ? "grid-cols-1" : "grid-cols-[1fr_auto_1fr]"}`, "desktop")}
+          {row(mainZones, `hidden w-full items-center ${mainZones.center.length === 0 && mainZones.right.length === 0 ? "gap-0 md:flex" : "gap-4 md:grid grid-cols-[1fr_auto_1fr]"}`, "desktop", mainZones.center.length === 0 && mainZones.right.length === 0)}
           {row(mobileZones, "grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
         {bottomVisible ? (

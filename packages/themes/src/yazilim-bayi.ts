@@ -17,6 +17,8 @@ export const YB_EMAIL = "bilgi@akinsoftizmir.com.tr";
 export const YB_ADDRESS = "Muciburrahman Sk. No:3/522 Konak İzmir";
 /** Logo ve sosyal bağlantılar kaynak siteden alınmıştır (`apps/cms/public/demo/yazilim-bayi/logo.webp`). */
 export const YB_LOGO = `${YB_ART}/logo.webp`;
+/** Yuvarlak (daire) marka logosu: altlık marka kartında kullanılır. */
+export const YB_LOGO_ROUND = `${YB_ART}/logo-kare.webp`;
 export const YB_SOCIALS = {
   facebook: "https://www.facebook.com/akinsoftizmiir",
   x: "https://twitter.com/akinsoftizmirb1",
@@ -156,16 +158,35 @@ export const YB_FOOTER: FooterConfig = {
     { label: "Pinterest", href: "https://tr.pinterest.com/akinsoftizmir1/" },
   ],
   columns: YB_FOOTER_COLUMNS,
-  widgets: YB_FOOTER_COLUMNS.map((col, columnIndex) => ({
-    id: `wdg_${col.id}`,
-    type: "nav_menu" as const,
-    title: col.title,
-    enabled: true,
-    columnIndex,
-    settings: {
-      links: col.links.map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
-    },
-  })),
+  widgets: YB_FOOTER_COLUMNS.map((col, columnIndex) =>
+    columnIndex === 0
+      ? {
+          // İlk sütun marka kartıdır: yuvarlak logo, kısa tanıtım, iletişim ve hızlı bağlantılar
+          id: `wdg_${col.id}`,
+          type: "about_brand" as const,
+          title: "",
+          enabled: true,
+          columnIndex,
+          settings: {
+            logo: YB_LOGO_ROUND,
+            subtitle: "Akınsoft yetkili ana bayisi: Wolvox ERP, muhasebe ve e-Dönüşüm çözümleri.",
+            phone: `${YB_PHONE} · ${YB_PHONE_2}`,
+            email: YB_EMAIL,
+            address: YB_ADDRESS,
+            links: col.links.filter((link) => /talebi/i.test(link.label)).map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
+          },
+        }
+      : {
+          id: `wdg_${col.id}`,
+          type: "nav_menu" as const,
+          title: col.title,
+          enabled: true,
+          columnIndex,
+          settings: {
+            links: col.links.map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
+          },
+        },
+  ),
 };
 
 const item = (id: string, label: string, slug: string, children?: NavigationMenuItem[]): NavigationMenuItem => ({
@@ -208,10 +229,22 @@ ${S} .nx-header-top .nx-utility-link:hover { color:#9fe0c8; }
 ${S} .nx-public-header nav a { font-size:14px; font-weight:600; color:#042646; }
 ${S} .nx-public-header nav a:hover { color:#0c644e; }
 ${S} .nx-public-header a[href^="tel:"] { color:#0c644e; font-weight:700; font-size:16px; }
-${S} footer { background:#f7fafc; border-top:1px solid #cfe3e8 !important; color:#1a202c; }
-${S} footer h2, ${S} footer h3 { font-size:15px; font-weight:700; color:#042646; padding-bottom:8px; border-bottom:1px solid #0b4f8a; display:inline-block; }
-${S} footer .nx-footer-link, ${S} footer a { font-size:13px; }
-${S} footer a:hover { color:#0c644e; }
+/* İçerik yazısı: koyu lacivert başlıklar, okunur satır aralığı, tek tip bağlantı rengi (tema paleti dışında renk yok) */
+${S} article h1, ${S} .nx-block:not(.yf-dark):not(.yf-navy) > h2, ${S} .nx-rich h2, ${S} .nx-rich h3 { color:#042646; letter-spacing:-.01em; }
+${S} .nx-rich { line-height:1.75; }
+${S} .nx-rich a:not([class]) { color:#0b4f8a; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+${S} .nx-rich a:not([class]):hover { color:#0c644e; }
+${S} .nx-rich strong { color:#1a202c; }
+/* Yapışkan çapa menüsü, yapışkan başlığın (üst şerit + ana şerit) altında kalır */
+${S} .nx-block.sticky { top:102px !important; }
+${S} footer { background:#042646; border-top:4px solid #0c644e !important; color:#cfe0ec; }
+${S} footer h2, ${S} footer h3 { font-size:14px; font-weight:700; letter-spacing:.02em; color:#fff; padding-bottom:10px; border-bottom:2px solid #0c644e; display:inline-block; }
+${S} footer a, ${S} footer .nx-footer-link { font-size:13px; color:#cfe0ec; }
+${S} footer a:hover { color:#9fe0c8; }
+${S} footer .nx-footer-logo { box-shadow:0 0 0 4px rgba(255,255,255,.12); }
+${S} footer .nx-footer-chip { border-color:rgba(255,255,255,.28); color:#fff; }
+${S} footer .nx-footer-chip:hover { background:rgba(255,255,255,.12); color:#fff; }
+${S} footer [data-footer-row="main"] { padding-block:8px; }
 ${S} form button[type="submit"] { background:#0c644e; border-radius:6px; }
 ${S} .nx-yb-hero { background:#eef5f8; color:#042646; border:0; border-radius:0; padding:56px 24px; }
 ${S} .nx-yb-hero-in { max-width:1180px; margin-inline:auto; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:40px; align-items:center; }
@@ -235,7 +268,7 @@ ${S} .yf-band :is(h2,h3):not(.yf-card *) { color:#042646; }
 ${S} .yf-dark :is(h2,h3), ${S} .yf-navy :is(h2,h3) { color:#fff !important; }
 ${S} div:has(> .nx-block.yf-card) { display:flex; }
 ${S} .nx-block.yf-card { flex:1; min-width:0; }
-${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #cfe3e8; border-radius:10px; padding:20px; overflow:hidden; height:100%; transition:box-shadow .2s, border-color .2s; }
+${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #d6e6ee; border-radius:14px; padding:20px; overflow:hidden; height:100%; transition:box-shadow .2s, border-color .2s; }
 ${S} .yf-card:hover, ${S} .yb-card:hover { border-color:#0c644e; box-shadow:0 10px 28px rgba(4,38,70,.1); }
 ${S} .yf-card h3, ${S} .yb-card h3 { font-size:1.05rem; font-weight:700; color:#042646; }
 ${S} .yf-card img { border-radius:8px; }

@@ -3,7 +3,7 @@ import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkFaq } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
-import { AccordionView } from "./blocks-disclosure";
+import { AccordionView, FaqAnswer } from "./blocks-disclosure";
 
 /** Bilgi blokları: adımlar, SSS, kutular, kod, alıntı, liste, video, tablo, inceleme. Tanımsız dönerse sıradaki grup denenir. */
 export function renderContentBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -109,7 +109,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
       if (themeId === INK_GRID_ID) return renderInkFaq(p, tokens);
       const items = Array.isArray(p.items) ? p.items : [];
       const openMode = p.openMode === "none" || p.openMode === "all" ? p.openMode : "first";
-      const exclusive = p.exclusive === true && openMode !== "all";
+      const exclusive = p.exclusive !== false && openMode !== "all";
       if (typeof p.accordionStyle === "string" && p.accordionStyle) {
         return (
           <AccordionView
@@ -145,9 +145,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                     ▼
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-nx-soft leading-relaxed border-t pt-3">
-                  {String(item?.answer ?? "")}
-                </p>
+                <FaqAnswer value={String(item?.answer ?? "")} className="mt-3 text-sm text-nx-soft leading-relaxed border-t pt-3" />
               </details>
             ))}
           </div>

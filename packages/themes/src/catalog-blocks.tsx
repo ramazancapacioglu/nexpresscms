@@ -184,9 +184,9 @@ export function renderStudioCatalogBlock(
       return (
         <nav style={box} className="border bg-nx-subtle p-4">
           <div className="text-[11px] font-bold uppercase tracking-wider text-nx-muted">{t("blocks.toc")}</div>
-          <ol className="mt-2 space-y-1 text-sm">
+          <ol className="mt-2 text-sm [column-gap:2rem] sm:columns-2 lg:columns-3">
             {items.map((item, index) => (
-              <li key={index}>
+              <li key={index} className="break-inside-avoid py-0.5">
                 <a href={safeUrl(item.href) ?? "#"} className="text-nx-link hover:underline">
                   {text(item.label, `${t("blocks.heading")} ${index + 1}`)}
                 </a>
@@ -236,7 +236,8 @@ export function renderStudioCatalogBlock(
                 const label = text(item.label, `${t("blocks.section")} ${index + 1}`);
                 const iconName = text(item.icon);
                 const badge = text(item.badge);
-                const isFirst = index === 0;
+                // Betiksiz sayfada hangi bölümde olunduğu bilinemez; ilk madde sabit vurgulu çizilmez.
+                const isFirst = false;
 
                 const variantClass =
                   styleVariant === "pills"
