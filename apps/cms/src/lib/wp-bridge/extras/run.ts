@@ -5,6 +5,7 @@ import { importFeatured, importFiles, localizeUploads } from "./images";
 import { applyDealerTheme, tidyPageLayout } from "./theme";
 import { tidyContentDesign } from "./tidy";
 import { restoreModifiedDates } from "./dates";
+import { importCampaignFields, placeContactCampaign, setupQuickContact } from "./models";
 import { importCampaigns, useCampaignShowcase } from "./campaigns";
 import { enrichPublished, importDrafts, importMedia } from "./content";
 import { importEntries, importForms } from "./forms";
@@ -47,7 +48,9 @@ export async function importWpExtras(siteId: string, opts: { origin: string; use
   if (want("featured")) steps.featured = await importFeatured(session, siteId);
   if (want("files")) steps.files = await importFiles(session, siteId);
   if (want("uploads")) steps.uploads = await localizeUploads(siteId, session.origin);
-  if (want("campaigns")) steps.campaigns = { ...(await importCampaigns(siteId)), showcase: await useCampaignShowcase(siteId) };
+  if (want("campaigns")) steps.campaigns = { ...(await importCampaigns(siteId)), fields: await importCampaignFields(session, siteId), showcase: await useCampaignShowcase(siteId) };
+  if (want("models")) steps.models = await placeContactCampaign(session, siteId);
+  if (want("quick")) steps.quick = await setupQuickContact(session, siteId);
   if (want("theme")) steps.theme = await applyDealerTheme(siteId);
   if (want("design")) steps.design = await tidyContentDesign(session, siteId);
   if (want("layout")) steps.layout = await tidyPageLayout(siteId);

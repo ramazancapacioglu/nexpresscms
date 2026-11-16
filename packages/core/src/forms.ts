@@ -29,8 +29,9 @@ export function toCsv(rows: string[][]): string {
 /** Blok ağacındaki `form_block` bloklarının bağlı olduğu form kimlikleri (`props.formId`). */
 export function collectFormIds(blocks: Array<{ type: string; props?: unknown; children?: unknown }>, into: Set<string> = new Set()): Set<string> {
   for (const b of blocks) {
-    const id = b.type === "form_block" ? (b.props as { formId?: unknown } | undefined)?.formId : undefined;
-    if (typeof id === "string" && /^frm_[a-z0-9]{3,40}$/.test(id)) into.add(id);
+    // `contact_campaign` (form + kampanya modeli) formunu aynı alanda taşır. Kimlik `frm_wp_12625` gibi alt çizgi içerebilir.
+    const id = b.type === "form_block" || b.type === "contact_campaign" ? (b.props as { formId?: unknown } | undefined)?.formId : undefined;
+    if (typeof id === "string" && /^frm_[a-z0-9_]{1,40}$/.test(id)) into.add(id);
     if (Array.isArray(b.children)) collectFormIds(b.children as never, into);
   }
   return into;

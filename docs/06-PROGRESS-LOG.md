@@ -1284,3 +1284,8 @@
   - Görsel editör bağlam kilitli hale getirildi ve yerleşim stüdyosuna yükseltildi: iç içe `section` / `columns` / `column`, sol yapı gezgini, geri al/yinele ve Genel / Stil / Gelişmiş denetçi.
   - `/admin/themes` ekranı tema özelleştirici ve çekirdek SEO motoru stüdyosuna dönüştürüldü.
   - `@nexpress/seo-core` içine 17-noktalı `analyzeSeo()`, `resolveSeoMeta()`, `deriveAutoSchemaNodes()` ve `slugHistory` tabanlı otomatik 301 yönlendirme motoru (`resolveContentBySlug`) gömüldü.
+
+### [2026-11-16] — WordPress formları, form+kampanya modeli, yazı düzeni
+- ✅ `contact_campaign` bloğu (form + ilgili kampanya kartı), `models`/`quick` içe aktarma adımları, `camp_*` alanları, iki sütunlu içe aktarılan formlar.
+- ✅ Her sayfada hızlı iletişim (Sizi arayalım + WhatsApp); `collectFormIds` alt çizgili form kimliklerini kabul eder.
+- ✅ Yazı sayfası WordPress düzeni: künye, tam genişlik görsel, "Paylaş :" satırı, sağ kenar çubuğu. Testler: core, wp-importer, i18n.

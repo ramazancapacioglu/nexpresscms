@@ -255,6 +255,10 @@ export interface GeneralSettings {
   frontPageSlug?: string;
   /** Yazıların listelendiği sayfa. Boşsa ayrı blog sayfası yoktur. */
   postsPageSlug?: string;
+  /** Her sayfada sağ altta "Sizi arayalım" düğmesiyle açılan hızlı iletişim formunun kimliği (`frm_…`). Boşsa düğme yok. */
+  quickContactFormId?: string;
+  /** Sol altta WhatsApp düğmesi: ülke kodlu numara (yalnızca rakam, örn. 902324251988). Boşsa düğme yok. */
+  whatsappNumber?: string;
   /** Yazılım Firması kabuğu uygulanmadan önceki şerit, menü ve yerleşim. */
   chromeSnapshot?: ChromeSnapshot | null;
   /**

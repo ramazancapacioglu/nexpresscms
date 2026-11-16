@@ -24,6 +24,7 @@ import { renderTemplateBlock } from "./blocks-template";
 import { SchemaCardView } from "./schema-card";
 import { CustomFieldList } from "./custom-fields";
 import { CampaignShowcaseView } from "./campaign-showcase";
+import { ContactCampaignView } from "./contact-campaign";
 import type { TemplateRenderContext } from "./block-template-context";
 
 export interface RscBlockRendererProps {
@@ -163,6 +164,22 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   if (input.block.type.startsWith("tpl_")) return renderTemplateBlock({ ...input, renderChild: () => null }) ?? null;
   if (input.block.type === "dynamic_list") {
     return <DynamicListView query={normalizeDynamicQuery(input.block.props)} items={input.dynamic?.[input.block.id]?.items ?? []} meta={input.dynamic?.[input.block.id]?.meta} tokens={input.tokens} locale={input.locale} />;
+  }
+  if (input.block.type === "contact_campaign") {
+    const props = input.block.props ?? {};
+    const formId = typeof props.formId === "string" ? props.formId : "";
+    // Formu, sayfadaki ayrı bir form bloğu gibi aynı çizici çizer (gönderim, doğrulama ve gelen kutusu aynı kalır)
+    const formBlock: BlockNode = { id: `${input.block.id}_form`, type: "form_block", props: { formId, title: "" } };
+    const bound = formId ? input.form?.forms?.[formId] : undefined;
+    return (
+      <ContactCampaignView
+        props={props}
+        item={input.dynamic?.[input.block.id]?.items?.[0] ?? null}
+        tokens={input.tokens}
+        form={bound ? <RscSingleBlock {...input} block={formBlock} /> : null}
+        preview={input.preview}
+      />
+    );
   }
   if (input.block.type === "campaign_showcase") {
     return (

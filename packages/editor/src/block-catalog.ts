@@ -232,6 +232,13 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     showPhone: false,
     emptyText: "Şu anda yayında aktif bir kampanya bulunmamaktadır.",
   })),
+  item("contact_campaign", "İletişim formu + kampanya kartı", "commerce", "Çözüm sayfasına: bağlı form ve o çözümün yayındaki kampanyası yan yana (tek model)", node("contact_campaign", {
+    formId: "",
+    productUrl: "",
+    campaignSlug: "",
+    heading: "Detaylı bilgi için Sizi arayalım.",
+    note: "",
+  })),
 ];
 
 /** Ada, ipucuna ve kategoriye göre süzer (büyük/küçük harf ve Türkçe i/ı duyarsız, tam/önek eşleşmeler öncelikli). */

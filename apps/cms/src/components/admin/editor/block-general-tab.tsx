@@ -1,5 +1,6 @@
 "use client";
 
+import { ContactCampaignFields } from "./contact-campaign-fields";
 import { AiComposePanel } from "./ai-compose-panel";
 import { AnchorNavFields } from "./anchor-nav-fields";
 import { CatalogFields } from "./catalog-fields";
@@ -37,6 +38,7 @@ const DEDICATED_UI = new Set([
   "list_element",
   "anchor_nav",
   "campaign_showcase",
+  "contact_campaign",
 ]);
 
 export function BlockGeneralTab() {
@@ -184,6 +186,7 @@ export function BlockGeneralTab() {
 
       {selectedBlock.type === "dynamic_list" && <DynamicListFields />}
       {selectedBlock.type === "campaign_showcase" && <CampaignShowcaseFields />}
+      {selectedBlock.type === "contact_campaign" && <ContactCampaignFields />}
       {selectedBlock.type === "schema_card" && <SchemaCardFields />}
       {selectedBlock.type === "section" && <SectionFields />}
       {selectedBlock.type === "anchor_nav" && <AnchorNavFields />}

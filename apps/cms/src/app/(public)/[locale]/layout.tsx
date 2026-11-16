@@ -37,6 +37,7 @@ import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
 import { CookieConsent } from "@/components/public/cookie-consent";
+import { QuickContact } from "@/components/public/quick-contact";
 import { RscBlockRenderer } from "@nexpress/themes";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -232,7 +233,7 @@ export default async function PublicLocaleLayout({
         contentSidebarPos =
           resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
             ? resolvedCustomizer.layout.sidebarPosition
-            : "left";
+            : "right";
         targetAreaId = resolvedCustomizer.layout.blogSidebarId || "blog";
       } else {
         contentSidebarPos = "none";
@@ -423,6 +424,15 @@ export default async function PublicLocaleLayout({
       ) : null}
       {isYf ? <YazilimFirmasiReach locale={locale} /> : null}
       <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />
+      {(() => {
+        const general = resolveSiteSettings(site?.settings).general;
+        const prefixless = reqHeaders.get("x-nexpress-prefixless") === "1";
+        const internal = reqHeaders.get("x-nexpress-pathname") ?? `/${locale}`;
+        const publicPath = prefixless ? internal.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/" : internal;
+        return general.quickContactFormId || general.whatsappNumber ? (
+          <QuickContact siteId={siteId} formId={general.quickContactFormId ?? ""} whatsapp={general.whatsappNumber ?? ""} path={publicPath} search={reqHeaders.get("x-nexpress-search") ?? ""} tokens={vt} themeId={activeTheme.id} locale={locale} t={t} />
+        ) : null;
+      })()}
       {consentSettings.enabled ? <CookieConsent settings={consentSettings} visible={consentBannerVisible(consentSettings, consentValue)} t={t} /> : null}
     </div>
   );

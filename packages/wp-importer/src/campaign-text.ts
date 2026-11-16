@@ -47,3 +47,49 @@ export function parseCampaignText(text: string): CampaignText {
   }
   return out;
 }
+
+export interface CampaignFields {
+  name?: string;
+  discount?: string;
+  gift?: string;
+  productName?: string;
+  /** Kaynak sitedeki ürün sayfası adresi (mutlak) */
+  productUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  terms?: string;
+}
+
+const decodeAttr = (value: string) =>
+  value
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .trim();
+
+const dateOnly = (value: string | undefined) => (value && /^\d{4}-\d{2}-\d{2}$/.test(value.trim()) ? value.trim() : undefined);
+
+/**
+ * Kampanya yazısının düzenleme ekranındaki özel alanlar (`camp_*`): ad, indirim yüzdesi, hediye, ürün adı ve adresi,
+ * başlangıç/bitiş, şartlar. Boş alan verilmez. İndirim yalnızca rakamdır ("40" → "%40").
+ */
+export function parseCampaignFields(html: string): CampaignFields {
+  const raw: Record<string, string> = {};
+  for (const m of html.matchAll(/<input[^>]*name="(camp_[a-z_]+)"[^>]*value="([^"]*)"/g)) raw[m[1] ?? ""] = decodeAttr(m[2] ?? "");
+  for (const m of html.matchAll(/<textarea[^>]*name="(camp_[a-z_]+)"[^>]*>([\s\S]*?)<\/textarea>/g)) raw[m[1] ?? ""] = decodeAttr(m[2] ?? "");
+  const digits = /^\d{1,3}(?:[.,]\d+)?$/.test((raw.camp_discount ?? "").trim()) ? (raw.camp_discount ?? "").trim().replace(",", ".") : "";
+  const url = /^https?:\/\//.test(raw.camp_product_url ?? "") ? raw.camp_product_url : undefined;
+  const out: CampaignFields = {
+    ...(raw.camp_name ? { name: raw.camp_name } : {}),
+    ...(digits ? { discount: `%${digits}` } : {}),
+    ...(raw.camp_gift ? { gift: raw.camp_gift } : {}),
+    ...(raw.camp_product_name ? { productName: raw.camp_product_name } : {}),
+    ...(url ? { productUrl: url } : {}),
+    ...(dateOnly(raw.camp_start) ? { startDate: dateOnly(raw.camp_start) } : {}),
+    ...(dateOnly(raw.camp_end) ? { endDate: dateOnly(raw.camp_end) } : {}),
+    ...(raw.camp_terms ? { terms: raw.camp_terms.slice(0, 1500) } : {}),
+  };
+  return out;
+}

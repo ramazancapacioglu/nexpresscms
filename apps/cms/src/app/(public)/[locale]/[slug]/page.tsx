@@ -15,7 +15,7 @@ import { buildTemplateContext, coverTemplateContext } from "@/lib/template-conte
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
-import { PostByline, PostFooter } from "@/components/public/post-extras";
+import { PostByline, PostFooter, PostShareRow } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -227,6 +227,23 @@ export default async function PublicDynamicContentPage({
     categories: pub.categories,
   });
   const t = createTranslator(locale);
+  // Öne çıkan görsel: sayfalarda başlığın yanında (4:3), yazılarda WordPress gibi künyenin altında sütun genişliğinde
+  const headerFigure = featuredImageUrl ? (
+    <figure className="space-y-2">
+      <div style={{ borderRadius: tokens.geometry.borderRadius }} className="overflow-hidden border border-nx-line bg-nx-subtle">
+        <ResponsiveImage
+          src={featuredImageUrl}
+          alt={featuredAlt}
+          title={featuredTitle}
+          priority
+          focal={mediaFocal}
+          sizes={content.type === "post" ? "(min-width: 1024px) 720px, 100vw" : "(min-width: 768px) 400px, 100vw"}
+          className={content.type === "post" ? "h-auto w-full object-cover" : "aspect-[4/3] w-full object-cover"}
+        />
+      </div>
+      {content.type === "post" ? <figcaption className="text-center text-sm text-nx-soft">{featuredCaption || content.title}</figcaption> : featuredCaption ? <figcaption className="text-center text-xs italic text-nx-muted">{featuredCaption}</figcaption> : null}
+    </figure>
+  ) : null;
   const cover = coverTemplateContext({
     site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
     locale,
@@ -492,8 +509,8 @@ export default async function PublicDynamicContentPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
-      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-1" : "border-b pt-3 pb-8"}>
-        <div className={headerImage ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
+      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-1" : (content.type === "post" ? "pt-3" : "border-b pt-3 pb-8")}>
+        <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
           <div className="space-y-4">
             {/* Kırıntı başlığın üstünde, Markdown bağlantısı karşısında sade durur */}
             <div className="flex items-center justify-between gap-3 text-xs">
@@ -542,6 +559,7 @@ export default async function PublicDynamicContentPage({
                 publishedAt={content.publishedAt ? new Date(content.publishedAt) : null}
                 updatedAt={content.updatedAt ? new Date(content.updatedAt) : null}
                 commentCount={commentEntries.length}
+                category={categories[0] ? { name: termName("category", categories[0]), href: `${lb}/kategori/${categories[0]}` } : null}
               />
             ) : null}
             {content.type === "page" && content.tldr && !readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? (
@@ -568,24 +586,10 @@ export default async function PublicDynamicContentPage({
               </div>
             ) : null}
           </div>
-          {/* Öne çıkan görsel başlığın yanında (geniş bant değil); görsel SEO için alt ve açıklama */}
-          {headerImage && featuredImageUrl && (
-            <figure className="space-y-2">
-              <div style={{ borderRadius: tokens.geometry.borderRadius }} className="overflow-hidden border border-nx-line bg-nx-subtle">
-                <ResponsiveImage
-                  src={featuredImageUrl}
-                  alt={featuredAlt}
-                  title={featuredTitle}
-                  priority
-                  focal={mediaFocal}
-                  sizes="(min-width: 768px) 400px, 100vw"
-                  className="aspect-[4/3] w-full object-cover"
-                />
-              </div>
-              {featuredCaption && <figcaption className="text-center text-xs italic text-nx-muted">{featuredCaption}</figcaption>}
-            </figure>
-          )}
+          {headerImage && featuredImageUrl && content.type !== "post" ? headerFigure : null}
         </div>
+        {content.type === "post" && headerImage ? <div className="pt-5">{headerFigure}</div> : null}
+        {content.type === "post" && showShareBar ? <div className="pt-4"><PostShareRow t={t} title={content.title} pageUrl={pageUrl} /></div> : null}
       </header>
 
       {/* Kısıtlı / Taslak Yayın Bildirimi */}
@@ -609,7 +613,7 @@ export default async function PublicDynamicContentPage({
       />
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}
-      {showShareBar && (
+      {showShareBar && content.type !== "post" && (
         <ContentShareBar
           title={content.title}
           pageUrl={pageUrl}

@@ -22,6 +22,12 @@ export const tr = {
     answerHint: "Yanıt yalnızca bu sitede yayımlanmış sayfalardan kurulur.",
     sources: "Kaynaklar",
   },
+  quick: {
+    callback: "Sizi arayalım!",
+    title: "Sizi arayalım",
+    close: "Kapat",
+    whatsapp: "WhatsApp ile yazın",
+  },
   content: {
     fieldsTitle: "Özellikler",
     breadcrumb: "Sayfa yolu",
@@ -39,6 +45,8 @@ export const tr = {
     membersOnlyCta: "Oturum aç",
     shareHeading: "Bu içeriği paylaşın ve yapay zeka ajanlarına aktarın",
     authorBy: "Yazar: {name}",
+    byAuthor: "Tarafından {name}",
+    shareLabel: "Paylaş :",
     updatedOn: "Güncelleme: {date}",
     commentCount: "{n} yorum",
     prevPost: "Önceki yazı",

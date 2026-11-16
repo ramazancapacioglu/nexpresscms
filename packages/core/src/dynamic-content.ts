@@ -139,6 +139,8 @@ export interface DynamicCandidate {
   ctaUrl?: string;
   contactWhatsapp?: string;
   contactPhone?: string;
+  /** Kampanyanın bağlı olduğu ürün/çözüm sayfası (`contact_campaign` modeli bu adresle eşleştirir). */
+  productUrl?: string;
 }
 
 export type DynamicItem = Omit<DynamicCandidate, "categories" | "tags" | "kind" | "priceCents">;
@@ -181,7 +183,7 @@ function filterDynamicCandidates(candidates: DynamicCandidate[], q: DynamicQuery
 /** Bloklar arasında (iç içe dahil) dinamik liste ve kampanya vitrini bloklarını bulur. */
 export function collectDynamicBlocks(blocks: BlockNode[], into: BlockNode[] = []): BlockNode[] {
   for (const b of blocks) {
-    if (b.type === "dynamic_list" || b.type === "campaign_showcase") into.push(b);
+    if (b.type === "dynamic_list" || b.type === "campaign_showcase" || b.type === "contact_campaign") into.push(b);
     if (Array.isArray(b.children)) collectDynamicBlocks(b.children as BlockNode[], into);
   }
   return into;
@@ -270,4 +272,29 @@ export function resolveDynamicBlock(candidates: DynamicCandidate[], q: DynamicQu
  */
 export function hasDynamicQueryParams(params: Record<string, string | string[] | undefined>): boolean {
   return Object.keys(params).some((k) => /^q[A-Za-z0-9]{1,8}_(q|cat|sort|page|min|max)$/.test(k) && params[k] !== undefined && params[k] !== "");
+}
+
+/** Adres yolunun son parçası (`https://x.test/tr/urun/` → `urun`); ürün sayfası eşleştirmesi dil önekine ve alan adına bağlı kalmasın. */
+export function lastPathSegment(url: string | undefined | null): string {
+  if (!url) return "";
+  let path = String(url).trim();
+  try {
+    path = new URL(path, "https://x.invalid").pathname;
+  } catch {
+    path = path.split(/[?#]/)[0] ?? "";
+  }
+  return path.split("/").filter(Boolean).pop()?.toLowerCase() ?? "";
+}
+
+/**
+ * `contact_campaign` modeli için kampanya seçimi: yayındaki (süresi dolmamış) kampanyalardan ürün sayfası adresi eşleşen ilk kayıt.
+ * `campaignSlug` verilmişse yalnızca o kampanya; ürün adresi boşsa içinde bulunulan sayfanın adresi kullanılır.
+ */
+export function pickContactCampaign(candidates: DynamicCandidate[], input: { productUrl?: string; campaignSlug?: string; currentUrl?: string }): DynamicCandidate | null {
+  const live = candidates.filter((c) => c.kind === "campaigns" && !c.isExpired);
+  const slug = (input.campaignSlug ?? "").trim().toLowerCase();
+  if (slug) return live.find((c) => lastPathSegment(c.url) === slug) ?? null;
+  const wanted = lastPathSegment(input.productUrl) || lastPathSegment(input.currentUrl);
+  if (!wanted) return null;
+  return live.find((c) => lastPathSegment(c.productUrl) === wanted) ?? null;
 }

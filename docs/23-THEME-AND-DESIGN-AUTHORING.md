@@ -447,7 +447,7 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 
 Bunlar editörde elle eklenebilir ve tema paketinin `pages/*.json` şeması tür adını kabul eder. **Kütüphane doğrulaması reddeder.** Model, kullanıcı özellikle “şablon” istemedikçe bunları yazmaz. Sebep: sahte yorum/puan, istemci davranışı veya uydurma sorgu.
 
-`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`.
+`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`, `contact_campaign`.
 
 Şablonda kullanılanların alanı §6’dadır. Aşağıdakiler sayfa içeriği içindir, AI kataloğunda yoktur:
 
@@ -666,3 +666,5 @@ Aynı turda burayı güncelle:
 `docs/07` sayfa/kütüphane aktarımı, `docs/08` yerleşik header/footer aktarımı içindir. Yeni blok veya tema alanı yalnızca o dosyalara yazılırsa bu belge eksik kalır; modele bu belge verildiği için asıl sözleşme budur.
 
 Son gözden geçirme: 2026-11-04. Kaynaklar yukarıdaki tabloyla karşılaştırıldı.
+
+**Form + kampanya kartı modeli (`contact_campaign`, 2026-11-16).** Tek blok: solda ürüne bağlı canlı kampanya kartı, sağda form (`props.formId`, `productUrl`, `campaignSlug`, `heading`, `note`). Kampanya `schemaAttributes.campaign.productUrl` son yol parçasıyla (veya `campaignSlug`) eşleşir; süresi dolmuşsa kart çizilmez, form ortalanır. Her sayfada tasarım tekrarlanmaz, yalnızca model eklenir. Sabit hızlı iletişim: ayar `general.quickContactFormId` ve `general.whatsappNumber`; sağ altta "Sizi arayalım!" (CSS `:target` penceresi), sol altta WhatsApp. Yazı sayfası: künye (avatar, Tarafından, tarihler, kategori, yorum), künye altında tam genişlik görsel + başlık altyazısı, "Paylaş :" yuvarlak düğmeler; kenar çubuğu sağdadır.

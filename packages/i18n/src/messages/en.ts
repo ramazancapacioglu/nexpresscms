@@ -19,6 +19,12 @@ export const en: Messages = {
     answerHint: "The answer is built only from pages published on this site.",
     sources: "Sources",
   },
+  quick: {
+    callback: "Call me back",
+    title: "We will call you",
+    close: "Close",
+    whatsapp: "Write on WhatsApp",
+  },
   content: {
     fieldsTitle: "Details",
     breadcrumb: "Breadcrumb",
@@ -36,6 +42,8 @@ export const en: Messages = {
     membersOnlyCta: "Sign in",
     shareHeading: "Share this content and hand it to AI agents",
     authorBy: "Author: {name}",
+    byAuthor: "By {name}",
+    shareLabel: "Share:",
     updatedOn: "Updated: {date}",
     commentCount: "{n} comments",
     prevPost: "Previous post",

@@ -39,6 +39,11 @@ const CAROUSEL_CSS = `
 }
 `;
 
+/** "%40" → "%40 İndirim"; metin zaten "indirim" içeriyorsa olduğu gibi (çift "İndirim İndirim" yazılmasın). */
+export function discountLabel(value: string): string {
+  return /indirim/i.test(value) ? value : `${value} İndirim`;
+}
+
 const SAMPLE_CAMPAIGNS: DynamicItem[] = [
   {
     id: "sample_1",
@@ -199,7 +204,7 @@ export function CampaignShowcaseView({
                   )}
                   {primary.discount && (
                     <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-3.5 py-1 text-xs font-extrabold shadow-sm">
-                      {primary.discount} İndirim
+                      {discountLabel(primary.discount)}
                     </span>
                   )}
                 </div>
@@ -324,7 +329,7 @@ export function CampaignShowcaseView({
             </span>
             {items[0]!.discount && (
               <span className="rounded-md bg-white/20 px-2 py-0.5 text-xs font-black">
-                {items[0]!.discount} İndirim
+                {discountLabel(items[0]!.discount!)}
               </span>
             )}
             {showCountdown && items[0]!.daysRemaining != null && (
@@ -425,7 +430,7 @@ export function CampaignShowcaseView({
 /**
  * Tekil Kampanya Kartı Bileşeni
  */
-function CampaignCard({
+export function CampaignCard({
   item,
   tokens,
   showDiscountBadge,
@@ -473,7 +478,7 @@ function CampaignCard({
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
             {item.discount && (
               <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-2.5 py-0.5 text-[11px] font-black shadow-sm">
-                {item.discount} İndirim
+                {discountLabel(item.discount)}
               </span>
             )}
             {item.badge && (
