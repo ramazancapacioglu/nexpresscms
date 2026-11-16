@@ -360,11 +360,11 @@ export default async function PublicLocaleLayout({
         searchLabel={t("site.search")}
         cartLabel={t("shop.cart")}
         social={socialLinksFromSameAs(resolvedSettings.seo.sameAs)}
-        liveSearch={isYf}
+        liveSearch={isYf || isBayi}
         overlay={pageOpts.header === "transparent" ? pageOpts.headerTone : undefined}
       />
       )}
-      {isYf ? (
+      {isYf || isBayi ? (
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var box=document.getElementById("nx-yf-search");if(!box)return;var input=box.querySelector("input");var out=document.getElementById("nx-yf-search-results");if(!input||!out)return;var timer;box.addEventListener("toggle",function(){if(box.matches(":popover-open"))input.focus();});input.addEventListener("input",function(){clearTimeout(timer);var q=input.value.trim();timer=setTimeout(function(){if(q.length<2){out.replaceChildren();return;}fetch("/api/search?q="+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(data){out.replaceChildren();(data.items||[]).forEach(function(item){var a=document.createElement("a");a.href=item.href||"#";var s=document.createElement("strong");s.textContent=item.title||"";a.appendChild(s);if(item.snippet){var p=document.createElement("p");p.textContent=item.snippet;a.appendChild(p);}out.appendChild(a);});}).catch(function(){});},180);});})();`,

@@ -370,7 +370,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                     {String(item?.title ?? "")}
                   </h3>
                   {typeof item?.description === "string" && item.description.trim() ? (
-                    <p className="text-sm text-nx-soft leading-relaxed">
+                    <p className="whitespace-pre-line text-sm text-nx-soft leading-relaxed">
                       {item.description}
                     </p>
                   ) : null}

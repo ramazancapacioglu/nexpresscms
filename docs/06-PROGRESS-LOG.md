@@ -1289,3 +1289,4 @@
 - ✅ `contact_campaign` bloğu (form + ilgili kampanya kartı), `models`/`quick` içe aktarma adımları, `camp_*` alanları, iki sütunlu içe aktarılan formlar.
 - ✅ Her sayfada hızlı iletişim (Sizi arayalım + WhatsApp); `collectFormIds` alt çizgili form kimliklerini kabul eder.
 - ✅ Yazı sayfası WordPress düzeni: künye, tam genişlik görsel, "Paylaş :" satırı, sağ kenar çubuğu. Testler: core, wp-importer, i18n.
+- ✅ Yazılım Bayi: arama pencere olarak açılır, başlıkta arama + Ücretsiz Demo, altlık/WhatsApp çakışması, `button_row` palet rengi, iletişim sayfası bilgi kutuları ve harita, son yazılar tarihe göre sıralı.

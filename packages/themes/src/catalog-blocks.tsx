@@ -86,7 +86,7 @@ export function renderStudioCatalogBlock(
             </div>
           ) : null}
           <h3 className="mt-1 text-base md:text-lg font-bold text-nx-fg">{text(p.title, "Bilgi kutusu")}</h3>
-          {bodyText ? <p className="mt-1.5 text-sm leading-relaxed text-nx-soft">{bodyText}</p> : null}
+          {bodyText ? <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-nx-soft">{bodyText}</p> : null}
           {href && text(p.linkLabel) ? (
             <span className="mt-3 inline-block text-sm font-semibold text-nx-link">
               {text(p.linkLabel)}
@@ -347,8 +347,9 @@ export function renderStudioCatalogBlock(
                 key={index}
                 href={href}
                 className={`inline-flex rounded-md px-4 py-2 text-sm font-semibold ${
-                  solid ? "bg-blue-600 text-white" : "border border-nx-line text-nx-fg"
+                  solid ? "" : "border border-current"
                 }`}
+                style={solid ? { backgroundColor: "var(--nx-primary,#0c644e)", color: "var(--nx-primary-fg,#fff)" } : { color: "inherit" }}
               >
                 {text(button.label, "Buton")}
               </a>

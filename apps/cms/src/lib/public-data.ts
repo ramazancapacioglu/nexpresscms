@@ -126,6 +126,7 @@ export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: stri
 
   const recentPosts = publicContents
     .filter((c) => c.type === "post" || c.type === "kb_tech")
+    .sort((x, y) => new Date(y.publishedAt ?? 0).getTime() - new Date(x.publishedAt ?? 0).getTime())
     .slice(0, 8)
     .map((p) => ({
       id: p.contentId,

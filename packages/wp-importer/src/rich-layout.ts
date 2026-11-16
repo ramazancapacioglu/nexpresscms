@@ -99,7 +99,8 @@ export function compileRichWpHtml(rawHtml: string, opts: { baseUrl?: string; pal
         out.push({
           id: id(),
           type: "map_embed",
-          props: { title: "Konum & Harita", query, ...(embedUrl ? { embedUrl } : {}) },
+          // Anahtarlı gömme adresi yerine anahtarsız olan yazılır: kaynak sitenin API anahtarı içeriğe sızmaz
+          props: { title: "Konum & Harita", query, ...(embedUrl ? { embedUrl: `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed` } : {}) },
         });
         continue;
       }
