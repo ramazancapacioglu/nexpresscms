@@ -60,6 +60,12 @@ WP_ADMIN_USER=… WP_ADMIN_PASS=… tsx scripts/import-wp-extras.ts --origin htt
 | `comments` | Özgün tarih; yıldızlı yorum kartı `review` (puan + başlık), site yanıtı ve düz yorum `comment`. Spam ve çöp alınmaz. |
 | `reviews` | Google yorumları (`aseo_review`) ana sayfaya `google` etiketli yorum olarak; kaynakta puan olmadığından yıldız yazılmaz. |
 | `seo` | Ana sayfanın JSON-LD'sinden `seo.organizationSchema`, sameAs ve logo. |
+| `featured` | Kaynaktaki öne çıkan görsel → yerel kopya (`featuredImage` ve yayın meta'sı). |
+| `files` | Belge/arşiv dosyaları (PDF, ZIP, DOCX…) `WP_UPLOADS_DIR` altına özgün yolla iner. |
+| `uploads` | Bloklarda kalan `wp-content/uploads` adresleri yerele alınır; boyutlu kopya özgün dosyaya eşlenir; kaynakta 404 olan görsel/galeri öğesi atılır. |
+| `campaigns` | "Kampanya" kategorisindeki yazılar `campaign` türüne çevrilir (indirim ve tarih metinden), eski kök adres 301. |
+| `theme` | Yazılım Bayi temasını yayına alır (başlık, menü, altlık, 1280 px). |
+| `layout` | İçerik kendi başlığıyla açılıyorsa sayfa başlık satırını gizler. |
 | `media` | Kitaplığın tamamı (görseller); daha önce inenlerin boş alt metni/başlığı doldurulur. |
 
 Her adım yeniden çalıştırılabilir (kimlikler `cnt_wp_<id>`, `cmt_wp_<id>`, `frm_wp_<id>`). Çıktı yalnızca sayıdır; girdi içeriği günlüğe yazılmaz.

@@ -202,6 +202,9 @@ ${S} .space-y-8 > .nx-block.yf-band, ${S} .space-y-8 > .nx-block:has(.nx-yb-hero
 ${S} .nx-public-header { background:#fff !important; border-bottom:1px solid #0b4f8a !important; }
 ${S} .nx-utility-link { color:#1a202c; font-size:13px; font-weight:500; }
 ${S} .nx-utility-link:hover { color:#0c644e; }
+/* Koyu üst şeritte hızlı bağlantılar açık renk olmalı; koyu yazı lacivert zeminde görünmez kalırdı */
+${S} .nx-header-top .nx-utility-link { color:#ffffff; }
+${S} .nx-header-top .nx-utility-link:hover { color:#9fe0c8; }
 ${S} .nx-public-header nav a { font-size:14px; font-weight:600; color:#042646; }
 ${S} .nx-public-header nav a:hover { color:#0c644e; }
 ${S} .nx-public-header a[href^="tel:"] { color:#0c644e; font-weight:700; font-size:16px; }

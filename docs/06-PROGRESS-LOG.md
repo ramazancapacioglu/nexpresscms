@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-16] — Kampanyalar, öne çıkan görseller, Yazılım Bayi teması yayında
+- ✅ "Kampanya" kategorisindeki yazılar `campaign` türüne çevrildi (23 kayıt; `extras/campaigns.ts`): `/kampanyalar` arşivi, `/kampanya/<adres>` sayfası, Offer şeması. İndirim ve tarih başlık/açıklamadan okunur (`parseCampaignText`, testli); bulunamayan alan boş kalır. Kökteki eski adres `/kampanya/<adres>`e 301 gider; `/akinsoft-kampanyalar/` arşivi `/kampanyalar`a.
+- ✅ Öne çıkan görsel: önceki aktarım hiçbir içeriğe yazmamıştı (kartlar ve paylaşım görseli boştu). 99 içerik için kaynaktaki `featured_media` yerel kopyaya bağlandı (`extras/images.ts`). Sayfalarda yerleşik öne çıkan banner artık çizilmez (içerik kendi görselini taşır).
+- ✅ Alan adı değişince kırılacak `wp-content/uploads` adresleri: görsel adresleri (boyutlu kopyalar dahil) kitaplığa taşındı ve `/wp-content/uploads/…` 301 ile oraya gider; PDF/ZIP/DOCX gibi belgeler `WP_UPLOADS_DIR` altında özgün adreste sunulur (`app/wp-content/uploads/[...path]`, uzantı izin listeli, yol gezinmesine kapalı; test `wp-uploads.test.ts`). Kaynakta da 404 olan görsel blokları (galeri öğesi dahil) atıldı.
+- ✅ Yazılım Bayi teması yayına alındı (`extras/theme.ts`): jetonlar, üst şerit + hızlı bağlantılar, ana menü, 5 sütunlu altlık, iletişim, alt çubuk. Site genişliği 1280 px. Sayfalar site genişliğinde çizilir (`page` türü için `max-w-4xl` kalktı); içerik kendi başlığıyla açılıyorsa yerleşik başlık satırı gizlenir (64 sayfa, `hideTitle`).
+- ✅ Hata: koyu üst şeritte hızlı bağlantılar koyu renkteydi (görünmezdi); logo menü genişleyince 0 px'e daralıyordu ve sağ/orta bölge boşken ızgara ana şeridi ikiye bölüyordu. `site-chrome.tsx` ve tema CSS'i düzeltildi.
+- ✅ Yönlendirme: WordPress'teki eski kurallar (`/kampanyalar → /`) yeni rotayı ana sayfaya yollayacaktı; gerçek rotayı gölgeleyen kurallar kapatıldı, zincirler tek adıma indi (`tidyRedirects`).
+- 🔎 Doğrulama (üretim kopyası): 247 iç bağlantı ve 224 görsel adresi tarandı; kalan 404: yok.
+
 ### [2026-11-16] — Akınsoft İzmir tam aktarımı (yönetici verisi, şema, yönlendirme)
 - ✅ Üretim sunucusunda temel aktarım koştu (`import-live-akinsoft.ts`): 69 sayfa, 51 yazı, 12 soru kaydı, 53 yorum, 4 kategori, 23 etiket, 13 yönlendirme, 132 SEO başlığı.
 - ✅ Yeni `apps/cms/scripts/import-wp-extras.ts` (`src/lib/wp-bridge/extras/*`): WordPress yöneticisinden yalnızca okuyarak yazar adı, 9 Kadence form tanımı (alan, alıcı, başarı iletisi), form girdileri, Rank Math yönlendirmeleri (kalıp olanlar sayılır, yazılmaz), arşiv yönlendirmeleri (`/makaleler/` → `/kategori/…`, `/tag/…` → `/etiket/…`, `/ai-prompts/` → `/sorular`), 50+ taslak, yorum tarihi/puanı, Google yorumları, tüm medya (alt metin dahil) ve kuruluş şeması. Kimlik bilgisi yalnızca ortam değişkeninde (`WP_ADMIN_USER`, `WP_ADMIN_PASS`).

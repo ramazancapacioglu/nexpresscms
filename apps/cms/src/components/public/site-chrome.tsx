@@ -88,10 +88,10 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       const lockup = logoText.split(" - ");
       const branded = !custom.logoImage && lockup.length > 1;
       return (
-        <a href={home} className="nx-logo flex min-w-0 items-center gap-2.5 no-underline">
+        <a href={home} className="nx-logo flex shrink-0 items-center gap-2.5 no-underline">
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
+            <img src={custom.logoImage} alt={logoText} className="h-8 w-auto max-w-none shrink-0" />
           ) : /^[A-ZÇĞİÖŞÜ]{3,}SOFT$/.test(logoText) ? (
             <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>{logoText.slice(0, -4)}</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
           ) : branded ? (
@@ -278,7 +278,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
         }
       >
         <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">
-          {row(mainZones, "hidden w-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
+          {row(mainZones, `hidden w-full items-center gap-4 md:grid ${mainZones.center.length === 0 && mainZones.right.length === 0 ? "grid-cols-1" : "grid-cols-[1fr_auto_1fr]"}`, "desktop")}
           {row(mobileZones, "grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
         {bottomVisible ? (

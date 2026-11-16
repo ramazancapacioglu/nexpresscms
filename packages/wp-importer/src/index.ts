@@ -12,3 +12,5 @@ export * from "./bridge-repair";
 export * from "./seo-vars";
 export * from "./public-head";
 export * from "./kadence";
+export * from "./campaign-text";
+export * from "./heading-match";

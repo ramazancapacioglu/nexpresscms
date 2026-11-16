@@ -143,9 +143,11 @@ export async function importArchiveRedirects(session: WpSession, siteId: string)
     session.json<Record<string, { rest_base?: string; has_archive?: boolean | string }>>("/wp-json/wp/v2/types").catch(() => ({}) as Record<string, { rest_base?: string; has_archive?: boolean | string }>),
   ]);
   const pairs: Array<[string, string]> = [];
-  for (const term of cats) pairs.push([new URL(term.link).pathname, `/kategori/${term.slug}`]);
+  for (const term of cats) pairs.push([new URL(term.link).pathname, /kampanya/i.test(term.slug) ? "/kampanyalar" : `/kategori/${term.slug}`]);
   for (const term of tags) pairs.push([new URL(term.link).pathname, `/etiket/${term.slug}`]);
   if (types.ai_prompt?.has_archive) pairs.push(["/ai-prompts", "/sorular"]);
+  // Hazır şablonlardaki "Kurumsal" bağlantısı (`/tr/kurumsal`) bu sitede Hakkımızda sayfasıdır.
+  pairs.push(["/kurumsal", "/hakkimizda"]);
   let saved = 0;
   for (const [from, to] of pairs) {
     const path = `/${from.replace(/^\/+|\/+$/g, "")}`;
@@ -153,4 +155,32 @@ export async function importArchiveRedirects(session: WpSession, siteId: string)
     if ((await repo.save({ fromPath: path, toPath: to, code: 301, note: "WordPress arşivi" })).ok) saved += 1;
   }
   return { saved };
+}
+
+/** Gerçek NexPress rotaları: bunları kaynak alan yönlendirme (eski WordPress kuralı) yeni sayfayı gölgelerdi. */
+const REAL_ROUTES = [/^\/kampanyalar$/, /^\/kampanya\//, /^\/kategori\//, /^\/etiket\//, /^\/sorular$/, /^\/yazar\//, /^\/ara$/, /^\/blog$/];
+
+/**
+ * Yönlendirme zincirlerini tek adıma indirir (A→B→C yerine A→C) ve gerçek rotayı gölgeleyen eski kuralları kapatır
+ * (ör. WordPress'teki `/kampanyalar → /` kuralı yeni kampanya arşivini ana sayfaya yollardı). Hiçbir kural silinmez.
+ */
+export async function tidyRedirects(siteId: string): Promise<{ collapsed: number; disabled: number }> {
+  const repo = getRedirectRepository(siteId);
+  let disabled = 0;
+  for (const rule of await repo.list()) {
+    if (rule.enabled && REAL_ROUTES.some((pattern) => pattern.test(rule.fromPath))) {
+      await repo.setEnabled(rule.id, false);
+      disabled += 1;
+    }
+  }
+  const rules = (await repo.list()).filter((rule) => rule.enabled);
+  const next = new Map(rules.map((rule) => [rule.fromPath, rule.toPath]));
+  let collapsed = 0;
+  for (const rule of rules) {
+    let target = rule.toPath;
+    for (let hop = 0; hop < 5 && next.has(target) && next.get(target) !== rule.fromPath; hop += 1) target = next.get(target) ?? target;
+    if (target === rule.toPath || target === rule.fromPath) continue;
+    if ((await repo.save({ fromPath: rule.fromPath, toPath: target, code: rule.code, note: rule.note, enabled: true })).ok) collapsed += 1;
+  }
+  return { collapsed, disabled };
 }

@@ -178,6 +178,9 @@ export default async function PublicDynamicContentPage({
     permanentRedirect(`${lb}${cPath}`);
   }
 
+  // Kampanyanın tek adresi `/kampanya/<adres>`; kökteki kopya kalıcı olarak oraya gider (yinelenen içerik olmaz)
+  if (!draft && !prefix && resolved.content.type === "campaign") permanentRedirect(`${lb}/kampanya/${resolved.content.slug}`);
+
   const content = resolved.content;
   const mediaFocal = await getPublicMediaFocal(siteId);
 
@@ -453,7 +456,7 @@ export default async function PublicDynamicContentPage({
   }
 
   return (
-    <article className="mx-auto max-w-4xl space-y-10">
+    <article className={`mx-auto w-full space-y-10 ${content.type === "page" ? "" : "max-w-4xl"}`}>
       {banner}
       {switcher}
       <script
@@ -541,7 +544,7 @@ export default async function PublicDynamicContentPage({
         </div>
 
         {/* Öne Çıkan Görsel (Featured Image + Görsel SEO Figcaption) */}
-        {featuredImageUrl && (
+        {featuredImageUrl && (content.type !== "page" || pub.showFeaturedImage === true) && (
           <figure className="pt-3 space-y-2">
             <div
               style={{ borderRadius: tokens.geometry.borderRadius }}

@@ -145,6 +145,10 @@ Canlı veritabanı PostgreSQL 16 + pgvector 0.6 (`nexpress_cms`, yalnızca `127.
 
 Next (`next start`), `Host` başlığını `request.url` için kullanmaz; vekil arkasında adres `localhost:PORT` olur. Ziyaretçiye dönen mutlak yönlendirmeler `lib/public-url.ts` (`publicUrl(path, request)`) ile kurulur; `Host`/`X-Forwarded-Host` ve `X-Forwarded-Proto` başlıkları okunur. Vekil `proxy_set_header Host $host` ve `X-Forwarded-Proto $scheme` göndermelidir (Plesk için örnek `scripts/nginx-nexpress.conf`). Yeni route'larda `new URL(x, request.url)` yerine `publicUrl` kullanın.
 
+## 8c. Eski WordPress dosya adresleri (2026-11-16)
+
+`/wp-content/uploads/…` rotası iki iş yapar: belge ve arşiv dosyalarını (`pdf`, `zip`, `docx`, `xlsx`…) `WP_UPLOADS_DIR` (varsayılan `./data/wp-uploads`) altından özgün adresinde sunar; görsel adreslerini (boyutlu kopyalar dahil) medya kitaplığına 301 ile yönlendirir. `WP_UPLOADS_DIR` kalıcı diskte olmalı ve yedeğe girmelidir. Dosya türü izin listesi `lib/wp-uploads.ts` içindedir (betik, HTML, SVG sunulmaz). Dosyalar `import-wp-extras.ts --only files` ile iner.
+
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.
