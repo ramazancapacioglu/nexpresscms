@@ -241,6 +241,8 @@ export const en: Messages = {
     formClosed: "This form is not accepting submissions right now.",
     formError: "Could not send. Please check the fields and try again.",
     formClose: "Close",
+    privacyTitle: "Privacy Policy and Consent",
+    consentSuffix: "I have read and agree",
     formStep: "Step {n}",
     submit: "Send",
     openMap: "Open in maps",

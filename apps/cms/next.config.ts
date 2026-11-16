@@ -19,7 +19,7 @@ const csp = [
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
   `connect-src 'self'${extraScript ? ` ${extraScript}` : ""}`,
-  "frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  "frame-src 'self' https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

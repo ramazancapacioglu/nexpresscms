@@ -608,6 +608,7 @@ export function BlockGeneralTab() {
             <option value="check">Onay İşaretli (✓)</option>
             <option value="bullet">Madde İşaretli (•)</option>
             <option value="numbered">Numaralı (1, 2, 3)</option>
+            <option value="cards">Kart ızgarası</option>
           </select>
           <label className="block text-[11px] font-semibold">
             Maddeler (Her satıra 1 madde)

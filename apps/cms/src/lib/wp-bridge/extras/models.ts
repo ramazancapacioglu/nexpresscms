@@ -3,12 +3,13 @@ import type { BlockNode } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { lastPathSegment } from "@nexpress/core";
 import { parseCampaignFields } from "@nexpress/wp-importer";
+import { compileBlocks } from "../live-import";
 import { wpAll, type WpSession } from "./session";
 
 interface WpPageRaw {
   id: number;
   slug: string;
-  content?: { raw?: string };
+  content?: { raw?: string; rendered?: string };
 }
 
 /**
@@ -74,46 +75,62 @@ export async function importCampaignFields(session: WpSession, siteId: string): 
 
 const FORM_ATTR = /wp:kadence\/advanced-form\s*\{[^}]*?"id":(\d+)/;
 
+/** Derlenmiş kaynak bloklarda form henüz bir kimliğe bağlı değildir; ilk form bloğu aranır. */
+const hasForm = (node: BlockNode): boolean => node.type === "form_block" || (node.children ?? []).some((child) => hasForm(child));
+
 /**
  * "Form + kampanya kartı" modeli: kaynakta `[akin_kampanyalar urun="…"]` kısa kodu ile bir Kadence formunu yan yana koyan satır,
- * NexPress'te tek bir `contact_campaign` bloğu olur. Satırın yerine (form bloğunu taşıyan üst düzey bant) model yazılır;
- * ürün adresi kısa koddaki `urun` değeridir. Aynı sayfada form başka bir sayfaya ait kampanyaya bağlanabilir (urun farklıysa).
+ * NexPress'te tek bir `contact_campaign` bloğu olur. Yalnızca form bloğunun yerine model yazılır; aynı bantta duran başlık, metin ve
+ * özellik kartları korunur. Önceki sürüm formu taşıyan bandın tamamını değiştiriyordu (bant sayfanın gövdesini de taşıyorsa içerik
+ * kayboluyordu); bu yüzden model bandı (`wp_model_<id>`) kaynak sayfadan yeniden derlenip içindeki form modelle değiştirilir.
+ * Ürün adresi kısa koddaki `urun` değeridir.
  */
 export async function placeContactCampaign(session: WpSession, siteId: string): Promise<{ placed: number; pages: string[] }> {
   const repo = getScopedRepository(siteId);
   const locale = (await repo.getSite())?.defaultLocale || "tr";
   const raws = await wpAll<WpPageRaw>(session, "pages?status=publish&context=edit&_fields=id,slug,content", 50);
+  const rows = await repo.listContents({ locale, type: "page" });
   let placed = 0;
   const pages: string[] = [];
   for (const raw of raws) {
     const text = raw.content?.raw ?? "";
     const sc = /\[akin_kampanyalar([^\]]*)\]/.exec(text);
     const urun = /urun="([^"]+)"/.exec(sc?.[1] ?? "")?.[1];
-    const formId = FORM_ATTR.exec(text)?.[1];
-    if (!sc || !urun || !formId) continue;
-    const row = (await repo.listContents({ locale, type: "page" })).find((item) => item.id === `cnt_wp_${raw.id}`);
+    const wpForm = FORM_ATTR.exec(text)?.[1];
+    if (!sc || !urun || !wpForm) continue;
+    const row = rows.find((item) => item.id === `cnt_wp_${raw.id}`);
     if (!row) continue;
-    let done = false;
-    const swap = (nodes: BlockNode[]): BlockNode[] =>
-      nodes.map((node) => {
-        if (node.type === "contact_campaign") {
-          done = true;
-          return node;
+    const formId = `frm_wp_${wpForm}`;
+    const modelId = `wp_model_${raw.id}`;
+    const compiled = compileBlocks(raw.content?.rendered ?? "", [], raw.id, session.origin, {}, false).find((node) => hasForm(node));
+    if (!compiled) continue;
+    const heading = (() => {
+      const form = (function find(node: BlockNode): BlockNode | null {
+        if (node.type === "form_block") return node;
+        for (const child of node.children ?? []) {
+          const hit = find(child);
+          if (hit) return hit;
         }
-        const form = (node.children ?? []).find((child) => child.type === "form_block" && (child.props as { formId?: string }).formId === `frm_wp_${formId}`);
-        if (node.type === "section" && form && !done) {
-          done = true;
-          const heading = typeof (form.props as { title?: string }).title === "string" ? (form.props as { title: string }).title : "";
-          return {
-            id: `wp_model_${raw.id}`,
-            type: "contact_campaign" as const,
-            props: { formId: `frm_wp_${formId}`, productUrl: `/${lastPathSegment(urun)}`, campaignSlug: "", heading: heading || "Detaylı bilgi için Sizi arayalım.", note: "" },
-          };
-        }
-        return node.children ? { ...node, children: swap(node.children) } : node;
-      });
-    const blocks = swap(row.blocks);
-    if (!done || JSON.stringify(blocks) === JSON.stringify(row.blocks)) continue;
+        return null;
+      })(compiled);
+      const title = (form?.props as { title?: string } | undefined)?.title;
+      return typeof title === "string" ? title : "";
+    })();
+    const model: BlockNode = {
+      id: modelId,
+      type: "contact_campaign",
+      props: { formId, productUrl: `/${lastPathSegment(urun)}`, campaignSlug: "", heading: heading || "Detaylı bilgi için Sizi arayalım.", note: "" },
+    };
+    const swapForm = (node: BlockNode): BlockNode => {
+      if (node.type === "form_block") return model;
+      return node.children ? { ...node, children: node.children.map(swapForm) } : node;
+    };
+    // Eski kayıt: bandın tamamı model olmuştu. Yeni kayıt: model, bandın içinde. İkisi de aynı kaynaktan yeniden kurulur.
+    const rebuilt = swapForm(compiled);
+    const at = row.blocks.findIndex((node) => node.id === modelId);
+    if (at < 0) continue;
+    const blocks = [...row.blocks.slice(0, at), rebuilt, ...row.blocks.slice(at + 1)];
+    if (JSON.stringify(blocks) === JSON.stringify(row.blocks)) continue;
     await repo.saveContent({
       contentId: row.id,
       type: row.type,

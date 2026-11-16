@@ -39,3 +39,6 @@ Ayarlar: `/admin/forms/email` (host, port, TLS, kullanıcı, parola, gönderen) 
 ## 7. Sınırlar ve borçlar
 
 Dosya yükleme alanı, çok adımlı form, CAPTCHA (bal küpü + zaman belirteci + hız sınırı kullanılır) ve e-posta kuyruğu/yeniden deneme yoktur; e-posta ve webhook `after()` ile tek denemedir. Koşul tek cevap eşitliğidir; iç içe formül ve birden çok koşul yoktur.
+
+## Açık rıza ve gizlilik penceresi (2026-11-16)
+Onay kutusunun etiketi gizlilik/rıza/KVKK içeriyorsa "Gizlilik politikası" bağlantısı gizlilik sayfasını (`gizlilik-politikasi`, gömülü görünüm) pencerede açar; sayfa yoksa metin düz kalır. Pencere betiksizdir (`:target`), içerik iframe ile tembel yüklenir. Hızlı iletişim penceresindeki form da aynı bağlantıyı taşır.

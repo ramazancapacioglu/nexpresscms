@@ -24,6 +24,7 @@ import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { createFormToken } from "@/lib/form-token";
+import { privacyEmbedUrl } from "@/lib/privacy";
 import { resolveDraftPreview } from "@/lib/draft-preview";
 import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
@@ -276,7 +277,7 @@ export default async function PublicDynamicContentPage({
   const customFields = displayFields(customDef, content.schemaAttributes, locale);
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
-  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null, privacyUrl: Object.keys(pageForms).length > 0 ? await privacyEmbedUrl(siteId, locale, lb) : "" } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale, contentPrefix(types, content.type))} />;
 

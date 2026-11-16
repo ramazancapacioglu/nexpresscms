@@ -226,6 +226,23 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
           </ol>
         );
       }
+      if (listType === "cards") {
+        // Uzun madde listeleri: onay simgeli kart ızgarası (betiksiz; mobilde tek sütun)
+        return (
+          <ul className="grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((it: any, idx: number) => (
+              <li
+                key={idx}
+                style={{ borderColor: tokens.colors.border, borderRadius: tokens.geometry.borderRadius }}
+                className="flex items-start gap-2.5 border bg-nx-card px-4 py-3 text-sm leading-relaxed text-nx-fg shadow-xs"
+              >
+                <span aria-hidden="true" style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-bold">✓</span>
+                <span>{String(it)}</span>
+              </li>
+            ))}
+          </ul>
+        );
+      }
       return (
         <ul className="space-y-2.5 text-base text-nx-soft">
           {items.map((it: any, idx: number) => (

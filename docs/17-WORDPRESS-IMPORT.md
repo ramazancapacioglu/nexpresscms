@@ -74,6 +74,8 @@ Her adım yeniden çalıştırılabilir (kimlikler `cnt_wp_<id>`, `cmt_wp_<id>`,
 
 **Yeni adımlar (2026-11-16).** `campaigns` adımı kaynak düzenleme ekranındaki `camp_*` alanlarını (indirim, hediye, ürün adı/sayfası, tarihler, şartlar) okur. `models`: `[akin_kampanyalar urun=…]` + Kadence formu olan satırı `contact_campaign` bloğuna çevirir. `quick`: hızlı iletişim formu ve WhatsApp numarasını ayarlara yazar. `forms`: iki sütunlu görünüm, kısa alanlar yan yana.
 
+**Model düzeltmesi ve kartlar (2026-11-16).** `models` adımı artık formu taşıyan bandın tamamını değil yalnızca form bloğunu `contact_campaign` ile değiştirir; band kaynak sayfadan yeniden derlenir (önceki sürümde gövdesi aynı bantta olan sayfalarda, örn. `on-muhasebe-programi`, metin kayboluyordu). `design` adımı düz metin sayfalara kart yerleşimi uygular (`cardifyPlainBlocks`, hukuki sayfalar hariç). İçerik kapsama taraması: kaynak ve NexPress kelime karşılaştırması ile eksik sayfa bulunur.
+
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
 

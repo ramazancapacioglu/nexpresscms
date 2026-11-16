@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { createFormToken } from "@/lib/form-token";
+import { privacyEmbedUrl } from "@/lib/privacy";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
@@ -141,7 +142,7 @@ export default async function PublicHomePage({
           patterns={await getSyncedPatternsMap(siteId)}
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId, sp)}
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
-          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
+          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null, privacyUrl: await privacyEmbedUrl(siteId, locale, lb) }}
           tpl={coverTemplateContext({
             site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
             locale,

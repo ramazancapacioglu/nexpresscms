@@ -1,8 +1,11 @@
 import "server-only";
 import type { BlockNode } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { assignHeadingAnchors, buildAnchorNav, parseTocEntries, sanitizeBlockColors, tidyFaqBlocks } from "@nexpress/wp-importer";
+import { assignHeadingAnchors, cardifyPlainBlocks, buildAnchorNav, parseTocEntries, sanitizeBlockColors, tidyFaqBlocks } from "@nexpress/wp-importer";
 import type { WpSession } from "./session";
+
+/** Hukuki ve ana sayfa içerikleri kartlaştırılmaz. */
+const CARDIFY_SKIP = new Set(["gizlilik-politikasi", "kvkk-aydinlatma-metni", "ana-sayfa", "ana-sayfa-yedek", "blog"]);
 
 export interface TidyResult {
   contents: number;
@@ -10,6 +13,7 @@ export interface TidyResult {
   faqFixed: number;
   anchorNavs: number;
   tocs: number;
+  cards: number;
 }
 
 /**
@@ -24,7 +28,7 @@ export async function tidyContentDesign(session: WpSession | null, siteId: strin
   const locale = site?.defaultLocale || "tr";
   const colors = (site?.designTokens as { colors?: Record<string, string> } | undefined)?.colors ?? {};
   const palette = Object.values(colors).filter((value): value is string => typeof value === "string");
-  const result: TidyResult = { contents: 0, colorsRemoved: 0, faqFixed: 0, anchorNavs: 0, tocs: 0 };
+  const result: TidyResult = { contents: 0, colorsRemoved: 0, faqFixed: 0, anchorNavs: 0, tocs: 0, cards: 0 };
   for (const row of await repo.listContents({ locale })) {
     if (row.type === "template") continue;
     let blocks: BlockNode[] = row.blocks;
@@ -35,6 +39,11 @@ export async function tidyContentDesign(session: WpSession | null, siteId: strin
     const faq = tidyFaqBlocks(blocks);
     blocks = faq.blocks;
     result.faqFixed += faq.fixed;
+    if (row.type === "page" && !CARDIFY_SKIP.has(row.slug)) {
+      const cards = cardifyPlainBlocks(blocks);
+      blocks = cards.blocks;
+      result.cards += cards.lists + cards.groups;
+    }
 
     const hasMenu = JSON.stringify(blocks).includes('"type":"anchor_nav"') || JSON.stringify(blocks).includes('"type":"toc"');
     if (!hasMenu) {

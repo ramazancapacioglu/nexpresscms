@@ -13,6 +13,8 @@ export interface FormRenderContext {
   status?: "sent" | "error" | null;
   /** Sonucun ait olduğu form bloğu kimliği */
   blockId?: string | null;
+  /** Gizlilik politikası sayfası (gömülü görünüm): açık rıza onay kutusundaki bağlantı bunu pencerede açar. Boşsa bağlantı yok. */
+  privacyUrl?: string;
 }
 
 export interface BlockRenderContext {

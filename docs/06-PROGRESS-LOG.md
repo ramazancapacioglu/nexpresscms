@@ -1290,3 +1290,4 @@
 - ✅ Her sayfada hızlı iletişim (Sizi arayalım + WhatsApp); `collectFormIds` alt çizgili form kimliklerini kabul eder.
 - ✅ Yazı sayfası WordPress düzeni: künye, tam genişlik görsel, "Paylaş :" satırı, sağ kenar çubuğu. Testler: core, wp-importer, i18n.
 - ✅ Yazılım Bayi: arama pencere olarak açılır, başlıkta arama + Ücretsiz Demo, altlık/WhatsApp çakışması, `button_row` palet rengi, iletişim sayfası bilgi kutuları ve harita, son yazılar tarihe göre sıralı.
+- ✅ Eksik içerik onarıldı (`on-muhasebe-programi`); düz metin sayfalar kart düzenine alındı; formlar hizalandı, açık rıza gizlilik penceresini açar; altlıkta sosyal ağlar yalnızca simge.

@@ -319,4 +319,9 @@ ${S} .nx-footer { margin-top:2rem; }
 @media (max-width: 1500px) {
   ${S} [data-footer-row="bottom"] { padding-left:4.75rem; }
 }
+/* Düz metin sayfalarındaki başlık + metin kartları */
+${S} .nx-text-card { padding:22px 24px; }
+${S} .nx-text-card > section > div > :is(h2,h3):first-child { margin-top:0; color:#042646; border-left:4px solid #0c644e; padding-left:12px; }
+${S} .nx-text-card > section > div { gap:0; }
+@media (max-width: 640px) { ${S} .nx-text-card { padding:16px; } }
 `;

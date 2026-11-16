@@ -244,6 +244,8 @@ export const tr = {
     formClosed: "Bu form şu anda gönderim kabul etmiyor.",
     formError: "Gönderilemedi. Alanları kontrol edip tekrar deneyin.",
     formClose: "Kapat",
+    privacyTitle: "Gizlilik Politikası ve Açık Rıza Metni",
+    consentSuffix: "okudum, onaylıyorum",
     formStep: "Adım {n}",
     submit: "Gönder",
     openMap: "Haritada aç",

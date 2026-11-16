@@ -1,3 +1,4 @@
+import { SocialIconLinks, socialKind } from "@/components/public/social-icons";
 import React from "react";
 import {
   DEFAULT_HEADER_ZONES,
@@ -359,6 +360,13 @@ export function SiteFooter({
   const main = rowBox(style.main, mainColors);
   const bottom = rowBox(style.bottom, bottomColors);
 
+  // Sosyal ağlar yalnızca simge olarak gösterilir: altlık bağlantıları ve ayarlı sosyal listesi birleşir
+  const allBottom = [...(footer?.bottomLinks ?? []), ...bottomMenu];
+  const textLinks = (footer?.bottomLinks ?? []).filter((link) => !socialKind(link.href, link.label));
+  const socialItems = [
+    ...style.bottom.socials.map((s) => ({ href: s.href, label: s.label })),
+    ...allBottom.filter((link) => socialKind(link.href, link.label)).map((link) => ({ href: link.href, label: link.label })),
+  ].filter((item, index, list) => list.findIndex((other) => other.href === item.href) === index);
   return (
     <footer className="nx-footer mt-16">
       {footer?.topBanner?.enabled ? (
@@ -454,21 +462,17 @@ export function SiteFooter({
           >
             <span className="opacity-80">{copyright}</span>
             <div className={`flex flex-wrap gap-x-4 gap-y-1 ${style.bottom.centered ? "justify-center" : ""}`}>
-              {(footer?.bottomLinks ?? []).map((link) => (
+              {textLinks.map((link) => (
                 <a key={`${link.href}|${link.label}`} href={link.href} className="underline-offset-2 hover:underline">
                   {link.label}
                 </a>
               ))}
-              {bottomMenu.map((link) => (
+              {bottomMenu.filter((link) => !socialKind(link.href, link.label)).map((link) => (
                 <a key={link.id} href={link.href} {...(link.target === "_blank" ? { target: "_blank", rel: "noopener" } : {})} className="underline-offset-2 hover:underline">
                   {link.label}
                 </a>
               ))}
-              {style.bottom.socials.map((s) => (
-                <a key={s.id} href={s.href} rel="noopener me" aria-label={s.label} className="underline-offset-2 hover:underline">
-                  {s.label}
-                </a>
-              ))}
+              <SocialIconLinks items={socialItems} />
               {style.bottom.backToTop ? (
                 <a href="#" className="underline-offset-2 hover:underline">
                   {backToTopLabel}

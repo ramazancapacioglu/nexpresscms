@@ -60,3 +60,26 @@ test("içindekiler girdileri başlıklara çapa olur", () => {
   assert.deepEqual(out.items.map((item) => item.href), ["#kayitlar", "#uye-takip"]);
   assert.equal(stripTags("<b>A&nbsp;B</b>"), "A B");
 });
+
+import { cardifyPlainBlocks } from "../src/cardify";
+
+test("düz metin sayfada uzun listeler kart olur, başlık + metin öbekleri kart bandına sarılır; ikinci çalıştırma değiştirmez", () => {
+  const items = ["a", "b", "c", "d", "e"];
+  const page = [
+    node("section", {}, { children: [node("heading", { level: "h1", text: "Başlık" }), node("paragraph", { text: "giriş" }), node("heading", { level: "h2", text: "Bir" }), node("paragraph", { text: "x" }), node("list_element", { listType: "check", items }), node("heading", { level: "h2", text: "İki" }), node("paragraph", { text: "y" })] }),
+  ];
+  const first = cardifyPlainBlocks(page);
+  assert.equal(first.lists, 1);
+  assert.equal(first.groups, 2);
+  const section = first.blocks[0]!.children!;
+  assert.equal(section.length, 4);
+  assert.equal(section[2]!.style?.cssClass?.includes("nx-text-card"), true);
+  const again = cardifyPlainBlocks(first.blocks);
+  assert.equal(JSON.stringify(again.blocks), JSON.stringify(first.blocks));
+  assert.equal(again.groups, 0);
+});
+
+test("zengin sayfaya (kart, form, vitrin) öbek kartı eklenmez; yalnızca uzun liste kartlanır", () => {
+  const page = [node("bento_features", {}), node("bento_features", {}), node("heading", { level: "h2", text: "A" }), node("paragraph", { text: "x" }), node("heading", { level: "h2", text: "B" }), node("paragraph", { text: "y" })];
+  assert.equal(cardifyPlainBlocks(page).groups, 0);
+});

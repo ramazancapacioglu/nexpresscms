@@ -150,7 +150,9 @@ export default async function PublicLocaleLayout({
     : isSingleContent
       ? (await resolvePublicContent(siteId, decodeURIComponent(segs[1]!), locale))?.content
       : null;
-  const pageOpts = readPageOptions(pageContent?.schemaAttributes as Record<string, unknown> | undefined);
+  // Gömülü görünüm (`?embed=1`): form penceresinde gizlilik politikası; üst, alt, yan çubuk ve yüzen düğmeler çizilmez
+  const embed = new URLSearchParams(reqHeaders.get("x-nexpress-search") ?? "").get("embed") === "1";
+  const pageOpts = embed ? { ...readPageOptions(pageContent?.schemaAttributes as Record<string, unknown> | undefined), header: "hidden" as const, footer: "hidden" as const } : readPageOptions(pageContent?.schemaAttributes as Record<string, unknown> | undefined);
 
   let targetAreaId = "primary";
   let contentSidebarPos: "none" | "left" | "right" | undefined = undefined;
@@ -271,6 +273,7 @@ export default async function PublicLocaleLayout({
   }
 
   if (pageOpts.sidebar !== "default") contentSidebarPos = pageOpts.sidebar;
+  if (embed) contentSidebarPos = "none";
   const activeSidebarArea = resolveActiveSidebarArea(nav?.sidebarConfig, targetAreaId);
   const effectiveSidebarPos: "none" | "left" | "right" =
     contentSidebarPos !== undefined
@@ -423,17 +426,17 @@ export default async function PublicLocaleLayout({
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}
       {isYf ? <YazilimFirmasiReach locale={locale} /> : null}
-      <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />
-      {(() => {
+      {embed ? null : <BackToTop settings={resolvedCustomizer.backToTop} label={t("site.backToTop")} />}
+      {embed ? null : (() => {
         const general = resolveSiteSettings(site?.settings).general;
         const prefixless = reqHeaders.get("x-nexpress-prefixless") === "1";
         const internal = reqHeaders.get("x-nexpress-pathname") ?? `/${locale}`;
         const publicPath = prefixless ? internal.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/" : internal;
         return general.quickContactFormId || general.whatsappNumber ? (
-          <QuickContact siteId={siteId} formId={general.quickContactFormId ?? ""} whatsapp={general.whatsappNumber ?? ""} path={publicPath} search={reqHeaders.get("x-nexpress-search") ?? ""} tokens={vt} themeId={activeTheme.id} locale={locale} t={t} />
+          <QuickContact siteId={siteId} formId={general.quickContactFormId ?? ""} whatsapp={general.whatsappNumber ?? ""} path={publicPath} search={reqHeaders.get("x-nexpress-search") ?? ""} tokens={vt} themeId={activeTheme.id} locale={locale} lb={lb} t={t} />
         ) : null;
       })()}
-      {consentSettings.enabled ? <CookieConsent settings={consentSettings} visible={consentBannerVisible(consentSettings, consentValue)} t={t} /> : null}
+      {consentSettings.enabled && !embed ? <CookieConsent settings={consentSettings} visible={consentBannerVisible(consentSettings, consentValue)} t={t} /> : null}
     </div>
   );
 }

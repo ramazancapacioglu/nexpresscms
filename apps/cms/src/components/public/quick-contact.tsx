@@ -3,6 +3,7 @@ import { safeBlockDomId, type BlockNode, type DesignTokens } from "@nexpress/cor
 import type { createTranslator } from "@nexpress/i18n";
 import { RscBlockRenderer } from "@nexpress/themes";
 import { createFormToken } from "@/lib/form-token";
+import { privacyEmbedUrl } from "@/lib/privacy";
 import { getPublicForms } from "@/lib/public-data";
 
 type T = ReturnType<typeof createTranslator>;
@@ -23,6 +24,7 @@ export async function QuickContact({
   tokens,
   themeId,
   locale,
+  lb,
   t,
 }: {
   siteId: string;
@@ -33,6 +35,7 @@ export async function QuickContact({
   tokens: DesignTokens;
   themeId: string;
   locale: string;
+  lb: string;
   t: T;
 }) {
   const safeForm = /^frm_[a-z0-9_]{1,40}$/.test(formId) ? formId : "";
@@ -44,8 +47,9 @@ export async function QuickContact({
   const params = new URLSearchParams(search);
   const status = params.get("form") === "sent" || params.get("form") === "error" ? (params.get("form") as "sent" | "error") : null;
   const modalId = safeBlockDomId(BLOCK_ID);
+  const privacyUrl = open ? await privacyEmbedUrl(siteId, locale, lb) : "";
   const block: BlockNode = { id: BLOCK_ID, type: "form_block", props: { formId: safeForm, title: "" } };
-  const ctx = { forms, path, token: createFormToken(path), status: params.get("fb") === BLOCK_ID ? status : null, blockId: params.get("fb") ?? null } as const;
+  const ctx = { forms, path, token: createFormToken(path), status: params.get("fb") === BLOCK_ID ? status : null, blockId: params.get("fb") ?? null, privacyUrl } as const;
   return (
     <>
       {phone ? (
