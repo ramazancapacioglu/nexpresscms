@@ -21,6 +21,14 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-16] — Performans ve mobil
+- ✅ Ölçüm (Lighthouse 12, 6 temsilci sayfa, masaüstü + mobil): performans 99–100, erişilebilirlik 96–100, en iyi uygulamalar 100, SEO 66–69 (tek kayıp `is-crawlable`: arama indeksi bilerek kapalı). FCP 0.3–0.7 sn, LCP 0.3–0.7 sn, TBT 0, CLS 0–0,06; sayfa başına 190–400 KB (JS yaklaşık 100 KB Next çalışma zamanı, tek CSS 14 KB).
+- ✅ Hata: ana sayfa mobilde Chrome'da LCP üretmiyordu (`NO_LCP`, Lighthouse performans 0). Neden: kampanya atlıkarıncasının kaydırma kabındaki negatif kenar boşluğu (`-mx-4`). Kaldırıldı; karosel bileşenine not düşüldü.
+- ✅ LCP: ilk istekte AVIF/WebP türevi üretimi 2,6 sn sürüyordu. `apps/cms/scripts/warm-cache.mjs` siteyi gezip tüm görsel türevlerini önceden üretir (2226 türev); dağıtımdan sonra çalıştırılır. Başlık görseli olmayan sayfada içerikteki ilk görsel artık `priority` (eager, `fetchpriority=high`).
+- ✅ `/demo` ve `/images` (tema logosu ve çizimleri) `max-age=0` ile gidiyordu; `next.config.ts` ile 1 gün + stale-while-revalidate. Site simgesi ayarlandı (`/favicon.ico` 404 veriyordu).
+- ✅ Erişilebilirlik: koyu bantta `strong` rengi ezilmesi (kontrast 1,85), alt bilgi bağlantıları dokunma hedefi (24 px), atlıkarınca `ul`'de geçersiz `role=region`, logo boyut öznitelikleri, yorum düğmesi ve soluk yardımcı metin kontrastı.
+- ✅ Mobil (390 px, ekran görüntüsü): ana sayfa, yazı, çapalı sayfa, kampanya arşivi kontrol edildi. Kampanya afişleri kırpılmıyor (`object-contain`), "Fırsat" etiketi afişin üstüne binmiyordu; `kampanya` sayfalarındaki sabit mavi/yeşil/kırmızı/amber renkler tema paletine çekildi. Başlığı gizli sayfada boş bant kalmıyor; yapışkan çapa menüsü mobilde başlığın altında (`top:128px`).
+
 ### [2026-11-16] — Blog yazısı düzeni, kırıntı, kampanya karoseli
 - ✅ Blog yazısı WordPress düzenine yaklaştı: kırıntı `Ana sayfa › Blog › Kategori › Yazı` (JSON-LD BreadcrumbList aynı listeden), kategori etiketi, künye (yazar · yayın · güncelleme · yorum sayısı), öne çıkan görsel başlığın yanında; altta etiketler, önceki/sonraki yazı ve "Benzer yazılar" (3 kart). Bileşenler `components/public/post-extras.tsx`; metinler `@nexpress/i18n` (`content.updatedOn`, `commentCount`, `prevPost`, `nextPost`, `relatedHeading`, `blogCrumb`, `markdownLink`).
 - ✅ Kırıntı başlık bloğunun içinde, başlığın üstünde; Markdown bağlantısı karşısında sade (küçük, çerçevesiz). Sayfalarda başlık altına kısa açıklama (`tldr`) gelir.

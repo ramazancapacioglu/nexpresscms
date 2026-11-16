@@ -88,7 +88,7 @@ export default async function PublicCampaignsArchivePage({
 
       {/* Hero Header */}
       <header className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-nx-subtle text-[var(--nx-primary,#0c644e)] dark:bg-nx-subtle border border-nx-line dark:border-nx-line">
           Özel Fırsatlar & İndirimler
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
@@ -117,16 +117,16 @@ export default async function PublicCampaignsArchivePage({
               {/* Afiş Görseli */}
               <Link
                 href={`${lb}/kampanya/${camp.slug}`}
-                className="relative block h-48 w-full bg-muted overflow-hidden"
+                className="relative block aspect-[16/9] w-full bg-nx-subtle overflow-hidden"
               >
                 {camp.featuredImageUrl ? (
                   <img
                     src={camp.featuredImageUrl}
                     alt={camp.featuredImageAlt || camp.title}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-blue-600/10 to-indigo-600/20 flex items-center justify-center text-blue-600">
+                  <div className="h-full w-full bg-nx-subtle flex items-center justify-center text-[var(--nx-primary,#0c644e)]">
                     <span className="text-3xl font-bold opacity-30">%</span>
                   </div>
                 )}
@@ -134,17 +134,15 @@ export default async function PublicCampaignsArchivePage({
                 {/* Rozetler */}
                 <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2 pointer-events-none">
                   {camp.badge ? (
-                    <span className="rounded-full bg-blue-600/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 shadow-sm">
+                    <span className="rounded-full bg-[var(--nx-primary,#0c644e)] backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 shadow-sm">
                       {camp.badge}
                     </span>
                   ) : (
-                    <span className="rounded-full bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 shadow-sm">
-                      Fırsat
-                    </span>
+                    <span />
                   )}
 
                   {camp.discount && (
-                    <span className="rounded-md bg-emerald-600 text-white text-xs font-extrabold px-2 py-1 shadow-sm">
+                    <span className="rounded-md bg-[var(--nx-primary,#0c644e)] text-white text-xs font-extrabold px-2 py-1 shadow-sm">
                       {camp.discount}
                     </span>
                   )}
@@ -154,12 +152,12 @@ export default async function PublicCampaignsArchivePage({
               {/* İçerik */}
               <div className="flex flex-col flex-1 p-5 space-y-3">
                 {camp.productName && (
-                  <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-[var(--nx-primary,#0c644e)] uppercase tracking-wide">
                     {camp.productName}
                   </p>
                 )}
 
-                <h2 className="text-lg font-bold text-card-foreground group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h2 className="text-lg font-bold text-card-foreground group-hover:text-[var(--nx-primary,#0c644e)] transition-colors line-clamp-2">
                   <Link href={`${lb}/kampanya/${camp.slug}`}>
                     {camp.title}
                   </Link>
@@ -172,7 +170,7 @@ export default async function PublicCampaignsArchivePage({
                 )}
 
                 {camp.gift && (
-                  <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-800 dark:text-amber-300 font-medium flex items-center gap-2">
+                  <div className="rounded-lg bg-nx-subtle border border-nx-line p-2.5 text-xs text-nx-fg font-medium flex items-center gap-2">
                     <span className="text-base">🎁</span>
                     <span className="line-clamp-1">{camp.gift}</span>
                   </div>
@@ -181,7 +179,7 @@ export default async function PublicCampaignsArchivePage({
                 <div className="pt-3 mt-auto border-t border-border flex items-center justify-between text-xs">
                   <span className="text-muted-foreground font-medium">
                     {camp.daysRemaining !== null ? (
-                      <span className="text-amber-700 dark:text-amber-400 font-semibold">
+                      <span className="text-nx-fg font-semibold">
                         ⏳ Son {camp.daysRemaining} gün
                       </span>
                     ) : (
@@ -191,7 +189,7 @@ export default async function PublicCampaignsArchivePage({
 
                   <Link
                     href={`${lb}/kampanya/${camp.slug}`}
-                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    className="font-bold text-[var(--nx-primary,#0c644e)] hover:underline flex items-center gap-1"
                   >
                     <span>İncele</span>
                     <span>→</span>
@@ -216,7 +214,7 @@ export default async function PublicCampaignsArchivePage({
                 className="rounded-xl border border-border bg-card p-4 space-y-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
+                  <span className="rounded px-2 py-0.5 text-[10px] font-semibold bg-nx-subtle text-nx-fg dark:bg-nx-subtle">
                     Süresi Doldu
                   </span>
                   {camp.discount && (

@@ -379,18 +379,18 @@ export function CampaignShowcaseView({
       )}
 
       {/* Kart Listesi (Carousel: snap-x scroll; Grid: CSS grid) */}
+      {/* Not: kaydırma kabına negatif kenar boşluğu (-mx) VERİLMEZ; mobilde LCP ölçümünü bozuyordu (NO_LCP). */}
       {isCarousel ? <style>{CAROUSEL_CSS}</style> : null}
       <ul
         {...(isCarousel
           ? {
-              role: "region",
               tabIndex: 0,
               "aria-label": heading || "Kampanyalar Atlıkarıncası",
             }
           : {})}
         className={
           isCarousel
-            ? "nx-camp-track flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 pt-1 scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            ? "nx-camp-track flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 pt-1 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             : `grid grid-cols-1 gap-6 ${COLS[columns] ?? COLS[3]}`
         }
       >
@@ -453,13 +453,13 @@ function CampaignCard({
       className="group flex h-full flex-col overflow-hidden border bg-card shadow-xs transition hover:shadow-md"
     >
       {/* Görsel ve Üst Rozetler */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/30">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-nx-subtle">
         {item.image ? (
           <a href={item.url} tabIndex={-1} aria-hidden="true" className="block h-full w-full">
             <ResponsiveImage
               src={item.image}
               alt={item.imageAlt || item.title}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
             />
           </a>
         ) : (

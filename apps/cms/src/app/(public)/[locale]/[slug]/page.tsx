@@ -492,7 +492,7 @@ export default async function PublicDynamicContentPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
-      <header className="border-b pb-8">
+      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-1" : "border-b pt-3 pb-8"}>
         <div className={headerImage ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
           <div className="space-y-4">
             {/* Kırıntı başlığın üstünde, Markdown bağlantısı karşısında sade durur */}
@@ -599,7 +599,7 @@ export default async function PublicDynamicContentPage({
         blocks={contentBlocks}
         themeId={skinId}
         tokens={tokens}
-        lcp={!featuredImageUrl}
+        lcp={!(headerImage && featuredImageUrl)}
         mediaFocal={mediaFocal}
         locale={locale}
         dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}

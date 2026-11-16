@@ -156,14 +156,14 @@ export default async function PublicCampaignDetailPage({
 
       {/* Taslak Önizleme Rozeti */}
       {isDraftPreview && (
-        <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-4 text-sm">
+        <div className="mb-6 p-4 rounded-xl border border-nx-line bg-nx-subtle dark:bg-nx-subtle dark:border-nx-line text-nx-fg flex items-center justify-between gap-4 text-sm">
           <div className="flex items-center gap-2">
             <span className="font-bold">⚠️ Taslak Önizleme:</span>
             <span>Bu kampanya henüz yayında değil (taslak durumunda). Yalnızca giriş yapmış yöneticiler görebilir.</span>
           </div>
           <Link
             href="/admin/campaigns"
-            className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-md shrink-0"
+            className="px-3 py-1 bg-[var(--nx-primary,#0c644e)] hover:opacity-90 text-white text-xs font-semibold rounded-md shrink-0"
           >
             Panele Dön
           </Link>
@@ -196,22 +196,22 @@ export default async function PublicCampaignDetailPage({
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
             {camp.badge && (
-              <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs px-3 py-1">
+              <span className="rounded-full bg-nx-subtle dark:bg-nx-subtle text-[var(--nx-primary,#0c644e)] font-bold text-xs px-3 py-1">
                 ✨ {camp.badge}
               </span>
             )}
             {camp.discount && (
-              <span className="rounded-md bg-emerald-600 text-white font-extrabold text-xs px-2.5 py-1">
+              <span className="rounded-md bg-[var(--nx-primary,#0c644e)] text-white font-extrabold text-xs px-2.5 py-1">
                 {camp.discount}
               </span>
             )}
             {/* Bitmesine Kalan Süre Sayacı Rozeti (Görsel altındaki etiketlerin yanında) */}
             {camp.isExpired ? (
-              <span className="rounded-md bg-rose-600 text-white font-bold text-xs px-2.5 py-1">
+              <span className="rounded-md bg-[var(--nx-secondary,#042646)] text-white font-bold text-xs px-2.5 py-1">
                 Kampanya Sona Erdi
               </span>
             ) : camp.daysRemaining !== null ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-700/80 font-bold text-xs px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-nx-subtle dark:bg-nx-subtle text-nx-fg border border-nx-line dark:border-nx-line font-bold text-xs px-2.5 py-1">
                 <span>⏳</span>
                 <span>Kampanyanın bitmesine <strong>{camp.daysRemaining} gün</strong> kaldı</span>
               </span>
@@ -235,13 +235,13 @@ export default async function PublicCampaignDetailPage({
 
         {/* Hediye Avantaj Kutusu (Varsa) */}
         {camp.gift && (
-          <div className="rounded-2xl border border-amber-300/60 bg-amber-50/60 dark:border-amber-800/40 dark:bg-amber-950/30 p-5 flex items-start gap-3.5">
+          <div className="rounded-2xl border border-nx-line bg-nx-subtle dark:border-nx-line dark:bg-nx-subtle p-5 flex items-start gap-3.5">
             <div className="text-2xl">🎁</div>
             <div className="space-y-1">
-              <h2 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+              <h2 className="text-sm font-bold text-nx-fg">
                 Kampanya Kapsamındaki Özel Hediye
               </h2>
-              <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-300">
+              <p className="text-xs sm:text-sm text-nx-fg">
                 {camp.gift}
               </p>
             </div>
@@ -255,11 +255,11 @@ export default async function PublicCampaignDetailPage({
               Kampanya Bilgileri & Avantaj Özeti
             </h2>
             {camp.isExpired ? (
-              <span className="rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 px-2.5 py-0.5 text-xs font-bold">
+              <span className="rounded-full bg-nx-subtle text-nx-fg dark:bg-nx-subtle px-2.5 py-0.5 text-xs font-bold">
                 Süre Aşımı
               </span>
             ) : (
-              <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 px-2.5 py-0.5 text-xs font-bold">
+              <span className="rounded-full bg-nx-subtle text-nx-fg dark:bg-nx-subtle px-2.5 py-0.5 text-xs font-bold">
                 Güncel & Aktif
               </span>
             )}
@@ -272,7 +272,7 @@ export default async function PublicCampaignDetailPage({
                   <td className="px-5 py-3 w-1/3 bg-muted/20 font-semibold text-muted-foreground">
                     İndirim Avantajı
                   </td>
-                  <td className="px-5 py-3 font-bold text-emerald-600 dark:text-emerald-400">
+                  <td className="px-5 py-3 font-bold text-[var(--nx-primary,#0c644e)]">
                     {camp.discount}
                   </td>
                 </tr>
@@ -294,7 +294,7 @@ export default async function PublicCampaignDetailPage({
                   </td>
                   <td className="px-5 py-3 font-semibold text-foreground">
                     {camp.productUrl ? (
-                      <Link href={camp.productUrl} className="text-blue-600 hover:underline">
+                      <Link href={camp.productUrl} className="text-[var(--nx-primary,#0c644e)] hover:underline">
                         {camp.productName} →
                       </Link>
                     ) : (
@@ -310,7 +310,7 @@ export default async function PublicCampaignDetailPage({
                 <td className="px-5 py-3 text-foreground">
                   {camp.formattedValidity}
                   {camp.daysRemaining !== null && !camp.isExpired && (
-                    <span className="ml-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <span className="ml-2 text-xs font-bold text-nx-fg">
                       (Kalan: {camp.daysRemaining} gün)
                     </span>
                   )}
@@ -335,7 +335,7 @@ export default async function PublicCampaignDetailPage({
               {!camp.isExpired ? (
                 <Link
                   href={camp.ctaUrl || "/iletisim"}
-                  className="flex-1 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-xs hover:bg-blue-700 transition"
+                  className="flex-1 inline-flex items-center justify-center rounded-xl bg-[var(--nx-primary,#0c644e)] px-5 py-3 text-sm font-bold text-white shadow-xs hover:bg-[var(--nx-primary,#0c644e)] transition"
                 >
                   {camp.ctaText || "Hemen Teklif Al & Bilgi İste"}
                 </Link>
@@ -353,7 +353,7 @@ export default async function PublicCampaignDetailPage({
                   href={`https://wa.me/${camp.contactWhatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Merhaba, ${camp.title} hakkında bilgi ve teklif almak istiyorum.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-sm font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20 transition shrink-0"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-nx-line bg-[var(--nx-primary,#0c644e)] px-5 py-3 text-sm font-bold text-nx-fg hover:bg-[var(--nx-primary,#0c644e)] transition shrink-0"
                 >
                   <span>💬 WhatsApp'tan Bilgi Al</span>
                 </a>
@@ -413,7 +413,7 @@ export default async function PublicCampaignDetailPage({
                 <Link
                   key={oc.contentId}
                   href={`${lb}/kampanya/${oc.slug}`}
-                  className="group p-4 rounded-xl border border-border bg-card hover:border-blue-500/50 hover:shadow-xs transition space-y-2.5 flex flex-col justify-between"
+                  className="group p-4 rounded-xl border border-border bg-card hover:border-nx-line hover:shadow-xs transition space-y-2.5 flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     {oc.featuredImageUrl && (
@@ -427,21 +427,21 @@ export default async function PublicCampaignDetailPage({
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
                       {oc.discount && (
-                        <span className="rounded bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5">
+                        <span className="rounded bg-[var(--nx-primary,#0c644e)] text-white font-extrabold text-[10px] px-2 py-0.5">
                           {oc.discount}
                         </span>
                       )}
                       {oc.daysRemaining !== null && (
-                        <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                        <span className="text-[10px] text-nx-fg font-semibold">
                           ⏳ {oc.daysRemaining} gün kaldı
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xs font-bold text-foreground group-hover:text-blue-600 transition line-clamp-2">
+                    <h3 className="text-xs font-bold text-foreground group-hover:text-[var(--nx-primary,#0c644e)] transition line-clamp-2">
                       {oc.title}
                     </h3>
                   </div>
-                  <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                  <span className="text-[11px] font-semibold text-[var(--nx-primary,#0c644e)]">
                     İncele & Başvur →
                   </span>
                 </Link>

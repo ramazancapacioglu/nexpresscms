@@ -237,9 +237,9 @@ ${S} article h1, ${S} .nx-block:not(.yf-dark):not(.yf-navy) > h2, ${S} .nx-rich 
 ${S} .nx-rich { line-height:1.75; }
 ${S} .nx-rich a:not([class]) { color:#0b4f8a; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
 ${S} .nx-rich a:not([class]):hover { color:#0c644e; }
-${S} .nx-rich strong { color:#1a202c; }
 /* Yapışkan çapa menüsü, yapışkan başlığın (üst şerit + ana şerit) altında kalır */
 ${S} .nx-block.sticky { top:102px !important; }
+@media (max-width:767px){ ${S} .nx-block.sticky { top:128px !important; } }
 ${S} footer { background:#042646; border-top:4px solid #0c644e !important; color:#cfe0ec; }
 ${S} footer h2, ${S} footer h3 { font-size:14px; font-weight:700; letter-spacing:.02em; color:#fff; padding-bottom:10px; border-bottom:2px solid #0c644e; display:inline-block; }
 ${S} footer a, ${S} footer .nx-footer-link { font-size:13px; color:#cfe0ec; }
@@ -248,7 +248,12 @@ ${S} footer .nx-footer-logo { box-shadow:0 0 0 4px rgba(255,255,255,.12); }
 ${S} footer .nx-footer-chip { border-color:rgba(255,255,255,.28); color:#fff; }
 ${S} footer .nx-footer-chip:hover { background:rgba(255,255,255,.12); color:#fff; }
 ${S} footer [data-footer-row="main"] { padding-block:8px; }
-${S} form button[type="submit"] { background:#0c644e; border-radius:6px; }
+/* Dokunma hedefi en az 24 px (erişilebilirlik) */
+${S} footer [data-footer-row="bottom"] a { display:inline-flex; align-items:center; min-height:28px; }
+${S} footer [data-footer-row="main"] a { display:inline-block; padding-block:3px; }
+${S} form button[type="submit"] { background:#0c644e; color:#fff; border-radius:6px; }
+/* Soluk gri yardımcı metin 4.5:1 kontrastın altındaydı */
+${S} .text-muted-foreground, ${S} .text-nx-muted { color:#56606b; }
 ${S} .nx-yb-hero { background:#eef5f8; color:#042646; border:0; border-radius:0; padding:56px 24px; }
 ${S} .nx-yb-hero-in { max-width:1180px; margin-inline:auto; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:40px; align-items:center; }
 ${S} .nx-yb-hero h1 { font-size:clamp(1.8rem,3.4vw,2.6rem); font-weight:800; line-height:1.15; color:#042646; }

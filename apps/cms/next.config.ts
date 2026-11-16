@@ -66,6 +66,12 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
+        // Tema görselleri (logo, demo çizimleri) public/ altından gelir ve varsayılan olarak `max-age=0` ile gider;
+        // her sayfa gezintisinde yeniden indirilmesin
+        source: "/(demo|images)/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      },
+      {
         // Yönetim ve giriş sayfaları çerçeveye alınamaz ve önbelleğe alınmaz
         source: "/(admin|login)/:path*",
         headers: [

@@ -149,6 +149,13 @@ Next (`next start`), `Host` başlığını `request.url` için kullanmaz; vekil 
 
 `/wp-content/uploads/…` rotası iki iş yapar: belge ve arşiv dosyalarını (`pdf`, `zip`, `docx`, `xlsx`…) `WP_UPLOADS_DIR` (varsayılan `./data/wp-uploads`) altından özgün adresinde sunar; görsel adreslerini (boyutlu kopyalar dahil) medya kitaplığına 301 ile yönlendirir. `WP_UPLOADS_DIR` kalıcı diskte olmalı ve yedeğe girmelidir. Dosya türü izin listesi `lib/wp-uploads.ts` içindedir (betik, HTML, SVG sunulmaz). Dosyalar `import-wp-extras.ts --only files` ile iner.
 
+## 8d. Performans (2026-11-16)
+
+- Dağıtımdan sonra `node apps/cms/scripts/warm-cache.mjs --base http://127.0.0.1:3001 --host <alan-adi>` çalıştırın: sayfaları gezip görsel türevlerini (AVIF/WebP/JPG) üretir; ilk ziyaretçi LCP'de 2–3 sn ödemez. Yalnızca GET yapar.
+- HTML önbelleği için `PUBLIC_CACHE_SECONDS` (varsayılan 0 = paylaşımlı önbellek yok). Yayına alınca 60 gibi bir değer ve vekilde `s-maxage` düşünün.
+- Ölçüm: `npx lighthouse <adres> --throttling-method=provided` (mobil) ve `--preset=desktop`. Sonuçlar `docs/06`.
+- Kural: kaydırma kaplarına negatif kenar boşluğu (`-mx-*`) verilmez; mobilde Chrome LCP adayı üretmeyebilir.
+
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.

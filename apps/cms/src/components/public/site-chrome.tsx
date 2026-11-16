@@ -91,7 +91,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
         <a href={home} className="nx-logo flex shrink-0 items-center gap-2.5 no-underline">
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={custom.logoImage} alt={logoText} className="h-8 w-auto max-w-none shrink-0" />
+            <img src={custom.logoImage} alt={logoText} width={139} height={32} className="h-8 w-auto max-w-none shrink-0" />
           ) : /^[A-ZÇĞİÖŞÜ]{3,}SOFT$/.test(logoText) ? (
             <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>{logoText.slice(0, -4)}</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
           ) : branded ? (
