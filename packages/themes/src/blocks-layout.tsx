@@ -415,7 +415,8 @@ export function renderLayoutBlock({ block, themeId, tokens, isEditorial, isComme
     case "divider_spacer": {
       const showLine = p.style !== "space";
       return (
-        <div className="py-4">
+        // Boşluk bloğu ayrıca yer açmaz (üst kap zaten tutarlı bir dikey aralık verir); yalnızca çizgi varsa çizilir
+        <div className={showLine ? "py-1" : "nx-spacer"} aria-hidden={showLine ? undefined : "true"}>
           {showLine ? (
             <hr style={{ borderColor: tokens.colors.border }} className="border-t" />
           ) : null}

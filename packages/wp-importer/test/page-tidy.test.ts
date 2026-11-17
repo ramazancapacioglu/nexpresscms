@@ -97,3 +97,32 @@ test("<br> ile satırlanmış paragraf: madde satırları liste, kısa kalın sa
   assert.deepEqual((list.props as { items: string[] }).items.slice(0, 2), ["Giriş cümlesi burada.", "Birinci madde burada."]);
   assert.equal((explodeLineParagraphs([node("paragraph", { html: "Bir<br />iki" })])).exploded, 0);
 });
+
+import { normalizeBlockSpacing } from "../src/cardify";
+
+test("zemini olmayan bloktaki dikey dolgu kalkar, bantta 28 px ile sınırlanır; yan dolgu ve ikinci çalıştırma değişmez", () => {
+  const blocks = [
+    node("section", {}, { style: { paddingTop: "50px", paddingBottom: "50px", paddingLeft: "20px", mobile: { paddingTop: "30px" } } }),
+    node("section", {}, { style: { paddingTop: "60px", backgroundColor: "#1a202c", marginBottom: "40px" } }),
+  ];
+  const first = normalizeBlockSpacing(blocks);
+  const [plain, band] = first.blocks as Array<{ style: Record<string, unknown> }>;
+  assert.equal(plain!.style.paddingTop, undefined);
+  assert.equal(plain!.style.paddingLeft, "20px");
+  assert.equal((plain!.style.mobile as Record<string, unknown>).paddingTop, undefined);
+  assert.equal(band!.style.paddingTop, "28px");
+  assert.equal(band!.style.marginBottom, undefined);
+  assert.equal(normalizeBlockSpacing(first.blocks).changed, 0);
+});
+
+import { revertNarrowExploded } from "../src/cardify";
+
+test("dar sütundaki bölünmüş liste paragrafa döner; geniş sütundakine dokunulmaz", () => {
+  const list = (id: string) => node("list_element", { listType: "cards", items: ["a.", "b.", "c."] }, { id } as never);
+  const tree = [node("columns", {}, { children: [node("column", { widthPct: 33 }, { children: [list("p1_x0")] }), node("column", { widthPct: 67 }, { children: [list("p2_x0")] })] })];
+  const out = revertNarrowExploded(tree);
+  assert.equal(out.reverted, 1);
+  const cols = out.blocks[0]!.children!;
+  assert.equal(cols[0]!.children![0]!.type, "paragraph");
+  assert.equal(cols[1]!.children![0]!.type, "list_element");
+});

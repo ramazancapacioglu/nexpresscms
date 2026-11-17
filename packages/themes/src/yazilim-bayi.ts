@@ -321,8 +321,9 @@ ${S} .nx-footer { margin-top:2rem; }
 }
 @media (max-width: 640px) {
   ${S} [data-footer-row="bottom"] { padding-left:1rem; padding-bottom:5.5rem; }
-  ${S} .nx-fgrid { row-gap:28px; column-gap:16px; }
-  ${S} .nx-footer ul li, ${S} .nx-footer .nx-fcol a { overflow-wrap:anywhere; }
+  ${S} .nx-fgrid { row-gap:0; }
+  ${S} .nx-fcol:first-child { padding-bottom:20px; }
+  ${S} .nx-fbody { padding-bottom:14px; }
 }
 /* Düz metin sayfalarındaki başlık + metin kartları */
 ${S} .nx-text-card { padding:22px 24px; }

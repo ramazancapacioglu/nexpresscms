@@ -369,8 +369,8 @@ export function SiteFooter({
   ].filter((item, index, list) => list.findIndex((other) => other.href === item.href) === index);
   return (
     <footer className="nx-footer mt-16">
-      {/* Mobilde ilk sütun (iletişim) tam genişlik, diğerleri iki sütun; masaüstünde 12'li ızgara */}
-      <style>{".nx-fcol{grid-column:span 1}.nx-fcol:first-child{grid-column:1/-1}@media(min-width:768px){.nx-fcol,.nx-fcol:first-child{grid-column:span var(--nx-span)/span var(--nx-span)}}"}</style>
+      {/* Mobilde ilk sütun (iletişim) açık, diğer sütunlar akordiyon (onay kutusu + etiket, betik yok); masaüstünde 12'li ızgara ve düz başlık */}
+      <style>{`.nx-fcol{grid-column:1/-1}.nx-fchk{position:absolute;opacity:0;pointer-events:none}.nx-fhead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.nx-fhead::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;opacity:.7}.nx-fchk:checked+.nx-fhead::after{transform:rotate(-135deg)}.nx-fchk:focus-visible+.nx-fhead{outline:2px solid currentColor;outline-offset:2px}.nx-fchk:not(:checked)~.nx-fbody{display:none}.nx-fbody{padding-top:14px}@media(max-width:767px){.nx-fgrid{row-gap:0!important}.nx-fhead{padding-right:40px}.nx-fbody{padding-bottom:14px}}@media(min-width:768px){.nx-fcol{grid-column:span var(--nx-span)/span var(--nx-span)}.nx-fhead{min-height:0;cursor:default;border:0;font-size:12px;letter-spacing:.08em;opacity:.85;pointer-events:none;margin-bottom:10px}.nx-fhead::after{display:none}.nx-fchk:not(:checked)~.nx-fbody{display:block}.nx-fbody{padding-top:0}}`}</style>
       {footer?.topBanner?.enabled ? (
         <div className="px-4 sm:px-6">
           <div
@@ -416,7 +416,7 @@ export function SiteFooter({
         >
           <div
             style={{ maxWidth: style.main.full ? maxWidth : undefined, columnGap: style.gapPx, rowGap: style.gapPx }}
-            className="nx-fgrid mx-auto grid grid-cols-2 md:grid-cols-12"
+            className="nx-fgrid mx-auto grid grid-cols-1 md:grid-cols-12"
           >
             {layout.colSpans.map((span, colIdx) => {
               const colWidgets = allWidgets.filter(
@@ -424,24 +424,36 @@ export function SiteFooter({
                   w.enabled &&
                   Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
               );
+              // İlk sütun (iletişim) hep açık; menü sütunlarının başlığı mobilde akordiyon düğmesi olur
+              const first = colWidgets[0];
+              const accordionHead = colIdx > 0 && first && first.title && first.type !== "about_brand" ? first.title : "";
               return (
                 <div
                   key={colIdx}
                   style={{ "--nx-span": span } as React.CSSProperties}
                   className="nx-fcol min-w-0 space-y-5"
                 >
-                  {colWidgets.map((w) => (
-                    <RenderPublicWidget
-                      key={w.id}
-                      widget={w}
-                      locale={locale}
-                      lb={lb}
-                      tokens={tokens}
-                      feed={widgetFeed}
-                      cardStyle="footer"
-                      menuLibrary={menuLibrary}
-                    />
-                  ))}
+                  {accordionHead ? (
+                    <>
+                      <input type="checkbox" id={`nxf_${colIdx}`} className="nx-fchk" aria-label={accordionHead} />
+                      <label htmlFor={`nxf_${colIdx}`} className="nx-fhead">{accordionHead}</label>
+                    </>
+                  ) : null}
+                  <div className={accordionHead ? "nx-fbody space-y-5" : "space-y-5"}>
+                    {colWidgets.map((w, wi) => (
+                      <RenderPublicWidget
+                        key={w.id}
+                        widget={w}
+                        locale={locale}
+                        lb={lb}
+                        tokens={tokens}
+                        feed={widgetFeed}
+                        cardStyle="footer"
+                        menuLibrary={menuLibrary}
+                        hideTitle={Boolean(accordionHead) && wi === 0}
+                      />
+                    ))}
+                  </div>
                 </div>
               );
             })}

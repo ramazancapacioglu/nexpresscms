@@ -42,6 +42,7 @@ export function RenderPublicWidget({
   feed,
   cardStyle = "cards",
   menuLibrary,
+  hideTitle = false,
 }: {
   widget: SiteWidget;
   locale: string;
@@ -52,6 +53,8 @@ export function RenderPublicWidget({
   cardStyle?: "cards" | "minimal" | "bordered" | "footer";
   /** Menü kimliği → çözülmüş ağaç. Footer ve kenar çubuğu aynı kaydı basar. */
   menuLibrary?: Record<string, NavigationLink[]>;
+  /** Başlık dışarıda (ör. altlık akordiyon etiketi) çizildiyse tekrar basılmaz. */
+  hideTitle?: boolean;
 }) {
   if (!widget.enabled) return null;
   const s = widget.settings;
@@ -119,7 +122,7 @@ export function RenderPublicWidget({
 
   return (
     <div className={wrapperClass}>
-      {widget.title ? (
+      {widget.title && !hideTitle ? (
         <div className="text-xs font-bold uppercase tracking-wider opacity-85">
           {widget.title}
         </div>

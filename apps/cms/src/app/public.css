@@ -153,3 +153,5 @@
 main[data-nx-width="wide"] > article, main[data-nx-width="full"] > article { max-width: none; }
 /* Şeffaf header: menü ve bağlantılar şeridin yazı rengini kalıtır */
 .nx-public-header[data-nx-overlay] a, .nx-public-header[data-nx-overlay] summary, .nx-public-header[data-nx-overlay] .nx-logo span { color: inherit; }
+/* Boş boşluk blokları dikey ritmi bozmaz: kaplar zaten aralık verir */
+.nx-block:has(> .nx-spacer) { display: none; }

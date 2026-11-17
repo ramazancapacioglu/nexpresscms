@@ -1292,3 +1292,5 @@
 - ✅ Yazılım Bayi: arama pencere olarak açılır, başlıkta arama + Ücretsiz Demo, altlık/WhatsApp çakışması, `button_row` palet rengi, iletişim sayfası bilgi kutuları ve harita, son yazılar tarihe göre sıralı.
 - ✅ Eksik içerik onarıldı (`on-muhasebe-programi`); düz metin sayfalar kart düzenine alındı; formlar hizalandı, açık rıza gizlilik penceresini açar; altlıkta sosyal ağlar yalnızca simge.
 - ✅ Yazılım Bayi mobil başlık/menü/altlık yeniden düzenlendi; dikey "Sizi arayalım" sekmesi; kırıntı-başlık boşluğu daraltıldı; uzun düz metin sayfalar (örn. genel muhasebe) madde kartlarına çevrildi.
+- ✅ Dikey ritim: boşluk blokları yer açmaz; altlık mobilde akordiyon; sosyal simge çerçevesi düzeltildi.
+- ✅ Tasarım odaklı boşluk düzeni (kaynak dolguları temizlendi), altlık mobil akordiyon, sosyal simge çerçevesi, form yerleşimi; dar sütunda düzyazı listeye bölünmesi geri alındı.

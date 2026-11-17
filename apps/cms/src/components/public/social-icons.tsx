@@ -53,8 +53,8 @@ export function SocialIconLinks({ items, className = "" }: { items: Array<{ href
     <ul className={`nx-social-icons flex items-center gap-2 ${className}`}>
       {rows.map((item) => (
         <li key={`${item.kind}|${item.href}`}>
-          <a href={item.href} target="_blank" rel="noopener noreferrer me" aria-label={NAMES[item.kind]} title={NAMES[item.kind]} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 transition hover:bg-white/25">
-            <SocialIcon kind={item.kind} />
+          <a href={item.href} target="_blank" rel="noopener noreferrer me" aria-label={NAMES[item.kind]} title={NAMES[item.kind]} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/10 transition hover:border-white/60 hover:bg-white/25">
+            <SocialIcon kind={item.kind} size={17} />
           </a>
         </li>
       ))}

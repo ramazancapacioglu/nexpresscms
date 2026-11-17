@@ -34,7 +34,7 @@ export async function importForms(session: WpSession, siteId: string): Promise<{
     const name = (row.title?.raw ?? "").trim() || `Form ${row.id}`;
     const spec = {
       // WordPress formu iki sütunludur: kısa alanlar yan yana, uzun metin ve onay satırı tam genişlik
-      fields: parsed.fields.map((field) => ({ ...field, width: field.type === "textarea" || field.type === "checkbox" || field.type === "checkboxes" || field.options.length > 4 ? ("full" as const) : ("half" as const) })),
+      fields: parsed.fields.map((field) => ({ ...field, width: field.type === "textarea" || field.type === "checkbox" || field.type === "checkboxes" || (field.type === "radio" && field.options.length > 4) ? ("full" as const) : ("half" as const) })),
       appearance: { columns: 2 as const, labels: "top" as const, density: "compact" as const, buttonAlign: "left" as const, surface: "inline" as const, triggerLabel: "", stepped: false },
       submitLabel: parsed.submitLabel,
       successMessage: (messages.success ?? "").trim() || "Talebiniz alındı. En kısa sürede dönüş yapacağız.",

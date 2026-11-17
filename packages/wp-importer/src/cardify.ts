@@ -31,8 +31,10 @@ export function explodeLineParagraphs(blocks: BlockNode[]): { blocks: BlockNode[
       return line.text.length <= 260 ? "short" : "long";
     };
     const kinds = lines.map(kind);
+    const bullets = kinds.filter((k) => k === "bullet").length;
     const listish = kinds.filter((k) => k === "bullet" || k === "short").length;
-    if (listish < 3) return [node];
+    // Madde işaretli satırlar liste sayılır; işaretsiz satırlar düzyazı da olabilir: en az 6 kısa satır yoksa dokunulmaz
+    if (bullets < 3 && listish < 6) return [node];
     const out: BlockNode[] = [];
     let run: string[] = [];
     let n = 0;
@@ -58,6 +60,62 @@ export function explodeLineParagraphs(blocks: BlockNode[]): { blocks: BlockNode[
   return { blocks: walk(blocks), exploded };
 }
 
+
+const VERTICAL = ["paddingTop", "paddingBottom", "marginTop", "marginBottom"] as const;
+const px = (value: unknown) => (typeof value === "string" && /^-?\d+(\.\d+)?px$/.test(value.trim()) ? Number.parseFloat(value) : null);
+
+/**
+ * Dikey ritmi tasarıma göre düzenler: kaynak sitenin satır boşlukları (Kadence satır dolguları) ölçü değildir. Kapsayıcı bloklar
+ * (`section`, `columns`, `column`) zaten tutarlı aralık verir; bu yüzden zemini ve kenarlığı olmayan bloktaki dikey dolgu ve kenar boşluğu
+ * kaldırılır, zemini veya kenarlığı olan (bant, kart) bloktaki dolgu 28 px ile sınırlanır. Yan dolgulara dokunulmaz. Tekrar çalıştırılabilir.
+ */
+export function normalizeBlockSpacing(blocks: BlockNode[]): { blocks: BlockNode[]; changed: number } {
+  let changed = 0;
+  const fix = (values: Record<string, unknown> | undefined, boxed: boolean): Record<string, unknown> | undefined => {
+    if (!values) return values;
+    const next = { ...values };
+    for (const key of VERTICAL) {
+      const n = px(next[key]);
+      if (n === null || n === 0) continue;
+      const wanted = boxed && key.startsWith("padding") ? Math.min(n, 28) : 0;
+      if (wanted === n) continue;
+      if (wanted === 0) delete next[key];
+      else next[key] = `${wanted}px`;
+      changed += 1;
+    }
+    return next;
+  };
+  const walk = (node: BlockNode): BlockNode => {
+    let next = node;
+    const style = node.style as Record<string, unknown> | undefined;
+    if (style) {
+      const boxed = Boolean(style.backgroundColor || style.background || style.backgroundGradient || style.backgroundImage || style.borderWidth || style.borderColor);
+      const fixed = fix(style, boxed) as Record<string, unknown>;
+      const tablet = fix(style.tablet as Record<string, unknown> | undefined, boxed);
+      const mobile = fix(style.mobile as Record<string, unknown> | undefined, boxed);
+      next = { ...node, style: { ...fixed, ...(tablet ? { tablet } : {}), ...(mobile ? { mobile } : {}) } as BlockNode["style"] };
+    }
+    return next.children ? { ...next, children: next.children.map(walk) } : next;
+  };
+  return { blocks: blocks.map(walk), changed };
+}
+
+
+/** Dar sütunda (yarıdan az genişlik) bölünmüş liste kartları okunmaz: düz paragrafa geri döner. Daha önce bölünmüş içeriği de onarır. */
+export function revertNarrowExploded(blocks: BlockNode[]): { blocks: BlockNode[]; reverted: number } {
+  let reverted = 0;
+  const walk = (node: BlockNode, narrow: boolean): BlockNode => {
+    const isNarrow = narrow || (node.type === "column" && typeof node.props?.widthPct === "number" && node.props.widthPct <= 50);
+    if (isNarrow && node.type === "list_element" && node.props?.listType === "cards" && /_x\d+$/.test(node.id) && Array.isArray(node.props.items)) {
+      reverted += 1;
+      const items = (node.props.items as unknown[]).map(String);
+      return { id: node.id.replace(/_x\d+$/, "_p"), type: "paragraph", props: { text: items.join(" "), html: items.join("<br />") } } as BlockNode;
+    }
+    return node.children ? { ...node, children: node.children.map((child) => walk(child, isNarrow)) } : node;
+  };
+  return { blocks: blocks.map((node) => walk(node, false)), reverted };
+}
+
 export interface CardifyResult {
   blocks: BlockNode[];
   lists: number;
@@ -73,16 +131,17 @@ export function cardifyPlainBlocks(blocks: BlockNode[], opts: { minListItems?: n
   let lists = 0;
   let groups = 0;
 
-  const convertLists = (node: BlockNode): BlockNode => {
+  const convertLists = (node: BlockNode, narrow = false): BlockNode => {
     let next = node;
-    if (node.type === "list_element" && Array.isArray(node.props?.items) && node.props.items.length >= minItems) {
+    const isNarrow = narrow || (node.type === "column" && typeof node.props?.widthPct === "number" && node.props.widthPct <= 50);
+    if (!isNarrow && node.type === "list_element" && Array.isArray(node.props?.items) && node.props.items.length >= minItems) {
       const type = String(node.props.listType ?? "check");
       if (type !== "numbered" && type !== "cards") {
         lists += 1;
         next = { ...node, props: { ...node.props, listType: "cards" } };
       }
     }
-    return next.children ? { ...next, children: next.children.map(convertLists) } : next;
+    return next.children ? { ...next, children: next.children.map((child) => convertLists(child, isNarrow)) } : next;
   };
 
   /** Doğrudan düz çocukları olan bir kapta, her başlık + sonrasındaki metinler bir kart olur (en az iki öbek varsa). */
@@ -117,11 +176,15 @@ export function cardifyPlainBlocks(blocks: BlockNode[], opts: { minListItems?: n
 
   const split = explodeLineParagraphs(blocks);
   const plainPage = countRich(split.blocks) <= 1;
-  let out = split.blocks.map(convertLists);
+  let out = split.blocks.map((node) => convertLists(node));
   lists += split.exploded;
   if (plainPage) {
     const rooted = out.map(walk);
     out = group(rooted);
   }
+  // Dar sütundaki bölünmüş listeler (eski çalıştırmalardan kalanlar dahil) düz paragrafa döner
+  const healed = revertNarrowExploded(out);
+  out = healed.blocks;
+  lists = Math.max(0, lists - healed.reverted);
   return { blocks: out, lists, groups };
 }

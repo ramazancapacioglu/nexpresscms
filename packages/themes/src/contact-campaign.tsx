@@ -30,7 +30,7 @@ export function ContactCampaignView({
   const panel = (
     <div
       style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
-      className="space-y-3 border bg-nx-card p-5 shadow-sm sm:p-6"
+      className="space-y-3 border bg-nx-card p-5 shadow-sm sm:p-6 [&_form]:border-0 [&_form]:bg-transparent [&_form]:p-0"
     >
       {heading ? (
         <h3 style={{ fontFamily: tokens.typography.headingFont, color: tokens.colors.secondary }} className="flex items-center gap-2 text-lg font-extrabold">
