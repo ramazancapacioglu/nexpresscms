@@ -510,7 +510,7 @@ export default async function PublicDynamicContentPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
-      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-1" : (content.type === "post" ? "pt-3" : "border-b pt-3 pb-8")}>
+      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-0 mb-1!" : (content.type === "post" ? "pt-3" : "border-b pt-3 pb-8")}>
         <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
           <div className="space-y-4">
             {/* Kırıntı başlığın üstünde, Markdown bağlantısı karşısında sade durur */}

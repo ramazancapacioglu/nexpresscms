@@ -166,7 +166,7 @@ function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: stri
   const kids = item.children ?? [];
   if (kids.length === 0) {
     return (
-      <a href={item.href} {...rel(item)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15px] leading-snug hover:bg-black/5">
+      <a href={item.href} {...rel(item)} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2.5 text-[15px] leading-snug hover:bg-black/5">
         <NavSvgIcon name={item.icon} size={14} className="opacity-70" />
         <span>{item.label}</span>
       </a>
@@ -174,7 +174,7 @@ function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: stri
   }
   return (
     <details className="border-b border-black/5 last:border-b-0">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-3 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-3 text-base font-semibold [&::-webkit-details-marker]:hidden">
         <span>{item.label}</span>
         <span aria-hidden="true" className="text-[10px] opacity-50">▼</span>
       </summary>
@@ -195,7 +195,7 @@ function MobileBranch({ item, allLabel }: { item: NavigationLink; allLabel: stri
  * yönetimi ve üst katman tarayıcıdadır. Panelin kayma/karartma stili `public.css` (`.nx-offcanvas`) içindedir.
  * Popover desteklemeyen eski tarayıcıda menü satır içi açık liste olarak görünür (CSS `@supports` yedeği).
  */
-export function MobileNav({ menu, extra, label, allLabel }: { menu: NavigationMenuItem[]; extra?: NavigationLink[]; label: string; allLabel: string }) {
+export function MobileNav({ menu, extra, label, allLabel, cta, phone }: { menu: NavigationMenuItem[]; extra?: NavigationLink[]; label: string; allLabel: string; cta?: { label: string; href: string } | null; phone?: string }) {
   const seen = new Set(menu.map((item) => `${item.label}|${item.href}`));
   const items: NavigationLink[] = [...menu, ...(extra ?? []).filter((item) => !seen.has(`${item.label}|${item.href}`))];
   if (items.length === 0) return null;
@@ -214,6 +214,12 @@ export function MobileNav({ menu, extra, label, allLabel }: { menu: NavigationMe
         {items.map((item) => (
           <MobileBranch key={item.id} item={item} allLabel={allLabel} />
         ))}
+        {cta || phone ? (
+          <div className="nx-offcanvas-cta">
+            {phone ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="nx-cta-phone">{phone}</a> : null}
+            {cta ? <a href={cta.href} className="nx-cta-main">{cta.label}</a> : null}
+          </div>
+        ) : null}
       </nav>
     </div>
   );

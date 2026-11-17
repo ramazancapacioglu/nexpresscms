@@ -91,7 +91,7 @@ export const YB_HEADER: HeaderConfig = {
     rightWidgets: ["search", "cta"],
     mobileLeftWidgets: ["logo"],
     mobileCenterWidgets: [],
-    mobileRightWidgets: ["search", "menu"],
+    mobileRightWidgets: ["phone", "search", "menu"],
     ctaLabel: "Ücretsiz Demo",
     ctaHref: T("/akinsoft-demo-talebi/"),
   },
@@ -319,9 +319,29 @@ ${S} .nx-footer { margin-top:2rem; }
 @media (max-width: 1500px) {
   ${S} [data-footer-row="bottom"] { padding-left:4.75rem; }
 }
+@media (max-width: 640px) {
+  ${S} [data-footer-row="bottom"] { padding-left:1rem; padding-bottom:5.5rem; }
+  ${S} .nx-fgrid { row-gap:28px; column-gap:16px; }
+  ${S} .nx-footer ul li, ${S} .nx-footer .nx-fcol a { overflow-wrap:anywhere; }
+}
 /* Düz metin sayfalarındaki başlık + metin kartları */
 ${S} .nx-text-card { padding:22px 24px; }
 ${S} .nx-text-card > section > div > :is(h2,h3):first-child { margin-top:0; color:#042646; border-left:4px solid #0c644e; padding-left:12px; }
 ${S} .nx-text-card > section > div { gap:0; }
 @media (max-width: 640px) { ${S} .nx-text-card { padding:16px; } }
+/* Mobil başlık: tek ince satır (logo · ara · arama · menü simgeleri); üst şerit mobilde gizlenir, sabit alan daralır */
+@media (max-width: 767px) {
+  ${S} .nx-header-top { display:none; }
+  ${S} .nx-public-header .nx-header-phone { font-size:0; line-height:0; overflow:hidden; text-indent:-200px; display:block; flex:none; width:42px; height:42px; border-radius:12px; background:#e8f3ef url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c644e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z'/%3E%3C/svg%3E") center/22px no-repeat; }
+  ${S} .nx-mobile-toggle { font-size:0; width:42px; height:42px; padding:0; border:0; border-radius:12px; background:#042646 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center/22px no-repeat; }
+  ${S} button.nx-header-search { width:42px; height:42px; }
+  ${S} .nx-public-header [class*="grid-cols-[1fr_auto_1fr]"] { gap:6px; }
+  ${S} .nx-public-header .nx-logo img { max-height:36px; width:auto; }
+}
+/* Mobil menü paneli */
+${S} .nx-offcanvas { border-radius:18px 0 0 18px; }
+${S} .nx-offcanvas details > summary { color:#042646; }
+${S} .nx-offcanvas details[open] > summary { color:#0c644e; }
+${S} .nx-offcanvas .nx-offcanvas-cta .nx-cta-main { color:#fff; }
+${S} .nx-offcanvas .nx-offcanvas-cta .nx-cta-phone { color:#0c644e; }
 `;

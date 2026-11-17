@@ -83,3 +83,17 @@ test("zengin sayfaya (kart, form, vitrin) öbek kartı eklenmez; yalnızca uzun 
   const page = [node("bento_features", {}), node("bento_features", {}), node("heading", { level: "h2", text: "A" }), node("paragraph", { text: "x" }), node("heading", { level: "h2", text: "B" }), node("paragraph", { text: "y" })];
   assert.equal(cardifyPlainBlocks(page).groups, 0);
 });
+
+import { explodeLineParagraphs } from "../src/cardify";
+
+test("<br> ile satırlanmış paragraf: madde satırları liste, kısa kalın satır başlık, uzun cümle paragraf olur", () => {
+  const html = "Giriş cümlesi burada.<br />• Birinci madde burada.<br />• İkinci madde burada.<br />• Üçüncü madde burada.<br /><strong>Alt başlık</strong><br />Bir önceki cümleye bağlı kısa satır.";
+  const out = explodeLineParagraphs([node("paragraph", { html })]);
+  assert.equal(out.exploded, 1);
+  const types = out.blocks.map((b) => b.type);
+  assert.deepEqual(types.slice(0, 1), ["list_element"]);
+  assert.ok(types.includes("heading"));
+  const list = out.blocks[0]!;
+  assert.deepEqual((list.props as { items: string[] }).items.slice(0, 2), ["Giriş cümlesi burada.", "Birinci madde burada."]);
+  assert.equal((explodeLineParagraphs([node("paragraph", { html: "Bir<br />iki" })])).exploded, 0);
+});

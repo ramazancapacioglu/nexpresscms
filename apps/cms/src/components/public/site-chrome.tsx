@@ -109,7 +109,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
     }
     if (id === "menu") {
       return viewport === "mobile"
-        ? <MobileNav menu={menu} extra={bottomLinks} label={menuLabel} allLabel={menuAllLabel} />
+        ? <MobileNav menu={menu} extra={bottomLinks} label={menuLabel} allLabel={menuAllLabel} cta={showCta ? { label: ctaLabel, href: ctaHref } : null} phone={top?.contactPhone?.trim() || ""} />
         : <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />;
     }
     if (id === "search") {
@@ -369,6 +369,8 @@ export function SiteFooter({
   ].filter((item, index, list) => list.findIndex((other) => other.href === item.href) === index);
   return (
     <footer className="nx-footer mt-16">
+      {/* Mobilde ilk sütun (iletişim) tam genişlik, diğerleri iki sütun; masaüstünde 12'li ızgara */}
+      <style>{".nx-fcol{grid-column:span 1}.nx-fcol:first-child{grid-column:1/-1}@media(min-width:768px){.nx-fcol,.nx-fcol:first-child{grid-column:span var(--nx-span)/span var(--nx-span)}}"}</style>
       {footer?.topBanner?.enabled ? (
         <div className="px-4 sm:px-6">
           <div
@@ -414,7 +416,7 @@ export function SiteFooter({
         >
           <div
             style={{ maxWidth: style.main.full ? maxWidth : undefined, columnGap: style.gapPx, rowGap: style.gapPx }}
-            className="mx-auto grid grid-cols-1 md:grid-cols-12"
+            className="nx-fgrid mx-auto grid grid-cols-2 md:grid-cols-12"
           >
             {layout.colSpans.map((span, colIdx) => {
               const colWidgets = allWidgets.filter(
@@ -425,8 +427,8 @@ export function SiteFooter({
               return (
                 <div
                   key={colIdx}
-                  style={{ gridColumn: `span ${span} / span ${span}` }}
-                  className="space-y-5"
+                  style={{ "--nx-span": span } as React.CSSProperties}
+                  className="nx-fcol min-w-0 space-y-5"
                 >
                   {colWidgets.map((w) => (
                     <RenderPublicWidget
