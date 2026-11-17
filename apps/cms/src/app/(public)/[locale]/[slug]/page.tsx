@@ -205,7 +205,24 @@ export default async function PublicDynamicContentPage({
   const featuredTitle = String(pub.featuredImageAlt ?? content.title);
   const featuredCaption = String(pub.featuredImageCaption ?? "");
   // Başlığın yanında görünen öne çıkan görsel: içerik zaten kendi başlık bandıyla açılıyorsa (başlık gizli sayfa) çizilmez
-  const headerImage = Boolean(featuredImageUrl) && !(content.type === "page" && readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle);
+  // Yazının/sayfanın kendi ilk bloklarında aynı görsel varsa (kaynakta başlık bandı görseli) başlıkta ikinci kez çizilmez
+  const imageKey = (value: unknown) => (typeof value === "string" ? value.split("?")[0]!.split("/").pop() ?? "" : "");
+  const leadsWithSameImage = (() => {
+    const want = imageKey(featuredImageUrl);
+    if (!want) return false;
+    let seen = 0;
+    const walk = (nodes: typeof content.blocks): boolean => {
+      for (const node of nodes) {
+        if (seen++ > 8) return false;
+        const props = node.props as Record<string, unknown> | undefined;
+        if (props && [props.url, props.image, props.src].some((v) => imageKey(v) === want)) return true;
+        if (node.children && walk(node.children)) return true;
+      }
+      return false;
+    };
+    return walk(content.blocks);
+  })();
+  const headerImage = Boolean(featuredImageUrl) && !leadsWithSameImage && !(content.type === "page" && readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle);
   const showShareBar = pub.showShareButtons !== false;
   const allowReviews = pub.allowReviews !== false;
   const allowComments = pub.allowComments !== false;
@@ -511,35 +528,35 @@ export default async function PublicDynamicContentPage({
       />
 
       <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-0 mb-1!" : (content.type === "post" ? "pt-3" : "border-b pt-3 pb-8")}>
-        <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-center" : ""}>
-          <div className="space-y-4">
-            {/* Kırıntı başlığın üstünde, Markdown bağlantısı karşısında sade durur */}
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <nav aria-label={t("content.breadcrumb")}>
-                <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
-                  {crumbs.map((crumb, i) => {
-                    const last = i === crumbs.length - 1;
-                    return (
-                      <li key={crumb.url} className="flex items-center gap-1.5">
-                        {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
-                        {last ? null : <span aria-hidden="true">›</span>}
-                      </li>
-                    );
-                  })}
-                </ol>
-              </nav>
-              <div className="flex shrink-0 items-center gap-3">
-                <Link href={`${lb}${cPath}?format=md`} className="font-mono text-[11px] text-nx-muted hover:text-nx-fg hover:underline">
-                  {t("content.markdownLink")}
-                </Link>
-                {canEdit ? (
-                  <Link href={`/admin/contents?id=${content.id}&type=${content.type}`} className="text-[11px] font-medium text-nx-link hover:underline">
-                    ✏️ Düzenle
-                  </Link>
-                ) : null}
-              </div>
-            </div>
+        {/* Kırıntı kendi satırında: görsel ve başlık altında hizalı başlar, kırıntıya göre ortalanmaz */}
+        <div className="mb-4 flex items-center justify-between gap-3 text-xs">
+          <nav aria-label={t("content.breadcrumb")}>
+            <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
+              {crumbs.map((crumb, i) => {
+                const last = i === crumbs.length - 1;
+                return (
+                  <li key={crumb.url} className="flex items-center gap-1.5">
+                    {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
+                    {last ? null : <span aria-hidden="true">›</span>}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href={`${lb}${cPath}?format=md`} className="font-mono text-[11px] text-nx-muted hover:text-nx-fg hover:underline">
+              {t("content.markdownLink")}
+            </Link>
+            {canEdit ? (
+              <Link href={`/admin/contents?id=${content.id}&type=${content.type}`} className="text-[11px] font-medium text-nx-link hover:underline">
+                ✏️ Düzenle
+              </Link>
+            ) : null}
+          </div>
+        </div>
 
+        <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-start" : ""}>
+          <div className="space-y-4">
             {content.type === "post" && categories[0] ? (
               <a href={`${lb}/kategori/${categories[0]}`} style={{ color: tokens.colors.primary }} className="inline-block text-xs font-bold uppercase tracking-wider hover:underline">
                 {termName("category", categories[0])}

@@ -126,3 +126,20 @@ test("dar sütundaki bölünmüş liste paragrafa döner; geniş sütundakine do
   assert.equal(cols[0]!.children![0]!.type, "paragraph");
   assert.equal(cols[1]!.children![0]!.type, "list_element");
 });
+
+import { tidyImages } from "../src/cardify";
+
+test("galeride tekrar eden görsel kalkar; boş alt metin önceki başlıktan (yoksa sayfa başlığından) gelir", () => {
+  const blocks = [
+    node("heading", { level: "h2", text: "Devir" }),
+    node("gallery", { items: [{ url: "/media/med_a?w=1", alt: "" }, { url: "/media/med_b?w=1", alt: "Var" }, { url: "/media/med_a?w=9", alt: "" }] }),
+    node("image_figure", { url: "/media/med_c", altText: "" }),
+  ];
+  const out = tidyImages(blocks, "Sayfa");
+  const items = (out.blocks[1]!.props as { items: Array<{ alt: string }> }).items;
+  assert.equal(items.length, 2);
+  assert.equal(items[0]!.alt, "Devir – 1");
+  assert.equal(items[1]!.alt, "Var");
+  assert.equal((out.blocks[2]!.props as { altText: string }).altText, "Devir");
+  assert.equal(tidyImages(out.blocks, "Sayfa").alts, 0);
+});

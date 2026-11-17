@@ -27,13 +27,19 @@ export async function generateMetadata({
   const title = `Kampanyalar & Özel Fırsatlar | ${siteName}`;
   const description = `${siteName} güncel yazılım, e-ticaret ve lisans kampanyaları, indirimler ve hediye avantajları.`;
 
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const lb = await siteLocaleBase(siteId, locale);
+  const url = `${origin}${lb}/kampanyalar`;
   return {
     title,
     description,
+    alternates: { canonical: url },
     openGraph: {
       title,
       description,
+      url,
       type: "website",
+      images: [`${origin}/og?title=${encodeURIComponent("Kampanyalar")}&site=${encodeURIComponent(siteName)}`],
     },
   };
 }

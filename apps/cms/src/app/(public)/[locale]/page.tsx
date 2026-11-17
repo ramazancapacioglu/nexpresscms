@@ -46,6 +46,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         metaDescription: home.metaDescription,
         canonicalUrl: home.canonicalUrl,
         noIndex: home.noIndex,
+        imageUrl: home.featuredImage ?? `/og?title=${encodeURIComponent(home.title)}&site=${encodeURIComponent(localizedSite.name)}`,
         settings: localizedSite.seo,
       })
     : null;

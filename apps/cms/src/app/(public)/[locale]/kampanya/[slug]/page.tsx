@@ -58,14 +58,19 @@ export async function generateMetadata({
   const title = `${camp.title} | ${siteName}`;
   const description = camp.tldr || `${camp.title} fırsat detayları, indirim oranları ve başvuru şartları.`;
 
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const lb = await siteLocaleBase(siteId, locale);
+  const url = `${origin}${lb}/kampanya/${camp.slug}`;
   return {
     title,
     description,
+    alternates: { canonical: content.canonicalUrl || url },
     openGraph: {
       title,
       description,
+      url,
       type: "article",
-      images: camp.featuredImageUrl ? [camp.featuredImageUrl] : undefined,
+      images: [camp.featuredImageUrl || `${origin}/og?title=${encodeURIComponent(camp.title)}&site=${encodeURIComponent(siteName)}`],
     },
   };
 }

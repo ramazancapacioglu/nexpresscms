@@ -116,6 +116,48 @@ export function revertNarrowExploded(blocks: BlockNode[]): { blocks: BlockNode[]
   return { blocks: blocks.map((node) => walk(node, false)), reverted };
 }
 
+
+const imageId = (url: unknown) => (typeof url === "string" ? url.split("?")[0]!.split("/").pop() ?? "" : "");
+
+/**
+ * Görselleri düzenler: galeride aynı görselin tekrarı (kaynaktaki kaydırıcı kopyaları) kalkar; boş alt metni olan görsel,
+ * kendinden önceki son başlığın (yoksa sayfa başlığının) metnini alır. Alt metin erişilebilirlik ve görsel SEO içindir.
+ */
+export function tidyImages(blocks: BlockNode[], pageTitle: string): { blocks: BlockNode[]; deduped: number; alts: number } {
+  let deduped = 0;
+  let alts = 0;
+  let lastHeading = "";
+  const walk = (node: BlockNode): BlockNode => {
+    let next = node;
+    if (node.type === "heading" && typeof node.props?.text === "string") lastHeading = stripTags(node.props.text);
+    const label = lastHeading || pageTitle;
+    if (node.type === "gallery" && Array.isArray(node.props?.items)) {
+      const seen = new Set<string>();
+      const items = (node.props.items as Array<Record<string, unknown>>).filter((item) => {
+        const key = imageId(item.url);
+        if (!key) return true;
+        if (seen.has(key)) {
+          deduped += 1;
+          return false;
+        }
+        seen.add(key);
+        return true;
+      }).map((item, index) => {
+        if (typeof item.alt === "string" && item.alt.trim()) return item;
+        alts += 1;
+        return { ...item, alt: `${label} – ${index + 1}` };
+      });
+      next = { ...node, props: { ...node.props, items } };
+    }
+    if (node.type === "image_figure" && !String(node.props?.altText ?? "").trim() && node.props?.url) {
+      alts += 1;
+      next = { ...node, props: { ...node.props, altText: label } };
+    }
+    return next.children ? { ...next, children: next.children.map(walk) } : next;
+  };
+  return { blocks: blocks.map(walk), deduped, alts };
+}
+
 export interface CardifyResult {
   blocks: BlockNode[];
   lists: number;
