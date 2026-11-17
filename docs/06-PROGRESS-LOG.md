@@ -1294,3 +1294,4 @@
 - ✅ Yazılım Bayi mobil başlık/menü/altlık yeniden düzenlendi; dikey "Sizi arayalım" sekmesi; kırıntı-başlık boşluğu daraltıldı; uzun düz metin sayfalar (örn. genel muhasebe) madde kartlarına çevrildi.
 - ✅ Dikey ritim: boşluk blokları yer açmaz; altlık mobilde akordiyon; sosyal simge çerçevesi düzeltildi.
 - ✅ Tasarım odaklı boşluk düzeni (kaynak dolguları temizlendi), altlık mobil akordiyon, sosyal simge çerçevesi, form yerleşimi; dar sütunda düzyazı listeye bölünmesi geri alındı.
+- ✅ akinsoftizmir.com.tr: uygulama systemd hizmeti (açılışta başlar, çökünce yeniden kalkar, PostgreSQL'den sonra); kanonik adres www, çıplak alan adı 301 ile www'ye.

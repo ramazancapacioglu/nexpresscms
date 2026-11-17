@@ -159,3 +159,8 @@ Next (`next start`), `Host` başlığını `request.url` için kullanmaz; vekil 
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.
+
+## Plesk sunucusunda kalıcı çalıştırma (systemd) ve www (2026-11-17)
+- Uygulama kullanıcı sürecini elle başlatmak yerine `systemd` hizmetiyle çalışır (`/etc/systemd/system/<ad>.service`): site kullanıcısı, `EnvironmentFile=.env`, `PORT`, `ExecStart=node scripts/start.cjs`, `Restart=always`, PostgreSQL'den sonra başlar (`After=`/`Wants=postgresql.service`, `override.conf`). `systemctl enable` ile açılışta başlar; süreç çökerse 5 sn içinde yeniden kalkar. Dağıtım: `next build` (site kullanıcısı olarak, `.env` yüklü) → `systemctl restart <ad>`.
+- Plesk nginx `vhost_nginx.conf` içinde `proxy_pass http://127.0.0.1:<PORT>` tutar. Tercih edilen alan adı `www` ise `plesk bin site -u <alan> -seo-redirect www` çıplak adresi 301 ile `www`'ye yönlendirir; uygulama kanonik adresi `NEXT_PUBLIC_APP_URL` ile bilir (derleme zamanında gömülür: değişince yeniden derleyin), aksi hâlde `www` ↔ çıplak döngüsü oluşur.
+- Let's Encrypt: DNS yeni sunucuyu gösterdikten sonra Plesk'ten hem çıplak hem `www` için alınır.
