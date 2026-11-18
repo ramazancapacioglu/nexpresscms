@@ -131,3 +131,9 @@ export function restoreRemoteMedia(blocks: BlockNode[], origin: string): BlockNo
   });
   return blocks.map(walk);
 }
+
+/** `foto-1024x683.webp`, `foto-scaled.jpg`, `foto-e1553933907887.jpg` → özgün dosyanın adresi. */
+export function originalUploadUrl(url: string): string {
+  const clean = url.split("?")[0] ?? url;
+  return clean.replace(/-e\d{10,}(?=\.[a-z0-9]+$)/i, "").replace(/-(scaled|\d{2,4}x\d{2,4})(?=\.[a-z0-9]+$)/i, "");
+}

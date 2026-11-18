@@ -46,9 +46,11 @@ export class CmsCommentsRepository extends CmsMediaRepository {
     isVerified?: boolean;
     parentId?: string | null;
     tags?: string[];
+    /** İçe aktarılan kayıtta özgün zaman; boşsa şimdi. */
+    createdAt?: Date;
   }): Promise<CommentReviewDto> {
     const id = input.id ?? `rev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const now = new Date();
+    const now = input.createdAt ?? new Date();
     const record = {
       id,
       siteId: this.siteId,
@@ -78,6 +80,7 @@ export class CmsCommentsRepository extends CmsMediaRepository {
         setWhere: eq(t.commentsReviews.siteId, this.siteId),
         set: {
           authorName: record.authorName,
+          entryType: record.entryType,
           status: record.status,
           rating: record.rating,
           title: record.title,
@@ -87,6 +90,7 @@ export class CmsCommentsRepository extends CmsMediaRepository {
           ...(input.isVerified !== undefined ? { isVerified: record.isVerified } : {}),
           ...(input.parentId !== undefined ? { parentId: input.parentId || null } : {}),
           ...(input.tags ? { tags: record.tags } : {}),
+          ...(input.createdAt ? { createdAt: input.createdAt } : {}),
         },
       });
 

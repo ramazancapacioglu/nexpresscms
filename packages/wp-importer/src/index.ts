@@ -11,3 +11,8 @@ export * from "./bridge-parse";
 export * from "./bridge-repair";
 export * from "./seo-vars";
 export * from "./public-head";
+export * from "./kadence";
+export * from "./campaign-text";
+export * from "./heading-match";
+export * from "./page-tidy";
+export * from "./cardify";

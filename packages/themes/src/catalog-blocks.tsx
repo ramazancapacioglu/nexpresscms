@@ -86,7 +86,7 @@ export function renderStudioCatalogBlock(
             </div>
           ) : null}
           <h3 className="mt-1 text-base md:text-lg font-bold text-nx-fg">{text(p.title, "Bilgi kutusu")}</h3>
-          {bodyText ? <p className="mt-1.5 text-sm leading-relaxed text-nx-soft">{bodyText}</p> : null}
+          {bodyText ? <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-nx-soft">{bodyText}</p> : null}
           {href && text(p.linkLabel) ? (
             <span className="mt-3 inline-block text-sm font-semibold text-nx-link">
               {text(p.linkLabel)}
@@ -184,9 +184,9 @@ export function renderStudioCatalogBlock(
       return (
         <nav style={box} className="border bg-nx-subtle p-4">
           <div className="text-[11px] font-bold uppercase tracking-wider text-nx-muted">{t("blocks.toc")}</div>
-          <ol className="mt-2 space-y-1 text-sm">
+          <ol className="mt-2 text-sm [column-gap:2rem] sm:columns-2 lg:columns-3">
             {items.map((item, index) => (
-              <li key={index}>
+              <li key={index} className="break-inside-avoid py-0.5">
                 <a href={safeUrl(item.href) ?? "#"} className="text-nx-link hover:underline">
                   {text(item.label, `${t("blocks.heading")} ${index + 1}`)}
                 </a>
@@ -236,7 +236,8 @@ export function renderStudioCatalogBlock(
                 const label = text(item.label, `${t("blocks.section")} ${index + 1}`);
                 const iconName = text(item.icon);
                 const badge = text(item.badge);
-                const isFirst = index === 0;
+                // Betiksiz sayfada hangi bölümde olunduğu bilinemez; ilk madde sabit vurgulu çizilmez.
+                const isFirst = false;
 
                 const variantClass =
                   styleVariant === "pills"
@@ -346,8 +347,9 @@ export function renderStudioCatalogBlock(
                 key={index}
                 href={href}
                 className={`inline-flex rounded-md px-4 py-2 text-sm font-semibold ${
-                  solid ? "bg-blue-600 text-white" : "border border-nx-line text-nx-fg"
+                  solid ? "" : "border border-current"
                 }`}
+                style={solid ? { backgroundColor: "var(--nx-primary,#0c644e)", color: "var(--nx-primary-fg,#fff)" } : { color: "inherit" }}
               >
                 {text(button.label, "Buton")}
               </a>

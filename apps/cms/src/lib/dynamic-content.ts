@@ -8,6 +8,7 @@ import {
   resolveSiteSettings,
   localeBase,
   normalizeDynamicQuery,
+  pickContactCampaign,
   resolveDynamicBlock,
   resolvePublishing,
   resolveCampaignData,
@@ -72,6 +73,7 @@ export const getDynamicCandidates = cachedRead("dynamic-candidates", async (site
         ctaUrl: camp.ctaUrl,
         contactWhatsapp: camp.contactWhatsapp,
         contactPhone: camp.contactPhone,
+        productUrl: camp.productUrl,
       });
       continue;
     }
@@ -155,6 +157,17 @@ export async function loadDynamicData(
             },
           },
         ];
+      }
+      if (b.type === "contact_campaign") {
+        const p = b.props ?? {};
+        const current = currentContentId ? candidates.find((c) => c.id === currentContentId) : undefined;
+        const picked = pickContactCampaign(candidates, {
+          productUrl: typeof p.productUrl === "string" ? p.productUrl : "",
+          campaignSlug: typeof p.campaignSlug === "string" ? p.campaignSlug : "",
+          currentUrl: current?.url,
+        });
+        const items = picked ? [picked] : [];
+        return [b.id, { items, meta: { key: b.id, total: items.length, page: 1, pages: 1, q: "", cat: "", sort: "newest", keep: "" } }];
       }
       return [
         b.id,

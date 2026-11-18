@@ -1,4 +1,4 @@
-import type { BlockNode, ContentType } from "@nexpress/core";
+import { sanitizeOrganizationSchema, type BlockNode, type ContentType } from "@nexpress/core";
 import {
   getDesignLibraryRepository,
   getRedirectRepository,
@@ -194,7 +194,7 @@ async function mapPool<T>(items: T[], limit: number, run: (item: T) => Promise<v
   await Promise.all(workers);
 }
 
-function compileBlocks(html: string, faqs: PublicHead["faqs"], wpId: number, origin: string, palette: Record<string, string>, datasetLists: boolean): BlockNode[] {
+export function compileBlocks(html: string, faqs: PublicHead["faqs"], wpId: number, origin: string, palette: Record<string, string>, datasetLists: boolean): BlockNode[] {
   let blocks: BlockNode[] = [];
   try {
     blocks = hasRichBlockMarkup(html)
@@ -469,9 +469,7 @@ export async function importPublicWordPress(siteId: string, opts: { origin: stri
           ? "Article"
           : software || declared.includes("SoftwareApplication")
             ? "SoftwareApplication"
-            : declared.includes("FAQPage") || declared.includes("QAPage")
-              ? "FAQPage"
-              : declared.find((type) => type === "AboutPage" || type === "ContactPage" || type === "Service") ?? "";
+            : declared.find((type) => type === "AboutPage" || type === "ContactPage" || type === "Service") ?? "";
     const mapped = schemaFromBridge({
       kind: schemaKind,
       schemaType: rawType,
@@ -551,6 +549,7 @@ export async function importPublicWordPress(siteId: string, opts: { origin: stri
       ...(org?.name ? { organizationName: org.name } : {}),
       ...(org?.logo.startsWith("https://") ? { organizationLogo: org.logo } : {}),
       ...(org && org.sameAs.length > 0 ? { sameAs: org.sameAs } : {}),
+      ...(org && sanitizeOrganizationSchema(org.schema) ? { organizationSchema: sanitizeOrganizationSchema(org.schema) } : {}),
       ...(homeHead.description ? { defaultMetaDescription: homeHead.description } : {}),
     },
     general: {

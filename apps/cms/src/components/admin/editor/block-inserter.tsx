@@ -77,6 +77,7 @@ const BLOCK_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   product_row: ShoppingBag,
   product_embed: ShoppingBag,
   campaign_showcase: Megaphone,
+  contact_campaign: Megaphone,
 };
 
 export interface BlockInserterProps {

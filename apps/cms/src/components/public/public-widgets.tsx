@@ -42,6 +42,7 @@ export function RenderPublicWidget({
   feed,
   cardStyle = "cards",
   menuLibrary,
+  hideTitle = false,
 }: {
   widget: SiteWidget;
   locale: string;
@@ -52,6 +53,8 @@ export function RenderPublicWidget({
   cardStyle?: "cards" | "minimal" | "bordered" | "footer";
   /** Menü kimliği → çözülmüş ağaç. Footer ve kenar çubuğu aynı kaydı basar. */
   menuLibrary?: Record<string, NavigationLink[]>;
+  /** Başlık dışarıda (ör. altlık akordiyon etiketi) çizildiyse tekrar basılmaz. */
+  hideTitle?: boolean;
 }) {
   if (!widget.enabled) return null;
   const s = widget.settings;
@@ -119,7 +122,7 @@ export function RenderPublicWidget({
 
   return (
     <div className={wrapperClass}>
-      {widget.title ? (
+      {widget.title && !hideTitle ? (
         <div className="text-xs font-bold uppercase tracking-wider opacity-85">
           {widget.title}
         </div>
@@ -361,12 +364,23 @@ export function RenderPublicWidget({
       {/* MARKA & SOSYAL MEDYA */}
       {widget.type === "about_brand" && (
         <div className="space-y-2.5 text-xs">
+          {s.logo && (s.logo.startsWith("/") || s.logo.startsWith("https://")) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={s.logo} alt={widget.title || "Logo"} width={88} height={88} loading="lazy" className="nx-footer-logo h-22 w-22 rounded-full bg-white object-contain shadow-sm ring-1 ring-black/5" />
+          ) : null}
           {s.subtitle ? <p className="leading-relaxed opacity-80">{s.subtitle}</p> : null}
           <div className="space-y-1 opacity-80">
             {s.phone ? <div>Tel: {s.phone}</div> : null}
             {s.email ? <div>E-posta: {s.email}</div> : null}
             {s.address ? <div>Adres: {s.address}</div> : null}
           </div>
+          {s.links && s.links.length > 0 ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {s.links.filter((link) => isSafeMenuHref(link.href)).map((link) => (
+                <a key={link.id} href={link.href} className="nx-footer-chip rounded-full border border-nx-line px-3 py-1 text-[11px] font-semibold hover:bg-black/5">{link.label}</a>
+              ))}
+            </div>
+          ) : null}
           {s.socials && Object.values(s.socials).some(Boolean) ? (
             <div className="flex flex-wrap gap-2 pt-1 text-[11px] font-semibold">
               {s.socials.x && isSafeMenuHref(s.socials.x) ? (

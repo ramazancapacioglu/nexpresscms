@@ -19,7 +19,7 @@ const csp = [
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
   `connect-src 'self'${extraScript ? ` ${extraScript}` : ""}`,
-  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  "frame-src 'self' https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -65,6 +65,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      {
+        // Tema görselleri (logo, demo çizimleri) public/ altından gelir ve varsayılan olarak `max-age=0` ile gider;
+        // her sayfa gezintisinde yeniden indirilmesin
+        source: "/(demo|images)/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      },
       {
         // Yönetim ve giriş sayfaları çerçeveye alınamaz ve önbelleğe alınmaz
         source: "/(admin|login)/:path*",

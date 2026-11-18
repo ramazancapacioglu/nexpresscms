@@ -138,6 +138,11 @@
 .nx-offcanvas:popover-open::backdrop { opacity: 1; }
 @starting-style { .nx-offcanvas:popover-open::backdrop { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .nx-offcanvas, .nx-offcanvas::backdrop { transition: none; } }
+/* Menü altında yapışık çağrı: telefon ve ana eylem her an elin altında */
+.nx-offcanvas-cta { position: sticky; bottom: -12px; display: grid; gap: 8px; margin: 12px -12px -12px; padding: 12px; background: var(--nx-bg, #fff); border-top: 1px solid rgb(0 0 0 / 0.08); }
+.nx-offcanvas-cta a { display: flex; align-items: center; justify-content: center; min-height: 46px; border-radius: 12px; font-weight: 700; font-size: 15px; text-decoration: none; }
+.nx-cta-phone { border: 1.5px solid var(--nx-primary, #0c644e); color: var(--nx-primary, #0c644e); }
+.nx-cta-main { background: var(--nx-primary, #0c644e); color: var(--nx-primary-fg, #fff); }
 /* Popover desteği yoksa: açma düğmesi gizlenir, menü satır içi açık liste kalır */
 @supports not selector(:popover-open) {
   .nx-offcanvas { position: static; transform: none; width: auto; height: auto; box-shadow: none; padding: 8px 0; }
@@ -148,3 +153,5 @@
 main[data-nx-width="wide"] > article, main[data-nx-width="full"] > article { max-width: none; }
 /* Şeffaf header: menü ve bağlantılar şeridin yazı rengini kalıtır */
 .nx-public-header[data-nx-overlay] a, .nx-public-header[data-nx-overlay] summary, .nx-public-header[data-nx-overlay] .nx-logo span { color: inherit; }
+/* Boş boşluk blokları dikey ritmi bozmaz: kaplar zaten aralık verir */
+.nx-block:has(> .nx-spacer) { display: none; }

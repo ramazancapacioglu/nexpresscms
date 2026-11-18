@@ -7,6 +7,7 @@ import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalink
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 import type { WebmasterVerification } from "./webmaster-connect";
+import { sanitizeOrganizationSchema } from "./organization-schema";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
 
 export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
@@ -73,6 +74,8 @@ export interface SeoEngineSettings {
   /** Site simgesi (favicon, ana ekran simgesi): kare, en az 512 px, kitaplıktan yerel görsel. Boşsa simge yayımlanmaz. */
   siteIcon: string;
   sameAs: string[];
+  /** Kuruluş düğümüne eklenen yerel işletme bilgisi. İzin listesinden geçer. */
+  organizationSchema?: Record<string, unknown>;
   robotsTxtExtra: string;
   /**
    * Arama motoru indeksi. `false` iken tüm site `noindex`, site haritası boş
@@ -263,6 +266,10 @@ export interface GeneralSettings {
   frontPageSlug?: string;
   /** Yazıların listelendiği sayfa. Boşsa ayrı blog sayfası yoktur. */
   postsPageSlug?: string;
+  /** Sağ alttaki hızlı arama formunun kimliği. Boşsa düğme yok. */
+  quickContactFormId?: string;
+  /** Sol alttaki WhatsApp numarası, ülke koduyla, yalnızca rakam. Boşsa düğme yok. */
+  whatsappNumber?: string;
   /** Yazılım Firması kabuğu uygulanmadan önceki şerit, menü ve yerleşim. */
   chromeSnapshot?: ChromeSnapshot | null;
   /**
@@ -369,6 +376,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
     seo: {
       ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
       schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements),
+      organizationSchema: sanitizeOrganizationSchema(seoRaw.organizationSchema),
       permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
     },
     general: {

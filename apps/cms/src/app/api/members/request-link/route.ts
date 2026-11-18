@@ -5,6 +5,7 @@ import { getMemberRepository } from "@nexpress/database";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { getMembership, mailerReady, sameOriginPost, sendMemberLink } from "@/lib/members";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
   const next = safeMemberNext(form.get("next"), "/");
   const lb = await siteLocaleBase(siteId, locale);
   const back = (params: Record<string, string>) => {
-    const url = new URL(`${lb}/uye/giris`, request.url);
+    const url = publicUrl(`${lb}/uye/giris`, request);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
     if (next !== "/") url.searchParams.set("next", next);
     return NextResponse.redirect(url, 303);

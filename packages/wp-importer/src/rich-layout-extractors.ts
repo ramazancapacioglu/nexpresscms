@@ -94,8 +94,25 @@ export function extractInfoBoxNode(el: Element, base: string, id: () => string, 
   const textEl =
     DomUtils.findOne((e) => hasCls(e, "kt-blocks-info-box-text"), [el]) ??
     DomUtils.findOne((e) => e.name === "p", [el]);
-  const title = titleEl ? plainText(titleEl.children) : "";
-  const description = textEl ? plainText(textEl.children) : "";
+  let title = titleEl ? plainText(titleEl.children) : "";
+  let description = textEl ? plainText(textEl.children) : "";
+  // Kadence bilgi kutusunda başlık yoksa değerler "learnmore" satırındadır (e-posta, telefon, adres): etiket başlık, değerler açıklama olur
+  const valueEl = DomUtils.findOne((e) => hasCls(e, "kt-blocks-info-box-learnmore"), [el]);
+  if (valueEl && !DomUtils.findOne((e) => hasCls(e, "kt-blocks-info-box-title"), [el])) {
+    const lines: string[] = [];
+    let current = "";
+    for (const node of valueEl.children) {
+      if (node.type === "tag" && (node as Element).name === "br") {
+        if (current.trim()) lines.push(current.trim());
+        current = "";
+      } else current += plainText([node]);
+    }
+    if (current.trim()) lines.push(current.trim());
+    if (lines.length > 0) {
+      title = description || title;
+      description = lines.join("\n");
+    }
+  }
   if (!title && !description) return null;
 
   const imgEl = DomUtils.findOne((e) => e.name === "img", [el]);

@@ -43,6 +43,8 @@ export interface PublicHeadOrganization {
   logo: string;
   email: string;
   sameAs: string[];
+  /** Düğümün ham JSON-LD'si; çağıran izin listesinden geçirir (`sanitizeOrganizationSchema`). */
+  schema: Record<string, unknown>;
 }
 
 export interface PublicHead {
@@ -136,6 +138,7 @@ function readOrganization(row: Record<string, unknown>): PublicHeadOrganization 
     logo: asText(row.logo, 300),
     email: asText(row.email, 180),
     sameAs,
+    schema: row,
   };
 }
 

@@ -17,6 +17,8 @@ export const YB_EMAIL = "bilgi@akinsoftizmir.com.tr";
 export const YB_ADDRESS = "Muciburrahman Sk. No:3/522 Konak İzmir";
 /** Logo ve sosyal bağlantılar kaynak siteden alınmıştır (`apps/cms/public/demo/yazilim-bayi/logo.webp`). */
 export const YB_LOGO = `${YB_ART}/logo.webp`;
+/** Yuvarlak (daire) marka logosu: altlık marka kartında kullanılır. */
+export const YB_LOGO_ROUND = `${YB_ART}/logo-kare.webp`;
 export const YB_SOCIALS = {
   facebook: "https://www.facebook.com/akinsoftizmiir",
   x: "https://twitter.com/akinsoftizmirb1",
@@ -75,7 +77,7 @@ export const YB_HEADER: HeaderConfig = {
     contactEmail: "",
     leftWidgets: ["announcement"],
     centerWidgets: [],
-    rightWidgets: ["links", "phone", "search"],
+    rightWidgets: ["links", "phone"],
     mobileLeftWidgets: ["announcement"],
     mobileCenterWidgets: [],
     mobileRightWidgets: ["phone"],
@@ -84,14 +86,14 @@ export const YB_HEADER: HeaderConfig = {
     enabled: true,
     sticky: true,
     glassmorphism: false,
-    leftWidgets: ["logo", "menu"],
-    centerWidgets: [],
-    rightWidgets: [],
+    leftWidgets: ["logo"],
+    centerWidgets: ["menu"],
+    rightWidgets: ["search", "cta"],
     mobileLeftWidgets: ["logo"],
     mobileCenterWidgets: [],
-    mobileRightWidgets: ["menu"],
-    ctaLabel: "",
-    ctaHref: "",
+    mobileRightWidgets: ["phone", "search", "menu"],
+    ctaLabel: "Ücretsiz Demo",
+    ctaHref: T("/akinsoft-demo-talebi/"),
   },
   bottomBar: {
     enabled: false,
@@ -156,16 +158,35 @@ export const YB_FOOTER: FooterConfig = {
     { label: "Pinterest", href: "https://tr.pinterest.com/akinsoftizmir1/" },
   ],
   columns: YB_FOOTER_COLUMNS,
-  widgets: YB_FOOTER_COLUMNS.map((col, columnIndex) => ({
-    id: `wdg_${col.id}`,
-    type: "nav_menu" as const,
-    title: col.title,
-    enabled: true,
-    columnIndex,
-    settings: {
-      links: col.links.map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
-    },
-  })),
+  widgets: YB_FOOTER_COLUMNS.map((col, columnIndex) =>
+    columnIndex === 0
+      ? {
+          // İlk sütun marka kartıdır: yuvarlak logo, kısa tanıtım, iletişim ve hızlı bağlantılar
+          id: `wdg_${col.id}`,
+          type: "about_brand" as const,
+          title: "",
+          enabled: true,
+          columnIndex,
+          settings: {
+            logo: YB_LOGO_ROUND,
+            subtitle: "Akınsoft yetkili ana bayisi: Wolvox ERP, muhasebe ve e-Dönüşüm çözümleri.",
+            phone: `${YB_PHONE} · ${YB_PHONE_2}`,
+            email: YB_EMAIL,
+            address: YB_ADDRESS,
+            links: col.links.filter((link) => /talebi/i.test(link.label)).map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
+          },
+        }
+      : {
+          id: `wdg_${col.id}`,
+          type: "nav_menu" as const,
+          title: col.title,
+          enabled: true,
+          columnIndex,
+          settings: {
+            links: col.links.map((link, index) => ({ id: `${col.id}_${index}`, label: link.label, href: link.href })),
+          },
+        },
+  ),
 };
 
 const item = (id: string, label: string, slug: string, children?: NavigationMenuItem[]): NavigationMenuItem => ({
@@ -202,14 +223,37 @@ ${S} .space-y-8 > .nx-block.yf-band, ${S} .space-y-8 > .nx-block:has(.nx-yb-hero
 ${S} .nx-public-header { background:#fff !important; border-bottom:1px solid #0b4f8a !important; }
 ${S} .nx-utility-link { color:#1a202c; font-size:13px; font-weight:500; }
 ${S} .nx-utility-link:hover { color:#0c644e; }
+/* Koyu üst şeritte hızlı bağlantılar açık renk olmalı; koyu yazı lacivert zeminde görünmez kalırdı */
+${S} .nx-header-top .nx-utility-link { color:#ffffff; }
+${S} .nx-header-top .nx-utility-link:hover { color:#9fe0c8; }
+/* Açılır menü beyaz zeminlidir: bağlantılar üst şeritten beyaz yazı rengini devralmasın */
+${S} .nx-utility-links .bg-white a { color:#042646; font-weight:500; }
+${S} .nx-utility-links .bg-white a:hover { background:#eef5f8; color:#0c644e; }
 ${S} .nx-public-header nav a { font-size:14px; font-weight:600; color:#042646; }
 ${S} .nx-public-header nav a:hover { color:#0c644e; }
 ${S} .nx-public-header a[href^="tel:"] { color:#0c644e; font-weight:700; font-size:16px; }
-${S} footer { background:#f7fafc; border-top:1px solid #cfe3e8 !important; color:#1a202c; }
-${S} footer h2, ${S} footer h3 { font-size:15px; font-weight:700; color:#042646; padding-bottom:8px; border-bottom:1px solid #0b4f8a; display:inline-block; }
-${S} footer .nx-footer-link, ${S} footer a { font-size:13px; }
-${S} footer a:hover { color:#0c644e; }
-${S} form button[type="submit"] { background:#0c644e; border-radius:6px; }
+/* İçerik yazısı: koyu lacivert başlıklar, okunur satır aralığı, tek tip bağlantı rengi (tema paleti dışında renk yok) */
+${S} article h1, ${S} .nx-block:not(.yf-dark):not(.yf-navy) > h2, ${S} .nx-rich h2, ${S} .nx-rich h3 { color:#042646; letter-spacing:-.01em; }
+${S} .nx-rich { line-height:1.75; }
+${S} .nx-rich a:not([class]) { color:#0b4f8a; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+${S} .nx-rich a:not([class]):hover { color:#0c644e; }
+/* Yapışkan çapa menüsü, yapışkan başlığın (üst şerit + ana şerit) altında kalır */
+${S} .nx-block.sticky { top:102px !important; }
+@media (max-width:767px){ ${S} .nx-block.sticky { top:128px !important; } }
+${S} footer { background:#042646; border-top:4px solid #0c644e !important; color:#cfe0ec; }
+${S} footer h2, ${S} footer h3 { font-size:14px; font-weight:700; letter-spacing:.02em; color:#fff; padding-bottom:10px; border-bottom:2px solid #0c644e; display:inline-block; }
+${S} footer a, ${S} footer .nx-footer-link { font-size:13px; color:#cfe0ec; }
+${S} footer a:hover { color:#9fe0c8; }
+${S} footer .nx-footer-logo { box-shadow:0 0 0 4px rgba(255,255,255,.12); }
+${S} footer .nx-footer-chip { border-color:rgba(255,255,255,.28); color:#fff; }
+${S} footer .nx-footer-chip:hover { background:rgba(255,255,255,.12); color:#fff; }
+${S} footer [data-footer-row="main"] { padding-block:8px; }
+/* Dokunma hedefi en az 24 px (erişilebilirlik) */
+${S} footer [data-footer-row="bottom"] a { display:inline-flex; align-items:center; min-height:28px; }
+${S} footer [data-footer-row="main"] a { display:inline-block; padding-block:3px; }
+${S} form button[type="submit"] { background:#0c644e; color:#fff; border-radius:6px; }
+/* Soluk gri yardımcı metin 4.5:1 kontrastın altındaydı */
+${S} .text-muted-foreground, ${S} .text-nx-muted { color:#56606b; }
 ${S} .nx-yb-hero { background:#eef5f8; color:#042646; border:0; border-radius:0; padding:56px 24px; }
 ${S} .nx-yb-hero-in { max-width:1180px; margin-inline:auto; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:40px; align-items:center; }
 ${S} .nx-yb-hero h1 { font-size:clamp(1.8rem,3.4vw,2.6rem); font-weight:800; line-height:1.15; color:#042646; }
@@ -232,7 +276,7 @@ ${S} .yf-band :is(h2,h3):not(.yf-card *) { color:#042646; }
 ${S} .yf-dark :is(h2,h3), ${S} .yf-navy :is(h2,h3) { color:#fff !important; }
 ${S} div:has(> .nx-block.yf-card) { display:flex; }
 ${S} .nx-block.yf-card { flex:1; min-width:0; }
-${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #cfe3e8; border-radius:10px; padding:20px; overflow:hidden; height:100%; transition:box-shadow .2s, border-color .2s; }
+${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #d6e6ee; border-radius:14px; padding:20px; overflow:hidden; height:100%; transition:box-shadow .2s, border-color .2s; }
 ${S} .yf-card:hover, ${S} .yb-card:hover { border-color:#0c644e; box-shadow:0 10px 28px rgba(4,38,70,.1); }
 ${S} .yf-card h3, ${S} .yb-card h3 { font-size:1.05rem; font-weight:700; color:#042646; }
 ${S} .yf-card img { border-radius:8px; }
@@ -258,4 +302,47 @@ ${S} .yb-panel img { border-radius:10px; }
   ${S} .yf-rowwrap > div { flex-direction:row !important; flex-wrap:wrap; }
   ${S} .yf-rowwrap > div > div { flex:0 0 calc(50% - 12px) !important; }
 }
+/* Arama düğmesi: bağlantı yerine pencere açar; büyüteç ikonu yazının yerini alır */
+${S} button.nx-header-search { font-size:0; line-height:0; width:40px; height:40px; border:0; padding:0; cursor:pointer; background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a202c' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") center/22px no-repeat; }
+/* Canlı arama penceresi: üst katman, bu temanın arama düğmesine bağlı */
+${S} .nx-yf-search { margin:0; border:0; padding:0; background:transparent; width:min(680px,calc(100vw - 24px)); inset:14vh auto auto 50%; transform:translateX(-50%); }
+${S} .nx-yf-search::backdrop { background:rgba(4,38,70,.45); }
+${S} .nx-yf-search-panel { background:#fff; color:#1a202c; border-radius:18px; padding:18px; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+${S} .nx-yf-search-panel input { width:100%; border:1px solid #d7dee7; border-radius:12px; padding:12px 14px; font-size:16px; outline:none; }
+${S} .nx-yf-search-panel input:focus { border-color:#0b4f8a; }
+${S} .nx-yf-search-panel a { display:block; padding:10px 8px; border-bottom:1px solid #eef2f6; color:#042646; text-decoration:none; }
+${S} .nx-yf-search-panel a:hover { background:#f7fafc; }
+${S} .nx-yf-search-panel a strong { display:block; font-size:15px; }
+${S} .nx-yf-search-panel a p { margin:4px 0 0; font-size:13px; color:#4a5568; }
+/* Sabit WhatsApp düğmesi alttaki telif satırını örtmesin; altlık üst boşluğu daralır */
+${S} .nx-footer { margin-top:2rem; }
+@media (max-width: 1500px) {
+  ${S} [data-footer-row="bottom"] { padding-left:4.75rem; }
+}
+@media (max-width: 640px) {
+  ${S} [data-footer-row="bottom"] { padding-left:1rem; padding-bottom:5.5rem; }
+  ${S} .nx-fgrid { row-gap:0; }
+  ${S} .nx-fcol:first-child { padding-bottom:20px; }
+  ${S} .nx-fbody { padding-bottom:14px; }
+}
+/* Düz metin sayfalarındaki başlık + metin kartları */
+${S} .nx-text-card { padding:22px 24px; }
+${S} .nx-text-card > section > div > :is(h2,h3):first-child { margin-top:0; color:#042646; border-left:4px solid #0c644e; padding-left:12px; }
+${S} .nx-text-card > section > div { gap:0; }
+@media (max-width: 640px) { ${S} .nx-text-card { padding:16px; } }
+/* Mobil başlık: tek ince satır (logo · ara · arama · menü simgeleri); üst şerit mobilde gizlenir, sabit alan daralır */
+@media (max-width: 767px) {
+  ${S} .nx-header-top { display:none; }
+  ${S} .nx-public-header .nx-header-phone { font-size:0; line-height:0; overflow:hidden; text-indent:-200px; display:block; flex:none; width:42px; height:42px; border-radius:12px; background:#e8f3ef url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c644e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z'/%3E%3C/svg%3E") center/22px no-repeat; }
+  ${S} .nx-mobile-toggle { font-size:0; width:42px; height:42px; padding:0; border:0; border-radius:12px; background:#042646 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center/22px no-repeat; }
+  ${S} button.nx-header-search { width:42px; height:42px; }
+  ${S} .nx-public-header [class*="grid-cols-[1fr_auto_1fr]"] { gap:6px; }
+  ${S} .nx-public-header .nx-logo img { max-height:36px; width:auto; }
+}
+/* Mobil menü paneli */
+${S} .nx-offcanvas { border-radius:18px 0 0 18px; }
+${S} .nx-offcanvas details > summary { color:#042646; }
+${S} .nx-offcanvas details[open] > summary { color:#0c644e; }
+${S} .nx-offcanvas .nx-offcanvas-cta .nx-cta-main { color:#fff; }
+${S} .nx-offcanvas .nx-offcanvas-cta .nx-cta-phone { color:#0c644e; }
 `;

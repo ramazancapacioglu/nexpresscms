@@ -16,6 +16,34 @@ const CAROUSEL_W: Record<number, string> = {
   4: "w-[85%] sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.95rem)]",
 };
 
+/**
+ * Atlıkarınca: betiksiz. Kaydırma yakalama (scroll-snap) her tarayıcıda çalışır; Chrome'un yerel atlıkarınca özellikleri
+ * (`::scroll-button`, `::scroll-marker`) varsa önceki/sonraki düğmeleri ve noktalar da çıkar. Desteklemeyen tarayıcı kaydırır.
+ */
+const CAROUSEL_CSS = `
+.nx-camp-track{scroll-padding-inline:4px}
+@supports selector(::scroll-button(left)){
+  .nx-camp-hint{display:none!important}
+  .nx-camp-track{scroll-marker-group:after;anchor-name:--nx-camp}
+  .nx-camp-track::scroll-button(inline-start),.nx-camp-track::scroll-button(inline-end){
+    position:fixed;position-anchor:--nx-camp;top:calc(anchor(center) - 22px);width:44px;height:44px;border-radius:999px;border:0;cursor:pointer;
+    background:var(--nx-card,#fff);color:var(--nx-secondary,#042646);font-size:26px;line-height:1;
+    box-shadow:0 6px 20px rgba(4,38,70,.22);z-index:2
+  }
+  .nx-camp-track::scroll-button(inline-start){content:"‹" / "Önceki";left:calc(anchor(left) + 8px)}
+  .nx-camp-track::scroll-button(inline-end){content:"›" / "Sonraki";left:calc(anchor(right) - 52px)}
+  .nx-camp-track::scroll-button(*):disabled{opacity:.35;cursor:default}
+  .nx-camp-track::scroll-marker-group{display:flex;justify-content:center;gap:8px;padding-top:14px}
+  .nx-camp-track li::scroll-marker{content:"";width:9px;height:9px;border-radius:999px;background:#c7d7e2;transition:width .2s,background .2s}
+  .nx-camp-track li::scroll-marker:target-current{width:26px;background:var(--nx-primary,#0c644e)}
+}
+`;
+
+/** "%40" → "%40 İndirim"; metin zaten "indirim" içeriyorsa olduğu gibi (çift "İndirim İndirim" yazılmasın). */
+export function discountLabel(value: string): string {
+  return /indirim/i.test(value) ? value : `${value} İndirim`;
+}
+
 const SAMPLE_CAMPAIGNS: DynamicItem[] = [
   {
     id: "sample_1",
@@ -170,13 +198,13 @@ export function CampaignShowcaseView({
               {showDiscountBadge && (primary.discount || primary.badge) && (
                 <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                   {primary.badge && (
-                    <span className="rounded-full bg-slate-950/85 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-xs">
+                    <span style={{ backgroundColor: tokens.colors.secondary, color: tokens.colors.secondaryForeground }} className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm">
                       {primary.badge}
                     </span>
                   )}
                   {primary.discount && (
-                    <span className="rounded-full bg-gradient-to-r from-red-600 to-rose-600 px-3.5 py-1 text-xs font-extrabold text-white shadow-sm">
-                      {primary.discount} İndirim
+                    <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-3.5 py-1 text-xs font-extrabold shadow-sm">
+                      {discountLabel(primary.discount)}
                     </span>
                   )}
                 </div>
@@ -301,7 +329,7 @@ export function CampaignShowcaseView({
             </span>
             {items[0]!.discount && (
               <span className="rounded-md bg-white/20 px-2 py-0.5 text-xs font-black">
-                {items[0]!.discount} İndirim
+                {discountLabel(items[0]!.discount!)}
               </span>
             )}
             {showCountdown && items[0]!.daysRemaining != null && (
@@ -329,7 +357,7 @@ export function CampaignShowcaseView({
   const isCarousel = layout === "carousel";
 
   return (
-    <section aria-label={heading || "Kampanyalar Vitrini"} className="space-y-4">
+    <section aria-label={heading || "Kampanyalar Vitrini"} className="relative space-y-4">
       {/* Başlık & Üst Bilgi */}
       {(heading || isCarousel) && (
         <div className="flex items-end justify-between gap-4">
@@ -347,7 +375,7 @@ export function CampaignShowcaseView({
 
           {/* Atlıkarınca için Kaydırma İpucu (0-KB CSS) */}
           {isCarousel && items.length > columns && (
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-muted-foreground select-none">
+            <div className="nx-camp-hint hidden sm:flex items-center gap-1.5 text-xs font-medium text-muted-foreground select-none">
               <span>Yatay kaydırın</span>
               <span className="text-base font-bold">⇄</span>
             </div>
@@ -356,17 +384,18 @@ export function CampaignShowcaseView({
       )}
 
       {/* Kart Listesi (Carousel: snap-x scroll; Grid: CSS grid) */}
+      {/* Not: kaydırma kabına negatif kenar boşluğu (-mx) VERİLMEZ; mobilde LCP ölçümünü bozuyordu (NO_LCP). */}
+      {isCarousel ? <style>{CAROUSEL_CSS}</style> : null}
       <ul
         {...(isCarousel
           ? {
-              role: "region",
               tabIndex: 0,
               "aria-label": heading || "Kampanyalar Atlıkarıncası",
             }
           : {})}
         className={
           isCarousel
-            ? "flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 pt-1 scrollbar-none scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"
+            ? "nx-camp-track flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 pt-1 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             : `grid grid-cols-1 gap-6 ${COLS[columns] ?? COLS[3]}`
         }
       >
@@ -401,7 +430,7 @@ export function CampaignShowcaseView({
 /**
  * Tekil Kampanya Kartı Bileşeni
  */
-function CampaignCard({
+export function CampaignCard({
   item,
   tokens,
   showDiscountBadge,
@@ -429,13 +458,13 @@ function CampaignCard({
       className="group flex h-full flex-col overflow-hidden border bg-card shadow-xs transition hover:shadow-md"
     >
       {/* Görsel ve Üst Rozetler */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/30">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-nx-subtle">
         {item.image ? (
           <a href={item.url} tabIndex={-1} aria-hidden="true" className="block h-full w-full">
             <ResponsiveImage
               src={item.image}
               alt={item.imageAlt || item.title}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
             />
           </a>
         ) : (
@@ -448,12 +477,12 @@ function CampaignCard({
         {showDiscountBadge && (item.discount || item.badge) && (
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
             {item.discount && (
-              <span className="rounded-full bg-gradient-to-r from-red-600 to-rose-600 px-2.5 py-0.5 text-[11px] font-black text-white shadow-sm">
-                {item.discount} İndirim
+              <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-2.5 py-0.5 text-[11px] font-black shadow-sm">
+                {discountLabel(item.discount)}
               </span>
             )}
             {item.badge && (
-              <span className="rounded-full bg-slate-950/80 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-xs">
+              <span style={{ backgroundColor: tokens.colors.secondary, color: tokens.colors.secondaryForeground }} className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">
                 {item.badge}
               </span>
             )}
@@ -466,7 +495,7 @@ function CampaignCard({
         <div className="space-y-2">
           {/* Kalan Gün Sayacı */}
           {showCountdown && (
-            <div className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400">
+            <div style={{ color: tokens.colors.primary }} className="inline-flex items-center gap-1 text-[11px] font-bold">
               <span>⏳</span>
               <span>
                 {item.daysRemaining != null
@@ -492,7 +521,7 @@ function CampaignCard({
 
           {/* Hediye Bilgisi */}
           {showGift && item.gift && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200 line-clamp-2">
+            <div style={{ backgroundColor: `color-mix(in srgb, ${tokens.colors.primary} 8%, transparent)`, borderColor: `color-mix(in srgb, ${tokens.colors.primary} 28%, transparent)`, color: tokens.colors.secondary }} className="rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold line-clamp-2">
               <span className="mr-1">🎁</span>
               <span>{item.gift}</span>
             </div>

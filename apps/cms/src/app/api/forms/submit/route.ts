@@ -6,6 +6,7 @@ import { ipDigest, verifyFormToken } from "@/lib/form-token";
 import { notifySubmission } from "@/lib/form-notify";
 import { notify } from "@/lib/notify";
 import { getPublicSite } from "@/lib/public-data";
+import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
 
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
   const pathMatch = internalPath.match(PATH_RE);
   const back = (status: "sent" | "error", blockId = "", hash = "") =>
     NextResponse.redirect(
-      new URL(pathMatch ? `${path}?form=${status}${blockId ? `&fb=${encodeURIComponent(blockId)}#${hash || safeBlockDomId(blockId)}` : ""}` : "/", request.url),
+      publicUrl(pathMatch ? `${path}?form=${status}${blockId ? `&fb=${encodeURIComponent(blockId)}#${hash || safeBlockDomId(blockId)}` : ""}` : "/", request),
       303
     );
 
@@ -90,5 +91,5 @@ export async function POST(request: NextRequest) {
   if (status === "new") after(() => notify(siteId, { kind: "form.new", severity: "info", title: `«${title || "Form"}»: yeni gönderim`, href: `/admin/forms/inbox${bound ? `?form=${bound.id}` : ""}`, dedupeKey: `form-new:${refId}`, audience: "all" }));
   if (bound) after(() => notifySubmission({ siteId, form: bound, submissionId: id, values: result.values, pagePath: path, status }).catch(() => undefined));
   const target = bound ? safeInternalPath(bound.spec.redirectUrl) : "";
-  return target ? NextResponse.redirect(new URL(target, request.url), 303) : back("sent", blockId, dialogHash);
+  return target ? NextResponse.redirect(publicUrl(target, request), 303) : back("sent", blockId, dialogHash);
 }

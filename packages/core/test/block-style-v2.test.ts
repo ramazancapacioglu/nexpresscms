@@ -57,7 +57,7 @@ test("gradyan oluşturucu: doğrulanmış CSS; geçersiz renk atılır; tek dura
 test("kapsayıcının metin rengi içteki başlık ve paragraflara kalıtılır", () => {
   const css = compileBlockStylesToCss(b({ textColor: "#fff" }));
   assert.ok(css.includes("color:#fff"));
-  assert.ok(css.includes(":is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,dt,dd,.nx-rich){color:inherit}"));
+  assert.ok(css.includes(":is(h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,dt,dd,.nx-rich):not(.bg-nx-card *){color:inherit}"));
   assert.ok(!compileBlockStylesToCss(b({ paddingTop: "8px" })).includes("color:inherit"));
 });
 

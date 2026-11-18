@@ -6,12 +6,14 @@ import { Link } from "@/components/public/link";
 import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms } from "@/lib/public-data";
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, YB_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
+import { organizationFor } from "@/lib/organization-schema";
 import { getSyncedPatternsMap } from "@/lib/templates";
 import { coverTemplateContext } from "@/lib/template-context";
 import type { Metadata } from "next";
 import { createTranslator } from "@nexpress/i18n";
 import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { createFormToken } from "@/lib/form-token";
+import { privacyEmbedUrl } from "@/lib/privacy";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
@@ -44,6 +46,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         metaDescription: home.metaDescription,
         canonicalUrl: home.canonicalUrl,
         noIndex: home.noIndex,
+        imageUrl: home.featuredImage ?? `/og?title=${encodeURIComponent(home.title)}&site=${encodeURIComponent(localizedSite.name)}`,
         settings: localizedSite.seo,
       })
     : null;
@@ -109,6 +112,7 @@ export default async function PublicHomePage({
     siteUrl: baseUrl,
     locale,
     pageUrl: `${baseUrl}${lb}`,
+    organization: organizationFor(localizedSite.seo),
     content: homeContent
       ? {
           id: homeContent.id,
@@ -139,7 +143,7 @@ export default async function PublicHomePage({
           patterns={await getSyncedPatternsMap(siteId)}
           dynamic={await loadDynamicData(siteId, locale, homeContent.blocks, homeContent.contentId, sp)}
           pageSchema={{ title: homeContent.title, tldr: homeContent.tldr ?? "", rich: ((homeContent.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never }}
-          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null }}
+          form={{ forms: await loadPageForms(siteId, homeContent.blocks), path: (lb || "/"), token: createFormToken((lb || "/")), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null, privacyUrl: await privacyEmbedUrl(siteId, locale, lb) }}
           tpl={coverTemplateContext({
             site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
             locale,

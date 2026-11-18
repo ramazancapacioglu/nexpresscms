@@ -192,6 +192,7 @@ export const BLOCK_TYPES = [
   "synced_pattern",
   "custom_fields",
   "campaign_showcase",
+  "contact_campaign",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 

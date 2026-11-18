@@ -1,3 +1,4 @@
+import { SocialIconLinks, socialKind } from "@/components/public/social-icons";
 import React from "react";
 import {
   DEFAULT_HEADER_ZONES,
@@ -88,10 +89,10 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
       const lockup = logoText.split(" - ");
       const branded = !custom.logoImage && lockup.length > 1;
       return (
-        <a href={home} className="nx-logo flex min-w-0 items-center gap-2.5 no-underline">
+        <a href={home} className="nx-logo flex shrink-0 items-center gap-2.5 no-underline">
           {custom.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={custom.logoImage} alt={logoText} className="h-8 w-auto" />
+            <img src={custom.logoImage} alt={logoText} width={139} height={32} className="h-8 w-auto max-w-none shrink-0" />
           ) : /^[A-ZÇĞİÖŞÜ]{3,}SOFT$/.test(logoText) ? (
             <span className="truncate text-[18px] font-extrabold tracking-tight"><span style={{ color: "#084f9e" }}>{logoText.slice(0, -4)}</span><span style={{ color: "#00ac48" }}>SOFT</span></span>
           ) : branded ? (
@@ -108,7 +109,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
     }
     if (id === "menu") {
       return viewport === "mobile"
-        ? <MobileNav menu={menu} extra={bottomLinks} label={menuLabel} allLabel={menuAllLabel} />
+        ? <MobileNav menu={menu} extra={bottomLinks} label={menuLabel} allLabel={menuAllLabel} cta={showCta ? { label: ctaLabel, href: ctaHref } : null} phone={top?.contactPhone?.trim() || ""} />
         : <DesktopNav menu={menu} tokens={tokens} ink={ink} align={align} />;
     }
     if (id === "search") {
@@ -278,7 +279,7 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
         }
       >
         <div style={{ maxWidth: shell, minHeight: custom.height || 64 }} className="relative mx-auto flex items-center px-4 sm:px-6">
-          {row(mainZones, "hidden w-full grid-cols-[1fr_auto_1fr] items-center gap-4 md:grid", "desktop")}
+          {row(mainZones, `hidden w-full items-center ${mainZones.center.length === 0 && mainZones.right.length === 0 ? "gap-0 md:flex" : "gap-4 md:grid grid-cols-[1fr_auto_1fr]"}`, "desktop", mainZones.center.length === 0 && mainZones.right.length === 0)}
           {row(mobileZones, "grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 md:hidden", "mobile")}
         </div>
         {bottomVisible ? (
@@ -359,8 +360,17 @@ export function SiteFooter({
   const main = rowBox(style.main, mainColors);
   const bottom = rowBox(style.bottom, bottomColors);
 
+  // Sosyal ağlar yalnızca simge olarak gösterilir: altlık bağlantıları ve ayarlı sosyal listesi birleşir
+  const allBottom = [...(footer?.bottomLinks ?? []), ...bottomMenu];
+  const textLinks = (footer?.bottomLinks ?? []).filter((link) => !socialKind(link.href, link.label));
+  const socialItems = [
+    ...style.bottom.socials.map((s) => ({ href: s.href, label: s.label })),
+    ...allBottom.filter((link) => socialKind(link.href, link.label)).map((link) => ({ href: link.href, label: link.label })),
+  ].filter((item, index, list) => list.findIndex((other) => other.href === item.href) === index);
   return (
     <footer className="nx-footer mt-16">
+      {/* Mobilde ilk sütun (iletişim) açık, diğer sütunlar akordiyon (onay kutusu + etiket, betik yok); masaüstünde 12'li ızgara ve düz başlık */}
+      <style>{`.nx-fcol{grid-column:1/-1}.nx-fchk{position:absolute;opacity:0;pointer-events:none}.nx-fhead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.nx-fhead::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;opacity:.7}.nx-fchk:checked+.nx-fhead::after{transform:rotate(-135deg)}.nx-fchk:focus-visible+.nx-fhead{outline:2px solid currentColor;outline-offset:2px}.nx-fchk:not(:checked)~.nx-fbody{display:none}.nx-fbody{padding-top:14px}@media(max-width:767px){.nx-fgrid{row-gap:0!important}.nx-fhead{padding-right:40px}.nx-fbody{padding-bottom:14px}}@media(min-width:768px){.nx-fcol{grid-column:span var(--nx-span)/span var(--nx-span)}.nx-fhead{min-height:0;cursor:default;border:0;font-size:12px;letter-spacing:.08em;opacity:.85;pointer-events:none;margin-bottom:10px}.nx-fhead::after{display:none}.nx-fchk:not(:checked)~.nx-fbody{display:block}.nx-fbody{padding-top:0}}`}</style>
       {footer?.topBanner?.enabled ? (
         <div className="px-4 sm:px-6">
           <div
@@ -406,7 +416,7 @@ export function SiteFooter({
         >
           <div
             style={{ maxWidth: style.main.full ? maxWidth : undefined, columnGap: style.gapPx, rowGap: style.gapPx }}
-            className="mx-auto grid grid-cols-1 md:grid-cols-12"
+            className="nx-fgrid mx-auto grid grid-cols-1 md:grid-cols-12"
           >
             {layout.colSpans.map((span, colIdx) => {
               const colWidgets = allWidgets.filter(
@@ -414,24 +424,36 @@ export function SiteFooter({
                   w.enabled &&
                   Math.min(layout.columnCount - 1, w.columnIndex ?? 0) === colIdx
               );
+              // İlk sütun (iletişim) hep açık; menü sütunlarının başlığı mobilde akordiyon düğmesi olur
+              const first = colWidgets[0];
+              const accordionHead = colIdx > 0 && first && first.title && first.type !== "about_brand" ? first.title : "";
               return (
                 <div
                   key={colIdx}
-                  style={{ gridColumn: `span ${span} / span ${span}` }}
-                  className="space-y-5"
+                  style={{ "--nx-span": span } as React.CSSProperties}
+                  className="nx-fcol min-w-0 space-y-5"
                 >
-                  {colWidgets.map((w) => (
-                    <RenderPublicWidget
-                      key={w.id}
-                      widget={w}
-                      locale={locale}
-                      lb={lb}
-                      tokens={tokens}
-                      feed={widgetFeed}
-                      cardStyle="footer"
-                      menuLibrary={menuLibrary}
-                    />
-                  ))}
+                  {accordionHead ? (
+                    <>
+                      <input type="checkbox" id={`nxf_${colIdx}`} className="nx-fchk" aria-label={accordionHead} />
+                      <label htmlFor={`nxf_${colIdx}`} className="nx-fhead">{accordionHead}</label>
+                    </>
+                  ) : null}
+                  <div className={accordionHead ? "nx-fbody space-y-5" : "space-y-5"}>
+                    {colWidgets.map((w, wi) => (
+                      <RenderPublicWidget
+                        key={w.id}
+                        widget={w}
+                        locale={locale}
+                        lb={lb}
+                        tokens={tokens}
+                        feed={widgetFeed}
+                        cardStyle="footer"
+                        menuLibrary={menuLibrary}
+                        hideTitle={Boolean(accordionHead) && wi === 0}
+                      />
+                    ))}
+                  </div>
                 </div>
               );
             })}
@@ -454,21 +476,17 @@ export function SiteFooter({
           >
             <span className="opacity-80">{copyright}</span>
             <div className={`flex flex-wrap gap-x-4 gap-y-1 ${style.bottom.centered ? "justify-center" : ""}`}>
-              {(footer?.bottomLinks ?? []).map((link) => (
+              {textLinks.map((link) => (
                 <a key={`${link.href}|${link.label}`} href={link.href} className="underline-offset-2 hover:underline">
                   {link.label}
                 </a>
               ))}
-              {bottomMenu.map((link) => (
+              {bottomMenu.filter((link) => !socialKind(link.href, link.label)).map((link) => (
                 <a key={link.id} href={link.href} {...(link.target === "_blank" ? { target: "_blank", rel: "noopener" } : {})} className="underline-offset-2 hover:underline">
                   {link.label}
                 </a>
               ))}
-              {style.bottom.socials.map((s) => (
-                <a key={s.id} href={s.href} rel="noopener me" aria-label={s.label} className="underline-offset-2 hover:underline">
-                  {s.label}
-                </a>
-              ))}
+              <SocialIconLinks items={socialItems} />
               {style.bottom.backToTop ? (
                 <a href="#" className="underline-offset-2 hover:underline">
                   {backToTopLabel}

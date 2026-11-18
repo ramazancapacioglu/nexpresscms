@@ -9,6 +9,7 @@ import {
 import { getScopedRepository } from "@nexpress/database";
 import { getAuthSecret } from "@/lib/auth/config";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { publicUrl } from "@/lib/public-url";
 
 /**
  * 0-KB RSC parola korumalı içerik kapısı: ziyaretçi formdan parola gönderdiğinde
@@ -26,23 +27,23 @@ export async function POST(request: NextRequest) {
   const basePath = slug ? `${lb}/${slug}` : lb || "/";
 
   if (!contentId || !slug) {
-    return NextResponse.redirect(new URL(basePath, request.url), 303);
+    return NextResponse.redirect(publicUrl(basePath, request), 303);
   }
 
   const content = await getScopedRepository(siteId).getContentById(contentId, locale);
   if (!content) {
-    return NextResponse.redirect(new URL(basePath, request.url), 303);
+    return NextResponse.redirect(publicUrl(basePath, request), 303);
   }
 
   const pub = resolvePublishing(content.schemaAttributes);
   if (!verifyContentPasswordInput(pub.accessPassword, password)) {
-    const errUrl = new URL(basePath, request.url);
+    const errUrl = publicUrl(basePath, request);
     errUrl.searchParams.set("pwd", "error");
     return NextResponse.redirect(errUrl, 303);
   }
 
   const token = await signContentAccessToken(getAuthSecret(), siteId, content.id, pub.accessPassword);
-  const okUrl = new URL(basePath, request.url);
+  const okUrl = publicUrl(basePath, request);
   const response = NextResponse.redirect(okUrl, 303);
   response.cookies.set(contentAccessCookieName(content.id), token, {
     httpOnly: true,

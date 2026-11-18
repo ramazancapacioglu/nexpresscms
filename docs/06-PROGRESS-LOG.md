@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-18] — Akınsoft tasarımı ana dala alındı
+- Yazılım bayi kabuğu, `contact_campaign` bloğu, hızlı arama ve WhatsApp düğmesi, gizlilik gömme ve `/wp-content/uploads` köprüsü ana dalla birleşti.
+- SEO paneli, CrUX ayrımı, IndexNow, site haritası ve webmaster doğrulaması duruyor. Ölçüm etiketleri head veya gövde yerleşimini korur.
+- Kuruluş şemasına izin listeli yerel işletme alanları eklenebilir. Etiket arşivi noindex kuralı duruyor.
+
 ### [2026-11-18] — Webmaster bilgi kutuları ve sahiplik doğrulaması
 - Webmaster sekmesinde GSC, Analytics, Bing, Yandex Webmaster ve Metrika için anahtarın nereden alınacağı yazılır.
 - Sahiplik kodu meta (head) veya DNS olarak saklanır; ham etiket basılmaz. Bing için CNAME, Google ve Yandex için TXT kontrol edilir.

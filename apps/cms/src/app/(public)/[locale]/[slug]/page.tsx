@@ -15,13 +15,16 @@ import { buildTemplateContext, coverTemplateContext } from "@/lib/template-conte
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
+import { PostByline, PostFooter, PostShareRow } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
+import { organizationFor } from "@/lib/organization-schema";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { createTranslator } from "@nexpress/i18n";
 import { redirectOrNotFound } from "@/lib/redirect-runtime";
 import { createFormToken } from "@/lib/form-token";
+import { privacyEmbedUrl } from "@/lib/privacy";
 import { resolveDraftPreview } from "@/lib/draft-preview";
 import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
@@ -177,6 +180,9 @@ export default async function PublicDynamicContentPage({
     permanentRedirect(`${lb}${cPath}`);
   }
 
+  // Kampanyanın tek adresi `/kampanya/<adres>`; kökteki kopya kalıcı olarak oraya gider (yinelenen içerik olmaz)
+  if (!draft && !prefix && resolved.content.type === "campaign") permanentRedirect(`${lb}/kampanya/${resolved.content.slug}`);
+
   const content = resolved.content;
   const mediaFocal = await getPublicMediaFocal(siteId);
 
@@ -198,6 +204,25 @@ export default async function PublicDynamicContentPage({
   const featuredAlt = String(pub.featuredImageAlt ?? content.title);
   const featuredTitle = String(pub.featuredImageAlt ?? content.title);
   const featuredCaption = String(pub.featuredImageCaption ?? "");
+  // Başlığın yanında görünen öne çıkan görsel: içerik zaten kendi başlık bandıyla açılıyorsa (başlık gizli sayfa) çizilmez
+  // Yazının/sayfanın kendi ilk bloklarında aynı görsel varsa (kaynakta başlık bandı görseli) başlıkta ikinci kez çizilmez
+  const imageKey = (value: unknown) => (typeof value === "string" ? value.split("?")[0]!.split("/").pop() ?? "" : "");
+  const leadsWithSameImage = (() => {
+    const want = imageKey(featuredImageUrl);
+    if (!want) return false;
+    let seen = 0;
+    const walk = (nodes: typeof content.blocks): boolean => {
+      for (const node of nodes) {
+        if (seen++ > 8) return false;
+        const props = node.props as Record<string, unknown> | undefined;
+        if (props && [props.url, props.image, props.src].some((v) => imageKey(v) === want)) return true;
+        if (node.children && walk(node.children)) return true;
+      }
+      return false;
+    };
+    return walk(content.blocks);
+  })();
+  const headerImage = Boolean(featuredImageUrl) && !leadsWithSameImage && !(content.type === "page" && readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle);
   const showShareBar = pub.showShareButtons !== false;
   const allowReviews = pub.allowReviews !== false;
   const allowComments = pub.allowComments !== false;
@@ -220,6 +245,23 @@ export default async function PublicDynamicContentPage({
     categories: pub.categories,
   });
   const t = createTranslator(locale);
+  // Öne çıkan görsel: sayfalarda başlığın yanında (4:3), yazılarda WordPress gibi künyenin altında sütun genişliğinde
+  const headerFigure = featuredImageUrl ? (
+    <figure className="space-y-2">
+      <div style={{ borderRadius: tokens.geometry.borderRadius }} className="overflow-hidden border border-nx-line bg-nx-subtle">
+        <ResponsiveImage
+          src={featuredImageUrl}
+          alt={featuredAlt}
+          title={featuredTitle}
+          priority
+          focal={mediaFocal}
+          sizes={content.type === "post" ? "(min-width: 1024px) 720px, 100vw" : "(min-width: 768px) 400px, 100vw"}
+          className={content.type === "post" ? "h-auto w-full object-cover" : "aspect-[4/3] w-full object-cover"}
+        />
+      </div>
+      {content.type === "post" ? <figcaption className="text-center text-sm text-nx-soft">{featuredCaption || content.title}</figcaption> : featuredCaption ? <figcaption className="text-center text-xs italic text-nx-muted">{featuredCaption}</figcaption> : null}
+    </figure>
+  ) : null;
   const cover = coverTemplateContext({
     site: site ? { name: localizedSite.name, tagline: localizedSite.tagline } : null,
     locale,
@@ -252,7 +294,7 @@ export default async function PublicDynamicContentPage({
   const customFields = displayFields(customDef, content.schemaAttributes, locale);
   const pageSchema = { title: content.title, tldr: content.tldr ?? "", rich: ((content.schemaAttributes as Record<string, unknown>)?.richSchema ?? {}) as never };
   const dynamicData = await loadDynamicData(siteId, locale, content.blocks, content.contentId, sp);
-  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null } as const;
+  const formCtx = { forms: pageForms, path: `${lb}${cPath}`, token: createFormToken(`${lb}${cPath}`), status: sp.form === "sent" || sp.form === "error" ? sp.form : null, blockId: sp.fb ?? null, privacyUrl: Object.keys(pageForms).length > 0 ? await privacyEmbedUrl(siteId, locale, lb) : "" } as const;
   const banner = draft ? <p role="status" className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Taslak önizleme: bu sayfa yayında değil ve yalnızca bu bağlantıyla görüntülenir.</p> : null;
   const switcher = <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, content.contentId, locale, contentPrefix(types, content.type))} />;
 
@@ -292,12 +334,37 @@ export default async function PublicDynamicContentPage({
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
-  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir
+  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
+  const scoped = getScopedRepository(siteId);
+  const taxonomyRows = content.type === "post" ? await scoped.listTaxonomies() : [];
+  const termName = (kind: "category" | "tag", slug: string) => taxonomyRows.find((row) => row.taxonomyType === kind && row.slug === slug)?.name ?? slug;
   const crumbs = [
     { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+    ...(content.type === "post"
+      ? [
+          { name: t("content.blogCrumb"), url: `${baseUrl}${lb}/${postsPageSlug || "blog"}` },
+          ...(categories[0] ? [{ name: termName("category", categories[0]), url: `${baseUrl}${lb}/kategori/${categories[0]}` }] : []),
+        ]
+      : []),
     ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
     { name: content.title, url: pageUrl },
   ];
+  // Önceki / sonraki ve benzer yazılar (yalnızca herkese açık, yayında yazılar)
+  const peers =
+    content.type === "post"
+      ? (await scoped.listContents({ locale, type: "post", status: "published" }))
+          .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public")
+          .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
+      : [];
+  const asPeer = (row: (typeof peers)[number]) => ({ slug: row.slug, title: row.title, image: row.featuredImage ?? null, date: row.publishedAt ? new Date(row.publishedAt) : null });
+  const peerAt = peers.findIndex((row) => row.id === content.id);
+  const prevPost = peerAt >= 0 && peers[peerAt + 1] ? asPeer(peers[peerAt + 1]!) : null;
+  const nextPost = peerAt > 0 && peers[peerAt - 1] ? asPeer(peers[peerAt - 1]!) : null;
+  const relatedPosts = peers
+    .filter((row) => row.id !== content.id)
+    .sort((a, b) => Number(resolvePublishing(b.schemaAttributes).categories.includes(categories[0] ?? "")) - Number(resolvePublishing(a.schemaAttributes).categories.includes(categories[0] ?? "")))
+    .slice(0, 3)
+    .map(asPeer);
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -308,6 +375,7 @@ export default async function PublicDynamicContentPage({
     // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
     breadcrumbs: crumbs,
     autoSchema: localizedSite.seo.autoSchema !== false,
+    organization: organizationFor(localizedSite.seo),
     aggregateRating:
       reviewEntries.length > 0
         ? {
@@ -451,7 +519,7 @@ export default async function PublicDynamicContentPage({
   }
 
   return (
-    <article className="mx-auto max-w-4xl space-y-10">
+    <article className={`mx-auto w-full space-y-10 ${content.type === "page" ? "" : "max-w-4xl"}`}>
       {banner}
       {switcher}
       <script
@@ -459,109 +527,87 @@ export default async function PublicDynamicContentPage({
         dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }}
       />
 
-      <header className="space-y-4 border-b pb-8">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <nav aria-label={t("content.breadcrumb")}>
-              <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
-                {crumbs.map((crumb, i) => {
-                  const last = i === crumbs.length - 1;
-                  return (
-                    <li key={crumb.url} className="flex items-center gap-1.5">
-                      {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
-                      {last ? null : <span aria-hidden="true">›</span>}
-                    </li>
-                  );
-                })}
-              </ol>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href={`${lb}${cPath}?format=md`}
-              className="rounded border px-2.5 py-1 font-mono text-xs text-nx-soft hover:bg-nx-subtle"
-            >
-              Markdown
+      <header className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle && !headerImage ? "pt-3 pb-0 mb-1!" : (content.type === "post" ? "pt-3" : "border-b pt-3 pb-8")}>
+        {/* Kırıntı kendi satırında: görsel ve başlık altında hizalı başlar, kırıntıya göre ortalanmaz */}
+        <div className="mb-4 flex items-center justify-between gap-3 text-xs">
+          <nav aria-label={t("content.breadcrumb")}>
+            <ol className="flex flex-wrap items-center gap-1.5 text-nx-soft">
+              {crumbs.map((crumb, i) => {
+                const last = i === crumbs.length - 1;
+                return (
+                  <li key={crumb.url} className="flex items-center gap-1.5">
+                    {last ? <span aria-current="page" className="max-w-[26ch] truncate font-medium text-nx-fg">{crumb.name}</span> : <Link href={new URL(crumb.url).pathname || "/"} className="hover:underline">{crumb.name}</Link>}
+                    {last ? null : <span aria-hidden="true">›</span>}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href={`${lb}${cPath}?format=md`} className="font-mono text-[11px] text-nx-muted hover:text-nx-fg hover:underline">
+              {t("content.markdownLink")}
             </Link>
             {canEdit ? (
-            <Link
-              href={`/admin/contents?id=${content.id}&type=${content.type}`}
-              className="rounded border px-2.5 py-1 text-xs font-medium text-nx-link bg-blue-50 hover:bg-blue-100"
-            >
-              ✏️ Editörde Düzenle
-            </Link>
+              <Link href={`/admin/contents?id=${content.id}&type=${content.type}`} className="text-[11px] font-medium text-nx-link hover:underline">
+                ✏️ Düzenle
+              </Link>
             ) : null}
           </div>
         </div>
 
-        <h1
-          style={{ fontFamily: tokens.typography.headingFont }}
-          className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
-        >
-          {content.title}
-        </h1>
-        {content.type === "post" && authorName ? <p className="text-sm text-nx-soft"><a href={authorHref ?? "#"} className="hover:underline">{t("content.authorBy", { name: authorName })}</a></p> : null}
-        {parent ? <p className="text-sm"><a className="hover:underline" href={`${lb}/${parent.slug}`}>{t("content.parentPage")}: {parent.title}</a></p> : null}
-
-        {/* Kategori, Etiket ve AggregateRating Özet Şeridi */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            {categories.map((cat) => (
-              <span
-                key={cat}
-                style={{
-                  backgroundColor: tokens.colors.primary,
-                  color: tokens.colors.primaryForeground,
-                }}
-                className="rounded px-2.5 py-0.5 font-semibold"
-              >
-                {cat}
-              </span>
-            ))}
-            {tags.map((tg) => (
-              <span
-                key={tg}
-                className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 font-mono text-[11px] text-nx-soft"
-              >
-                #{tg}
-              </span>
-            ))}
-          </div>
-
-          {reviewEntries.length > 0 && (
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-800">
-              <span className="text-amber-500">★★★★★</span>
-              <span>
-                {t("content.ratingSummary", { avg: avgRating, n: reviewEntries.length })}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Öne Çıkan Görsel (Featured Image + Görsel SEO Figcaption) */}
-        {featuredImageUrl && (
-          <figure className="pt-3 space-y-2">
-            <div
-              style={{ borderRadius: tokens.geometry.borderRadius }}
-              className="overflow-hidden border border-nx-line bg-slate-950"
+        <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-start" : ""}>
+          <div className="space-y-4">
+            {content.type === "post" && categories[0] ? (
+              <a href={`${lb}/kategori/${categories[0]}`} style={{ color: tokens.colors.primary }} className="inline-block text-xs font-bold uppercase tracking-wider hover:underline">
+                {termName("category", categories[0])}
+              </a>
+            ) : null}
+            <h1
+              style={{ fontFamily: tokens.typography.headingFont }}
+              className={readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? "sr-only" : "text-3xl sm:text-4xl font-extrabold tracking-tight text-nx-fg"}
             >
-              <ResponsiveImage
-                src={featuredImageUrl}
-                alt={featuredAlt}
-                title={featuredTitle}
-                priority
-                focal={mediaFocal}
-                sizes="(min-width: 1024px) 896px, 100vw"
-                className="w-full max-h-[420px] object-cover"
+              {content.title}
+            </h1>
+            {content.type === "post" ? (
+              <PostByline
+                t={t}
+                locale={locale}
+                authorName={authorName ?? ""}
+                authorHref={authorHref}
+                publishedAt={content.publishedAt ? new Date(content.publishedAt) : null}
+                updatedAt={content.updatedAt ? new Date(content.updatedAt) : null}
+                commentCount={commentEntries.length}
+                category={categories[0] ? { name: termName("category", categories[0]), href: `${lb}/kategori/${categories[0]}` } : null}
               />
-            </div>
-            {featuredCaption && (
-              <figcaption className="text-xs text-nx-muted text-center italic">
-                {featuredCaption}
-              </figcaption>
-            )}
-          </figure>
-        )}
+            ) : null}
+            {content.type === "page" && content.tldr && !readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? (
+              <p className="max-w-2xl text-base leading-relaxed text-nx-soft">{content.tldr}</p>
+            ) : null}
+            {parent ? <p className="text-sm"><a className="hover:underline" href={`${lb}/${parent.slug}`}>{t("content.parentPage")}: {parent.title}</a></p> : null}
+
+            {content.type !== "post" && (categories.length > 0 || tags.length > 0 || reviewEntries.length > 0) ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  {categories.map((cat) => (
+                    <span key={cat} style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded px-2.5 py-0.5 font-semibold">{cat}</span>
+                  ))}
+                  {tags.map((tg) => (
+                    <span key={tg} className="rounded border border-nx-line bg-nx-subtle px-2 py-0.5 font-mono text-[11px] text-nx-soft">#{tg}</span>
+                  ))}
+                </div>
+                {reviewEntries.length > 0 && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-nx-line bg-nx-subtle px-3 py-1 text-xs font-semibold text-nx-fg">
+                    <span style={{ color: tokens.colors.primary }}>★★★★★</span>
+                    <span>{t("content.ratingSummary", { avg: avgRating, n: reviewEntries.length })}</span>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+          {headerImage && featuredImageUrl && content.type !== "post" ? headerFigure : null}
+        </div>
+        {content.type === "post" && headerImage ? <div className="pt-5">{headerFigure}</div> : null}
+        {content.type === "post" && showShareBar ? <div className="pt-4"><PostShareRow t={t} title={content.title} pageUrl={pageUrl} /></div> : null}
       </header>
 
       {/* Kısıtlı / Taslak Yayın Bildirimi */}
@@ -575,7 +621,7 @@ export default async function PublicDynamicContentPage({
         blocks={contentBlocks}
         themeId={skinId}
         tokens={tokens}
-        lcp={!featuredImageUrl}
+        lcp={!(headerImage && featuredImageUrl)}
         mediaFocal={mediaFocal}
         locale={locale}
         dynamic={dynamicData} pageSchema={pageSchema} customFields={customFields}
@@ -585,7 +631,7 @@ export default async function PublicDynamicContentPage({
       />
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}
-      {showShareBar && (
+      {showShareBar && content.type !== "post" && (
         <ContentShareBar
           title={content.title}
           pageUrl={pageUrl}
@@ -594,6 +640,18 @@ export default async function PublicDynamicContentPage({
           shareHeading={t("content.shareHeading")}
         />
       )}
+
+      {content.type === "post" ? (
+        <PostFooter
+          t={t}
+          locale={locale}
+          lb={lb}
+          tags={tags.map((slug) => ({ slug, name: termName("tag", slug) }))}
+          prev={prevPost}
+          next={nextPost}
+          related={relatedPosts}
+        />
+      ) : null}
 
       {content.type === "ai_prompt" ? <QaFooter siteId={siteId} contentId={content.id} t={t} notice={sp.qa} /> : null}
       {pillarList}

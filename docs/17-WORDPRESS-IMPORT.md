@@ -41,6 +41,8 @@ Toplu deneme: `apps/cms/scripts/redraw-public-site.ts`. Klasördeki her `*.txt` 
 
 `apps/cms/scripts/import-live-akinsoft.ts` yalnızca `https://www.akinsoftizmir.com.tr` adresini okur. Yönetim paneline girmez. Sayfa, yazı, soru kaydı, kategori ve etiket REST’ten gelir. Başlık, açıklama, noindex ve JSON-LD şema (SSS, yazılım, kuruluş) yayımlanmış HTML başlığından yazılır. Sayfa yerleşimi zengin blok derleyicisinden kurulur; birebir kopya değildir. Görsel adresi kaynak sitede kalır, iç bağlantı yerel yola döner. Şablon ve tasarım kütüphanesi silinmez. Site geneli arama indeksi bu betikle açılmaz. Canonical eski alan adına yazılmaz; bu sitenin kendi adresi üretilir.
 
+Kadence satırları, kartlaştırma ve sayfa toparlama (`kadence`, `cardify`, `page-tidy`, `campaign-text`) çözüm sayfasındaki formu `contact_campaign` modeline bağlar. Eski `wp-content/uploads` adresi `apps/cms/src/app/wp-content/uploads/[...path]/route.ts` üzerinden yerel dosyaya düşer. Hızlı arama formu ve WhatsApp numarası site ayarının `general` alanına yazılır.
+
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
 

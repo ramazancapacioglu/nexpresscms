@@ -3,7 +3,7 @@ import type { BlockRenderContext } from "./block-context";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkFaq } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
-import { AccordionView } from "./blocks-disclosure";
+import { AccordionView, FaqAnswer } from "./blocks-disclosure";
 
 /** Bilgi blokları: adımlar, SSS, kutular, kod, alıntı, liste, video, tablo, inceleme. Tanımsız dönerse sıradaki grup denenir. */
 export function renderContentBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -109,7 +109,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
       if (themeId === INK_GRID_ID) return renderInkFaq(p, tokens);
       const items = Array.isArray(p.items) ? p.items : [];
       const openMode = p.openMode === "none" || p.openMode === "all" ? p.openMode : "first";
-      const exclusive = p.exclusive === true && openMode !== "all";
+      const exclusive = p.exclusive !== false && openMode !== "all";
       if (typeof p.accordionStyle === "string" && p.accordionStyle) {
         return (
           <AccordionView
@@ -145,9 +145,7 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
                     ▼
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-nx-soft leading-relaxed border-t pt-3">
-                  {String(item?.answer ?? "")}
-                </p>
+                <FaqAnswer value={String(item?.answer ?? "")} className="mt-3 text-sm text-nx-soft leading-relaxed border-t pt-3" />
               </details>
             ))}
           </div>
@@ -226,6 +224,23 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
               </li>
             ))}
           </ol>
+        );
+      }
+      if (listType === "cards") {
+        // Uzun madde listeleri: onay simgeli kart ızgarası (betiksiz; mobilde tek sütun)
+        return (
+          <ul className="grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((it: any, idx: number) => (
+              <li
+                key={idx}
+                style={{ borderColor: tokens.colors.border, borderRadius: tokens.geometry.borderRadius }}
+                className="flex items-start gap-2.5 border bg-nx-card px-4 py-3 text-sm leading-relaxed text-nx-fg shadow-xs"
+              >
+                <span aria-hidden="true" style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-bold">✓</span>
+                <span>{String(it)}</span>
+              </li>
+            ))}
+          </ul>
         );
       }
       return (

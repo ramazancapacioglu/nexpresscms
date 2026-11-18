@@ -91,6 +91,7 @@ export const BLOCK_TYPE_LABELS: Record<string, string> = {
   synced_pattern: "Senkronize model",
   custom_fields: "Özel alan tablosu",
   campaign_showcase: "Kampanya Vitrini",
+  contact_campaign: "İletişim formu + kampanya",
 };
 
 export interface ColumnLayoutPreset {

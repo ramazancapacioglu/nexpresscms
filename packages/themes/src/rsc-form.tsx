@@ -9,19 +9,36 @@ export interface PublicFormDef {
   spec: FormSpec;
 }
 
-type Translate = (key: "blocks.formSent" | "blocks.formError" | "blocks.formClose" | "blocks.openDialog" | "blocks.formStep", vars?: Record<string, string | number>) => string;
+type Translate = (key: "blocks.formSent" | "blocks.formError" | "blocks.formClose" | "blocks.openDialog" | "blocks.formStep" | "blocks.privacyTitle" | "blocks.consentSuffix", vars?: Record<string, string | number>) => string;
 
 const inputCls = "w-full rounded-md border border-nx-line bg-nx-card px-3 py-2 text-sm";
+/** Tek satırlı denetimler aynı yükseklikte: yan yana sütunlarda hizalı görünür */
+const fieldCls = `${inputCls} h-10`;
 const chipCls = "inline-flex min-w-9 cursor-pointer items-center justify-center rounded-md border border-nx-line bg-nx-card px-2.5 py-1.5 text-sm peer-checked:border-blue-600 peer-checked:bg-blue-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-blue-400";
 
-function Control({ f }: { f: FormField }): React.ReactElement | null {
+const CONSENT = /gizlilik|rıza|kvkk|aydınlatma|privacy|consent/i;
+
+/** Açık rıza satırı: "Gizlilik politikası" geçen kısım pencereyi açan bağlantı olur; fiil yoksa onay ifadesi eklenir. */
+function ConsentLabel({ label, href, suffix }: { label: string; href: string; suffix: string }): React.ReactElement {
+  const phrase = /(gizlilik politika\S*|privacy policy)/i.exec(label);
+  const verb = /onay|kabul|okudum|agree|accept/i.test(label);
+  const link = (text: string) => <a href={href} className="font-semibold underline underline-offset-2" style={{ color: "var(--nx-link, inherit)" }}>{text}</a>;
+  return (
+    <>
+      {phrase ? <>{label.slice(0, phrase.index)}{link(phrase[0])}{label.slice(phrase.index + phrase[0].length)}</> : link(label)}
+      {verb ? "" : ` ${suffix}`}
+    </>
+  );
+}
+
+function Control({ f, privacy, suffix }: { f: FormField; privacy?: string; suffix?: string }): React.ReactElement | null {
   const common = { name: f.name, id: `ff_${f.id}`, required: f.required };
   switch (f.type) {
     case "textarea":
       return <textarea {...common} rows={5} maxLength={f.max ?? 5000} minLength={f.min} placeholder={f.placeholder || undefined} className={inputCls} />;
     case "select":
       return (
-        <select {...common} defaultValue="" className={inputCls}>
+        <select {...common} defaultValue="" className={fieldCls}>
           <option value="" disabled={f.required}>{f.placeholder || "Seçin"}</option>
           {f.options.map((o, i) => <option key={o} data-nx-i={i} value={o}>{o}</option>)}
         </select>
@@ -42,7 +59,7 @@ function Control({ f }: { f: FormField }): React.ReactElement | null {
       return (
         <label className="flex items-start gap-2 text-sm text-nx-soft">
           <input type="checkbox" name={f.name} value="on" data-nx-i={0} required={f.required} className="mt-1" />
-          <span>{f.label}{f.required ? " *" : ""}</span>
+          <span>{privacy && CONSENT.test(f.label) ? <ConsentLabel label={f.label} href={privacy} suffix={suffix ?? ""} /> : f.label}{f.required ? " *" : ""}</span>
         </label>
       );
     case "rating":
@@ -60,13 +77,13 @@ function Control({ f }: { f: FormField }): React.ReactElement | null {
       );
     }
     case "number":
-      return <input {...common} type="number" min={f.min} max={f.max} step="any" placeholder={f.placeholder || undefined} className={inputCls} />;
+      return <input {...common} type="number" min={f.min} max={f.max} step="any" placeholder={f.placeholder || undefined} className={fieldCls} />;
     case "date":
-      return <input {...common} type="date" className={inputCls} />;
+      return <input {...common} type="date" className={fieldCls} />;
     case "time":
-      return <input {...common} type="time" step={60} className={inputCls} />;
+      return <input {...common} type="time" step={60} className={fieldCls} />;
     default:
-      return <input {...common} type={f.type === "email" || f.type === "tel" || f.type === "url" ? f.type : "text"} maxLength={f.max ?? 500} minLength={f.min} placeholder={f.placeholder || undefined} className={inputCls} />;
+      return <input {...common} type={f.type === "email" || f.type === "tel" || f.type === "url" ? f.type : "text"} maxLength={f.max ?? 500} minLength={f.min} placeholder={f.placeholder || undefined} className={fieldCls} />;
   }
 }
 
@@ -103,14 +120,14 @@ function spanCls(width: FormField["width"], columns: 1 | 2 | 4): string {
 }
 
 /** Kurucuyla tanımlanan formun ziyaretçi görünümü: sunucu bileşeni, istemci JS'i yok (HTML POST + yerel doğrulama). */
-function FieldView({ f, fields, columns, side }: { f: FormField; fields: FormField[]; columns: 1 | 2 | 4; side: boolean }): React.ReactElement {
+function FieldView({ f, fields, columns, side, privacy, suffix }: { f: FormField; fields: FormField[]; columns: 1 | 2 | 4; side: boolean; privacy?: string; suffix?: string }): React.ReactElement {
   const span = spanCls(f.width, columns);
   const when = whenKey(f, fields);
   const attrs = { "data-nx-when": when || undefined, className: span };
   if (f.type === "divider") return <hr key={f.id} {...attrs} className={`${span} border-nx-line`} />;
   if (f.type === "heading") return <h3 key={f.id} {...attrs} className={`${span} text-base font-bold text-nx-fg`}>{f.label}</h3>;
   if (f.type === "paragraph") return <p key={f.id} {...attrs} className={`${span} text-sm text-nx-soft`}>{f.label}</p>;
-  if (f.type === "checkbox") return <div key={f.id} {...attrs}><Control f={f} />{f.help ? <p className="mt-1 text-xs text-nx-muted">{f.help}</p> : null}</div>;
+  if (f.type === "checkbox") return <div key={f.id} {...attrs}><Control f={f} privacy={privacy} suffix={suffix} />{f.help ? <p className="mt-1 text-xs text-nx-muted">{f.help}</p> : null}</div>;
   const group = f.type === "radio" || f.type === "checkboxes" || f.type === "rating" || f.type === "scale";
   const Wrap = group ? "fieldset" : "div";
   const sideCls = side && !group ? "sm:grid sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:items-center sm:gap-x-3" : "";
@@ -134,6 +151,8 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
   const steps = look.stepped ? [...new Set(form.spec.fields.map((f) => f.step ?? 1))].sort((a, b) => a - b) : [1];
   const multi = steps.length > 1;
   const css = visibilityCss(form.spec.fields, multi ? steps : []);
+  const hasConsent = Boolean(ctx.privacyUrl) && form.spec.fields.some((f) => f.type === "checkbox" && CONSENT.test(f.label));
+  const privacyId = hasConsent ? `nxpv-${safeBlockDomId(blockId)}` : "";
   const cols = look.columns === 4 ? "sm:grid-cols-4" : look.columns === 2 ? "sm:grid-cols-2" : "";
   const gap = look.density === "compact" ? "gap-2" : "gap-4";
   const pad = look.density === "compact" ? "p-3" : "p-5";
@@ -165,7 +184,7 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
       <div className={`grid grid-cols-1 ${gap} ${cols}`}>
         {steps.map((step) => {
           const items = form.spec.fields.filter((f) => (f.step ?? 1) === step || !multi);
-          const nodes = items.map((f) => <FieldView key={f.id} f={f} fields={form.spec.fields} columns={look.columns} side={look.labels === "side"} />);
+          const nodes = items.map((f) => <FieldView key={f.id} f={f} fields={form.spec.fields} columns={look.columns} side={look.labels === "side"} privacy={privacyId ? `#${privacyId}` : undefined} suffix={t("blocks.consentSuffix")} />);
           if (!multi) return nodes;
           return (
             <div key={step} data-nx-step={step} className="contents">
@@ -178,7 +197,21 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
       </div>
     </form>
   );
-  if (look.surface !== "dialog") return body;
+  // Gizlilik politikası penceresi (CSS :target, betik yok): iframe yalnızca pencere açılınca yüklenir
+  const privacyModal = privacyId ? (
+    <div id={privacyId} className="nx-pv" role="dialog" aria-label={t("blocks.privacyTitle")}>
+      <a href="#nx-pv-closed" aria-label={t("blocks.formClose")} className="nx-pv-backdrop" />
+      <div className="nx-pv-panel bg-nx-card">
+        <div className="flex items-center justify-between gap-3 border-b border-nx-line px-4 py-3">
+          <strong className="text-sm text-nx-fg">{t("blocks.privacyTitle")}</strong>
+          <a href="#nx-pv-closed" className="rounded px-2 py-1 text-sm text-nx-soft hover:bg-nx-subtle">{t("blocks.formClose")} ✕</a>
+        </div>
+        <iframe src={ctx.privacyUrl} title={t("blocks.privacyTitle")} loading="lazy" className="block h-full w-full border-0" />
+      </div>
+      <style>{`.nx-pv{display:none}.nx-pv:target{display:grid;position:fixed;inset:0;z-index:90;place-items:center;padding:1rem}.nx-pv-backdrop{position:absolute;inset:0;background:rgba(4,38,70,.55)}.nx-pv-panel{position:relative;display:grid;grid-template-rows:auto minmax(0,1fr);width:min(44rem,100%);height:min(80vh,44rem);overflow:hidden;border-radius:.75rem;box-shadow:0 24px 70px rgba(0,0,0,.35)}`}</style>
+    </div>
+  ) : null;
+  if (look.surface !== "dialog") return privacyModal ? <>{body}{privacyModal}</> : body;
   const id = `nxf-${safeBlockDomId(blockId)}`;
   return (
     <div style={frame}>

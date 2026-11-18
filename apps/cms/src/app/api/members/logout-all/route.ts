@@ -4,6 +4,7 @@ import { MEMBER_SESSION_COOKIE } from "@nexpress/core/member-token";
 import { getMemberRepository } from "@nexpress/database";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { resolveMemberCookie, sameOriginPost } from "@/lib/members";
+import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
   const lb = await siteLocaleBase(siteId, String(form.get("locale") ?? "tr").trim().slice(0, 12) || "tr");
   const member = await resolveMemberCookie(siteId, request.cookies.get(MEMBER_SESSION_COOKIE)?.value);
   if (member) await getMemberRepository(siteId).revokeSessions(member.id);
-  const response = NextResponse.redirect(new URL(lb || "/", request.url), 303);
+  const response = NextResponse.redirect(publicUrl(lb || "/", request), 303);
   response.cookies.set(MEMBER_SESSION_COOKIE, "", { path: "/", maxAge: 0 });
   response.headers.set("Cache-Control", "private, no-store");
   return response;
