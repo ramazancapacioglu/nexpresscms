@@ -1,4 +1,5 @@
 import { KNOWN_BOTS } from "./ai-bots";
+import { acceptVerifyCode, type WebmasterVerification } from "./webmaster-connect";
 
 export type BotDecision = "allow" | "block";
 
@@ -36,14 +37,10 @@ export function buildRobotsTxt(input: RobotsInput): string {
 }
 
 /** Next `Metadata.verification` biçimi; boş/geçersiz kodlar atılır (etiket enjeksiyonu olmasın). */
-export function webmasterVerification(v?: { google?: string; bing?: string; yandex?: string }) {
-  const clean = (s?: string) => {
-    const t = (s ?? "").trim();
-    return /^[A-Za-z0-9_\-]{8,100}$/.test(t) ? t : undefined;
-  };
-  const google = clean(v?.google);
-  const yandex = clean(v?.yandex);
-  const bing = clean(v?.bing);
+export function webmasterVerification(v?: Pick<WebmasterVerification, "google" | "bing" | "yandex">) {
+  const google = acceptVerifyCode(v?.google) || undefined;
+  const yandex = acceptVerifyCode(v?.yandex) || undefined;
+  const bing = acceptVerifyCode(v?.bing) || undefined;
   return {
     ...(google ? { google } : {}),
     ...(yandex ? { yandex } : {}),

@@ -18,15 +18,23 @@ import type {
   Ga4AiReferrerRow,
   Ga4LandingRow,
 } from "@nexpress/seo-core";
+import type { WebmasterVerification } from "@nexpress/core";
+import { ConnectGuide } from "./connect-guide";
 
 type TabKey = "gsc" | "ga4" | "bing" | "yandex";
 
 export function SeoIntegrationsStudio({
   initialIntegrations,
+  initialVerification,
   siteUrl,
+  siteHost,
+  googleNotice,
 }: {
   initialIntegrations?: SaveIntegrationsInput;
+  initialVerification?: WebmasterVerification;
   siteUrl: string;
+  siteHost: string;
+  googleNotice?: string | null;
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>("gsc");
   const [config, setConfig] = useState<SaveIntegrationsInput>({
@@ -40,6 +48,7 @@ export function SeoIntegrationsStudio({
     ga4: {
       propertyId: initialIntegrations?.ga4?.propertyId ?? "",
       measurementId: initialIntegrations?.ga4?.measurementId ?? "",
+      placement: initialIntegrations?.ga4?.placement === "body" ? "body" : "head",
       enabled: initialIntegrations?.ga4?.enabled ?? false,
     },
     bing: {
@@ -50,10 +59,12 @@ export function SeoIntegrationsStudio({
     yandex: {
       token: initialIntegrations?.yandex?.token ?? "",
       counterId: initialIntegrations?.yandex?.counterId ?? "",
+      placement: initialIntegrations?.yandex?.placement === "body" ? "body" : "head",
       enabled: initialIntegrations?.yandex?.enabled ?? false,
     },
   });
 
+  const [verification, setVerification] = useState<WebmasterVerification>(initialVerification ?? {});
   const [saving, startSave] = useTransition();
   const [testing, startTest] = useTransition();
   const [notice, setNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
@@ -71,7 +82,7 @@ export function SeoIntegrationsStudio({
 
   const handleSave = () => {
     startSave(async () => {
-      const res = await saveSeoIntegrationsAction(config);
+      const res = await saveSeoIntegrationsAction({ ...config, verification });
       if (res.ok) {
         showFlash("ok", res.message || "Entegrasyon ayarları kaydedildi.");
       } else {
@@ -111,7 +122,10 @@ export function SeoIntegrationsStudio({
     startTest(async () => {
       const res = await syncGa4Action({
         propertyId: config.ga4?.propertyId || "",
-        accessToken: "", // demo fallback
+        accessToken: "",
+        clientId: config.gsc?.clientId || "",
+        clientSecret: config.gsc?.clientSecret || "",
+        refreshToken: config.gsc?.refreshToken || "",
       });
       if (!res.ok) {
         showFlash("err", res.error || "GA4 bağlantısı kurulamadı.");
@@ -199,6 +213,12 @@ export function SeoIntegrationsStudio({
         </button>
       </div>
 
+      {googleNotice ? (
+        <div className="rounded-lg border border-sky-500/20 bg-sky-500/10 px-3.5 py-2.5 text-xs font-medium text-sky-800 dark:text-sky-200">
+          {googleNotice}
+        </div>
+      ) : null}
+
       {notice && (
         <div
           className={`rounded-lg px-3.5 py-2.5 text-xs font-medium border ${
@@ -262,6 +282,16 @@ export function SeoIntegrationsStudio({
       {/* TAB 1: GOOGLE SEARCH CONSOLE */}
       {activeTab === "gsc" && (
         <div className="space-y-4">
+          <ConnectGuide
+            service="gsc"
+            domain={siteHost}
+            verification={verification}
+            onVerification={setVerification}
+            gaPlacement={config.ga4?.placement === "body" ? "body" : "head"}
+            metrikaPlacement={config.yandex?.placement === "body" ? "body" : "head"}
+            onGaPlacement={(placement) => setConfig({ ...config, ga4: { ...config.ga4, placement } })}
+            onMetrikaPlacement={(placement) => setConfig({ ...config, yandex: { ...config.yandex, placement } })}
+          />
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -377,6 +407,16 @@ export function SeoIntegrationsStudio({
       {/* TAB 2: GOOGLE ANALYTICS 4 (GA4) */}
       {activeTab === "ga4" && (
         <div className="space-y-4">
+          <ConnectGuide
+            service="ga4"
+            domain={siteHost}
+            verification={verification}
+            onVerification={setVerification}
+            gaPlacement={config.ga4?.placement === "body" ? "body" : "head"}
+            metrikaPlacement={config.yandex?.placement === "body" ? "body" : "head"}
+            onGaPlacement={(placement) => setConfig({ ...config, ga4: { ...config.ga4, placement } })}
+            onMetrikaPlacement={(placement) => setConfig({ ...config, yandex: { ...config.yandex, placement } })}
+          />
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -467,6 +507,16 @@ export function SeoIntegrationsStudio({
       {/* TAB 3: BING WEBMASTER TOOLS */}
       {activeTab === "bing" && (
         <div className="space-y-4">
+          <ConnectGuide
+            service="bing"
+            domain={siteHost}
+            verification={verification}
+            onVerification={setVerification}
+            gaPlacement={config.ga4?.placement === "body" ? "body" : "head"}
+            metrikaPlacement={config.yandex?.placement === "body" ? "body" : "head"}
+            onGaPlacement={(placement) => setConfig({ ...config, ga4: { ...config.ga4, placement } })}
+            onMetrikaPlacement={(placement) => setConfig({ ...config, yandex: { ...config.yandex, placement } })}
+          />
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -556,6 +606,16 @@ export function SeoIntegrationsStudio({
       {/* TAB 4: YANDEX METRIKA & WEBMASTER */}
       {activeTab === "yandex" && (
         <div className="space-y-4">
+          <ConnectGuide
+            service="yandex"
+            domain={siteHost}
+            verification={verification}
+            onVerification={setVerification}
+            gaPlacement={config.ga4?.placement === "body" ? "body" : "head"}
+            metrikaPlacement={config.yandex?.placement === "body" ? "body" : "head"}
+            onGaPlacement={(placement) => setConfig({ ...config, ga4: { ...config.ga4, placement } })}
+            onMetrikaPlacement={(placement) => setConfig({ ...config, yandex: { ...config.yandex, placement } })}
+          />
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input

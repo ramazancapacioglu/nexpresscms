@@ -32,7 +32,8 @@ import {
   INK_GRID_ID,
 } from "@nexpress/themes";
 import { YazilimFirmasiReach } from "@/components/public/yazilim-firmasi-reach";
-import { CONSENT_COOKIE, consentBannerVisible, optionalScriptsAllowed, PluginSlot, buildFontFaceCss, pageMaxWidth, readPageOptions, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
+import { CONSENT_COOKIE, consentBannerVisible, measurementIdOk, metrikaCounterOk, optionalScriptsAllowed, PluginSlot, buildFontFaceCss, pageMaxWidth, readPageOptions, preloadFile, primaryFamily, resolveActiveSidebarArea, resolveSiteSettings, scriptPlacement, socialLinksFromSameAs, toCssVarTokens } from "@nexpress/core";
+import { MeasureTags } from "@/components/public/measure-tags";
 import { getSession } from "@/lib/auth/session";
 import { MaintenanceView } from "@/components/public/maintenance";
 import { BackToTop } from "@/components/public/back-to-top";
@@ -122,7 +123,13 @@ export default async function PublicLocaleLayout({
   const consentValue = consentSettings.enabled ? (await cookies()).get(CONSENT_COOKIE)?.value : undefined;
   const optionalOk = optionalScriptsAllowed(consentSettings, consentValue);
   const ga4Settings = resolvedSettings.seo?.integrations?.ga4;
-  const ga4MeasurementId = (optionalOk && ga4Settings?.enabled && ga4Settings?.measurementId?.trim()) || null;
+  const yandexTrack = resolvedSettings.seo?.integrations?.yandex;
+  const gaPlacement = scriptPlacement(ga4Settings?.placement);
+  const metrikaPlacement = scriptPlacement(yandexTrack?.placement);
+  const gaId =
+    optionalOk && ga4Settings?.enabled && measurementIdOk(ga4Settings.measurementId) ? ga4Settings.measurementId!.trim() : null;
+  const metrikaId =
+    optionalOk && yandexTrack?.enabled && metrikaCounterOk(yandexTrack.counterId) ? yandexTrack.counterId!.trim() : null;
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ lb, site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
@@ -316,19 +323,7 @@ export default async function PublicLocaleLayout({
       {isCr ? <style dangerouslySetInnerHTML={{ __html: CR_CSS }} /> : null}
       {isBayi ? <style dangerouslySetInnerHTML={{ __html: YB_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
-      {ga4MeasurementId ? (
-        <>
-          <script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4MeasurementId)}`}
-          />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4MeasurementId.replace(/'/g, "\\'")}');`,
-            }}
-          />
-        </>
-      ) : null}
+      <MeasureTags gaId={gaPlacement === "head" ? gaId : null} metrikaId={metrikaPlacement === "head" ? metrikaId : null} />
 
       {pageOpts.header === "hidden" ? null : headerTpl && tplCtx && !isYf ? (
         <header
@@ -418,6 +413,7 @@ export default async function PublicLocaleLayout({
       ) : (
         <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} backToTopLabel={t("site.backToTop")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
+      <MeasureTags gaId={gaPlacement === "body" ? gaId : null} metrikaId={metrikaPlacement === "body" ? metrikaId : null} />
       {optionalOk && resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}

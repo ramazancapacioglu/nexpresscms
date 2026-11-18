@@ -10,13 +10,21 @@ import {
   fetchYandexOrganicLandings,
   fetchGa4AiReferrals,
   fetchGa4LandingPages,
+  refreshGscAccessToken,
   type GscQueryRow,
   type BingQueryRow,
   type YandexOrganicLandingRow,
   type Ga4AiReferrerRow,
   type Ga4LandingRow,
 } from "@nexpress/seo-core";
-import { resolveSiteSettings } from "@nexpress/core";
+import {
+  measurementIdOk,
+  metrikaCounterOk,
+  normalizeWebmasterVerification,
+  scriptPlacement,
+  type WebmasterVerification,
+  resolveSiteSettings,
+} from "@nexpress/core";
 
 export interface SaveIntegrationsInput {
   gsc?: {
@@ -30,6 +38,7 @@ export interface SaveIntegrationsInput {
   ga4?: {
     propertyId?: string;
     measurementId?: string;
+    placement?: "head" | "body";
     enabled?: boolean;
     lastSync?: string;
   };
@@ -42,6 +51,7 @@ export interface SaveIntegrationsInput {
   yandex?: {
     token?: string;
     counterId?: string;
+    placement?: "head" | "body";
     enabled?: boolean;
     lastSync?: string;
   };
@@ -51,19 +61,35 @@ export type ActionResponse<T = unknown> =
   | { ok: true; data?: T; message?: string; sample?: boolean }
   | { ok: false; error: string };
 
+export type SaveIntegrationsPayload = SaveIntegrationsInput & {
+  verification?: WebmasterVerification;
+};
+
 /**
  * Arama motoru ve analitik entegrasyon ayarlarını kaydeder.
  */
 export async function saveSeoIntegrationsAction(
-  input: SaveIntegrationsInput
+  input: SaveIntegrationsPayload
 ): Promise<ActionResponse> {
   const admin = await requireAdmin("seo.integrations.save");
+  const measurementId = input.ga4?.measurementId?.trim() || "";
+  if (measurementId && !measurementIdOk(measurementId)) {
+    return { ok: false, error: "Ölçüm kimliği G- ile başlayan Analytics kimliği olmalı. Sayısal mülk numarası ayrı alandır." };
+  }
+  const counterId = input.yandex?.counterId?.trim() || "";
+  if (counterId && !metrikaCounterOk(counterId)) {
+    return { ok: false, error: "Metrika sayaç numarası 5–12 haneli olmalıdır." };
+  }
+  const verification = normalizeWebmasterVerification(input.verification);
+  if (verification.error) return { ok: false, error: verification.error };
+
   const repo = getScopedRepository(admin.siteId);
   const site = await repo.getSite();
   const currentSeo = resolveSiteSettings(site?.settings).seo;
 
   const updatedSeo = {
     ...currentSeo,
+    verification: verification.value,
     integrations: {
       gsc: {
         clientId: input.gsc?.clientId?.trim() || "",
@@ -75,7 +101,8 @@ export async function saveSeoIntegrationsAction(
       },
       ga4: {
         propertyId: input.ga4?.propertyId?.trim() || "",
-        measurementId: input.ga4?.measurementId?.trim() || "",
+        measurementId,
+        placement: scriptPlacement(input.ga4?.placement),
         enabled: Boolean(input.ga4?.enabled),
         lastSync: input.ga4?.lastSync || currentSeo.integrations?.ga4?.lastSync,
       },
@@ -87,7 +114,8 @@ export async function saveSeoIntegrationsAction(
       },
       yandex: {
         token: input.yandex?.token?.trim() || "",
-        counterId: input.yandex?.counterId?.trim() || "",
+        counterId,
+        placement: scriptPlacement(input.yandex?.placement),
         enabled: Boolean(input.yandex?.enabled),
         lastSync: input.yandex?.lastSync || currentSeo.integrations?.yandex?.lastSync,
       },
@@ -101,6 +129,7 @@ export async function saveSeoIntegrationsAction(
   });
 
   await revalidatePath("/admin/seo");
+  await revalidatePath("/");
   return { ok: true, message: "Entegrasyon ayarları başarıyla kaydedildi." };
 }
 
@@ -201,9 +230,20 @@ export async function syncYandexAction(credentials: {
 export async function syncGa4Action(credentials: {
   propertyId: string;
   accessToken: string;
+  clientId?: string;
+  clientSecret?: string;
+  refreshToken?: string;
 }): Promise<ActionResponse<{ referrals: Ga4AiReferrerRow[]; landings: Ga4LandingRow[] }>> {
   await requireAdmin("seo.ga4.sync");
-  if (!credentials.propertyId || !credentials.accessToken) {
+  let accessToken = credentials.accessToken;
+  if (!accessToken && credentials.clientId && credentials.clientSecret && credentials.refreshToken) {
+    try {
+      accessToken = await refreshGscAccessToken(credentials.clientId, credentials.clientSecret, credentials.refreshToken);
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : "Google kimliği yenilenemedi." };
+    }
+  }
+  if (!credentials.propertyId || !accessToken) {
     return {
       ok: true,
       data: {
@@ -221,14 +261,14 @@ export async function syncGa4Action(credentials: {
           { path: "/iletisim", sessions: 280 },
         ],
       },
-      message: "GA4 Access Token girilmediğinden örnek GA4 analitik verisi yüklendi.",
+      message: "Google kimliği bağlı olmadığından örnek Analytics verisi yüklendi.",
     };
   }
 
   try {
     const [referrals, landings] = await Promise.all([
-      fetchGa4AiReferrals(credentials.propertyId, credentials.accessToken),
-      fetchGa4LandingPages(credentials.propertyId, credentials.accessToken),
+      fetchGa4AiReferrals(credentials.propertyId, accessToken),
+      fetchGa4LandingPages(credentials.propertyId, accessToken),
     ]);
     return { ok: true, data: { referrals, landings }, message: "GA4 analitik verileri başarıyla senkronize edildi." };
   } catch (e) {

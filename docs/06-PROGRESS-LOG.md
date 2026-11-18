@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-18] — Webmaster bilgi kutuları ve sahiplik doğrulaması
+- Webmaster sekmesinde GSC, Analytics, Bing, Yandex Webmaster ve Metrika için anahtarın nereden alınacağı yazılır.
+- Sahiplik kodu meta (head) veya DNS olarak saklanır; ham etiket basılmaz. Bing için CNAME, Google ve Yandex için TXT kontrol edilir.
+- Google hesabıyla bağlanınca yenileme jetonu Search Console ve Analytics okumasına yazılır. Metrika sayacı ve GA ölçüm etiketi head veya gövde sonuna basılır.
+
 ### [2026-11-18] — CrUX hata ayrımı
 - 400 ve 403 artık tek cümleyle "anahtar geçersiz" sayılmıyor. Google gövdesindeki gerekçe okunur: yönlendiren kısıtı, IP kısıtı, kapalı API ve veri yok ayrı yazılır. Anahtar metne girmez.
 

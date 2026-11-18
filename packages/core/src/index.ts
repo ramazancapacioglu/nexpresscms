@@ -33,6 +33,7 @@ export * from "./security-txt";
 export * from "./json-dates";
 export * from "./ai-bots";
 export * from "./robots";
+export * from "./webmaster-connect";
 export * from "./cidr";
 export * from "./ai-referrers";
 export * from "./search";

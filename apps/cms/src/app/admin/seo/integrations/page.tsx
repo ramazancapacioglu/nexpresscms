@@ -8,12 +8,34 @@ import { SeoIntegrationsStudio } from "@/components/admin/seo/seo-integrations-s
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminSeoIntegrationsPage() {
+const GOOGLE_NOTICES: Record<string, string> = {
+  ok: "Google hesabı bağlandı. Search Console ve Analytics aynı kimliği kullanır.",
+  state: "Google dönüşü doğrulanamadı. Bağlantıyı yeniden başlatın.",
+  reddedildi: "Google izin ekranı kapatıldı.",
+  kod: "Google dönüş kodu gelmedi.",
+  eksik: "İstemci kimliği kayıtlı değil. Önce kaydedip yeniden bağlanın.",
+  token: "Google jetonu alınamadı. Yönlendirme adresinin Cloud kaydıyla aynı olduğunu kontrol edin.",
+  jeton: "Google yenileme jetonu vermedi. Bağlantıyı yeniden deneyin.",
+};
+
+export default async function AdminSeoIntegrationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ google?: string; neden?: string }>;
+}) {
   const reqHeaders = await headers();
+  const query = await searchParams;
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
   const site = await repo.getSite();
   const seo = resolveSiteSettings(site?.settings).seo;
+  const googleNotice =
+    query.google === "ok"
+      ? GOOGLE_NOTICES.ok
+      : query.google === "hata"
+        ? (GOOGLE_NOTICES[query.neden ?? ""] ?? "Google bağlantısı tamamlanmadı.")
+        : null;
+  const siteHost = (site?.domain ?? "").replace(/^https?:\/\//, "").split("/")[0] ?? "";
 
   return (
     <div className="space-y-4">
@@ -29,7 +51,10 @@ export default async function AdminSeoIntegrationsPage() {
       </div>
       <SeoIntegrationsStudio
         initialIntegrations={seo.integrations}
+        initialVerification={seo.verification}
         siteUrl={site?.domain ? `https://${site.domain}` : "http://localhost:3000"}
+        siteHost={siteHost}
+        googleNotice={googleNotice}
       />
       <SearchConsolePanel verification={seo.verification} />
     </div>

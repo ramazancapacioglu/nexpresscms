@@ -187,7 +187,17 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 4. **Yandex Webmaster / Metrika:**
    - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
 
-Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. Her sekmenin başında o hizmetin anahtarının nereden alınacağı ve ne işe yaradığı yazılıdır. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+
+Site sahipliği API anahtarından ayrıdır ve ham HTML saklanmaz:
+
+- **Google:** head meta (`google-site-verification`) veya kök DNS TXT (`google-site-verification=KOD`). İstemci kimliği kaydedildikten sonra Google hesabıyla bağlanılır; aynı kimlik Search Console ve Analytics raporunu açar. Yönlendirme adresi `/admin/seo/integrations/google/callback`.
+- **Analytics:** ölçüm kimliği (`G-…`) head veya gövde sonuna gtag olarak basılır. Sayısal mülk numarası rapor içindir.
+- **Bing:** head meta (`msvalidate.01`) veya CNAME. Adın hedefi `verify.bing.com` olur. API anahtarı Ayarlar → API Erişimi’ndedir.
+- **Yandex Webmaster:** head meta veya kök DNS TXT (`yandex-verification: KOD`).
+- **Yandex Metrika:** sayaç numarası head veya gövde sonuna resmi sayaç olarak basılır. OAuth jetonu raporu çeker.
+
+DNS kaydını panel yazmaz; kök ad ve `www` üzerinde TXT veya CNAME sorgular. Çerez onayı açıksa ölçüm etiketleri kabulden sonra yüklenir. Ayarlar sayfası bu alanları yeniden yazmaz.
 
 ---
 

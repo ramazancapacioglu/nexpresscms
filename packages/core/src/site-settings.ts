@@ -6,6 +6,7 @@ import { sanitizeChromeSnapshot, sanitizeReadingSlug, sanitizeThemeChrome, type 
 import { sanitizePermalinkStructure, type PermalinkStructure } from "./permalinks";
 import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
+import type { WebmasterVerification } from "./webmaster-connect";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
 
 export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
@@ -83,8 +84,8 @@ export interface SeoEngineSettings {
   schemaPlacements?: SchemaPlacement[];
   /** Bot kimliği (`KNOWN_BOTS[].id`) → robots.txt kararı. Kayıt yoksa `allow`. */
   botPolicy?: Record<string, "allow" | "block">;
-  /** Arama konsolu site sahipliği doğrulama kodları (yalnızca içerik değeri, etiket değil) */
-  verification?: { google?: string; bing?: string; yandex?: string };
+  /** Arama konsolu site sahipliği. Meta jetonu head'e basılır; DNS jetonu yalnızca kayıt metnidir. */
+  verification?: WebmasterVerification;
   /** Arama motoru ve analitik API entegrasyon ayarları (GSC, GA4, Bing, Yandex) */
   integrations?: {
     gsc?: {
@@ -98,6 +99,8 @@ export interface SeoEngineSettings {
     ga4?: {
       propertyId?: string;
       measurementId?: string;
+      /** Ölçüm etiketinin yeri. Kayıt yoksa head. */
+      placement?: "head" | "body";
       enabled?: boolean;
       lastSync?: string;
     };
@@ -110,6 +113,8 @@ export interface SeoEngineSettings {
     yandex?: {
       token?: string;
       counterId?: string;
+      /** Sayaç betiğinin yeri. Kayıt yoksa head. */
+      placement?: "head" | "body";
       enabled?: boolean;
       lastSync?: string;
     };
