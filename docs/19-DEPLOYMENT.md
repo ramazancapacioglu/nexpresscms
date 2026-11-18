@@ -130,6 +130,7 @@ Yedek dosyasını sunucu dışına almak için `BACKUP_COPY=s3` (aynı `S3_*` ay
 - [ ] SMTP tanımlı ve **Formlar → E-posta → Test e-postası** başarılı (davet ve parola sıfırlama buna bağlı).
 - [ ] `robots.txt`, `/sitemap.xml`, `/llms.txt` beklenen adrese işaret ediyor; Search Console / Bing'e site haritası eklendi.
 - [ ] Veritabanı ve `MEDIA_DIR` yedeği ayrı bir yere alınıyor; geri yükleme bir kez denendi.
+- [ ] Kanonik adres `www` ise sunucudaki `.env` içinde `NEXT_PUBLIC_APP_URL=https://www.…` olmalı; yeniden derleme bu değeri koda gömer. Çıplak adres kalırsa Plesk (çıplak→www) ile uygulama (www→çıplak) birbirini yönlendirip döngüye girer.
 - [ ] `www` alan adı apeks adrese 308 ile gider (`scripts/nginx-nexpress.conf` ve uygulama ara katmanı). `NEXT_PUBLIC_APP_URL` kanonik adrestir.
 - [ ] `/.well-known/security.txt` iletişim adresi döner (`SECURITY_CONTACT` veya Ayarlar › iletişim e-postası).
 - [ ] İndeks açılacaksa `INDEXNOW_API_KEY` tanımlı ve `/indexnow-key.txt` 200.

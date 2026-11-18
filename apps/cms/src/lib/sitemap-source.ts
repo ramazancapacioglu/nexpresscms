@@ -21,7 +21,9 @@ export async function loadSitemap(siteId: string) {
   const archives = await archiveEntries(siteId, site?.defaultLocale ?? "tr");
   // Önekli özel türlerin kayıtları `/{önek}/{slug}` adresiyle haritaya girer (öneksiz adres yönlendirdiği için listelenmez)
   const types = settings.general.contentTypes ?? [];
-  const entries = [...contentEntries.map((e) => (contentPrefix(types, e.type) ? { ...e, pathPrefix: contentPrefix(types, e.type) as string } : e)), ...archives];
+  // Kampanya yerleşik türdür: adresi `/kampanya/{slug}` (öneksiz adres oraya yönlendirir)
+  const prefixOf = (type: string) => contentPrefix(types, type) ?? (type === "campaign" ? "kampanya" : null);
+  const entries = [...contentEntries.map((e) => (prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
   return {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), "archive"]),

@@ -1296,3 +1296,4 @@
 - ✅ Tasarım odaklı boşluk düzeni (kaynak dolguları temizlendi), altlık mobil akordiyon, sosyal simge çerçevesi, form yerleşimi; dar sütunda düzyazı listeye bölünmesi geri alındı.
 - ✅ akinsoftizmir.com.tr: uygulama systemd hizmeti (açılışta başlar, çökünce yeniden kalkar, PostgreSQL'den sonra); kanonik adres www, çıplak alan adı 301 ile www'ye.
 - ✅ Tüm içerik taraması (125 adres, masaüstü + mobil): yatay taşma, kırık görsel, çift başlık, boşluk, SEO etiketleri. Düzeltilenler: kırıntı/başlık görseli hizası, içerikte zaten bulunan öne çıkan görselin başlıkta tekrarı, galeri kopyaları, boş alt metinler, kampanya sayfaları için canonical ve og:image, ana sayfa og:image.
+- ✅ Canlıya alma kontrolü (DNS, Let's Encrypt, www yönlendirmesi, robots, 145 sitemap adresi): site haritasında kampanyalar `/kampanya/{slug}` ile listelenir (öneksiz adres yönlendirdiği için daha önce 14 adres 308 veriyordu).
