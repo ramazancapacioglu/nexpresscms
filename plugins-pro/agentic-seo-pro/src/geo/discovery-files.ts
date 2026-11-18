@@ -7,6 +7,26 @@ export interface DiscoveryInput {
 
 const trim = (u: string) => u.replace(/\/$/, "");
 
+/** Model adı ASCII kalır; Türkçe harfler düşmez (`İzmir` → `izmir`). */
+function modelSlug(name: string): string {
+  const folded = name
+    .replace(/İ/g, "i")
+    .replace(/I/g, "ı")
+    .replace(/ı/g, "i")
+    .replace(/Ş/g, "s")
+    .replace(/ş/g, "s")
+    .replace(/Ğ/g, "g")
+    .replace(/ğ/g, "g")
+    .replace(/Ü/g, "u")
+    .replace(/ü/g, "u")
+    .replace(/Ö/g, "o")
+    .replace(/ö/g, "o")
+    .replace(/Ç/g, "c")
+    .replace(/ç/g, "c")
+    .toLowerCase();
+  return folded.replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "site";
+}
+
 export function buildNlwebManifest(i: DiscoveryInput) {
   const base = trim(i.baseUrl);
   return {
@@ -24,13 +44,13 @@ export function buildAiPluginManifest(i: DiscoveryInput) {
   return {
     schema_version: "v1",
     name_for_human: i.siteName,
-    name_for_model: i.siteName.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "site",
+    name_for_model: modelSlug(i.siteName),
     description_for_human: i.description,
     description_for_model: `${i.siteName} içeriğini aramak ve Markdown olarak okumak için salt-okunur araçlar. ${i.description}`,
     auth: { type: "none" },
     api: { type: "openapi", url: `${base}/.well-known/openapi.yaml` },
     contact_email: "",
-    legal_info_url: `${base}/tr`,
+    legal_info_url: base,
   };
 }
 

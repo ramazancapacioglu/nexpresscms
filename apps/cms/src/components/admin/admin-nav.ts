@@ -251,7 +251,8 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         count: "Motor",
         shortcut: "G E",
       },
-      { href: "/admin/seo/engine", label: "SEO motoru", icon: Search, shortcut: "G E" },
+      { href: "/admin/seo/sitemap", label: "Site haritası", icon: Search, shortcut: "G M" },
+      { href: "/admin/seo/engine", label: "Arama dizini", icon: Search, shortcut: "G E" },
       { href: "/admin/seo/reports", label: "SEO raporları", icon: Activity, shortcut: "G R" },
       { href: "/admin/seo/settings", label: "SEO ayarları", icon: SettingsIcon, shortcut: "G A" },
       { href: "/admin/seo/integrations", label: "Webmaster", icon: Plug, shortcut: "G W" },
@@ -417,7 +418,7 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "SEO",
     items: [
       ...pick(["/admin/seo"], { "/admin/seo": { label: "SEO Merkezi", count: undefined } }),
-      ...pick(["/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/seo/audit", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/seo/audit", "/admin/seo/sitemap", "/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/members", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },

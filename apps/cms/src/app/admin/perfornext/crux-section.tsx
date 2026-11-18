@@ -93,7 +93,7 @@ export function CruxSection({ state }: { state: CruxState }) {
         <div className="flex flex-wrap items-center gap-3">
           <form action={refreshCruxAction}><button type="submit" disabled={!state.hasKey} className="rounded-md bg-[#14151A] px-3 py-1.5 text-[12px] font-medium text-white disabled:opacity-50 dark:bg-[#F3F4F6] dark:text-[#14151A]">Ölçümü güncelle</button></form>
           {state.keySource === "panel" ? <form action={clearCruxKeyAction}><button type="submit" className="text-[12px] text-red-600 hover:underline">Anahtarı sil</button></form> : null}
-          <span className="text-[11px] text-[#8C9099]">Anahtar: Google Cloud → &quot;Chrome UX Report API&quot;yi etkinleştirin → API anahtarı oluşturun (ücretsiz). Anahtar şifreli saklanır; ortam değişkeni: <code>CRUX_API_KEY</code>. Veri günlük güncellenir.</span>
+          <span className="text-[11px] text-[#8C9099]">Anahtar: Google Cloud → Chrome UX Report API açık → anahtar. Uygulama kısıtı Yok olmalı; web sitesi yönlendiren kısıtı sunucu çağrısını keser, istek panelde görünür ama burada hata yazar. Anahtar şifreli saklanır. Ortam: <code>CRUX_API_KEY</code>.</span>
         </div>
       </div>
     </section>

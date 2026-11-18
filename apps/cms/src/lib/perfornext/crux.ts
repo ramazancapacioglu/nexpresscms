@@ -90,7 +90,15 @@ async function queryOne(key: string, origin: string, formFactor: CruxFormFactor)
       signal: AbortSignal.timeout(TIMEOUT_MS),
       cache: "no-store",
     });
-    if (!res.ok) return { error: classifyCruxError(res.status) };
+    if (!res.ok) {
+      let body: unknown = null;
+      try {
+        body = await res.json();
+      } catch {
+        body = null;
+      }
+      return { error: classifyCruxError(res.status, body) };
+    }
     const snapshot = parseCruxResponse(await res.json(), { origin, formFactor });
     return snapshot ? { snapshot } : { error: classifyCruxError(404) };
   } catch (e) {

@@ -21,6 +21,30 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-18] — CrUX hata ayrımı
+- 400 ve 403 artık tek cümleyle "anahtar geçersiz" sayılmıyor. Google gövdesindeki gerekçe okunur: yönlendiren kısıtı, IP kısıtı, kapalı API ve veri yok ayrı yazılır. Anahtar metne girmez.
+
+### [2026-11-18] — SEO ayar sekmeleri
+- Ayarlar sayfası Yayın, Başlık ve kimlik, Yerel işletme, Marka ve yazım, Anahtarlar sekmelerine ayrıldı. Yerel işletme firma, adres ve harita kartlarında.
+- IndexNow anahtarı Anahtarlar sekmesinden girilir, şifreli saklanır ve `/indexnow-key.txt` adresinde yayınlanır. Ortam anahtarı yedek olarak durur.
+
+### [2026-11-18] — SEO paneli
+- Gösterge yalnızca sağlık: skor, hata, uyarı ve sorun çubukları. Ayar, rapor ve dizin kartları bu sayfadan çıktı.
+- Site haritası kendi sayfası: içerik türü, kategori ve etiket. Etiket kapatılınca `etiket` dosyası üretilmez. Etiket noindex hem sayfayı hem haritayı kapatır.
+- Başlık ve indeks Ayarlar'da. Bağlantı denetimi Denetim'de. Arama dizini ayrı sekmede kaldı.
+
+### [2026-11-18] — AI JSON beslemesi
+- `/ai-feed.json` tek dilde `/tr` ön eki yazmıyor; adresler site haritası ve `llms.txt` ile aynı. Önekli tür kendi yolunu kullanır.
+- `llms.txt` keşif listesine AI JSON beslemesi geri kondu. Model adı Türkçe harfleri düşürmez. Yasal adres site köküdür.
+
+### [2026-11-18] — Site haritası tablosu
+- Dizin ve alt haritalar arama motoruna XML kalır. Tarayıcıda açılınca tür, adres, kayıt sayısı ve son güncelleme tablosu gelir; adresler bağlantıdır.
+- Tek dilde yinelenen hreflang satırı yazılmaz. `lastmod` W3C saniye biçimindedir. Kategori ve etiket ayrı dosyadır. Yanıt paylaşılan önbelleğe girmez.
+
+### [2026-11-16] — akinsoftizmir.com.tr temiz kurulum
+- Aynı makinede ayrı abonelik: ağaç `/var/www/vhosts/akinsoftizmir.com.tr/nexpress`, servis `nexpress-akinsoft`, kapı `3001`, veritabanı `nexpress_akin`. `ileriseo.com` güncellemesi bu ağaca dokunmaz.
+- Demo sayfa, yazı, menü, medya ve ticaret aktarılmadı. Kayıtlı iki şablon ve dört kurulu tema satırı alındı. Tasarım kütüphanesi tablosu kaynakta boştu; hazır kütüphane ve resmi temalar kodla gelir. Arama dizini kapalı. DNS henüz bu makineye bakmıyor.
+
 ### [2026-11-14] — Yazılım Bayi teması (resmi tema)
 - ✅ `yazilim-bayi` resmi temaya eklendi: iki katmanlı başlık (hızlı bağlantı, telefon, arama + ana menü), görsel mozaikli vitrin, 6 kartlı çözüm ızgarası, mavi demo bandı, görsel+metin şeritleri, kampanya vitrini, SSS, 6 sütunlu dizin altlığı; yeşil/lacivert palet.
 - ✅ Demo paketi (`yb-` adresleri): 18 ürün, 5 çözüm ailesi, çözüm dizini, kurumsal, iletişim, demo/destek formları, blog + 4 yazı, 3 kampanya; 21 temsili SVG `apps/cms/public/demo/yazilim-bayi/`.

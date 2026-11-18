@@ -141,6 +141,8 @@ Yedek dosyasını sunucu dışına almak için `BACKUP_COPY=s3` (aynı `S3_*` ay
 
 Canlı veritabanı PostgreSQL 16 + pgvector 0.6 (`nexpress_cms`, yalnızca `127.0.0.1:5432`). `DB_DIALECT=postgresql`. RAG vektör sütunu `vector(1536)` ve HNSW indeksi bu kurulumdadır. SQLite dosyası durur, uygulama onu okumaz.
 
+Aynı makinede ikinci abonelik `akinsoftizmir.com.tr` ayrı ağaçtır: `/var/www/vhosts/akinsoftizmir.com.tr/nexpress`, servis `nexpress-akinsoft`, kapı `3001`, veritabanı `nexpress_akin`. GitHub aktarımı yalnızca `ileriseo.com` ağacını ve `nexpress` servisini günceller; bu ikinci kopyaya `git pull` veya `update-host.sh` çalıştırılmaz. İlk kurulum demo sayfa içermez. Arama dizini kapalıdır (`settings.seo.searchIndexing = false`). Alan adı hâlâ eski sunucuya baktığı sürece sertifika Plesk öntanımlısıdır; DNS bu makineye geldikten sonra sertifika yenilenir.
+
 ## 9. Bilinen sınırlar
 
 Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıdır (boşsa tek sunucu + yerel disk). Kuyruk (BullMQ), Lighthouse CI ve Search Console bağlantısı duruyor. Kök düzen `headers()` okuduğu için sayfalar Next önbelleğinde statik değildir; HTML önbelleği `PUBLIC_CACHE_SECONDS` ile CDN/nginx katmanındadır.

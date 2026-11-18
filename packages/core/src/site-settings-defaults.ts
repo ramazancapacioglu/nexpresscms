@@ -34,6 +34,8 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   enableLlmsTxt: true,
   enableIndexNow: true,
   noIndexTagArchives: false,
+  sitemapIncludeCategories: true,
+  sitemapIncludeTags: true,
   sitemapTypes: ["page", "post", "kb_tech", "ai_prompt", "campaign", "product"],
   minWordCount: 150,
   permalinkStructure: "postname",

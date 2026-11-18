@@ -46,9 +46,16 @@ export async function collectSystemStatus(siteId: string): Promise<{ checks: Hea
       indexing: settings.seo.searchIndexing !== false,
       maintenance: settings.general.maintenanceEnabled === true,
       hasContact: Boolean(process.env.SECURITY_CONTACT?.trim() || settings.general.contactEmail.trim()),
-      hasIndexNow: Boolean(process.env.INDEXNOW_API_KEY?.trim()),
+      hasIndexNow: Boolean(process.env.INDEXNOW_API_KEY?.trim() || settings.seo.indexNowKey?.trim()),
       httpsAppUrl: /^https:\/\//i.test(appUrl),
     }));
+    if (settings.seo.indexNowKey?.trim() && !process.env.INDEXNOW_API_KEY?.trim()) {
+      const row = checks.find((item) => item.id === "indexnow");
+      if (row) {
+        row.level = "ok";
+        row.detail = "Panelde kayıtlı. /indexnow-key.txt bu anahtarı yayınlar.";
+      }
+    }
   }
 
   // Disk / medya

@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ContentType, PermalinkStructure, SeoEngineSettings } from "@nexpress/core";
+import type { SeoEngineSettings } from "@nexpress/core";
 import { saveSeoEngineSettingsAction } from "@/app/admin/actions";
 import { fieldClass } from "@/components/admin/appearance/appearance-ui";
 import { MediaPickerDialog } from "@/components/admin/media/media-picker-dialog";
@@ -11,36 +11,33 @@ import { WebmasterPanel } from "./webmaster-panel";
 import { BotPolicyPanel } from "./bot-policy-panel";
 import { contentTypeLabel, type SeoSummary } from "./seo-summary";
 
-const TYPES: Array<{ id: ContentType; label: string }> = [
-  { id: "page", label: "Sayfa" },
-  { id: "post", label: "Yazı" },
-  { id: "kb_tech", label: "Bilgi bankası" },
-  { id: "ai_prompt", label: "Soru" },
-  { id: "product", label: "Ürün" },
-  { id: "campaign", label: "Kampanya" },
-];
-
 const TOGGLES: Array<{ key: keyof SeoEngineSettings; label: string }> = [
   { key: "autoDescription", label: "Boş açıklamayı kısa yanıttan veya ilk paragraftan üret" },
   { key: "autoCanonical", label: "Canonical adresi otomatik yaz" },
   { key: "autoRedirectOnSlugChange", label: "Adres değişince eski URL için 301 tut" },
   { key: "autoSchema", label: "SSS, adım ve inceleme bloklarından şema üret" },
   { key: "enableLlmsTxt", label: "/llms.txt ve Markdown uçlarını açık tut" },
-  { key: "noIndexTagArchives", label: "Etiket arşivlerini noindex tut" },
-  { key: "enableIndexNow", label: "IndexNow tercihini açık tut" },
+  { key: "noIndexTagArchives", label: "Etiket arşivlerini noindex tut (site haritasından da çıkar)" },
+  { key: "enableIndexNow", label: "IndexNow bildirimi açık (anahtar Anahtarlar sekmesinde)" },
 ];
 
 export function SeoStudio({
   initial,
   summary,
   siteName,
+  settingsOnly = false,
+  section = "all",
 }: {
   initial: SeoEngineSettings;
-  summary: SeoSummary;
+  summary?: SeoSummary;
   siteName: string;
+  /** Ayarlar sayfası: durum sekmesi yok, yalnızca form. */
+  settingsOnly?: boolean;
+  /** Ayarlar kabuğu hangi bloğu gösterecek. */
+  section?: "all" | "publish" | "identity";
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"summary" | "settings">("summary");
+  const [tab, setTab] = useState<"summary" | "settings">(settingsOnly ? "settings" : "summary");
   const [seo, setSeo] = useState(initial);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -68,14 +65,20 @@ export function SeoStudio({
 
   return (
     <div className="space-y-4">
+      {section === "all" ? (
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#E6E7EA] pb-3 dark:border-[#23262E]">
         <div>
-          <h1 className="text-[18px] font-semibold">SEO</h1>
+          {settingsOnly ? (
+            <h2 className="text-[13px] font-semibold">Başlık, kimlik ve motor</h2>
+          ) : (
+            <h1 className="text-[18px] font-semibold">SEO</h1>
+          )}
           <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            {siteName} için motor ayarları ve kayıtlı skor özeti. Sayfa başlığı stüdyoda düzenlenir.
+            {siteName} için başlık şablonu, kurum kimliği ve indeks kapısı. Site haritası ayrı sayfadadır.
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {settingsOnly ? null : (
           <nav className="flex gap-1">
             <TabButton active={tab === "summary"} onClick={() => setTab("summary")}>
               Durum
@@ -84,7 +87,8 @@ export function SeoStudio({
               Ayarlar
             </TabButton>
           </nav>
-          {tab === "settings" ? (
+          )}
+          {tab === "settings" || settingsOnly ? (
             <button
               type="button"
               disabled={pending}
@@ -96,13 +100,25 @@ export function SeoStudio({
           ) : null}
         </div>
       </header>
+      ) : (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={save}
+            className="rounded-md bg-[#14151A] px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50 dark:bg-[#F3F4F6] dark:text-[#14151A]"
+          >
+            {pending ? "Kaydediliyor" : "Kaydet"}
+          </button>
+        </div>
+      )}
       {notice ? <p className="text-[12px] text-emerald-800 dark:text-emerald-400">{notice}</p> : null}
       {seo.searchIndexing === false ? (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
           Arama indeksi kapalı. Sayfalar noindex, site haritası boş, robots.txt tüm siteyi kapatır.
         </p>
       ) : null}
-      {tab === "summary" ? <SummaryView summary={summary} /> : <SettingsView seo={seo} patch={patch} />}
+      {tab === "summary" && summary ? <SummaryView summary={summary} /> : <SettingsView seo={seo} patch={patch} section={section} />}
     </div>
   );
 }
@@ -195,6 +211,12 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
             <a className="underline" href="/llms.txt" target="_blank" rel="noreferrer">
               llms.txt
             </a>
+            <a className="underline" href="/ai-feed.json" target="_blank" rel="noreferrer">
+              ai-feed.json
+            </a>
+            <a className="underline" href="/ai-sitemap.json" target="_blank" rel="noreferrer">
+              ai-sitemap.json
+            </a>
             <a className="underline" href="/robots.txt" target="_blank" rel="noreferrer">
               robots.txt
             </a>
@@ -235,30 +257,20 @@ function SummaryView({ summary }: { summary: SeoSummary }) {
 function SettingsView({
   seo,
   patch,
+  section,
 }: {
   seo: SeoEngineSettings;
   patch: (next: Partial<SeoEngineSettings>) => void;
+  section: "all" | "publish" | "identity";
 }) {
   const [iconPicker, setIconPicker] = useState(false);
+  const showIdentity = section === "all" || section === "identity";
+  const showPublish = section === "all" || section === "publish";
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {showIdentity ? (
+      <>
       <section className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
-        <h2 className="text-[13px] font-semibold">Kalıcı bağlantı</h2>
-        <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-          Yapı
-          <select
-            className={`${fieldClass} mt-1`}
-            value={seo.permalinkStructure ?? "postname"}
-            onChange={(e) => patch({ permalinkStructure: e.target.value as PermalinkStructure })}
-          >
-            <option value="postname">Yazı adı — /yazi-adi</option>
-            <option value="plain">Düz — /yazi-adi</option>
-            <option value="dayname">Gün ve ad — /2026/11/10/yazi-adi</option>
-            <option value="monthname">Ay ve ad — /2026/11/yazi-adi</option>
-            <option value="numeric">Sayısal — /arsiv/123/yazi-adi</option>
-          </select>
-        </label>
-        <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">Kayıt .htaccess dosyasını yeniler. Nginx bu dosyayı okumaz.</p>
         <h2 className="text-[13px] font-semibold">Başlık ve açıklama</h2>
         <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
           Başlık şablonu
@@ -348,6 +360,10 @@ function SettingsView({
           />
         </label>
       </section>
+      </>
+      ) : null}
+      {showPublish ? (
+      <>
       <section className="space-y-2 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
         <h2 className="text-[13px] font-semibold">Motor</h2>
         {TOGGLES.map((rule) => (
@@ -377,29 +393,11 @@ function SettingsView({
         <p className="text-[11px] leading-relaxed text-[#5F6570] dark:text-[#8C9099]">
           Kapalıyken her sayfa noindex olur, site haritası boş döner ve robots.txt siteyi kapatır. Yayına almak için Açık seçip kaydedin. Sistem durumu ekranındaki Yayın grubu eksik kapıları listeler. Kopya içerikte kapalı tutun.
         </p>
-        <div className="flex flex-wrap gap-2">
-          {TYPES.map((type) => {
-            const on = seo.sitemapTypes.includes(type.id);
-            return (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() =>
-                  patch({
-                    sitemapTypes: on
-                      ? seo.sitemapTypes.filter((item) => item !== type.id)
-                      : [...seo.sitemapTypes, type.id],
-                  })
-                }
-                className={`rounded-md px-2 py-1 text-[11px] ${
-                  on ? "bg-blue-600 text-white" : "border border-[#E6E7EA] dark:border-[#23262E]"
-                }`}
-              >
-                {type.label}
-              </button>
-            );
-          })}
-        </div>
+        <p className="text-[12px]">
+          <a className="underline" href="/admin/seo/sitemap">
+            Hangi türlerin, kategori ve etiketlerin site haritasına gireceği
+          </a>
+        </p>
         <WebmasterPanel value={seo.verification ?? {}} onChange={(verification) => patch({ verification })} />
         <BotPolicyPanel policy={seo.botPolicy ?? {}} onChange={(botPolicy) => patch({ botPolicy })} />
         <label className="block text-[11px] text-[#5F6570] dark:text-[#8C9099]">
@@ -412,6 +410,8 @@ function SettingsView({
           />
         </label>
       </section>
+      </>
+      ) : null}
     </div>
   );
 }

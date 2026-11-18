@@ -1,11 +1,27 @@
 import "server-only";
-import { cmsHooks } from "@nexpress/core";
+import { cmsHooks, resolveSiteSettings } from "@nexpress/core";
+import { decryptSecret } from "@nexpress/core/secret-box";
 import { getScopedRepository } from "@nexpress/database";
 import { notify } from "./notify";
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const PLUGIN_ID = "@nexpress/indexnow";
 let registered = false;
+
+/** Paneldeki şifreli anahtar, yoksa ortam değişkeni. Düz metin panele dönmez. */
+export async function resolveIndexNowKey(siteId: string): Promise<string> {
+  const site = await getScopedRepository(siteId).getSite();
+  const stored = resolveSiteSettings(site?.settings).seo.indexNowKey?.trim() ?? "";
+  if (stored) {
+    try {
+      const plain = decryptSecret(stored).trim();
+      if (plain) return plain;
+    } catch {
+      /* bozuk kayıt ortam anahtarına düşer */
+    }
+  }
+  return process.env.INDEXNOW_API_KEY?.trim() ?? "";
+}
 
 /**
  * Yayınlanan adresi IndexNow'a bildirir (Bing, Yandex vb.).
@@ -20,7 +36,7 @@ export function registerIndexNow(): void {
     "content:afterPublish",
     PLUGIN_ID,
     async ({ siteId, url }) => {
-      const key = process.env.INDEXNOW_API_KEY?.trim();
+      const key = await resolveIndexNowKey(siteId);
       if (!key || process.env.NODE_ENV !== "production") return;
       try {
         const site = await getScopedRepository(siteId).getSite();

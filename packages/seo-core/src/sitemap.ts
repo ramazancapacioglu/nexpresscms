@@ -134,12 +134,42 @@ export function splitIntoFiles(
 const latest = (entries: SitemapEntry[]): Date =>
   new Date(Math.max(...entries.map((e) => new Date(e.updatedAt).getTime())));
 
+/** W3C tarih-saat. Milisaniye bazı doğrulayıcılarda elenir; saniye ve `+00:00` kalır. */
+export function sitemapLastMod(value: Date | string): string {
+  return new Date(value).toISOString().replace(/\.\d{3}Z$/, "+00:00");
+}
+
+const TYPE_LABEL: Record<string, string> = {
+  page: "Sayfalar",
+  post: "Yazılar",
+  campaign: "Kampanyalar",
+  product: "Ürünler",
+  kategori: "Kategoriler",
+  etiket: "Etiketler",
+  archive: "Arşivler",
+  ai_prompt: "Sorular",
+  kb_tech: "Bilgi bankası",
+};
+
+export function sitemapTypeLabel(type: string): string {
+  return TYPE_LABEL[type] ?? type;
+}
+
+/** Bilinen tarayıcı gezintisi tablo ister. Arama motoru ve düz istek XML alır. */
+const SITEMAP_BOT = /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex|applebot|petalbot|bytespider|ahrefs|semrush|mj12bot|facebookexternal|twitterbot|linkedinbot|gptbot|claudebot|amazonbot|perplexity|chrome-lighthouse|adsbot|mediapartners/i;
+
+export function sitemapWantsHtml(input: { userAgent?: string | null; secFetchDest?: string | null; secFetchMode?: string | null }): boolean {
+  const ua = input.userAgent ?? "";
+  if (!ua || SITEMAP_BOT.test(ua)) return false;
+  return input.secFetchDest === "document" && input.secFetchMode === "navigate";
+}
+
 export function buildSitemapIndex(baseUrl: string, files: SitemapFile[]): string {
   const items = files
     .map(
       (f) => `  <sitemap>
     <loc>${xmlEscape(`${baseUrl}/sitemaps/${sitemapFileName(f.type, f.page)}`)}</loc>
-    <lastmod>${latest(f.entries).toISOString()}</lastmod>
+    <lastmod>${sitemapLastMod(latest(f.entries))}</lastmod>
   </sitemap>`
     )
     .join("\n");
@@ -170,18 +200,10 @@ export function buildUrlset(
   const urls = file.entries
     .map((entry) => {
       const group = byContent.get(entry.contentId) ?? [entry];
-      const alternates = group.map(
-        (g) =>
-          `    <xhtml:link rel="alternate" hreflang="${xmlEscape(hreflangOf(g))}" href="${xmlEscape(baseUrl + entryPath(g, prefixless))}" />`
-      );
-      const fallback = group.find((g) => g.locale === defaultLocale) ?? group[0]!;
-      alternates.push(
-        `    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEscape(baseUrl + entryPath(fallback, prefixless))}" />`
-      );
+      const alternates = alternateLinks(group, baseUrl, defaultLocale, prefixless);
       return `  <url>
     <loc>${xmlEscape(baseUrl + entryPath(entry, prefixless))}</loc>
-    <lastmod>${new Date(entry.updatedAt).toISOString()}</lastmod>
-${alternates.join("\n")}${entry.images?.length ? `\n${imageXml(entry.images, baseUrl)}` : ""}
+    <lastmod>${sitemapLastMod(entry.updatedAt)}</lastmod>${alternates}${entry.images?.length ? `\n${imageXml(entry.images, baseUrl)}` : ""}
   </url>`;
     })
     .join("\n");
@@ -190,4 +212,67 @@ ${alternates.join("\n")}${entry.images?.length ? `\n${imageXml(entry.images, bas
 ${urls}
 </urlset>
 `;
+}
+
+/** Tek dilde hreflang satırı yeni bilgi vermez; iki ve daha fazla dilde karşılıklı bağ yazılır. */
+function alternateLinks(group: SitemapEntry[], baseUrl: string, defaultLocale: string, prefixless: boolean): string {
+  if (new Set(group.map((g) => hreflangOf(g))).size < 2) return "";
+  const lines = group.map(
+    (g) =>
+      `    <xhtml:link rel="alternate" hreflang="${xmlEscape(hreflangOf(g))}" href="${xmlEscape(baseUrl + entryPath(g, prefixless))}" />`
+  );
+  const fallback = group.find((g) => g.locale === defaultLocale) ?? group[0]!;
+  lines.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEscape(baseUrl + entryPath(fallback, prefixless))}" />`);
+  return `\n${lines.join("\n")}`;
+}
+
+const pageShell = (title: string, body: string) => `<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>${xmlEscape(title)}</title>
+<style>
+body{margin:0;background:#f6f7f9;color:#14202b;font:15px/1.5 system-ui,sans-serif}
+main{max-width:960px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:22px;margin:0 0 8px}
+p{margin:0 0 16px;color:#52616e}
+a{color:#0b4f8a}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3e7ec}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #eef1f4;vertical-align:top}
+th{font-size:12px;color:#52616e;font-weight:600}
+td:last-child,th:last-child{white-space:nowrap}
+</style>
+</head>
+<body><main>${body}</main></body>
+</html>
+`;
+
+/** Tarayıcıda açılan dizin: alt haritalar bağlantıdır. Arama motoru XML ister. */
+export function buildSitemapIndexPage(baseUrl: string, files: SitemapFile[]): string {
+  const rows = files
+    .map((f) => {
+      const loc = `${baseUrl}/sitemaps/${sitemapFileName(f.type, f.page)}`;
+      return `<tr><td>${xmlEscape(sitemapTypeLabel(f.type))}</td><td><a href="${xmlEscape(loc)}">${xmlEscape(loc)}</a></td><td>${f.entries.length}</td><td>${xmlEscape(sitemapLastMod(latest(f.entries)))}</td></tr>`;
+    })
+    .join("");
+  return pageShell(
+    "Site haritası",
+    `<h1>Site haritası</h1><p>${files.length} harita. Arama motorları bu adresin XML biçimini okur.</p><table><thead><tr><th>Tür</th><th>Adres</th><th>Kayıt</th><th>Son güncelleme</th></tr></thead><tbody>${rows}</tbody></table>`
+  );
+}
+
+/** Tarayıcıda açılan alt harita: her adres bağlantıdır. */
+export function buildUrlsetPage(baseUrl: string, file: SitemapFile, prefixless = false): string {
+  const rows = file.entries
+    .map((entry) => {
+      const loc = baseUrl + entryPath(entry, prefixless);
+      return `<tr><td><a href="${xmlEscape(loc)}">${xmlEscape(loc)}</a></td><td>${entry.images?.length ?? 0}</td><td>${xmlEscape(sitemapLastMod(entry.updatedAt))}</td></tr>`;
+    })
+    .join("");
+  return pageShell(
+    sitemapTypeLabel(file.type),
+    `<h1>${xmlEscape(sitemapTypeLabel(file.type))}</h1><p><a href="${xmlEscape(baseUrl)}/sitemap.xml">Site haritasına dön</a> · ${file.entries.length} adres</p><table><thead><tr><th>Adres</th><th>Görsel</th><th>Son güncelleme</th></tr></thead><tbody>${rows}</tbody></table>`
+  );
 }
