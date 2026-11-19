@@ -59,7 +59,7 @@ export interface RscBlockRendererProps {
  */
 export function findLcpImageId(blocks: BlockNode[]): string | undefined {
   const walk = (node: BlockNode): string | undefined => {
-    if (node.type === "image_figure") return node.id;
+    if (node.type === "image_figure" || node.type === "gallery") return node.id;
     for (const child of node.children ?? []) {
       const hit = walk(child);
       if (hit) return hit;
@@ -199,7 +199,7 @@ function renderBlockInner(input: BlockRenderInput): React.ReactElement | null {
   const rendered =
     renderMarketingBlock(ctx) ?? renderContentBlock(ctx) ?? renderLayoutBlock(ctx);
   return rendered === undefined
-    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale, input.form, ctx.renderChild)
+    ? renderStudioCatalogBlock(input.block, input.tokens, input.mediaFocal, input.locale, input.form, ctx.renderChild, input.lcpBlockId)
     : rendered;
 }
 

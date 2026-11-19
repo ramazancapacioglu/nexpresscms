@@ -20,6 +20,8 @@ export interface MerchantFeedInput {
   siteName: string;
   baseUrl: string;
   locale: string;
+  /** Dilin kök adresi (`/tr`); tek dilli sitede boş. Verilmezse `/{locale}`. */
+  localeBase?: string;
   products: MerchantProduct[];
 }
 
@@ -58,6 +60,7 @@ export function selectMerchantProducts(products: MerchantProduct[], baseUrl: str
 
 export function buildMerchantFeed(input: MerchantFeedInput): string {
   const base = input.baseUrl.replace(/\/$/, "");
+  const root = input.localeBase ?? `/${input.locale}`;
   const { ok } = selectMerchantProducts(input.products, base);
   const items = ok
     .map((p) => {
@@ -67,7 +70,7 @@ export function buildMerchantFeed(input: MerchantFeedInput): string {
       <g:id>${xmlEscape(p.sku || p.id)}</g:id>
       <g:title>${xmlEscape(p.name.trim().slice(0, 150))}</g:title>
       <g:description>${xmlEscape((plain(p.shortDescription) || plain(p.descriptionHtml)).slice(0, 5000))}</g:description>
-      <g:link>${xmlEscape(`${base}/${input.locale}/magaza/${p.slug}`)}</g:link>
+      <g:link>${xmlEscape(`${base}${root}/magaza/${p.slug}`)}</g:link>
       <g:image_link>${xmlEscape(absolute(p.imageUrl!, base))}</g:image_link>${extra.map((u) => `\n      <g:additional_image_link>${xmlEscape(u)}</g:additional_image_link>`).join("")}
       <g:availability>${AVAILABILITY[p.stockStatus]}</g:availability>
       <g:price>${money(onSale ? p.compareAtCents! : p.priceCents, p.currency)}</g:price>${onSale ? `\n      <g:sale_price>${money(p.priceCents, p.currency)}</g:sale_price>` : ""}
@@ -79,7 +82,7 @@ export function buildMerchantFeed(input: MerchantFeedInput): string {
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
     <title>${xmlEscape(input.siteName)}</title>
-    <link>${xmlEscape(`${base}/${input.locale}`)}</link>
+    <link>${xmlEscape(`${base}${root}`)}</link>
     <description>${xmlEscape(`${input.siteName} ürün beslemesi`)}</description>
 ${items}
   </channel>

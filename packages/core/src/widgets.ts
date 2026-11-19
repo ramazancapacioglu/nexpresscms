@@ -394,7 +394,7 @@ export function resolveSidebarWidgets(sidebar?: SidebarConfig | null): SiteWidge
     createDefaultWidget("search", 0, { id: "wdg_sb_search" }),
     createDefaultWidget("categories", 0, { id: "wdg_sb_cats" }),
     createDefaultWidget("recent_posts", 0, { id: "wdg_sb_posts" }),
-    createDefaultWidget("campaigns", 0, { id: "wdg_sb_campaign" }),
+    // Kampanya kutusu varsayılan olarak konmaz: öntanımlı metin ve kupon örnektir; ziyaretçiye sahte veri gösterilmez.
   ];
   if (Array.isArray(sidebar.links) && sidebar.links.length > 0) {
     fallback.push(
@@ -524,7 +524,7 @@ export const STANDARD_SIDEBAR_AREAS: StandardSidebarAreaMeta[] = [
       createDefaultWidget("categories", 0),
       createDefaultWidget("recent_posts", 0),
       createDefaultWidget("recent_comments", 0),
-      createDefaultWidget("campaigns", 0),
+      // Kampanya kutusu öntanımlı gelmez: örnek kupon ve indirim metni ziyaretçiye sahte veri olarak görünür. Panelden gerçek kampanyayla eklenir.
       createDefaultWidget("popular_tags", 0),
     ],
   },
@@ -578,7 +578,7 @@ export const STANDARD_SIDEBAR_AREAS: StandardSidebarAreaMeta[] = [
     defaultWidgets: () => [
       createDefaultWidget("search", 0, { title: "Bilgi Bankasında Ara" }),
       createDefaultWidget("toc", 0),
-      createDefaultWidget("contact_card", 0),
+      // İletişim kartı öntanımlı gelmez: örnek telefon/e-posta ziyaretçiye gerçek bilgi gibi görünür. Panelden gerçek bilgiyle eklenir.
       createDefaultWidget("recent_posts", 0, { title: "İlgili Rehberler" }),
     ],
   },
@@ -590,7 +590,6 @@ export const STANDARD_SIDEBAR_AREAS: StandardSidebarAreaMeta[] = [
     width: "300px",
     styleVariant: "cards",
     defaultWidgets: () => [
-      createDefaultWidget("contact_card", 0),
       createDefaultWidget("recent_posts", 0, { title: "Haberler & Duyurular" }),
       createDefaultWidget("newsletter", 0),
     ],

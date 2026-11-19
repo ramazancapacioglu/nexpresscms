@@ -53,15 +53,15 @@ export function registerAgenticRoutes(): void {
     const defaultLocale = site?.defaultLocale ?? "tr";
     const locale = pickLocale(new URL(request.url).searchParams.get("locale"), site?.supportedLocales ?? [defaultLocale], defaultLocale);
     const products = await getCommerceRepository(siteId).listProducts({ status: "published" });
-    const xml = buildMerchantFeed({ siteName: site?.name ?? "NexPress", baseUrl: baseUrl(), locale, products });
+    const xml = buildMerchantFeed({ siteName: site?.name ?? "NexPress", baseUrl: baseUrl(), locale, localeBase: localeBase(site, locale), products });
     return new Response(xml, { status: 200, headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": CACHE, "X-NexPress-Site-Id": siteId } });
   });
 
-  const wellKnown = (key: string, make: (i: { siteName: string; description: string; baseUrl: string }) => unknown, type?: string) =>
+  const wellKnown = (key: string, make: (i: { siteName: string; description: string; baseUrl: string; contactEmail?: string }) => unknown, type?: string) =>
     pluginRoutes.register(key, PLUGIN_ID, async ({ siteId }) => {
       if (!(await isPluginModuleEnabled(siteId, PLUGIN_ID, "well-known"))) return null;
       const site = await getScopedRepository(siteId).getSite();
-      const body = make({ siteName: site?.name ?? "NexPress", description: site?.tagline || site?.name || "", baseUrl: baseUrl() });
+      const body = make({ siteName: site?.name ?? "NexPress", description: site?.tagline || site?.name || "", baseUrl: baseUrl(), contactEmail: resolveSiteSettings(site?.settings).general.contactEmail || undefined });
       return typeof body === "string"
         ? new Response(body, { status: 200, headers: { "Content-Type": type ?? "text/plain; charset=utf-8", "Cache-Control": CACHE, "X-NexPress-Site-Id": siteId } })
         : json(body, siteId);

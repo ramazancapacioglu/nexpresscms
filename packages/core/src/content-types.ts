@@ -154,7 +154,7 @@ export const contentPrefix = (types: readonly CustomContentType[] | undefined, t
 
 /** Bir kaydın dile göre öneksiz yolu: `/{önek}/{slug}` ya da `/{slug}`. Tek doğru adres (kanonik) buradan üretilir. */
 export const contentPath = (types: readonly CustomContentType[] | undefined, content: { type: string; slug: string }): string => {
-  const prefix = contentPrefix(types, content.type);
+  const prefix = contentPrefix(types, content.type) ?? (content.type === "campaign" ? "kampanya" : null);
   return prefix ? `/${prefix}/${content.slug}` : `/${content.slug}`;
 };
 

@@ -187,6 +187,16 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **QAPage yalnızca gerçek soru-cevap içeriğinde** (`ai_prompt`); ana sayfa, iletişim, ürün/entegrasyon sayfalarında `richSchema.qa.enabled=false` (SSS çiftleri `FAQPage` olarak kalır).
 - **Blog dizini:** `CollectionPage` + son 20 yazı `ItemList`. **llms.txt:** yazılım sayfaları ayrı ve en üstte bölüm, önem puanına göre sıralı.
 
+## 11e. Üçüncü taraf denetim bulguları ve düzeltmeler (2026-11-19)
+
+- **Kampanya adresi tek kaynaktan:** `contentPath` yerleşik `campaign` türüne `/kampanya/{slug}` öneki verir; site haritası, `ai-sitemap.json`, `ai-feed.json`, `llms*.txt` ve MCP `markdownUrl` aynı yolu kullanır. MCP `markdownUrl` `localeBase` ile üretilir (tek dilde `/tr` yok).
+- **Kampanya `og:image`:** göreli medya adresi kanonik kökle mutlaklanır (Next `metadataBase` yerel kapıya düşüyordu).
+- **SSS şeması:** soru/cevap düz metin (`plainFaqText`), aynı soru bir kez. **Markdown:** `** metin **` kenar boşlukları işaretin dışına alınır.
+- **ai-plugin `contact_email`** `general.contactEmail`'den; **merchant feed** bağlantısı `localeBase` kullanır.
+- **LCP:** ilk iki üst düzey bloktaki ilk görsel veya galerinin ilk görseli `eager` + `fetchpriority=high`. Blog kartı görseli alt metni = yazı başlığı.
+- **Sahte veri:** varsayılan kenar çubuğu ön ayarları (blog, SSS, sayfa) ve eski kayıt yedeği artık örnek kuponlu "Kampanya" kutusu (`AVANTAJ25`) ve örnek iletişim kartı (`+90 (212) 000 00 00`, `destek@ornek.com`) içermez (ziyaretçiye sahte veri gösterilmez). Bu sitede SSS kenar çubuğuna gerçek iletişim kartı panel verisi olarak eklendi.
+- **Veri bakımı (sitede):** kesik TL;DR/meta açıklamaları tamamlandı, kısa ÖKC açıklamaları uzatıldı, iç bağlantılarda sondaki eğik çizgi ve bilinen yönlendirmeler doğrudan hedefe çevrildi, `site_dna` ve iletişim e-postası yazıldı, KDV aracı `Web` işletim sistemi. İçerikler `saveContent` ile yeniden kaydedilip markdown yeniden üretildi (`updatedAt` korunur).
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

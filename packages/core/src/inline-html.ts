@@ -94,6 +94,8 @@ export function inlineHtmlToMarkdown(html: string): string {
   source = source.replace(/<br\s*\/?>/gi, "\n");
   source = source.replace(/<(strong|b)>/gi, "**").replace(/<\/(strong|b)>/gi, "**");
   source = source.replace(/<(em|i)>/gi, "*").replace(/<\/(em|i)>/gi, "*");
+  // `** metin **` geçerli kalın değildir: kenar boşlukları işaretin dışına alınır
+  source = source.replace(/(\*\*|\*)([ \t]*)([^*\n]*?)([ \t]*)\1/g, (_m, mark: string, lead: string, body: string, trail: string) => (body.trim() ? `${lead}${mark}${body}${mark}${trail}` : `${lead}${trail}`));
   source = source.replace(/<(s|u)>/gi, "").replace(/<\/(s|u)>/gi, "");
   source = source.replace(/<code>/gi, "`").replace(/<\/code>/gi, "`");
   source = source.replace(
@@ -103,7 +105,7 @@ export function inlineHtmlToMarkdown(html: string): string {
   source = source.replace(/<li>/gi, "\n- ").replace(/<\/li>/gi, "");
   source = source.replace(/<\/?(ul|ol|p)>/gi, "\n");
   source = source.replace(/<[^>]+>/g, "");
-  return decodeEntities(source).replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return decodeEntities(source).replace(/[ \t]+\n/g, "\n").replace(/(\S)[ \t]{2,}(?=\S)/g, "$1 ").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 export function blockPlainText(props: Record<string, unknown>, fallbackKey: string): string {

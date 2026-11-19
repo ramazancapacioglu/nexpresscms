@@ -3,6 +3,8 @@ export interface DiscoveryInput {
   siteName: string;
   description: string;
   baseUrl: string;
+  /** Site iletişim e-postası (ayarlardan); ai-plugin `contact_email` alanı. */
+  contactEmail?: string;
 }
 
 const trim = (u: string) => u.replace(/\/$/, "");
@@ -49,7 +51,7 @@ export function buildAiPluginManifest(i: DiscoveryInput) {
     description_for_model: `${i.siteName} içeriğini aramak ve Markdown olarak okumak için salt-okunur araçlar. ${i.description}`,
     auth: { type: "none" },
     api: { type: "openapi", url: `${base}/.well-known/openapi.yaml` },
-    contact_email: "",
+    contact_email: i.contactEmail ?? "",
     legal_info_url: base,
   };
 }

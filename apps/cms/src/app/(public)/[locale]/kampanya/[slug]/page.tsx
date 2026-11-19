@@ -22,6 +22,9 @@ import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 
 export const dynamic = "force-dynamic";
 
+/** Göreli medya adresini kanonik kökle mutlak yapar (yoksa Next `metadataBase`i, yani yerel kapıyı kullanır). */
+const absoluteUrl = (origin: string, url?: string | null): string => (url ? (url.startsWith("/") ? `${origin.replace(/\/$/, "")}${url}` : url) : "");
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -74,7 +77,7 @@ export async function generateMetadata({
       description,
       url,
       type: "article",
-      images: [camp.featuredImageUrl || `${origin}/og?title=${encodeURIComponent(camp.title)}&site=${encodeURIComponent(siteName)}`],
+      images: [absoluteUrl(origin, camp.featuredImageUrl) || `${origin}/og?title=${encodeURIComponent(camp.title)}&site=${encodeURIComponent(siteName)}`],
     },
   };
 }

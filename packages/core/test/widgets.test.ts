@@ -43,7 +43,7 @@ describe("widgets (sidebar ve footer bileşen sistemi)", () => {
     assert.ok(sbWidgets.length >= 4);
     assert.ok(sbWidgets.some((w) => w.type === "categories"));
     assert.ok(sbWidgets.some((w) => w.type === "recent_posts"));
-    assert.ok(sbWidgets.some((w) => w.type === "campaigns"));
+    assert.equal(sbWidgets.some((w) => w.type === "campaigns"), false, "örnek kupon içeren kampanya kutusu varsayılan olarak konmaz");
 
     const ftWidgets = resolveFooterWidgets(
       {
@@ -89,3 +89,15 @@ describe("widgets (sidebar ve footer bileşen sistemi)", () => {
   });
 });
 
+describe("kenar çubuğu: sahte veri", () => {
+  it("blog kenar çubuğu ön ayarı örnek kupon/indirim içeren kampanya kutusu taşımaz", () => {
+    const blog = resolveActiveSidebarArea(null, "blog");
+    assert.ok(blog);
+    assert.equal(blog.widgets.some((w) => w.type === "campaigns"), false);
+    assert.equal(JSON.stringify(blog).includes("AVANTAJ25"), false);
+    for (const id of ["blog", "faq", "page", "primary"]) {
+      const area = JSON.stringify(resolveActiveSidebarArea(null, id));
+      assert.equal(area.includes("ornek.com") || area.includes("000 00 00"), false, `${id}: örnek iletişim bilgisi yok`);
+    }
+  });
+});

@@ -141,3 +141,17 @@ test("ana sayfa: ürün kataloğu kuruluşa OfferCatalog olarak bağlanır", asy
   const org = graph["@graph"].find((n) => n["@id"] === "https://ornek.test/#organization") as Record<string, any>;
   assert.equal(org.hasOfferCatalog.itemListElement[0].itemOffered.url, "https://ornek.test/a");
 });
+
+test("SSS: soru/cevap düz metin olur (HTML yok) ve yinelenen soru bir kez yazılır", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    content: { ...input.content, blocks: [{ id: "f", type: "faq_accordion", props: { items: [
+      { question: "<strong>Nereden alırım ?</strong>", answer: "<p>Bayiden &amp; web.</p>" },
+      { question: "Nereden alırım ?", answer: "Tekrar" },
+      { question: "Fiyat?", answer: "Teklif" },
+    ] } }] },
+  } as never);
+  const faq = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "FAQPage")!;
+  assert.deepEqual(faq.mainEntity.map((q: any) => q.name), ["Nereden alırım ?", "Fiyat?"]);
+  assert.equal(faq.mainEntity[0].acceptedAnswer.text, "Bayiden & web.");
+});

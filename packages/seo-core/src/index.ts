@@ -1,5 +1,5 @@
 import { cmsHooks, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
-import { buildBreadcrumbNode, deriveAutoSchemaNodes } from "./engine";
+import { buildBreadcrumbNode, deriveAutoSchemaNodes, plainFaqText } from "./engine";
 
 export * from "./engine";
 export * from "./feed";
@@ -258,7 +258,17 @@ export async function buildPageSchemaGraph(
     if (rich.qa) {
       const q = rich.qa;
       const list: Array<{ question?: unknown; answer?: unknown }> = Array.isArray(q.faqList) ? q.faqList : [];
-      const pairs = list.filter((item) => typeof item?.question === "string" && typeof item?.answer === "string" && item.question.trim() && item.answer.trim()).slice(0, 30);
+      const seenQuestions = new Set<string>();
+      const pairs = list
+        .filter((item) => typeof item?.question === "string" && typeof item?.answer === "string")
+        .map((item) => ({ question: plainFaqText(String(item.question)), answer: plainFaqText(String(item.answer)) }))
+        .filter((item) => {
+          const key = item.question.toLocaleLowerCase("tr");
+          if (!item.question || !item.answer || seenQuestions.has(key)) return false;
+          seenQuestions.add(key);
+          return true;
+        })
+        .slice(0, 30);
       if (pairs.length > 0) {
         // Sayfada soru listesi varsa tek bir FAQPage düğümü: sayfa başlığından uydurulmuş tek soru yerine gerçek sorular.
         faqNodeDone = true;

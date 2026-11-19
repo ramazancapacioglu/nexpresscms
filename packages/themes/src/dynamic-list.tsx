@@ -69,7 +69,7 @@ function ItemBody({ it, query, locale, list, featured }: { it: DynamicItem; quer
   const overlay = query.cardStyle === "overlay" && !list;
   const image = query.showImage && it.image ? (
     <a href={it.url} tabIndex={-1} aria-hidden="true" className={list ? "block w-28 shrink-0 overflow-hidden" : overlay ? "block" : "block"}>
-      <ResponsiveImage src={it.image} alt="" className={list ? "h-20 w-full object-cover" : overlay ? "aspect-[4/3] w-full object-cover" : featured ? "aspect-[21/9] w-full object-cover" : "aspect-[16/9] w-full object-cover"} />
+      <ResponsiveImage src={it.image} alt={it.title} className={list ? "h-20 w-full object-cover" : overlay ? "aspect-[4/3] w-full object-cover" : featured ? "aspect-[21/9] w-full object-cover" : "aspect-[16/9] w-full object-cover"} />
     </a>
   ) : null;
   const text = (

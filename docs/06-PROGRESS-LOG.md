@@ -1337,3 +1337,6 @@
 
 ### [2026-11-19] — Şema bütünlüğü ve görsel şemaları
 - ✅ Görsel şemaları (`ImageObject` boyut/ad/açıklama, `associatedMedia`, `screenshot`), `WebPage` düğümü, WebSite `SearchAction`, kuruluş `contactPoint`/`hasOfferCatalog`/açıklama, blog dizini `CollectionPage`, kampanya sayfası tam grafik, yazar kuruluşsa Person yok; yanlış QAPage'ler kapatıldı. Bkz. `docs/04` §11d. Testler: seo-core, core, agentic-seo-pro.
+
+### [2026-11-19] — Üçüncü taraf SEO/GEO denetimi düzeltmeleri
+- ✅ Kampanya `og:image`/adres tutarlılığı (`contentPath`), MCP/ai-plugin/merchant düzeltmeleri, SSS düz metin + tekilleştirme, markdown kalın boşlukları, LCP galeri, blog görsel alt, sahte kupon kutusu kaldırıldı; içerik verisi bakımı. Bkz. `docs/04` §11e. Testler: core, seo-core, themes, agentic-seo-pro.

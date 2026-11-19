@@ -50,7 +50,8 @@ export function renderStudioCatalogBlock(
   focal?: MediaFocalMap,
   locale = "tr",
   form?: FormRenderContext,
-  renderChild?: (child: BlockNode) => React.ReactElement | null
+  renderChild?: (child: BlockNode) => React.ReactElement | null,
+  lcpBlockId?: string
 ): React.ReactElement | null {
   const t = createTranslator(locale);
   const p = block.props ?? {};
@@ -367,7 +368,7 @@ export function renderStudioCatalogBlock(
           <div className="grid grid-cols-2 gap-3.5 items-center">
             <figure style={box} className="overflow-hidden border bg-nx-subtle shadow-sm">
               {safeUrl(first.url) ? (
-                <ResponsiveImage focal={focal} src={safeUrl(first.url)!} alt={text(first.alt)} sizes="(min-width: 768px) 25vw, 50vw" className="w-full h-auto object-cover" />
+                <ResponsiveImage focal={focal} src={safeUrl(first.url)!} alt={text(first.alt)} priority={block.id === lcpBlockId} sizes="(min-width: 768px) 25vw, 50vw" className="w-full h-auto object-cover" />
               ) : null}
             </figure>
             <div className="space-y-3.5">
@@ -391,7 +392,7 @@ export function renderStudioCatalogBlock(
             const src = safeUrl(item.url);
             return (
               <figure key={index} style={box} className="overflow-hidden border bg-nx-subtle">
-                {src ? <ResponsiveImage focal={focal} src={src} alt={text(item.alt)} sizes="(min-width: 768px) 33vw, 50vw" className="aspect-[4/3] w-full object-cover" /> : null}
+                {src ? <ResponsiveImage focal={focal} src={src} alt={text(item.alt)} priority={index === 0 && block.id === lcpBlockId} sizes="(min-width: 768px) 33vw, 50vw" className="aspect-[4/3] w-full object-cover" /> : null}
                 {text(item.caption) ? (
                   <figcaption className="px-2 py-1 text-[11px] text-nx-muted">{text(item.caption)}</figcaption>
                 ) : null}

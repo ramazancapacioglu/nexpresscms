@@ -182,7 +182,7 @@ export async function handleWebMcpJsonRpc(
               slug: c.slug,
               type: c.type,
               score: Number(c.similarity.toFixed(4)),
-              markdownUrl: `/${locale}/${c.slug}?format=md`,
+              markdownUrl: `${localeBase(site, locale)}${contentPath(resolveSiteSettings(site?.settings).general.contentTypes, { type: c.type, slug: c.slug })}?format=md`,
               passages: found.passages
                 .filter((p) => p.contentId === c.contentId)
                 .map((p) => ({ heading: p.headingPath, text: p.text, score: Number(p.similarity.toFixed(4)) })),
@@ -211,7 +211,7 @@ export async function handleWebMcpJsonRpc(
           schemaType: m.schemaType,
           importanceScore: m.importanceScore,
           tldr: m.tldr,
-          markdownUrl: `/${locale}/${m.slug}?format=md`,
+          markdownUrl: `${localeBase(site, locale)}${contentPath(resolveSiteSettings(site?.settings).general.contentTypes, { type: m.type, slug: m.slug })}?format=md`,
         })),
       });
     }

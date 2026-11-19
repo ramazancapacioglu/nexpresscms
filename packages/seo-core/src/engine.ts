@@ -589,6 +589,11 @@ export function resolveSeoMeta(input: ResolveMetaInput): ResolvedSeoMeta {
 // OTOMATİK ŞEMA TÜRETME (Bloklardan)
 // ---------------------------------------------------------------------------
 
+/** SSS metni düz yazıdır: satır içi etiketler ve HTML varlıkları temizlenir, boşluklar tekleşir. */
+export function plainFaqText(value: string): string {
+  return value.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/\s+/g, " ").trim();
+}
+
 export function deriveAutoSchemaNodes(
   blocks: BlockNode[],
   pageUrl: string
@@ -656,11 +661,22 @@ export function deriveAutoSchemaNodes(
     }
   }
 
-  if (faqItems.length > 0) {
+  // Sorular düz metin olur (satır içi etiket/varlık temizlenir) ve aynı soru ikinci kez yazılmaz
+  const plain = plainFaqText;
+  const seenQuestions = new Set<string>();
+  const faqClean = faqItems
+    .map((f) => ({ q: plain(f.q), a: plain(f.a) }))
+    .filter((f) => {
+      const key = f.q.toLocaleLowerCase("tr");
+      if (!f.q || !f.a || seenQuestions.has(key)) return false;
+      seenQuestions.add(key);
+      return true;
+    });
+  if (faqClean.length > 0) {
     nodes.push({
       "@type": "FAQPage",
       "@id": `${pageUrl}#faq`,
-      mainEntity: faqItems.map((f) => ({
+      mainEntity: faqClean.map((f) => ({
         "@type": "Question",
         name: f.q,
         acceptedAnswer: { "@type": "Answer", text: f.a },

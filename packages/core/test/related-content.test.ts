@@ -28,3 +28,13 @@ test("ilgili içerik: eşit puanlarda sıra hedefe göre değişir (hep aynı ya
   assert.equal(first.length, 3);
   assert.notDeepEqual(first.map((x) => x.id), second.map((x) => x.id));
 });
+
+import { inlineHtmlToMarkdown } from "../src/inline-html";
+import { contentPath } from "../src/content-types";
+
+test("markdown: kalın/italik kenar boşlukları işaretin dışına alınır; kampanya adresi /kampanya/ önekli", () => {
+  assert.equal(inlineHtmlToMarkdown("<p>Merhaba <strong>İzmir Ana Bayi </strong>sitesi</p>").trim(), "Merhaba **İzmir Ana Bayi** sitesi");
+  assert.equal(inlineHtmlToMarkdown("<p><strong>A</strong> ve <em> B </em></p>").trim(), "**A** ve *B*");
+  assert.equal(contentPath(undefined, { type: "campaign", slug: "x" }), "/kampanya/x");
+  assert.equal(contentPath(undefined, { type: "page", slug: "x" }), "/x");
+});
