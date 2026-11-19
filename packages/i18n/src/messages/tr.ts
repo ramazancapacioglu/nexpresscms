@@ -52,6 +52,7 @@ export const tr = {
     prevPost: "Önceki yazı",
     nextPost: "Sonraki yazı",
     relatedHeading: "Benzer yazılar",
+    relatedContentHeading: "İlgili içerikler",
     blogCrumb: "Blog",
     markdownLink: "Markdown",
     authorArchive: "Yazar",

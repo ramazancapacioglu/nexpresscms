@@ -126,7 +126,7 @@ export async function buildPageSchemaGraph(
           }
         : {}),
       ...(c.imageUrl && !c.imageUrl.startsWith("data:")
-        ? { image: { "@type": "ImageObject", url: c.imageUrl, caption: c.imageAlt ?? c.title } }
+        ? { image: { "@type": "ImageObject", url: c.imageUrl.startsWith("/") ? `${baseUrl}${c.imageUrl}` : c.imageUrl, caption: c.imageAlt ?? c.title } }
         : {}),
       ...(c.keywords && c.keywords.length > 0 ? { keywords: c.keywords.join(", ") } : {}),
       ...(c.articleSection ? { articleSection: c.articleSection } : {}),
@@ -151,7 +151,7 @@ export async function buildPageSchemaGraph(
       ((c.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined) ?? {};
     if (rich.software && (c.schemaType === "SoftwareApplication" || c.schemaType === "Product" || c.schemaType === "WebPage")) {
       const sw = rich.software;
-      baseNodes.push({
+      const softwareNode: SchemaGraphNode = {
         "@type": "SoftwareApplication",
         "@id": `${input.pageUrl}#software`,
         name: sw.name || c.title,
@@ -163,7 +163,14 @@ export async function buildPageSchemaGraph(
         ...(sw.requirements ? { memoryRequirements: sw.requirements } : {}),
         ...(sw.ratingValue ? { aggregateRating: { "@type": "AggregateRating", ratingValue: sw.ratingValue, reviewCount: sw.ratingCount || 1, bestRating: 5, worstRating: 1 } } : {}),
         ...(sw.price ? { offers: { "@type": "Offer", price: String(sw.price).replace(",", "."), priceCurrency: sw.currency || "TRY" } } : {}),
-      });
+      };
+      // Sayfanın ana varlığı zaten SoftwareApplication ise ikinci bir düğüm eklenmez: alanlar ana varlığa işlenir (yinelenen varlık yok)
+      if (c.schemaType === "SoftwareApplication") {
+        const { "@id": _id, "@type": _type, name: _name, ...fields } = softwareNode;
+        Object.assign(entity, fields);
+      } else {
+        baseNodes.push(softwareNode);
+      }
     }
     if (rich.offer) {
       const o = rich.offer;
@@ -236,6 +243,36 @@ export interface LlmsTxtItem {
   importanceScore: number;
 }
 
+const text = (value: unknown): string => (typeof value === "string" ? value.trim() : typeof value === "number" ? String(value) : "");
+const names = (value: unknown): string[] =>
+  (Array.isArray(value) ? value : value ? [value] : [])
+    .map((item) => (typeof item === "object" && item ? text((item as Record<string, unknown>).name) : text(item)))
+    .filter(Boolean);
+
+/**
+ * Kuruluş şemasından (adres, telefon, saat, hizmet bölgesi, uzmanlık) yapay zekâ modellerinin alıntılayabileceği kısa künye satırları.
+ * Yalnızca sitenin kendi bildirdiği alanlar yazılır; boş alan satır üretmez.
+ */
+export function organizationFactLines(schema: Record<string, unknown> | null | undefined): string[] {
+  if (!schema) return [];
+  const address = (schema.address && typeof schema.address === "object" ? schema.address : {}) as Record<string, unknown>;
+  const place = [text(address.streetAddress), text(address.addressLocality), text(address.addressRegion), text(address.postalCode), text(address.addressCountry)].filter(Boolean).join(", ");
+  const hours = (Array.isArray(schema.openingHours) ? schema.openingHours : schema.openingHours ? [schema.openingHours] : []).map(text).filter(Boolean).join("; ");
+  const rows: Array<[string, string]> = [
+    ["Tanım", text(schema.description)],
+    ["Yasal ad", text(schema.legalName)],
+    ["Adres", place],
+    ["Telefon", text(schema.telephone)],
+    ["E-posta", text(schema.email)],
+    ["Çalışma saatleri", hours],
+    ["Hizmet bölgesi", names(schema.areaServed).join(", ")],
+    ["Uzmanlık alanları", names(schema.knowsAbout).join(", ")],
+    ["Bağlı olduğu kuruluş", names(schema.parentOrganization).join(", ")],
+    ["Diller", names(schema.availableLanguage).join(", ")],
+  ];
+  return rows.filter(([, value]) => value).map(([label, value]) => `- ${label}: ${value}`);
+}
+
 /**
  * Çekirdek `/llms.txt` çıktısını oluşturur ve `llms:buildTxt` kancasını çalıştırır.
  */
@@ -244,6 +281,8 @@ export async function generateCoreLlmsTxt(options: {
   siteName: string;
   tagline?: string | null;
   siteDna?: string | null;
+  /** Kuruluş şeması (`seo.organizationSchema`): künye bölümü için. */
+  organization?: Record<string, unknown> | null;
   baseUrl: string;
   locale: string;
   items: LlmsTxtItem[];
@@ -258,6 +297,9 @@ export async function generateCoreLlmsTxt(options: {
   if (options.siteDna) {
     lines.push("## Kurumsal Kimlik & Site DNA", "", options.siteDna, "");
   }
+
+  const facts = organizationFactLines(options.organization);
+  if (facts.length > 0) lines.push("## Kuruluş ve İletişim", "", ...facts, "");
 
   lines.push(
     "## Makine Tarafından Okunabilir Beslemeler (Agentic Protocols)",
@@ -287,7 +329,7 @@ export async function generateCoreLlmsTxt(options: {
     lines.push(`## ${labels[type] ?? type}`, "");
     for (const entry of list) {
       const summary = entry.tldr ? `: ${entry.tldr}` : "";
-      lines.push(`- [${entry.title}](${entry.url}?format=md)${summary}`);
+      lines.push(`- [${entry.title}](${entry.url.includes("/", 8) ? entry.url : `${entry.url}/`}?format=md)${summary}`);
     }
     lines.push("");
   }

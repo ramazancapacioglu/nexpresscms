@@ -9,7 +9,6 @@ import type { ContentType } from "./types";
 import type { WebmasterVerification } from "./webmaster-connect";
 import { sanitizeOrganizationSchema } from "./organization-schema";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
-import { sanitizeOrganizationSchema } from "./organization-schema";
 
 export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
 

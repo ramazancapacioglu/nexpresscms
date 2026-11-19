@@ -43,9 +43,9 @@ export async function archiveMetadata(kind: Kind, params: Promise<{ locale: stri
     title: data.term.seoTitle || `${data.term.name}${data.site?.name ? ` — ${data.site.name}` : ""}`,
     description: data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili yayınlar.`,
     alternates: { canonical: `${base}${path}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}` },
-    // Boş arşiv ince içeriktir. Etiket noindex ayarı da dizini kapatır.
+    // Boş arşiv ve 3'ten az yayınlı etiket ince içeriktir (dizine girmez, bağlantılar izlenir). Etiket noindex ayarı da dizini kapatır.
     robots:
-      data.paged.total === 0 || (kind === "tag" && resolveSiteSettings(data.site?.settings).seo.noIndexTagArchives)
+      data.paged.total === 0 || (kind === "tag" && (data.paged.total < 3 || resolveSiteSettings(data.site?.settings).seo.noIndexTagArchives))
         ? { index: false, follow: true }
         : undefined,
   };

@@ -1330,3 +1330,7 @@
 - ✅ akinsoftizmir.com.tr: uygulama systemd hizmeti (açılışta başlar, çökünce yeniden kalkar, PostgreSQL'den sonra); kanonik adres www, çıplak alan adı 301 ile www'ye.
 - ✅ Tüm içerik taraması (125 adres, masaüstü + mobil): yatay taşma, kırık görsel, çift başlık, boşluk, SEO etiketleri. Düzeltilenler: kırıntı/başlık görseli hizası, içerikte zaten bulunan öne çıkan görselin başlıkta tekrarı, galeri kopyaları, boş alt metinler, kampanya sayfaları için canonical ve og:image, ana sayfa og:image.
 - ✅ Canlıya alma kontrolü (DNS, Let's Encrypt, www yönlendirmesi, robots, 145 sitemap adresi): site haritasında kampanyalar `/kampanya/{slug}` ile listelenir (öneksiz adres yönlendirdiği için daha önce 14 adres 308 veriyordu).
+
+### [2026-11-19] — Yayın sonrası SEO/GEO tamamlama
+- ✅ `main` ile birleştirildi (WordPress göç dalı + SEO paneli); tek çakışma bölgeleri dokümanlar ve iki çekirdek dosya.
+- ✅ Tekil `SoftwareApplication` düğümü, mutlak görsel adresi, eski feed/site haritası yönlendirmeleri, ince etiket `noindex`, llms.txt künyesi, ilgili içerik bağlantıları (`rankRelated`). Bkz. `docs/04` §11c. Testler: seo-core, core.

@@ -72,3 +72,20 @@ test("sayfada soru listesi varsa tek FAQPage düğümü üretilir, başlıktan u
   assert.deepEqual(faq.mainEntity.map((q) => q.name), ["Neden biz?"]);
   assert.equal(graph["@graph"].some((n) => n["@type"] === "Question"), false);
 });
+
+test("ana varlık SoftwareApplication ise zengin yazılım alanları aynı düğüme işlenir; görsel adresi mutlaktır", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    content: {
+      ...input.content,
+      schemaType: "SoftwareApplication",
+      imageUrl: "/media/med_x?w=1200&h=800",
+      schemaAttributes: { richSchema: { software: { os: "Windows 11", category: "FinanceApplication", price: "19490" } } },
+    },
+  } as never);
+  const apps = graph["@graph"].filter((n) => n["@type"] === "SoftwareApplication") as Array<Record<string, unknown>>;
+  assert.equal(apps.length, 1, "ikinci SoftwareApplication düğümü yok");
+  assert.equal(apps[0]!.applicationCategory, "FinanceApplication");
+  assert.deepEqual(apps[0]!.offers, { "@type": "Offer", price: "19490", priceCurrency: "TRY" });
+  assert.equal((apps[0]!.image as { url: string }).url, "https://ornek.test/media/med_x?w=1200&h=800");
+});

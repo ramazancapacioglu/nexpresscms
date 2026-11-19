@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -15,7 +15,7 @@ import { buildTemplateContext, coverTemplateContext } from "@/lib/template-conte
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
-import { PostByline, PostFooter, PostShareRow } from "@/components/public/post-extras";
+import { PostByline, PostFooter, PostShareRow, RelatedLinks } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -360,11 +360,24 @@ export default async function PublicDynamicContentPage({
   const peerAt = peers.findIndex((row) => row.id === content.id);
   const prevPost = peerAt >= 0 && peers[peerAt + 1] ? asPeer(peers[peerAt + 1]!) : null;
   const nextPost = peerAt > 0 && peers[peerAt - 1] ? asPeer(peers[peerAt - 1]!) : null;
-  const relatedPosts = peers
-    .filter((row) => row.id !== content.id)
-    .sort((a, b) => Number(resolvePublishing(b.schemaAttributes).categories.includes(categories[0] ?? "")) - Number(resolvePublishing(a.schemaAttributes).categories.includes(categories[0] ?? "")))
-    .slice(0, 3)
-    .map(asPeer);
+  const asCandidate = <R extends { id: string; title: string; schemaAttributes: Record<string, unknown> | null }>(row: R) => {
+    const pub = resolvePublishing(row.schemaAttributes);
+    return { row, id: row.id, title: row.title, categories: pub.categories, tags: pub.tags };
+  };
+  const me = { id: content.id, title: content.title, categories, tags };
+  // Benzer yazılar: ortak etiket/kategori/başlık sözcüğü; eşitlikte hedefe göre değişen sıra (iç bağlantılar bir avuç yazıda toplanmaz)
+  const relatedPosts = rankRelated(me, peers.map(asCandidate), 3, 0).map((c) => asPeer(c.row));
+  // Sayfa, yazı ve soru-cevap içeriklerinde ilgili sayfa/yazılar: ilgisizse hiç gösterilmez. Yazılar zaten "Benzer yazılar" gösterir; onlara yalnızca ürün/çözüm sayfaları önerilir
+  const relatedLinks =
+    content.type === "page" || content.type === "post" || content.type === "ai_prompt"
+      ? rankRelated(
+          me,
+          [...(await scoped.listContents({ locale, type: "page", status: "published" })), ...(content.type === "post" ? [] : await scoped.listContents({ locale, type: "post", status: "published" }))]
+            .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public" && row.slug !== "ana-sayfa")
+            .map(asCandidate),
+          4,
+        ).map((c) => ({ slug: c.row.slug, title: c.row.title }))
+      : [];
 
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
@@ -653,6 +666,7 @@ export default async function PublicDynamicContentPage({
         />
       ) : null}
 
+      {relatedLinks.length > 0 ? <RelatedLinks heading={t("content.relatedContentHeading")} lb={lb} items={relatedLinks} /> : null}
       {content.type === "ai_prompt" ? <QaFooter siteId={siteId} contentId={content.id} t={t} notice={sp.qa} /> : null}
       {pillarList}
       {discussion}

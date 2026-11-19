@@ -79,3 +79,22 @@ test("şema grafiği: editör iç alanları (_publishing, richSchema, seo…) JS
   assert.equal(page.about, "konu");
   assert.ok(!JSON.stringify(g).includes("gizli"), "yayın parolası şemaya yazılmaz");
 });
+
+import { generateCoreLlmsTxt, organizationFactLines } from "../src/index";
+
+test("llms.txt: kuruluş künyesi yalnızca dolu alanlardan kurulur; kök adres eğik çizgiyle biter", async () => {
+  const lines = organizationFactLines({
+    description: "İzmir ana bayi",
+    telephone: "0 232 000 00 00",
+    address: { streetAddress: "Sk No:1", addressLocality: "Konak", addressCountry: "TR" },
+    openingHours: ["Mo-Fr 09:00-18:00"],
+    areaServed: [{ "@type": "City", name: "İzmir" }, "Manisa"],
+    email: "",
+  });
+  assert.deepEqual(lines, ["- Tanım: İzmir ana bayi", "- Adres: Sk No:1, Konak, TR", "- Telefon: 0 232 000 00 00", "- Çalışma saatleri: Mo-Fr 09:00-18:00", "- Hizmet bölgesi: İzmir, Manisa"]);
+  assert.deepEqual(organizationFactLines(null), []);
+  const txt = await generateCoreLlmsTxt({ siteId: "x", siteName: "Örnek", baseUrl: "https://ornek.test", locale: "tr", organization: { telephone: "123" }, items: [{ title: "Ana", url: "https://ornek.test", type: "page" }, { title: "İç", url: "https://ornek.test/ic", type: "page" }] });
+  assert.match(txt, /## Kuruluş ve İletişim\n\n- Telefon: 123/);
+  assert.match(txt, /\(https:\/\/ornek\.test\/\?format=md\)/);
+  assert.match(txt, /\(https:\/\/ornek\.test\/ic\?format=md\)/);
+});

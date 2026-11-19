@@ -22,6 +22,7 @@ export async function llmsTxtResponse(request: NextRequest, forcedLocale?: strin
     siteName: site?.name ?? "NexPress CMS",
     tagline: site?.tagline,
     siteDna: site?.siteDna,
+    organization: resolveSiteSettings(site?.settings).seo.organizationSchema ?? null,
     baseUrl,
     locale,
     items: contents.map((c) => ({

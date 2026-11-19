@@ -169,6 +169,14 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 
 `seo.organizationName`, `organizationLogo` ve `sameAs` artık her sayfanın `Organization` düğümüne basılır (`lib/organization-schema.ts`; varsayılan "NexPress CMS" adı site adını ezmez, göreli logo mutlak yapılır). `seo.organizationSchema` yerel işletme alanlarını taşır: `@type` (ör. `["LocalBusiness","Organization"]`), `telephone`, `email`, `address`, `geo`, `openingHours`, `priceRange`, `areaServed`, `taxID`, `knowsAbout` vb. Serbest JSON-LD değildir: `sanitizeOrganizationSchema` (`packages/core/src/organization-schema.ts`) izin listesiyle süzer, `@id`/`url`/`logo`/`sameAs` gibi kimlik alanlarını ve düğüm göndermelerini atar, 8 KB'ı aşanı reddeder. WordPress aktarımı bu alanı kaynağın JSON-LD'sinden doldurur.
 
+## 11c. Yayın sonrası SEO/GEO tamamlama (2026-11-19)
+
+- **Şema:** ana varlık `SoftwareApplication` iken `richSchema.software` alanları aynı düğüme işlenir (ikinci `#software` düğümü yok); `image.url` her zaman mutlak.
+- **Eski adresler:** `next.config.ts` → `redirects()`: `/feed`, `/comments/feed` → `/feed.xml`; `/sitemap_index.xml`, `/wp-sitemap.xml` → `/sitemap.xml` (308).
+- **Etiket arşivi:** 3'ten az yayını olan etiket `noindex, follow` (site haritasında zaten yok).
+- **llms.txt:** kuruluş şemasından (`seo.organizationSchema`) "Kuruluş ve İletişim" künyesi (tanım, adres, telefon, saat, hizmet bölgesi, uzmanlık) üretilir (`organizationFactLines`); site DNA'sı (`sites.site_dna`) giriş paragrafıdır; kök adres `/?format=md`.
+- **İç bağlantı kümesi:** `rankRelated` (`packages/core/src/related-content.ts`): ortak etiket, kategori ve başlık sözcüğü; eşitlikte hedefe göre değişen sıra. Yazılarda "Benzer yazılar" bununla seçilir; sayfalarda ilgili sayfa/yazılar `RelatedLinks` ile (ilgisizse gösterilmez). Betik yok.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

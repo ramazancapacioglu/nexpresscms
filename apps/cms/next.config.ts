@@ -62,6 +62,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4mb",
     },
   },
+  /** Eski WordPress beslemeleri ve site haritası adresleri (arama motorlarının ve okuyucuların kayıtlı adresleri) yenilerine gider. */
+  async redirects() {
+    return [
+      { source: "/feed", destination: "/feed.xml", permanent: true },
+      { source: "/comments/feed", destination: "/feed.xml", permanent: true },
+      { source: "/sitemap_index.xml", destination: "/sitemap.xml", permanent: true },
+      { source: "/wp-sitemap.xml", destination: "/sitemap.xml", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

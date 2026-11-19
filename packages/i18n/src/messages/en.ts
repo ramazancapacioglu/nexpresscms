@@ -49,6 +49,7 @@ export const en: Messages = {
     prevPost: "Previous post",
     nextPost: "Next post",
     relatedHeading: "Related posts",
+    relatedContentHeading: "Related content",
     blogCrumb: "Blog",
     markdownLink: "Markdown",
     authorArchive: "Author",

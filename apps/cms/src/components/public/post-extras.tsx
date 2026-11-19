@@ -185,3 +185,21 @@ export function PostFooter({
     </div>
   );
 }
+
+/** Sayfa altında ilgili sayfa ve yazı bağlantıları (iç bağlantı kümesi). Betik yok, düz bağlantı listesi. */
+export function RelatedLinks({ heading, lb, items }: { heading: string; lb: string; items: Array<{ slug: string; title: string }> }) {
+  return (
+    <nav aria-labelledby="related-links-title" className="mt-10 space-y-3 border-t pt-6">
+      <h2 id="related-links-title" className="text-lg font-bold text-nx-fg">{heading}</h2>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {items.map((item) => (
+          <li key={item.slug}>
+            <a href={`${lb}/${item.slug}`} className="block rounded-lg border border-nx-line bg-nx-card px-4 py-3 text-sm font-semibold text-nx-fg transition hover:border-nx-link hover:text-nx-link">
+              {item.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
