@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveSiteSettings } from "@nexpress/core";
 import { getPublicSite } from "@/lib/public-data";
-import { buildSitemapIndex } from "@nexpress/seo-core";
-import { SITEMAP_CACHE_CONTROL, loadSitemap, sitemapBaseUrl } from "@/lib/sitemap-source";
+import { buildSitemapIndex, buildSitemapIndexPage } from "@nexpress/seo-core";
+import { loadSitemap, sitemapBaseUrl } from "@/lib/sitemap-source";
+import { sitemapHttpResponse, sitemapWantsHtmlFrom } from "@/lib/sitemap-response";
 import { trackBotVisit } from "@/lib/bot-log";
 
 /** Site haritası indeksi; adresler `/sitemaps/{tür}-{sayfa}.xml` dosyalarındadır. */
@@ -14,12 +15,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Bakım", { status: 503, headers: { "Retry-After": "3600", "X-Robots-Tag": "noindex" } });
   }
   const { files } = await loadSitemap(siteId);
-  return new NextResponse(buildSitemapIndex(sitemapBaseUrl(), files), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": SITEMAP_CACHE_CONTROL,
-      "X-NexPress-Site-Id": siteId,
-    },
-  });
+  const base = sitemapBaseUrl();
+  const html = sitemapWantsHtmlFrom(request);
+  return sitemapHttpResponse(html ? buildSitemapIndexPage(base, files) : buildSitemapIndex(base, files), html, siteId);
 }

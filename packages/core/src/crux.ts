@@ -119,10 +119,43 @@ export function parseCruxResponse(json: unknown, meta: { origin: string; formFac
 
 export type CruxErrorKind = "no_data" | "bad_key" | "quota" | "error";
 
-/** HTTP durumundan kullanıcıya gösterilecek sonuç; anahtar ya da gövde metni asla geri yazılmaz. */
-export function classifyCruxError(status: number): { kind: CruxErrorKind; message: string } {
-  if (status === 404) return { kind: "no_data", message: "Bu adres için CrUX verisi yok: site yeterli Chrome trafiği almıyor ya da henüz listelenmedi (genelde ayda birkaç bin ziyaret gerekir)." };
-  if (status === 400 || status === 401 || status === 403) return { kind: "bad_key", message: "CrUX API anahtarı geçersiz ya da bu API için etkin değil (Google Cloud'da \"Chrome UX Report API\" açık olmalı)." };
+const KEY_LIKE = /AIza[0-9A-Za-z_-]{8,}/g;
+
+/** Google hata gövdesinden durum, gerekçe ve kısa ileti. Anahtar benzeri diziler silinir. */
+function cruxErrorParts(body: unknown): { status: string; reason: string; message: string } {
+  const err = (body as { error?: { status?: unknown; message?: unknown; details?: unknown } } | null)?.error;
+  const details = Array.isArray(err?.details) ? err.details : [];
+  const reason = details.map((item) => (item && typeof item === "object" ? (item as { reason?: unknown }).reason : "")).find((item) => typeof item === "string");
+  const message = typeof err?.message === "string" ? err.message.replace(KEY_LIKE, "•••").replace(/\s+/g, " ").trim().slice(0, 180) : "";
+  return { status: typeof err?.status === "string" ? err.status : "", reason: typeof reason === "string" ? reason : "", message };
+}
+
+/**
+ * HTTP durumundan kullanıcıya gösterilecek sonuç. 400/403 tek başına anahtar hatası sayılmaz:
+ * istek Google paneline düşüp yönlendiren veya IP kısıtına da takılabilir. Anahtar geri yazılmaz.
+ */
+export function classifyCruxError(status: number, body?: unknown): { kind: CruxErrorKind; message: string } {
+  const parts = cruxErrorParts(body);
+  const blob = `${parts.reason} ${parts.status} ${parts.message}`.toLowerCase();
+  if (status === 404 || parts.status === "NOT_FOUND" || /not found|no data|insufficient/.test(blob)) {
+    return { kind: "no_data", message: "Bu adres için CrUX verisi yok: site yeterli Chrome trafiği almıyor ya da henüz listelenmedi (genelde ayda birkaç bin ziyaret gerekir)." };
+  }
+  if (parts.reason === "API_KEY_HTTP_REFERRER_BLOCKED" || /referer|referrer/.test(blob)) {
+    return { kind: "bad_key", message: "İstek Google'a ulaştı. Anahtar web sitesi yönlendiren kısıtına takıldı. Bu çağrı sunucudan gider, yönlendiren taşımaz. Google Cloud'da kısıtı kaldırın ya da sunucu IP'sine izin verin." };
+  }
+  if (parts.reason === "API_KEY_IP_ADDRESS_BLOCKED" || /ip address are blocked|ip address/.test(blob)) {
+    return { kind: "bad_key", message: "İstek Google'a ulaştı. Anahtar bu sunucunun IP adresine kapalı. Google Cloud'da IP listesine sunucuyu ekleyin ya da kısıtı kaldırın." };
+  }
+  if (parts.reason === "SERVICE_DISABLED" || /has not been used|is disabled/.test(blob)) {
+    return { kind: "bad_key", message: "Chrome UX Report API bu projede kapalı. Google Cloud'da API'yi etkinleştirin." };
+  }
+  if (parts.reason === "API_KEY_SERVICE_BLOCKED") {
+    return { kind: "bad_key", message: "Anahtar Chrome UX Report API'ye kapalı. Google Cloud'da anahtarın API kısıtına bu API'yi ekleyin." };
+  }
+  if (status === 400 || status === 401 || status === 403) {
+    const detail = parts.message ? ` Google yanıtı: ${parts.message}` : "";
+    return { kind: "bad_key", message: `CrUX çağrısı reddedildi.${detail} İstek panelde görünse de kısıt veya kapalı API 4xx döndürür. Anahtar kısıtı yok olmalı, Chrome UX Report API açık olmalı.` };
+  }
   if (status === 429) return { kind: "quota", message: "CrUX API kotası doldu; biraz sonra tekrar deneyin." };
   return { kind: "error", message: `CrUX API beklenmeyen bir yanıt verdi (HTTP ${status}).` };
 }

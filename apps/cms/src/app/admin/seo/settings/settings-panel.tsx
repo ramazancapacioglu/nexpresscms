@@ -13,6 +13,7 @@ export function SeoSettingsPanel({
   moduleOn,
   siteDna,
   showDna,
+  groups,
 }: {
   pluginId: string;
   fields: PluginSettingField[];
@@ -20,6 +21,7 @@ export function SeoSettingsPanel({
   moduleOn: Record<string, boolean>;
   siteDna: string;
   showDna: boolean;
+  groups?: string[];
 }) {
   const [note, setNote] = useState("");
   return (
@@ -30,6 +32,7 @@ export function SeoSettingsPanel({
         fields={fields}
         initial={initial}
         moduleOn={moduleOn}
+        groups={groups}
         onNotice={(_tone, text) => setNote(text)}
         extra={showDna ? <SiteDnaCard initial={siteDna} onNotice={(_tone, text) => setNote(text)} /> : null}
       />

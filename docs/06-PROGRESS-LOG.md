@@ -63,6 +63,39 @@
 - ✅ Hata: ana sayfa SSS listesi yüzünden `FAQPage` varlığı olmuştu; sayfa türü `WebPage`, SSS düğümü bloklardan gelir.
 - ✅ Form girdileri 365 günden eskiyse yazılmaz (zamanlayıcı siler; KVKK). Girdi ve yorum kayıtları özgün zamanı taşır (`createdAt`).
 - ⚠️ Bilinçli yapılmayanlar: kullanıcılar giriş kapalı (`disabled`, parola özeti yok); teknik hesap alınmadı; WP'deki elle yazılmış `aggregateRating` (5 / 89) taşınmadı (ön yüzde uydurma puan yok); arama indeksi kapalı, alan adı yönlendirmesi yapılmadı.
+### [2026-11-18] — Akınsoft tasarımı ana dala alındı
+- Yazılım bayi kabuğu, `contact_campaign` bloğu, hızlı arama ve WhatsApp düğmesi, gizlilik gömme ve `/wp-content/uploads` köprüsü ana dalla birleşti.
+- SEO paneli, CrUX ayrımı, IndexNow, site haritası ve webmaster doğrulaması duruyor. Ölçüm etiketleri head veya gövde yerleşimini korur.
+- Kuruluş şemasına izin listeli yerel işletme alanları eklenebilir. Etiket arşivi noindex kuralı duruyor.
+
+### [2026-11-18] — Webmaster bilgi kutuları ve sahiplik doğrulaması
+- Webmaster sekmesinde GSC, Analytics, Bing, Yandex Webmaster ve Metrika için anahtarın nereden alınacağı yazılır.
+- Sahiplik kodu meta (head) veya DNS olarak saklanır; ham etiket basılmaz. Bing için CNAME, Google ve Yandex için TXT kontrol edilir.
+- Google hesabıyla bağlanınca yenileme jetonu Search Console ve Analytics okumasına yazılır. Metrika sayacı ve GA ölçüm etiketi head veya gövde sonuna basılır.
+
+### [2026-11-18] — CrUX hata ayrımı
+- 400 ve 403 artık tek cümleyle "anahtar geçersiz" sayılmıyor. Google gövdesindeki gerekçe okunur: yönlendiren kısıtı, IP kısıtı, kapalı API ve veri yok ayrı yazılır. Anahtar metne girmez.
+
+### [2026-11-18] — SEO ayar sekmeleri
+- Ayarlar sayfası Yayın, Başlık ve kimlik, Yerel işletme, Marka ve yazım, Anahtarlar sekmelerine ayrıldı. Yerel işletme firma, adres ve harita kartlarında.
+- IndexNow anahtarı Anahtarlar sekmesinden girilir, şifreli saklanır ve `/indexnow-key.txt` adresinde yayınlanır. Ortam anahtarı yedek olarak durur.
+
+### [2026-11-18] — SEO paneli
+- Gösterge yalnızca sağlık: skor, hata, uyarı ve sorun çubukları. Ayar, rapor ve dizin kartları bu sayfadan çıktı.
+- Site haritası kendi sayfası: içerik türü, kategori ve etiket. Etiket kapatılınca `etiket` dosyası üretilmez. Etiket noindex hem sayfayı hem haritayı kapatır.
+- Başlık ve indeks Ayarlar'da. Bağlantı denetimi Denetim'de. Arama dizini ayrı sekmede kaldı.
+
+### [2026-11-18] — AI JSON beslemesi
+- `/ai-feed.json` tek dilde `/tr` ön eki yazmıyor; adresler site haritası ve `llms.txt` ile aynı. Önekli tür kendi yolunu kullanır.
+- `llms.txt` keşif listesine AI JSON beslemesi geri kondu. Model adı Türkçe harfleri düşürmez. Yasal adres site köküdür.
+
+### [2026-11-18] — Site haritası tablosu
+- Dizin ve alt haritalar arama motoruna XML kalır. Tarayıcıda açılınca tür, adres, kayıt sayısı ve son güncelleme tablosu gelir; adresler bağlantıdır.
+- Tek dilde yinelenen hreflang satırı yazılmaz. `lastmod` W3C saniye biçimindedir. Kategori ve etiket ayrı dosyadır. Yanıt paylaşılan önbelleğe girmez.
+
+### [2026-11-16] — akinsoftizmir.com.tr temiz kurulum
+- Aynı makinede ayrı abonelik: ağaç `/var/www/vhosts/akinsoftizmir.com.tr/nexpress`, servis `nexpress-akinsoft`, kapı `3001`, veritabanı `nexpress_akin`. `ileriseo.com` güncellemesi bu ağaca dokunmaz.
+- Demo sayfa, yazı, menü, medya ve ticaret aktarılmadı. Kayıtlı iki şablon ve dört kurulu tema satırı alındı. Tasarım kütüphanesi tablosu kaynakta boştu; hazır kütüphane ve resmi temalar kodla gelir. Arama dizini kapalı. DNS henüz bu makineye bakmıyor.
 
 ### [2026-11-14] — Yazılım Bayi teması (resmi tema)
 - ✅ `yazilim-bayi` resmi temaya eklendi: iki katmanlı başlık (hızlı bağlantı, telefon, arama + ana menü), görsel mozaikli vitrin, 6 kartlı çözüm ızgarası, mavi demo bandı, görsel+metin şeritleri, kampanya vitrini, SSS, 6 sütunlu dizin altlığı; yeşil/lacivert palet.

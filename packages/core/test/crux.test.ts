@@ -71,6 +71,9 @@ test("hata sınıflandırma: anahtar/gövde metni sızmaz", () => {
   assert.equal(classifyCruxError(429).kind, "quota");
   assert.equal(classifyCruxError(500).kind, "error");
   assert.equal(/key|AIza/i.test(classifyCruxError(400).message.replace("API anahtarı", "")), false);
+  assert.equal(classifyCruxError(403, { error: { status: "PERMISSION_DENIED", message: "Requests from referer <empty> are blocked.", details: [{ reason: "API_KEY_HTTP_REFERRER_BLOCKED" }] } }).message.includes("yönlendiren"), true);
+  assert.equal(classifyCruxError(400, { error: { status: "NOT_FOUND", message: "chrome ux report data not found" } }).kind, "no_data");
+  assert.equal(classifyCruxError(400, { error: { message: "API key AIzaSyEXAMPLEKEY123456 not valid" } }).message.includes("AIza"), false);
 });
 
 test("gösterim: anahtar maskesi ve değer biçimi", () => {

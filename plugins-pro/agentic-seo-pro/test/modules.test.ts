@@ -22,12 +22,19 @@ test("ai-feed: önem sıralaması, blog yaş azalması, tazelik, ana sayfa adres
   assert.deepEqual(feed.items.map((i) => i.id), ["h", "a"]);
   assert.equal(feed.items[0]!.url, "https://x.test/tr");
   assert.equal(feed.items[1]!.markdownUrl, "https://x.test/tr/a?format=md");
+  const plain = buildAiFeed({
+    siteName: "S", baseUrl: "https://x.test", locale: "tr", localeBase: "", now,
+    items: [src({ id: "h", slug: "ana-sayfa", publicPath: "" }), src({ id: "a", slug: "a", publicPath: "/kampanya/a" })],
+  });
+  assert.equal(plain.items.find((i) => i.id === "h")!.url, "https://x.test");
+  assert.equal(plain.items.find((i) => i.id === "a")!.url, "https://x.test/kampanya/a");
 });
 
 test("keşif dosyaları: yalnızca var olan uç noktaları bildirir", () => {
   const i = { siteName: "Akın Yazılım", description: "Açıklama", baseUrl: "https://x.test/" };
   assert.equal(buildNlwebManifest(i).ask.url, "https://x.test/api/mcp");
-  assert.equal(buildAiPluginManifest(i).name_for_model, "ak_n_yaz_l_m");
+  assert.equal(buildAiPluginManifest(i).name_for_model, "akin_yazilim");
+  assert.equal(buildAiPluginManifest(i).legal_info_url, "https://x.test");
   assert.equal(buildAiPluginManifest(i).api.url, "https://x.test/.well-known/openapi.yaml");
   const yaml = buildOpenApiYaml(i);
   assert.match(yaml, /^openapi: 3\.0\.3/);

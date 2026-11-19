@@ -1,4 +1,4 @@
-import { isPluginModuleEnabled, pickLocale, pluginRoutes, resolvePublishing } from "@nexpress/core";
+import { contentPath, isPluginModuleEnabled, localeBase, pickLocale, pluginRoutes, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { PLUGIN_ID } from "./module-gate";
 import { getCommerceRepository } from "@nexpress/database";
@@ -22,11 +22,13 @@ export function registerAgenticRoutes(): void {
     const locale = pickLocale(new URL(request.url).searchParams.get("locale"), site?.supportedLocales ?? [defaultLocale], defaultLocale);
     const contents = await repo.listContents({ locale, status: "published" });
     const visible = contents.filter((c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public");
+    const types = resolveSiteSettings(site?.settings).general.contentTypes;
     return json(
       buildAiFeed({
         siteName: site?.name ?? "NexPress",
         baseUrl: baseUrl(),
         locale,
+        localeBase: localeBase(site, locale),
         items: visible.map((c) => ({
           id: c.contentId,
           title: c.title,
@@ -37,6 +39,7 @@ export function registerAgenticRoutes(): void {
           tldr: c.tldr,
           updatedAt: new Date(c.updatedAt),
           publishedAt: c.publishedAt ? new Date(c.publishedAt) : null,
+          publicPath: c.slug === "ana-sayfa" ? "" : contentPath(types, { type: c.type, slug: c.slug }),
         })),
       }),
       siteId

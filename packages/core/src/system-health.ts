@@ -32,7 +32,7 @@ export function evaluateEnv(env: Record<string, string | undefined>, isProductio
   add("openai", "OPENAI_API_KEY", has("OPENAI_API_KEY") ? "ok" : "info", has("OPENAI_API_KEY") ? "Tanımlı: gerçek gömme ve AI yazım asistanı açık." : "Tanımlı değil: arama yerel gömmeyle çalışır, AI yazım asistanı kapalı.");
   add("mcp-key", "MCP_AGENT_KEY", has("MCP_AGENT_KEY") ? "ok" : "info", has("MCP_AGENT_KEY") ? "Tanımlı: ajan talepleri (lead/destek/demo) kabul edilir." : "Tanımlı değil: ajan yazma araçları anahtarsız reddeder.");
   add("cron", "CRON_SECRET", has("CRON_SECRET") ? "ok" : "info", has("CRON_SECRET") ? "Tanımlı: /api/cron/scheduled kesin zamanlama için açık." : "Tanımlı değil: zamanlanmış yayın yalnızca ziyaretçi trafiğiyle (dakikada bir) tetiklenir.");
-  add("indexnow", "INDEXNOW_API_KEY", has("INDEXNOW_API_KEY") ? "ok" : "info", has("INDEXNOW_API_KEY") ? "Tanımlı. Anahtar /indexnow-key.txt adresinde sunulur." : "Tanımlı değil: Bing/Yandex'e anında bildirim kapalı, /indexnow-key.txt 404 döner.");
+  add("indexnow", "INDEXNOW_API_KEY", has("INDEXNOW_API_KEY") ? "ok" : "info", has("INDEXNOW_API_KEY") ? "Ortamda tanımlı. Anahtar /indexnow-key.txt adresinde sunulur." : "Ortamda yok. SEO ayarları › Anahtarlar sekmesinden de girilir; ikisi de boşsa /indexnow-key.txt 404 döner.");
   add("security-contact", "security.txt", has("SECURITY_CONTACT") ? "ok" : "info", has("SECURITY_CONTACT") ? "SECURITY_CONTACT tanımlı." : "Tanımlı değil: site iletişim e-postası kullanılır; o da boşsa /.well-known/security.txt 404 döner.");
   const mediaDriver = (env.MEDIA_DRIVER ?? "local").trim().toLowerCase() || "local";
   const s3Ready = Boolean(env.S3_ENDPOINT?.trim() && env.S3_BUCKET?.trim() && env.S3_ACCESS_KEY_ID?.trim() && env.S3_SECRET_ACCESS_KEY?.trim());

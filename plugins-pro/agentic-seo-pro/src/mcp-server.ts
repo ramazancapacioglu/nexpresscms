@@ -1,4 +1,4 @@
-import { cmsHooks, isPluginModuleEnabled, pickLocale, resolvePublishing, type ContentType } from "@nexpress/core";
+import { cmsHooks, contentPath, isPluginModuleEnabled, localeBase, pickLocale, resolvePublishing, resolveSiteSettings, type ContentType } from "@nexpress/core";
 import { safeEqual } from "@nexpress/core/password";
 import { providerFromEnv, searchCorpus } from "@nexpress/rag";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
@@ -127,8 +127,12 @@ export async function handleWebMcpJsonRpc(
     const limit = Math.min(Math.max(Number(rpc.params?.limit ?? 5) || 5, 1), 10);
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
     const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale });
-    const published = await repo.listContents({ locale, status: "published" });
-    return { jsonrpc: "2.0", id: rpc.id ?? 1, result: buildAskResult({ query, baseUrl, locale, hits: found.contents, contents: published, ranking: found.indexed ? found.ranking : "none" }) };
+    const types = resolveSiteSettings(site?.settings).general.contentTypes;
+    const published = (await repo.listContents({ locale, status: "published" })).map((c) => ({
+      ...c,
+      publicPath: c.slug === "ana-sayfa" ? "" : contentPath(types, { type: c.type, slug: c.slug }),
+    }));
+    return { jsonrpc: "2.0", id: rpc.id ?? 1, result: buildAskResult({ query, baseUrl, locale, localeBase: localeBase(site, locale), hits: found.contents, contents: published, ranking: found.indexed ? found.ranking : "none" }) };
   }
 
   if (rpc.method === "tools/call") {

@@ -45,13 +45,14 @@ export function SectionTabs({ tabs, label }: { tabs: SectionTab[]; label: string
 
 export const SEO_TABS: SectionTab[] = [
   { href: "/admin/seo", label: "Gösterge" },
-  { href: "/admin/seo/engine", label: "Motor & dizin" },
-  { href: "/admin/seo/reports", label: "Raporlar" },
-  { href: "/admin/seo/integrations", label: "Webmaster & Analitik" },
-  { href: "/admin/seo/audit", label: "Site denetimi" },
-  { href: "/admin/redirects", label: "Yönlendirmeler & 404" },
+  { href: "/admin/seo/audit", label: "Denetim" },
+  { href: "/admin/seo/sitemap", label: "Site haritası" },
   { href: "/admin/seo/schemas", label: "Şemalar" },
+  { href: "/admin/redirects", label: "Yönlendirmeler" },
+  { href: "/admin/seo/reports", label: "Raporlar" },
+  { href: "/admin/seo/integrations", label: "Webmaster" },
   { href: "/admin/seo/settings", label: "Ayarlar" },
+  { href: "/admin/seo/engine", label: "Arama dizini" },
 ];
 
 /**

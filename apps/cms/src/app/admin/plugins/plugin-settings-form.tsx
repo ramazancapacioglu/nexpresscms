@@ -15,6 +15,7 @@ export function PluginSettingsForm({
   moduleOn,
   onNotice,
   extra,
+  groups: onlyGroups,
 }: {
   pluginId: string;
   fields: PluginSettingField[];
@@ -23,18 +24,22 @@ export function PluginSettingsForm({
   onNotice: (tone: "ok" | "err", text: string) => void;
   /** Form altına eklenen özel bölüm (ör. Site DNA) */
   extra?: React.ReactNode;
+  /** Yalnızca bu gruplar. Kayıt diğer gruplara dokunmaz. */
+  groups?: string[];
 }) {
   const [values, setValues] = useState<Record<string, unknown>>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, start] = useTransition();
 
-  const groups = [...new Set(fields.map((f) => f.group))];
+  const visible = onlyGroups ? fields.filter((f) => onlyGroups.includes(f.group)) : fields;
+  const groups = [...new Set(visible.map((f) => f.group))];
   const set = (key: string, v: unknown) => setValues((p) => ({ ...p, [key]: v }));
 
   const save = () =>
     start(async () => {
       try {
-        const res = await savePluginSettingsAction({ pluginId, values });
+        const payload = onlyGroups ? Object.fromEntries(visible.map((f) => [f.key, values[f.key]])) : values;
+        const res = await savePluginSettingsAction({ pluginId, values: payload });
         if (res.ok) {
           setErrors({});
           onNotice("ok", "Ayarlar kaydedildi.");
@@ -57,10 +62,10 @@ export function PluginSettingsForm({
       className="space-y-5 p-4"
     >
       {groups.map((group) => (
-        <fieldset key={group} className="space-y-3">
-          <legend className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">{group}</legend>
+        <fieldset key={group} className="space-y-3 rounded-lg border border-[#E6E7EA] bg-white p-4 dark:border-[#23262E] dark:bg-[#15171C]">
+          <legend className="px-1 text-[13px] font-semibold text-[#14151A] dark:text-[#F3F4F6]">{group}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
-            {fields
+            {visible
               .filter((f) => f.group === group)
               .map((f) => {
                 const off = moduleOn[f.module] === false;

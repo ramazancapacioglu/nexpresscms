@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   buildSitemapIndex,
+  buildSitemapIndexPage,
   buildUrlset,
+  buildUrlsetPage,
+  sitemapWantsHtml,
   entryPath,
   parseSitemapFileName,
   sitemapFileName,
@@ -45,7 +48,8 @@ test("indeks lastmod'u dosyadaki en yeni tarihtir ve adresleri kaçışlar", () 
   const files = splitIntoFiles([e({}), e({ contentId: "c2", slug: "b", updatedAt: newer })], ["page"]);
   const xml = buildSitemapIndex("https://ex.com", files);
   assert.match(xml, /<loc>https:\/\/ex\.com\/sitemaps\/page-1\.xml<\/loc>/);
-  assert.match(xml, /<lastmod>2026-11-01T00:00:00\.000Z<\/lastmod>/);
+  assert.match(xml, /<lastmod>2026-11-01T00:00:00\+00:00<\/lastmod>/);
+  assert.ok(!xml.includes("xml-stylesheet"));
   assert.equal(xmlEscape(`a&b<"c">'`), "a&amp;b&lt;&quot;c&quot;&gt;&apos;");
 });
 
@@ -62,11 +66,24 @@ test("hreflang karşılıklıdır, başka dosyadaki çeviriyi de içerir ve x-de
   assert.ok(!xml.includes("<loc>https://ex.com/en/about"), "diğer dil bu dosyada ayrı <url> değil");
 });
 
-test("tek dilli içerik kendine ve x-default'a bağlanır", () => {
+test("tek dilde yinelenen hreflang yazılmaz", () => {
   const only = e({});
   const [file] = splitIntoFiles([only], ["page"]);
   const xml = buildUrlset("https://ex.com", file!, [only], "tr");
-  assert.equal((xml.match(/hreflang=/g) ?? []).length, 2);
+  assert.equal((xml.match(/hreflang=/g) ?? []).length, 0);
+  assert.match(xml, /<lastmod>2026-10-28T10:00:00\+00:00<\/lastmod>/);
+});
+
+test("tarayıcı tablosu alt haritayı bağlantı yapar, bot XML alır", () => {
+  const files = splitIntoFiles([e({})], ["page"]);
+  const html = buildSitemapIndexPage("https://ex.com", files);
+  assert.match(html, /<a href="https:\/\/ex\.com\/sitemaps\/page-1\.xml">/);
+  assert.match(html, /Sayfalar/);
+  const page = buildUrlsetPage("https://ex.com", files[0]!, true);
+  assert.match(page, /<a href="https:\/\/ex\.com\/hakkimizda">/);
+  assert.equal(sitemapWantsHtml({ userAgent: "Mozilla/5.0", secFetchDest: "document", secFetchMode: "navigate" }), true);
+  assert.equal(sitemapWantsHtml({ userAgent: "Mozilla/5.0 (compatible; Googlebot/2.1)", secFetchDest: "document", secFetchMode: "navigate" }), false);
+  assert.equal(sitemapWantsHtml({ userAgent: "curl/8.0", secFetchDest: null, secFetchMode: null }), false);
 });
 
 import { hreflangOf as hreflangOfRegion } from "../src";

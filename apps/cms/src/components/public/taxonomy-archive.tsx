@@ -1,5 +1,5 @@
 import React from "react";
-import { localeBase } from "@nexpress/core";
+import { localeBase, resolveSiteSettings } from "@nexpress/core";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -43,8 +43,11 @@ export async function archiveMetadata(kind: Kind, params: Promise<{ locale: stri
     title: data.term.seoTitle || `${data.term.name}${data.site?.name ? ` — ${data.site.name}` : ""}`,
     description: data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili yayınlar.`,
     alternates: { canonical: `${base}${path}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}` },
-    // Boş arşiv ince içeriktir: dizine alınmaz
-    robots: data.paged.total === 0 ? { index: false, follow: true } : undefined,
+    // Boş arşiv ince içeriktir. Etiket noindex ayarı da dizini kapatır.
+    robots:
+      data.paged.total === 0 || (kind === "tag" && resolveSiteSettings(data.site?.settings).seo.noIndexTagArchives)
+        ? { index: false, follow: true }
+        : undefined,
   };
 }
 

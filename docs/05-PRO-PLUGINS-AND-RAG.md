@@ -19,6 +19,7 @@ Kaynak projeler `agentic-content-ops` ve `agentic-seo-gateway` (v5.8.0). Canlı 
 2. **İleri Düzey LLMO & Keşif Beslemeleri (`apps/cms/src/app/`):**
    - **4-Katmanlı `/llms-full.txt`** (Kimlik, Önem skorlu ürünler, Aktif kampanyalar, Bilgi bankası ve tüm `markdownCache` külliyatı).
    - **`/ai-sitemap.json`** (`importanceScore` 1-10 ağırlıklı, `tldr` özetli ve `entityGraphLinks` bağlantılı JSON beslemesi).
+   - **`/ai-feed.json`** önem sırasına göre aynı herkese açık adresleri basar (tek dilde `/tr` ön eki yok). `llms.txt` keşif listesinde durur.
    - **`/.well-known/mcp.json`** keşif manifestosu.
 3. **Yerleşik WebMCP Sunucusu (`/api/mcp` & `src/mcp-server.ts`):**
    - JSON-RPC 2.0 `tools/list` ve `tools/call` protokolü (`mcp:handleRequest` kancası).
@@ -44,7 +45,7 @@ Ayrı `@nexpress-pro/content-ops` paketi yok. 2026-10-28'de `agentic-seo` içine
 
 | Yetenek | Durum |
 | :--- | :--- |
-| WebMCP okuma araçları, `llms-full.txt`, `ai-sitemap.json`, entity graph kancası | Çalışır, veritabanından beslenir |
+| WebMCP okuma araçları, `llms-full.txt`, `ai-sitemap.json`, `ai-feed.json`, entity graph kancası | Çalışır, veritabanından beslenir |
 | `nexpress_create_lead` | Anahtar korumalı (`MCP_AGENT_KEY`, bkz. doc 11); `agent_requests` tablosuna kalıcı yazılır (`/admin/requests`), saatte 30 sınırı ve e-posta bildirimi vardır |
 | AI bot paneli (Bot Tarama Günlüğü) | **Gerçek veri** (`bot_daily_stats`, son 30 gün; bkz. `docs/04` §7) |
 | Kanibalizasyon / benzer içerik / iç bağlantı (Co-Pilot) | **Gerçek veri** (`@nexpress/rag` dizini, bkz. `docs/04` §9) |

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { buildUrlset, parseSitemapFileName } from "@nexpress/seo-core";
-import { SITEMAP_CACHE_CONTROL, loadSitemap, sitemapBaseUrl } from "@/lib/sitemap-source";
+import { buildUrlset, buildUrlsetPage, parseSitemapFileName } from "@nexpress/seo-core";
+import { loadSitemap, sitemapBaseUrl } from "@/lib/sitemap-source";
+import { sitemapHttpResponse, sitemapWantsHtmlFrom } from "@/lib/sitemap-response";
 import { trackBotVisit } from "@/lib/bot-log";
 
 const notFound = () =>
@@ -16,12 +17,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const file = files.find((f) => f.type === parsed.type && f.page === parsed.page);
   if (!file) return notFound();
 
-  return new NextResponse(buildUrlset(sitemapBaseUrl(), file, entries, defaultLocale, prefixless), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": SITEMAP_CACHE_CONTROL,
-      "X-NexPress-Site-Id": siteId,
-    },
-  });
+  const base = sitemapBaseUrl();
+  const html = sitemapWantsHtmlFrom(request);
+  const body = html ? buildUrlsetPage(base, file, prefixless) : buildUrlset(base, file, entries, defaultLocale, prefixless);
+  return sitemapHttpResponse(body, html, siteId);
 }

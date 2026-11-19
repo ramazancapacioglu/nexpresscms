@@ -156,6 +156,7 @@ Next (`next start`), `Host` başlığını `request.url` için kullanmaz; vekil 
 - HTML önbelleği için `PUBLIC_CACHE_SECONDS` (varsayılan 0 = paylaşımlı önbellek yok). Yayına alınca 60 gibi bir değer ve vekilde `s-maxage` düşünün.
 - Ölçüm: `npx lighthouse <adres> --throttling-method=provided` (mobil) ve `--preset=desktop`. Sonuçlar `docs/06`.
 - Kural: kaydırma kaplarına negatif kenar boşluğu (`-mx-*`) verilmez; mobilde Chrome LCP adayı üretmeyebilir.
+Aynı makinede ikinci abonelik `akinsoftizmir.com.tr` ayrı ağaçtır: `/var/www/vhosts/akinsoftizmir.com.tr/nexpress`, servis `nexpress-akinsoft`, kapı `3001`, veritabanı `nexpress_akin`. GitHub aktarımı yalnızca `ileriseo.com` ağacını ve `nexpress` servisini günceller; bu ikinci kopyaya `git pull` veya `update-host.sh` çalıştırılmaz. İlk kurulum demo sayfa içermez. Arama dizini kapalıdır (`settings.seo.searchIndexing = false`). Alan adı hâlâ eski sunucuya baktığı sürece sertifika Plesk öntanımlısıdır; DNS bu makineye geldikten sonra sertifika yenilenir.
 
 ## 9. Bilinen sınırlar
 

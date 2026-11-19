@@ -9,6 +9,8 @@ export interface FeedSource {
   tldr: string | null;
   updatedAt: Date;
   publishedAt: Date | null;
+  /** Dile göre öneksiz yol (`/slug` veya `/önek/slug`). Boşsa ana sayfa. Verilmezse slug kullanılır. */
+  publicPath?: string;
 }
 
 export interface AiFeedItem {
@@ -41,17 +43,20 @@ export function freshnessOf(updatedAt: Date, now: Date): AiFeedItem["freshness"]
   return days <= 90 ? "fresh" : days <= 180 ? "aging" : "stale";
 }
 
-export function buildAiFeed(input: { siteName: string; baseUrl: string; locale: string; items: FeedSource[]; now?: Date }) {
+export function buildAiFeed(input: { siteName: string; baseUrl: string; locale: string; localeBase?: string; items: FeedSource[]; now?: Date }) {
   const now = input.now ?? new Date();
   const base = input.baseUrl.replace(/\/$/, "");
+  // Tek dilde kök boştur (`/slug`). Çok dilde `/{dil}`.
+  const root = input.localeBase ?? `/${input.locale}`;
   const items: AiFeedItem[] = input.items
     .map((c) => {
-      const path = c.slug === "ana-sayfa" ? `/${input.locale}` : `/${input.locale}/${c.slug}`;
+      const rel = c.publicPath ?? (c.slug === "ana-sayfa" ? "" : `/${c.slug}`);
+      const url = `${base}${root}${rel}`.replace(/\/$/, "") || base;
       return {
         id: c.id,
         title: c.title,
-        url: `${base}${path}`,
-        markdownUrl: `${base}${path}?format=md`,
+        url,
+        markdownUrl: `${url}?format=md`,
         type: c.type,
         schemaType: c.schemaType,
         importance: importanceOf(c, now),

@@ -145,6 +145,7 @@ export function registerAgenticSeoProPlugin(): void {
       const baseUrl = (
         process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
       ).replace(/\/$/, "");
+      const feedOn = await isPluginModuleEnabled(payload.siteId, PLUGIN_ID, "ai-feed");
       const extraLines = [
         ...payload.lines,
         "",
@@ -152,6 +153,7 @@ export function registerAgenticSeoProPlugin(): void {
         "",
         `- 4-Katmanlı Tam İndeks: ${baseUrl}/llms-full.txt`,
         `- Ağırlıklı AI Sitemap (JSON): ${baseUrl}/ai-sitemap.json`,
+        ...(feedOn ? [`- AI JSON Beslemesi: ${baseUrl}/ai-feed.json`] : []),
         `- WebMCP JSON-RPC 2.0 Sunucusu: ${baseUrl}/api/mcp`,
         `- WebMCP Keşif Manifestosu: ${baseUrl}/.well-known/mcp.json`,
         "",

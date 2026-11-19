@@ -4,6 +4,8 @@ import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, s
 import { getScopedRepository } from "@nexpress/database";
 import { requireUser } from "@/lib/auth/session";
 import { SeoTabs } from "@/components/admin/section-tabs";
+import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
+import { ExternalLinkAudit } from "@/components/admin/seo/external-link-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +120,8 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
           </ul>
         </section>
       )}
+      <LinkAuditCard contents={contents} locales={locales} />
+      <ExternalLinkAudit />
     </div>
   );
 }

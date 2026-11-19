@@ -104,8 +104,9 @@ export async function saveSeoEngineSettingsAction(input: {
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
+  const { indexNowKey: _indexNowKey, ...seoPatch } = input.seo;
   const settings = await repo.saveSiteSettings({
-    seo: input.seo,
+    seo: seoPatch,
   });
   const structure = sanitizePermalinkStructure(settings.seo.permalinkStructure);
   let htaccessPath = "";
@@ -128,6 +129,29 @@ export async function saveSeoEngineSettingsAction(input: {
   await revalidatePath("/sitemap.xml");
   await revalidatePath("/robots.txt");
   return { ok: true, settings, htaccessPath, htaccessError };
+}
+
+const INDEXNOW_KEY = /^[A-Za-z0-9-]{8,128}$/;
+
+/** IndexNow anahtarını şifreleyip kaydeder. Boş bırakmak mevcut anahtarı silmez. */
+export async function saveIndexNowKeyAction(input: { key: string; clear?: boolean }) {
+  await requireAdmin("cms.saveIndexNowKey");
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const repo = getScopedRepository(siteId);
+  const { encryptSecret } = await import("@nexpress/core/secret-box");
+  if (input.clear) {
+    await repo.saveSiteSettings({ seo: { indexNowKey: "" } });
+  } else {
+    const key = input.key.trim();
+    if (!INDEXNOW_KEY.test(key)) {
+      return { ok: false as const, error: "Anahtar 8–128 karakter olmalı; yalnızca harf, rakam ve tire." };
+    }
+    await repo.saveSiteSettings({ seo: { indexNowKey: encryptSecret(key) } });
+  }
+  await revalidatePath("/indexnow-key.txt");
+  await revalidatePath("/admin/seo/settings");
+  return { ok: true as const };
 }
 
 export async function saveContentAction(input: {

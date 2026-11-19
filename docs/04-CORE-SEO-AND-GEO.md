@@ -12,11 +12,11 @@ Bu modül **açık kaynaklı çekirdeğin (Free Core)** bir parçasıdır ve her
    - Sayfa bazında `metaTitle`, `metaDescription`, `canonicalUrl`, `noIndex` / `noFollow`.
    - Dinamik `@vercel/og` (`ImageResponse`) ile her yazı ve sayfa için otomatik kurumsal OpenGraph görseli üretimi.
 2. **Parçalı XML Sitemap (`/sitemap.xml` indeks + `/sitemaps/{tür}-{sayfa}.xml`):**
-   - `/sitemap.xml` yalnızca indekstir; her içerik türü (`page`, `post`, `kb_tech`, `ai_prompt`, `campaign`, `product`) ayrı dosyalara, dosya başına en çok 10.000 adrese (`SITEMAP_PAGE_SIZE`; protokol sınırı 50.000) bölünür. Dosya adı `kb_tech-2.xml` gibidir; geçersiz ad, olmayan tür veya sayfa 404 döner.
+   - `/sitemap.xml` yalnızca indekstir; her içerik türü (`page`, `post`, `kb_tech`, `ai_prompt`, `campaign`, `product`) ayrı dosyalara, dosya başına en çok 10.000 adrese (`SITEMAP_PAGE_SIZE`; protokol sınırı 50.000) bölünür. Kategori ve etiket arşivleri `kategori-1.xml` ve `etiket-1.xml` olur; paneldeki Site haritası sayfasından kapatılabilir. Etiket arşivi noindex ise etiket dosyası yazılmaz ve `/etiket` sayfası noindex döner. Dosya adı `kb_tech-2.xml` gibidir; geçersiz ad, olmayan tür veya sayfa 404 döner.
    - Yalnızca **yayınlanmış, `noindex` olmayan ve görünürlüğü `public` olan** çeviriler girer. Hangi türlerin basılacağı `/admin/seo` ayarındadır (`sitemapTypes`).
-   - Her `<url>` aynı `contentId`'nin tüm dil/bölge çevirilerini karşılıklı `xhtml:link hreflang` ile (kendine dahil) ve `x-default` (site varsayılan dili) ile bağlar; çeviri başka dosyada olsa bile.
-   - Adresler slug'ı URL için kodlar; XML kaçışı ayrıca uygulanır. `lastmod` indekste dosyadaki en yeni güncellemedir.
-   - Veri `SitemapRepository` (bloksuz, yalnızca gerekli sütunlar) ve `cachedRead` önbelleği üzerinden gelir. Mantık `@nexpress/seo-core/src/sitemap.ts` içinde saf işlevlerdir (9 test). Yanıt `s-maxage=300`.
+   - İki ve daha fazla dil varsa her `<url>` aynı `contentId`'nin çevirilerini karşılıklı `xhtml:link hreflang` ve `x-default` ile bağlar. Tek dilde bu satırlar yazılmaz.
+   - Adresler slug'ı URL için kodlar; XML kaçışı ayrıca uygulanır. `lastmod` W3C biçimindedir (`2026-11-01T00:00:00+00:00`). İndekste dosyadaki en yeni güncellemedir.
+   - Tarayıcı gezintisi aynı adreste tablo görür (alt harita ve adresler bağlantıdır). Arama motoru ve düz istek XML alır. Yanıt `private, no-cache` ve `Vary` taşır; paylaşılan önbellek tabloyu bota vermesin. Veri `SitemapRepository` ve `cachedRead` üzerinden gelir. Mantık `@nexpress/seo-core/src/sitemap.ts` içindedir.
 3. **301 / 302 Akıllı Yönlendirme Yöneticisi:**
    - Bir sayfanın `slug` adresi değiştirildiğinde eski URL otomatik olarak 301 tablosuna kaydedilir (404 kaybı sıfırlanır).
 
@@ -75,7 +75,7 @@ Motor ayarları tema özelleştiricisinden ayrıdır. Kayıt `sites.settings.seo
 ## 6. Sosyal görsel, IndexNow, başlıklar ve istek önbelleği
 
 - **OG görseli (`/og?title=&site=`):** `next/og` ile 1200×630 PNG. Öne çıkan görseli olmayan içerik `resolveSeoMeta` içinde bu adresi kullanır. Yanıt `s-maxage=604800` ile önbelleğe alınır.
-- **IndexNow:** `content:afterPublish` eylemi (`apps/cms/src/lib/indexnow.ts`) yayınlanan adresi `api.indexnow.org`'a bildirir. Yalnızca üretimde, `INDEXNOW_API_KEY` tanımlıyken, `seo.enableIndexNow` açıkken ve genel bir alan adında çalışır; hata yayını bozmaz. Anahtar `/indexnow-key.txt` adresinde sunulur.
+- **IndexNow:** `content:afterPublish` eylemi (`apps/cms/src/lib/indexnow.ts`) yayınlanan adresi `api.indexnow.org`'a bildirir. Yalnızca üretimde, anahtar varken, `seo.enableIndexNow` açıkken ve genel bir alan adında çalışır; hata yayını bozmaz. Anahtar SEO ayarları › Anahtarlar sekmesinden girilir (veritabanında şifreli) ya da `INDEXNOW_API_KEY` ortam değişkenidir; paneldeki anahtar önceliklidir. `/indexnow-key.txt` bu anahtarı yayınlar.
 - **Güvenlik / önbellek başlıkları:** bkz. `docs/11-SECURITY-AND-OPERATIONS.md` §4.
 - **İstekler arası veri önbelleği (`lib/cache.ts`, `lib/public-data.ts`):** ziyaretçi sayfalarının tüm okumaları (site, içerik, gezinme, yorumlar, yayınlanmış liste, varlık bağlantıları) `cachedRead` ile iki katmanda saklanır: `react.cache` (istek içi) ve `unstable_cache` (istekler arası, anahtar = ad + `siteId` + argümanlar, etiket = `site:{siteId}`). Tarihler `stringifyWithDates` / `parseWithDates` ile korunur. Admin eylemleri `revalidatePath` yerine `@/lib/cache` içindeki sarmalayıcıyı çağırır; o da kiracının etiketini düşürür. Yedek süre 120 sn (zamanlanmış yayınlar için). Geçersiz kılma iki mekanizmayla yapılır: etiket (`revalidateTag`) **ve** anahtara giren site başına "dönem" sayacı (her yazmada artar, başlangıçta süreç zamanıdır). Yalnızca etiketle denendiğinde hızlı ardışık kayıtların yaklaşık yarısında bayat okuma görüldü; dönem sayacıyla 10/10 ve 5/5 anında yansıdı. Sayaç süreç başınadır. Ticaret (stok, sepet) bilerek dışarıda.
 - **CDN HTML önbelleği (isteğe bağlı, çalışma zamanı):** `PUBLIC_CACHE_SECONDS` > 0 ise ara katman (`middleware.ts` → `htmlCacheControl`, `packages/core/src/html-cache.ts`) **çalışma zamanında** uygun ziyaretçi sayfalarına `Cache-Control: public, s-maxage=N, stale-while-revalidate=5N` (en çok 1 gün) koyar; derleme gerekmez, tüm dillerde ve ön eksiz adreslerde çalışır (eski derleme zamanlı kural yalnızca `/tr` yollarını eşliyordu). **Yalnızca herkese aynı çıktı:** GET/HEAD; `nx_*` çerezi (oturum, çerez onayı, içerik parolası, önizleme, oy) taşımayan; yalnızca `sayfa`, `utm_*`, `gclid`, `fbclid`, `msclkid`, `ref` sorgusu olan (`utm_source` hariç: yapay zeka yönlendirmesi izlemesi kaynakta sayılsın); `/magaza`, `/ara`, `/kampanya`, `/api`, `/og` ve dosya uzantılı uç noktalar dışında; taslak/önizleme `private, no-store`; kapalı (noindex) siteler asla. Çerezli istek Next'in `private, no-store` varsayılanında kalır. CDN kopyası düzenlemeden sonra en fazla N sn bayat kalır (önerilen 30–120). Sitemap, robots, `llms*.txt` yanıtları her zaman `s-maxage=300`. CDN/nginx tarafında çerez atlama kuralı için `scripts/nginx-nexpress.conf` sonundaki isteğe bağlı bloğa bakın; Cloudflare'da `nx_` çerezi olan isteklere "Cache bypass" kuralı yazın. **Bedel:** CDN isabetleri uygulamaya ulaşmaz (bot/yapay zeka telemetrisi eksik sayılır).
@@ -191,7 +191,17 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 4. **Yandex Webmaster / Metrika:**
    - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
 
-Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. Her sekmenin başında o hizmetin anahtarının nereden alınacağı ve ne işe yaradığı yazılıdır. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+
+Site sahipliği API anahtarından ayrıdır ve ham HTML saklanmaz:
+
+- **Google:** head meta (`google-site-verification`) veya kök DNS TXT (`google-site-verification=KOD`). İstemci kimliği kaydedildikten sonra Google hesabıyla bağlanılır; aynı kimlik Search Console ve Analytics raporunu açar. Yönlendirme adresi `/admin/seo/integrations/google/callback`.
+- **Analytics:** ölçüm kimliği (`G-…`) head veya gövde sonuna gtag olarak basılır. Sayısal mülk numarası rapor içindir.
+- **Bing:** head meta (`msvalidate.01`) veya CNAME. Adın hedefi `verify.bing.com` olur. API anahtarı Ayarlar → API Erişimi’ndedir.
+- **Yandex Webmaster:** head meta veya kök DNS TXT (`yandex-verification: KOD`).
+- **Yandex Metrika:** sayaç numarası head veya gövde sonuna resmi sayaç olarak basılır. OAuth jetonu raporu çeker.
+
+DNS kaydını panel yazmaz; kök ad ve `www` üzerinde TXT veya CNAME sorgular. Çerez onayı açıksa ölçüm etiketleri kabulden sonra yüklenir. Ayarlar sayfası bu alanları yeniden yazmaz.
 
 ---
 

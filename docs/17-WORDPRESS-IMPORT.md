@@ -77,6 +77,7 @@ Her adım yeniden çalıştırılabilir (kimlikler `cnt_wp_<id>`, `cmt_wp_<id>`,
 **Model düzeltmesi ve kartlar (2026-11-16).** `models` adımı artık formu taşıyan bandın tamamını değil yalnızca form bloğunu `contact_campaign` ile değiştirir; band kaynak sayfadan yeniden derlenir (önceki sürümde gövdesi aynı bantta olan sayfalarda, örn. `on-muhasebe-programi`, metin kayboluyordu). `design` adımı düz metin sayfalara kart yerleşimi uygular (`cardifyPlainBlocks`, hukuki sayfalar hariç). İçerik kapsama taraması: kaynak ve NexPress kelime karşılaştırması ile eksik sayfa bulunur.
 
 `design` adımı ayrıca `<br>` ile satırlanmış uzun paragrafları liste kartlarına böler (`explodeLineParagraphs`); `theme` adımı başlık ön ayarını (mobil simgeler dahil) yeniden yazar.
+Kadence satırları, kartlaştırma ve sayfa toparlama (`kadence`, `cardify`, `page-tidy`, `campaign-text`) çözüm sayfasındaki formu `contact_campaign` modeline bağlar. Eski `wp-content/uploads` adresi `apps/cms/src/app/wp-content/uploads/[...path]/route.ts` üzerinden yerel dosyaya düşer. Hızlı arama formu ve WhatsApp numarası site ayarının `general` alanına yazılır.
 
 ## Sınırlar
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.

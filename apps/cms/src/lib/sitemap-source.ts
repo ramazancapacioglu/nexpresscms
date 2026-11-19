@@ -1,11 +1,9 @@
 import "server-only";
-import { contentPrefix, isPrefixless, resolveSiteSettings, termSlug } from "@nexpress/core";
+import { contentPrefix, isPrefixless, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
 import { getPublicSite, listSitemapEntries } from "./public-data";
-
-export const SITEMAP_CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=3600";
 
 export function sitemapBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -26,7 +24,7 @@ export async function loadSitemap(siteId: string) {
   const entries = [...contentEntries.map((e) => (prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
   return {
     entries,
-    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), "archive"]),
+    files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), ...sitemapArchiveTypes(settings.seo)]),
     defaultLocale: site?.defaultLocale ?? "tr",
     prefixless: isPrefixless(site, site?.defaultLocale ?? "tr"),
   };
@@ -37,18 +35,22 @@ export async function loadSitemap(siteId: string) {
  * (boş arşiv `noindex` olduğundan haritaya girmez). Yalnızca varsayılan dil.
  */
 async function archiveEntries(siteId: string, locale: string): Promise<SitemapEntry[]> {
+  const site = await getPublicSite(siteId);
+  const seo = resolveSiteSettings(site?.settings).seo;
   const [terms, candidates] = await Promise.all([getScopedRepository(siteId).listTaxonomies(), getDynamicCandidates(siteId, locale)]);
   const out: SitemapEntry[] = [];
   for (const t of terms) {
     if (t.taxonomyType !== "category" && t.taxonomyType !== "tag") continue;
+    if (t.taxonomyType === "category" && seo.sitemapIncludeCategories === false) continue;
+    if (t.taxonomyType === "tag" && (seo.sitemapIncludeTags === false || seo.noIndexTagArchives === true)) continue;
     const key = t.taxonomyType === "category" ? "categories" : "tags";
     const items = candidates.filter((c) => (c.kind === "posts" || c.kind === "pages") && c[key].some((x) => termSlug(x) === termSlug(t.slug) || termSlug(x) === termSlug(t.name)));
     if (items.length === 0) continue;
     const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
-    out.push({ contentId: `archive:${t.taxonomyType}:${t.slug}`, type: "archive", locale, region: "", slug: t.slug, pathPrefix: t.taxonomyType === "category" ? "kategori" : "etiket", updatedAt: latest ? new Date(latest) : new Date(0) });
+    out.push({ contentId: `archive:${t.taxonomyType}:${t.slug}`, type: t.taxonomyType === "category" ? "kategori" : "etiket", locale, region: "", slug: t.slug, pathPrefix: t.taxonomyType === "category" ? "kategori" : "etiket", updatedAt: latest ? new Date(latest) : new Date(0) });
   }
   // Özel tür arşivleri (`/{arşiv-adresi}`): açık ve haritaya girmesi istenen, en az bir yayını olan türler
-  const types = resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes ?? [];
+  const types = resolveSiteSettings(site?.settings).general.contentTypes ?? [];
   for (const def of types) {
     if (!def.archive || !def.archiveSlug || !def.inSitemap) continue;
     const items = candidates.filter((c) => c.kind === `type:${def.id}`);
