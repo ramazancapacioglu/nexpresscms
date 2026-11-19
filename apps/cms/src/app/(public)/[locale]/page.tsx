@@ -7,6 +7,7 @@ import { getPublicContentBySlug, getPublicMediaFocal, getPublicSite, listPublish
 import { getThemeManifest, INK_GRID_HOME_SLUG, INK_GRID_ID, YF_DEMO_HOME_SLUG, YF_THEME_ID, YB_THEME_ID, RscBlockRenderer } from "@nexpress/themes";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
 import { organizationFor } from "@/lib/organization-schema";
+import { schemaImagesFor } from "@/lib/schema-images";
 import { getSyncedPatternsMap } from "@/lib/templates";
 import { coverTemplateContext } from "@/lib/template-context";
 import type { Metadata } from "next";
@@ -106,6 +107,14 @@ export default async function PublicHomePage({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const switcher = homeContent ? <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, homeContent.contentId, locale)} /> : null;
 
+  const homeImageUrl = homeContent?.featuredImage ?? (homeContent ? `${baseUrl}/og?title=${encodeURIComponent(homeContent.title)}&site=${encodeURIComponent(localizedSite.name)}` : null);
+  const schemaMedia = await schemaImagesFor(siteId, homeContent?.blocks, homeContent?.featuredImage ?? null);
+  // Kuruluşun ürün kataloğu: yayındaki yazılım/ürün sayfaları (önem puanına göre)
+  const catalog = (await listPublishedContents(siteId, locale))
+    .filter((c) => c.type === "page" && c.schemaType === "SoftwareApplication")
+    .sort((a, b) => b.importanceScore - a.importanceScore)
+    .slice(0, 30)
+    .map((c) => ({ name: c.title, url: `${baseUrl}${lb}/${c.slug}`, ...(c.tldr ? { description: c.tldr } : {}) }));
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: localizedSite.name,
@@ -113,6 +122,9 @@ export default async function PublicHomePage({
     locale,
     pageUrl: `${baseUrl}${lb}`,
     organization: organizationFor(localizedSite.seo),
+    images: schemaMedia.images,
+    offerCatalog: catalog,
+    searchUrlTemplate: `${baseUrl}${lb}/ara?q={search_term_string}`,
     content: homeContent
       ? {
           id: homeContent.id,
@@ -120,6 +132,10 @@ export default async function PublicHomePage({
           tldr: homeContent.tldr,
           schemaType: homeContent.schemaType,
           schemaAttributes: homeContent.schemaAttributes,
+          imageUrl: homeImageUrl,
+          imageMeta: schemaMedia.featured,
+          updatedAt: homeContent.updatedAt,
+          publishedAt: homeContent.publishedAt ?? homeContent.createdAt ?? null,
         }
       : undefined,
   });

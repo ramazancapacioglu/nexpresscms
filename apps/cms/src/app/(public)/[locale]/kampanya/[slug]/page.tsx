@@ -10,10 +10,14 @@ import { getSession } from "@/lib/auth/session";
 import { resolveDraftPreview } from "@/lib/draft-preview";
 import {
   resolveCampaignData,
+  resolveLocalizedSiteIdentity,
   buildCampaignOfferJsonLd,
   type ResolvedCampaign,
 } from "@nexpress/core";
-import { jsonLdString } from "@nexpress/seo-core";
+import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
+import { createTranslator } from "@nexpress/i18n";
+import { organizationFor } from "@/lib/organization-schema";
+import { schemaImagesFor } from "@/lib/schema-images";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 
 export const dynamic = "force-dynamic";
@@ -134,6 +138,38 @@ export default async function PublicCampaignDetailPage({
     siteName,
   });
 
+  // Tek bağlantılı grafik: kuruluş, site, sayfa (görselli), kırıntı ve teklif; yalnızca Offer düğümü değil
+  const campaignSite = resolveLocalizedSiteIdentity(site, locale);
+  const campaignMedia = await schemaImagesFor(siteId, content.blocks, camp.featuredImageUrl);
+  const { "@context": _ctx, ...offerNode } = offerJsonLd as Record<string, unknown>;
+  const campaignGraph = await buildPageSchemaGraph({
+    siteId,
+    siteName: campaignSite.name,
+    siteUrl: baseUrl,
+    locale,
+    pageUrl,
+    breadcrumbs: [
+      { name: createTranslator(locale)("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
+      { name: "Kampanyalar", url: `${baseUrl}${lb}/kampanyalar` },
+      { name: camp.title, url: pageUrl },
+    ],
+    organization: organizationFor(campaignSite.seo),
+    searchUrlTemplate: `${baseUrl}${lb}/ara?q={search_term_string}`,
+    images: campaignMedia.images,
+    content: {
+      id: content.id,
+      title: camp.title,
+      tldr: camp.tldr || undefined,
+      schemaType: "WebPage",
+      updatedAt: content.updatedAt,
+      publishedAt: content.publishedAt ?? content.createdAt ?? null,
+      imageUrl: camp.featuredImageUrl || `${baseUrl}/og?title=${encodeURIComponent(camp.title)}&site=${encodeURIComponent(siteName)}`,
+      imageAlt: camp.featuredImageAlt || camp.title,
+      imageMeta: campaignMedia.featured,
+    },
+  });
+  campaignGraph["@graph"].push(offerNode as never);
+
   // Diğer Aktif Kampanyalar
   const allContents = await repo.listContents({ locale });
   const otherCampaigns = allContents
@@ -156,7 +192,7 @@ export default async function PublicCampaignDetailPage({
       {/* Schema.org Offer JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(offerJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(campaignGraph) }}
       />
 
       {/* Taslak Önizleme Rozeti */}

@@ -98,3 +98,17 @@ test("llms.txt: kuruluş künyesi yalnızca dolu alanlardan kurulur; kök adres 
   assert.match(txt, /\(https:\/\/ornek\.test\/\?format=md\)/);
   assert.match(txt, /\(https:\/\/ornek\.test\/ic\?format=md\)/);
 });
+
+test("llms.txt: yazılım sayfaları ayrı ve en üst bölümde, önem puanına göre sıralı", async () => {
+  const txt = await generateCoreLlmsTxt({
+    siteId: "x", siteName: "Örnek", baseUrl: "https://ornek.test", locale: "tr",
+    items: [
+      { title: "Hakkımızda", url: "https://ornek.test/h", type: "page", schemaType: "WebPage", importanceScore: 9 },
+      { title: "Ürün Düşük", url: "https://ornek.test/d", type: "page", schemaType: "SoftwareApplication", importanceScore: 3 },
+      { title: "Ürün Yüksek", url: "https://ornek.test/y", type: "page", schemaType: "SoftwareApplication", importanceScore: 8 },
+    ],
+  });
+  assert.ok(txt.indexOf("Ürünler & Yazılım Çözümleri") < txt.indexOf("## Kurumsal Sayfalar"));
+  assert.ok(txt.indexOf("Ürün Yüksek") < txt.indexOf("Ürün Düşük"));
+  assert.ok(!txt.slice(txt.indexOf("## Kurumsal Sayfalar")).includes("Ürün Yüksek"));
+});

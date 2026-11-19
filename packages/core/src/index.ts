@@ -82,3 +82,4 @@ export * from "./internal-links";
 export * from "./comments-discussion";
 
 export * from "./related-content";
+export * from "./block-images";

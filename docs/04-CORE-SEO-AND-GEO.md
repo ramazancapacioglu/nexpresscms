@@ -177,6 +177,16 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **llms.txt:** kuruluş şemasından (`seo.organizationSchema`) "Kuruluş ve İletişim" künyesi (tanım, adres, telefon, saat, hizmet bölgesi, uzmanlık) üretilir (`organizationFactLines`); site DNA'sı (`sites.site_dna`) giriş paragrafıdır; kök adres `/?format=md`.
 - **İç bağlantı kümesi:** `rankRelated` (`packages/core/src/related-content.ts`): ortak etiket, kategori ve başlık sözcüğü; eşitlikte hedefe göre değişen sıra. Yazılarda "Benzer yazılar" bununla seçilir; sayfalarda ilgili sayfa/yazılar `RelatedLinks` ile (ilgisizse gösterilmez). Betik yok.
 
+## 11d. Şema bütünlüğü ve görsel şemaları (2026-11-19)
+
+- **Tek bağlantılı grafik:** her ziyaretçi sayfası (içerik, ana sayfa, blog dizini, kampanya) `buildPageSchemaGraph` ile kurulur: Organization/LocalBusiness, WebSite (+ `SearchAction`), `WebPage` (ana varlık WebPage ailesinden değilse ayrı düğüm: `about`/`mainEntity`, `primaryImageOfPage`, `breadcrumb`), ana varlık, BreadcrumbList.
+- **Görseller:** öne çıkan görsel tam `ImageObject` (`@id …#primaryimage`, `url`, `contentUrl` = parametresiz özgün adres, ad, açıklama, genişlik/yükseklik, `encodingFormat`). Gövde görselleri (`collectBlockImages`: görsel, galeri, iç içe bloklar) en çok 12 adet `associatedMedia`, yazılımda `screenshot` olur. Alt/başlık/açıklama/boyut medya kitaplığından (`getPublicMediaMeta`, `schemaImagesFor`); blokta yazılan alan önceliklidir.
+- **Kuruluş:** `description`/`image` artık düşmez; logo `@id …/#logo`; `image` yoksa logo; telefon/e-posta varsa `contactPoint`; ana sayfada `hasOfferCatalog` (yayındaki SoftwareApplication sayfaları); `numberOfEmployees.value` sayıya çevrilir.
+- **Yazar:** adı site/kuruluş adıyla aynıysa `Person` değil kuruluş referansı.
+- **Yazılım teklifi:** `offers` artık `url`, `availability` (+ çekirdekte `seller`) taşır.
+- **QAPage yalnızca gerçek soru-cevap içeriğinde** (`ai_prompt`); ana sayfa, iletişim, ürün/entegrasyon sayfalarında `richSchema.qa.enabled=false` (SSS çiftleri `FAQPage` olarak kalır).
+- **Blog dizini:** `CollectionPage` + son 20 yazı `ItemList`. **llms.txt:** yazılım sayfaları ayrı ve en üstte bölüm, önem puanına göre sıralı.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

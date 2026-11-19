@@ -36,7 +36,7 @@ test("TechArticle yaması ve SoftwareApplication", () => {
   assert.deepEqual(r.entityPatch, { proficiencyLevel: "Expert", dependencies: "Node.js 20" });
   const app = r.extra.find((n) => n["@type"] === "SoftwareApplication")!;
   assert.deepEqual(app.featureList, ["Hızlı", "Güvenli"]);
-  assert.deepEqual(app.offers, { "@type": "Offer", price: "0", priceCurrency: "USD" });
+  assert.deepEqual(app.offers, { "@type": "Offer", price: "0", priceCurrency: "USD", url: "https://x.test/tr/a", availability: "https://schema.org/InStock" });
   assert.equal(buildRichNodes({ software: { category: "", os: "Web" } }, ctx()).extra.length, 0, "kategori zorunlu");
   assert.equal(buildRichNodes({ tech: { level: "Guru" } }, ctx()).entityPatch.proficiencyLevel, undefined);
 

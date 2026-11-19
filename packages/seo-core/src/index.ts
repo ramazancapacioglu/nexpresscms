@@ -8,6 +8,17 @@ export * from "./commerce-schema";
 export * from "./search-console";
 export * from "./analytics-integrations";
 
+/** Sayfadaki bir görselin şema bilgisi (medya kitaplığından: alt, başlık, açıklama, boyut). */
+export interface SchemaImageInput {
+  url: string;
+  alt?: string | null;
+  title?: string | null;
+  caption?: string | null;
+  width?: number | null;
+  height?: number | null;
+  mime?: string | null;
+}
+
 export interface BuildCoreSchemaInput {
   siteId: string;
   siteName: string;
@@ -26,6 +37,8 @@ export interface BuildCoreSchemaInput {
     blocks?: BlockNode[];
     imageUrl?: string | null;
     imageAlt?: string | null;
+    /** Öne çıkan görselin medya bilgisi (varsa): `ImageObject` genişlik/yükseklik/açıklama alır. */
+    imageMeta?: Omit<SchemaImageInput, "url"> | null;
     keywords?: string[];
     articleSection?: string;
     /** Özel alanlardan gelen Schema.org özellikleri (`fieldSchemaProps`); temel alanları ezmez. */
@@ -35,6 +48,12 @@ export interface BuildCoreSchemaInput {
   autoSchema?: boolean;
   organization?: { name?: string; logo?: string; sameAs?: string[]; /** Yerel işletme alanları; `@type` dizisi `LocalBusiness` içerebilir. */ schema?: Record<string, unknown> };
   breadcrumbs?: Array<{ name: string; url: string }>;
+  /** Gövde görselleri (en çok 12): sayfa varlığına `associatedMedia` (yazılımda `screenshot`) olarak işlenir. */
+  images?: SchemaImageInput[];
+  /** Site içi arama adres şablonu (`https://x.test/ara?q={search_term_string}`): WebSite `SearchAction`. */
+  searchUrlTemplate?: string;
+  /** Ana sayfada kuruluşun ürün/hizmet kataloğu (`hasOfferCatalog`). */
+  offerCatalog?: Array<{ name: string; url: string; description?: string }>;
   aggregateRating?: { ratingValue: number; reviewCount: number };
 }
 
@@ -44,7 +63,37 @@ function organizationExtras(schema: Record<string, unknown> | undefined): Record
   const { "@type": rawType, ...rest } = schema;
   const types = (Array.isArray(rawType) ? rawType : rawType ? [rawType] : []).filter((type): type is string => typeof type === "string");
   const merged = [...new Set([...types.filter((type) => type !== "Organization"), "Organization"])];
-  return { ...Object.fromEntries(Object.entries(rest).filter(([key]) => !RESERVED_NODE_KEYS.has(key))), ...(merged.length > 1 ? { "@type": merged } : {}) };
+  const entries = Object.entries(rest).filter(([key]) => !ORG_OWN_KEYS.has(key));
+  const employees = rest.numberOfEmployees as { value?: unknown } | undefined;
+  const numeric = employees && typeof employees === "object" && typeof employees.value === "string" && /^\d+$/.test(employees.value) ? { ...employees, value: Number(employees.value) } : undefined;
+  return { ...Object.fromEntries(entries), ...(numeric ? { numberOfEmployees: numeric } : {}), ...(merged.length > 1 ? { "@type": merged } : {}) };
+}
+
+/** Kuruluş düğümünün kendi ürettiği alanlar; kullanıcı eki bunları ezmez (açıklama ve görsel serbesttir). */
+const ORG_OWN_KEYS = new Set(["name", "url", "logo", "sameAs", "@id"]);
+
+const WEBPAGE_FAMILY = new Set(["WebPage", "AboutPage", "ContactPage", "CollectionPage", "ItemPage", "ProfilePage", "SearchResultsPage", "FAQPage", "QAPage"]);
+
+const normName = (value: string | undefined | null): string => (value ?? "").toLocaleLowerCase("tr").replace(/\s+/g, " ").trim();
+
+/** Tek görsel için `ImageObject`: `contentUrl` (sorgu parametresiz özgün adres), ad, açıklama, boyut. */
+function imageObject(baseUrl: string, image: SchemaImageInput, id?: string, extra?: Record<string, unknown>): SchemaGraphNode {
+  const abs = image.url.startsWith("/") ? `${baseUrl}${image.url}` : image.url;
+  const bare = abs.split("?")[0] ?? abs;
+  const name = image.title?.trim() || image.alt?.trim() || "";
+  const caption = image.caption?.trim() || image.alt?.trim() || "";
+  return {
+    "@type": "ImageObject",
+    ...(id ? { "@id": id } : {}),
+    url: abs,
+    contentUrl: /\/media\/med_[A-Za-z0-9_-]+$/.test(bare) ? bare : abs,
+    ...(name ? { name } : {}),
+    ...(caption ? { caption } : {}),
+    ...(image.alt?.trim() && image.alt.trim() !== caption ? { description: image.alt.trim() } : {}),
+    ...(image.width && image.height ? { width: image.width, height: image.height } : {}),
+    ...(image.mime ? { encodingFormat: image.mime } : {}),
+    ...(extra ?? {}),
+  };
 }
 
 /** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; yalnızca ilkel değerler geçer. */
@@ -77,9 +126,7 @@ export async function buildPageSchemaGraph(
       "@id": orgId,
       name: input.organization?.name || input.siteName,
       url: baseUrl,
-      ...(input.organization?.logo
-        ? { logo: { "@type": "ImageObject", url: input.organization.logo.startsWith("/") ? `${baseUrl}${input.organization.logo}` : input.organization.logo } }
-        : {}),
+      ...(input.organization?.logo ? { logo: imageObject(baseUrl, { url: input.organization.logo, caption: input.organization?.name || input.siteName }, `${baseUrl}/#logo`) } : {}),
       ...(input.organization?.sameAs && input.organization.sameAs.length > 0
         ? { sameAs: input.organization.sameAs }
         : {}),
@@ -94,6 +141,25 @@ export async function buildPageSchemaGraph(
       publisher: { "@id": orgId },
     },
   ];
+
+  // LocalBusiness için görsel şart: açıkça verilmediyse logo; telefon/e-posta varsa iletişim noktası
+  const orgNode = baseNodes[0]!;
+  if (input.organization?.logo && !orgNode.image) orgNode.image = { "@id": `${baseUrl}/#logo` };
+  const orgPhone = typeof orgNode.telephone === "string" ? orgNode.telephone : "";
+  const orgMail = typeof orgNode.email === "string" ? orgNode.email : "";
+  if ((orgPhone || orgMail) && !orgNode.contactPoint) {
+    orgNode.contactPoint = [{ "@type": "ContactPoint", contactType: "customer support", ...(orgPhone ? { telephone: orgPhone } : {}), ...(orgMail ? { email: orgMail } : {}), ...(Array.isArray(orgNode.availableLanguage) ? { availableLanguage: orgNode.availableLanguage } : {}) }];
+  }
+  if (input.offerCatalog && input.offerCatalog.length > 0 && !orgNode.hasOfferCatalog) {
+    orgNode.hasOfferCatalog = {
+      "@type": "OfferCatalog",
+      name: `${input.organization?.name || input.siteName} ürün ve hizmetleri`,
+      itemListElement: input.offerCatalog.slice(0, 40).map((item) => ({ "@type": "Offer", itemOffered: { "@type": "SoftwareApplication", name: item.name, url: item.url, ...(item.description ? { description: item.description } : {}) } })),
+    };
+  }
+  if (input.searchUrlTemplate) {
+    baseNodes[1]!.potentialAction = { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: input.searchUrlTemplate }, "query-input": "required name=search_term_string" };
+  }
 
   if (input.content) {
     const c = input.content;
@@ -121,12 +187,15 @@ export async function buildPageSchemaGraph(
       ...(isArticle
         ? {
             // Yazar adı yoksa uydurma kişi yazılmaz: yayıncı kuruluş yazar sayılır
-            author: c.authorName?.trim() ? { "@type": "Person", name: c.authorName.trim() } : { "@id": orgId },
-            mainEntityOfPage: input.pageUrl,
+            // Yazar adı kuruluşun adıyla aynıysa kişi değil kuruluştur (ör. "Akınsoft İzmir Ana Bayi" Person olmaz)
+            author:
+              c.authorName?.trim() && ![normName(input.siteName), normName(input.organization?.name)].includes(normName(c.authorName))
+                ? { "@type": "Person", name: c.authorName.trim() }
+                : { "@id": orgId },
           }
         : {}),
       ...(c.imageUrl && !c.imageUrl.startsWith("data:")
-        ? { image: { "@type": "ImageObject", url: c.imageUrl.startsWith("/") ? `${baseUrl}${c.imageUrl}` : c.imageUrl, caption: c.imageAlt ?? c.title } }
+        ? { image: imageObject(baseUrl, { ...(c.imageMeta ?? {}), url: c.imageUrl, alt: c.imageMeta?.alt || c.imageAlt || c.title }, `${input.pageUrl}#primaryimage`) }
         : {}),
       ...(c.keywords && c.keywords.length > 0 ? { keywords: c.keywords.join(", ") } : {}),
       ...(c.articleSection ? { articleSection: c.articleSection } : {}),
@@ -162,7 +231,7 @@ export async function buildPageSchemaGraph(
         ...(sw.version ? { softwareVersion: sw.version } : {}),
         ...(sw.requirements ? { memoryRequirements: sw.requirements } : {}),
         ...(sw.ratingValue ? { aggregateRating: { "@type": "AggregateRating", ratingValue: sw.ratingValue, reviewCount: sw.ratingCount || 1, bestRating: 5, worstRating: 1 } } : {}),
-        ...(sw.price ? { offers: { "@type": "Offer", price: String(sw.price).replace(",", "."), priceCurrency: sw.currency || "TRY" } } : {}),
+        ...(sw.price ? { offers: { "@type": "Offer", price: String(sw.price).replace(",", "."), priceCurrency: sw.currency || "TRY", url: input.pageUrl, availability: "https://schema.org/InStock", seller: { "@id": orgId } } } : {}),
       };
       // Sayfanın ana varlığı zaten SoftwareApplication ise ikinci bir düğüm eklenmez: alanlar ana varlığa işlenir (yinelenen varlık yok)
       if (c.schemaType === "SoftwareApplication") {
@@ -214,6 +283,46 @@ export async function buildPageSchemaGraph(
     if (input.autoSchema !== false && c.blocks) {
       baseNodes.push(...deriveAutoSchemaNodes(c.blocks, input.pageUrl).filter((node) => !(faqNodeDone && node["@type"] === "FAQPage")));
     }
+
+    // Görseller ve sayfa düğümü: birincil görsel, gövde görselleri (associatedMedia / screenshot), WebPage ile bağlantılar
+    const hasCrumbs = Boolean(input.breadcrumbs && input.breadcrumbs.length > 0);
+    const webpageId = `${input.pageUrl}#webpage`;
+    const primaryRef = entity.image ? { "@id": `${input.pageUrl}#primaryimage` } : undefined;
+    const seen = new Set<string>([String(c.imageUrl ?? "").split("?")[0] ?? ""]);
+    const bodyImages = (input.images ?? [])
+      .filter((img) => {
+        const key = img.url.split("?")[0] ?? img.url;
+        if (!img.url || img.url.startsWith("data:") || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 12)
+      .map((img) => imageObject(baseUrl, img));
+    if (bodyImages.length > 0) {
+      if (c.schemaType === "SoftwareApplication") entity.screenshot = bodyImages.slice(0, 6);
+      else entity.associatedMedia = bodyImages;
+    }
+    if (WEBPAGE_FAMILY.has(c.schemaType)) {
+      if (primaryRef) entity.primaryImageOfPage = primaryRef;
+      if (hasCrumbs) entity.breadcrumb = { "@id": `${input.pageUrl}#breadcrumb` };
+    } else {
+      baseNodes.push({
+        "@type": "WebPage",
+        "@id": webpageId,
+        url: input.pageUrl,
+        name: c.title,
+        inLanguage: input.locale,
+        isPartOf: { "@id": websiteId },
+        about: { "@id": entityId },
+        mainEntity: { "@id": entityId },
+        ...(c.tldr ? { description: c.tldr } : {}),
+        ...(c.publishedAt ? { datePublished: new Date(c.publishedAt).toISOString() } : {}),
+        ...(c.updatedAt ? { dateModified: new Date(c.updatedAt).toISOString() } : {}),
+        ...(primaryRef ? { primaryImageOfPage: primaryRef } : {}),
+        ...(hasCrumbs ? { breadcrumb: { "@id": `${input.pageUrl}#breadcrumb` } } : {}),
+      });
+      entity.mainEntityOfPage = { "@id": webpageId };
+    }
   }
 
   if (input.breadcrumbs && input.breadcrumbs.length > 0) {
@@ -239,6 +348,8 @@ export interface LlmsTxtItem {
   title: string;
   url: string;
   type: string;
+  /** Sayfa türü şeması (`SoftwareApplication`…): ürün sayfaları ayrı bölümde listelenir. */
+  schemaType?: string | null;
   tldr?: string | null;
   importanceScore: number;
 }
@@ -310,13 +421,15 @@ export async function generateCoreLlmsTxt(options: {
   );
 
   const grouped: Record<string, LlmsTxtItem[]> = {};
-  for (const item of options.items) {
-    const list = grouped[item.type] ?? [];
+  for (const item of [...options.items].sort((a, b) => b.importanceScore - a.importanceScore)) {
+    const key = item.type === "page" && item.schemaType === "SoftwareApplication" ? "software" : item.type;
+    const list = grouped[key] ?? [];
     list.push(item);
-    grouped[item.type] = list;
+    grouped[key] = list;
   }
 
   const labels: Record<string, string> = {
+    software: "Ürünler & Yazılım Çözümleri (Products & Software)",
     product: "Ürünler & Yazılım Çözümleri (Products & Software)",
     campaign: "Aktif Kampanyalar & Teklifler (Offers)",
     kb_tech: "Teknik Bilgi Bankası (Knowledge Base)",
@@ -325,7 +438,9 @@ export async function generateCoreLlmsTxt(options: {
     post: "Makaleler",
   };
 
-  for (const [type, list] of Object.entries(grouped)) {
+  const order = ["software", "product", "campaign", "ai_prompt", "kb_tech", "page", "post"];
+  const sections = Object.entries(grouped).sort(([a], [b]) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+  for (const [type, list] of sections) {
     lines.push(`## ${labels[type] ?? type}`, "");
     for (const entry of list) {
       const summary = entry.tldr ? `: ${entry.tldr}` : "";

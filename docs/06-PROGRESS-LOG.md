@@ -1334,3 +1334,6 @@
 ### [2026-11-19] — Yayın sonrası SEO/GEO tamamlama
 - ✅ `main` ile birleştirildi (WordPress göç dalı + SEO paneli); tek çakışma bölgeleri dokümanlar ve iki çekirdek dosya.
 - ✅ Tekil `SoftwareApplication` düğümü, mutlak görsel adresi, eski feed/site haritası yönlendirmeleri, ince etiket `noindex`, llms.txt künyesi, ilgili içerik bağlantıları (`rankRelated`). Bkz. `docs/04` §11c. Testler: seo-core, core.
+
+### [2026-11-19] — Şema bütünlüğü ve görsel şemaları
+- ✅ Görsel şemaları (`ImageObject` boyut/ad/açıklama, `associatedMedia`, `screenshot`), `WebPage` düğümü, WebSite `SearchAction`, kuruluş `contactPoint`/`hasOfferCatalog`/açıklama, blog dizini `CollectionPage`, kampanya sayfası tam grafik, yazar kuruluşsa Person yok; yanlış QAPage'ler kapatıldı. Bkz. `docs/04` §11d. Testler: seo-core, core, agentic-seo-pro.

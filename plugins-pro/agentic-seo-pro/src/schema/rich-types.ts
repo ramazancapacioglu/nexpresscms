@@ -108,7 +108,7 @@ export function buildRichNodes(rich: RichSchema | null | undefined, ctx: RichCon
       ...(clip(s.version, 30) ? { softwareVersion: clip(s.version, 30) } : {}),
       ...(safeUrl(s.url) ? { url: safeUrl(s.url) } : {}),
       ...(features.length ? { featureList: features } : {}),
-      ...(p && c ? { offers: { "@type": "Offer", price: p, priceCurrency: c } } : {}),
+      ...(p && c ? { offers: { "@type": "Offer", price: p, priceCurrency: c, url: ctx.url, availability: "https://schema.org/InStock" } } : {}),
     });
   }
   return { extra, entityPatch };

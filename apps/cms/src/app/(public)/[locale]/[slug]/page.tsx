@@ -6,7 +6,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
 import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { getPublicMediaFocal, getPublicSite, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
+import { getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
@@ -15,6 +15,7 @@ import { buildTemplateContext, coverTemplateContext } from "@/lib/template-conte
 import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
+import { schemaImagesFor } from "@/lib/schema-images";
 import { PostByline, PostFooter, PostShareRow, RelatedLinks } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
@@ -233,7 +234,37 @@ export default async function PublicDynamicContentPage({
   const tokens = preview?.tokens ?? site?.designTokens ?? activeTheme.tokens;
   const postsPageSlug = sanitizeReadingSlug(resolveSiteSettings(site?.settings).general.postsPageSlug);
   if (!draft && postsPageSlug && postsPageSlug === content.slug && content.type === "page") {
-    return <PostsIndex siteId={siteId} locale={locale} title={content.title} tokens={tokens} />;
+    // Blog dizini: CollectionPage + son yazıların ItemList'i (arama motoru ve yapay zekâ için yazı envanteri)
+    const indexBase = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const indexSite = resolveLocalizedSiteIdentity(site, locale);
+    const indexUrl = `${indexBase}${lb}${cPath}`;
+    const latest = (await listPublishedContents(siteId, locale))
+      .filter((c) => c.type === "post")
+      .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
+      .slice(0, 20);
+    const indexGraph = await buildPageSchemaGraph({
+      siteId,
+      siteName: indexSite.name,
+      siteUrl: indexBase,
+      locale,
+      pageUrl: indexUrl,
+      breadcrumbs: [{ name: createTranslator(locale)("taxonomy.home"), url: `${indexBase}${lb || "/"}` }, { name: content.title, url: indexUrl }],
+      organization: organizationFor(indexSite.seo),
+      searchUrlTemplate: `${indexBase}${lb}/ara?q={search_term_string}`,
+      content: { id: content.id, title: content.title, tldr: content.tldr, schemaType: "CollectionPage", updatedAt: latest[0] ? new Date(latest[0].updatedAt) : content.updatedAt, publishedAt: content.publishedAt ?? content.createdAt ?? null },
+    });
+    indexGraph["@graph"].push({
+      "@type": "ItemList",
+      "@id": `${indexUrl}#posts`,
+      numberOfItems: latest.length,
+      itemListElement: latest.map((post, index) => ({ "@type": "ListItem", position: index + 1, name: post.title, url: `${indexBase}${lb}/${post.slug}` })),
+    });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(indexGraph) }} />
+        <PostsIndex siteId={siteId} locale={locale} title={content.title} tokens={tokens} />
+      </>
+    );
   }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const pageUrl = `${baseUrl}${lb}${cPath}`;
@@ -379,6 +410,7 @@ export default async function PublicDynamicContentPage({
         ).map((c) => ({ slug: c.row.slug, title: c.row.title }))
       : [];
 
+  const schemaMedia = await schemaImagesFor(siteId, content.blocks, featuredImageUrl);
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: localizedSite.name,
@@ -387,6 +419,8 @@ export default async function PublicDynamicContentPage({
     pageUrl,
     // Kırıntı: Ana sayfa › (üst sayfa) › bu sayfa. Aynı liste ziyaretçiye de basılır (şablon kırıntı bloğu)
     breadcrumbs: crumbs,
+    images: schemaMedia.images,
+    searchUrlTemplate: `${baseUrl}${lb}/ara?q={search_term_string}`,
     autoSchema: localizedSite.seo.autoSchema !== false,
     organization: organizationFor(localizedSite.seo),
     aggregateRating:
@@ -406,6 +440,7 @@ export default async function PublicDynamicContentPage({
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,
+      imageMeta: schemaMedia.featured,
       extraProps: fieldSchemaProps(customDef, content.schemaAttributes, { baseUrl }),
       // Öne çıkan görsel yoksa meta ile aynı üretilmiş paylaşım görseli (Article için görsel önerilir)
       imageUrl: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,

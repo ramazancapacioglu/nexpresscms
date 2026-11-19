@@ -78,6 +78,16 @@ export const getPublicMediaFocal = cachedRead("media-focal", async (siteId: stri
   return map;
 });
 
+/** Medya kimliği -> şema bilgisi (alt, başlık, açıklama, boyut, tür). `ImageObject` için; yönetim kaydında düşer. */
+export const getPublicMediaMeta = cachedRead("media-meta", async (siteId: string) => {
+  const assets = await getScopedRepository(siteId).listMediaAssets();
+  const map: Record<string, { alt: string; title: string; caption: string; width: number | null; height: number | null; mime: string }> = {};
+  for (const a of assets) {
+    map[a.id] = { alt: a.altText ?? "", title: a.titleText ?? "", caption: a.caption || a.description || "", width: a.width ?? null, height: a.height ?? null, mime: a.mimeType ?? "" };
+  }
+  return map;
+});
+
 /** Sayfa bloklarındaki bağlı formları yükler (yoksa boş nesne). */
 export async function loadPageForms(siteId: string, blocks: BlockNode[]) {
   const ids = [...collectFormIds(blocks)].sort();

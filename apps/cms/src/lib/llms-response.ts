@@ -29,6 +29,7 @@ export async function llmsTxtResponse(request: NextRequest, forcedLocale?: strin
       title: c.title,
       url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),
       type: c.type,
+      schemaType: c.schemaType,
       tldr: c.tldr,
       importanceScore: c.importanceScore,
     })),
