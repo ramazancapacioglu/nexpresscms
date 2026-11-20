@@ -1340,3 +1340,6 @@
 
 ### [2026-11-19] — Üçüncü taraf SEO/GEO denetimi düzeltmeleri
 - ✅ Kampanya `og:image`/adres tutarlılığı (`contentPath`), MCP/ai-plugin/merchant düzeltmeleri, SSS düz metin + tekilleştirme, markdown kalın boşlukları, LCP galeri, blog görsel alt, sahte kupon kutusu kaldırıldı; içerik verisi bakımı. Bkz. `docs/04` §11e. Testler: core, seo-core, themes, agentic-seo-pro.
+
+### [2026-11-20] — akinsoftizmir.com.tr: anlamsal arama ve HTML önbelleği
+- ✅ Sunucuda `OPENAI_API_KEY` tanımlandı; `reindexSite` ile 132 içerik / 492 parça `text-embedding-3-small` ile dizinlendi (MCP `nexpress_search_corpus` artık `semantic`). `PUBLIC_CACHE_SECONDS=60` (paylaşımlı önbellek için `s-maxage=60`; çerezli/sorgulu/oturumlu istekler hariç). `/wolvox-erp` başlık ve açıklaması güncel sürüm 26 ile eşlendi.
