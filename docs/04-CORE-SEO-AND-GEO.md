@@ -214,6 +214,17 @@ Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Artic
 - **Anlamlı görsel adresi:** `/media/<kimlik>/<dosya-adi>.webp` (1280 px WebP). Ad, kitaplıktaki dosya adından türer (`seoImageName`); eşleşmeyen ad 404 verir. `ImageObject.contentUrl/url` ve görsel site haritası bunu kullanır (adı anlamsız/sayısal dosyalarda `1280.webp`); sayfadaki `srcset` türevleri sayısal kalır.
 - **AI alt metin:** medya ayrıntısında "AI ile öner", kitaplıkta "Boş alt metinleri AI ile doldur" (her seferde ≤15; dolu alt metne dokunmaz). `OPENAI_API_KEY` gerekir (`OPENAI_VISION_MODEL` ya da `OPENAI_CHAT_MODEL`, varsayılan `gpt-4o-mini`); OpenAI'ye yalnızca 768 px'lik küçültülmüş JPEG kopyası gider (EXIF yok). Dakikada kullanıcı başına 20 sınırı.
 
+## 11h. Tarama temizliği: spam ve artık adresler (2026-11-20)
+
+**Olay (akinsoftizmir.com.tr):** erişim günlükleri ve Search Console/Bing verisi, alan adı altında dizinlenen çok sayıda sahte adres gösterdi: `/pc/index.php`, `/ajax/productstorestocklist`, `/ajax/productdeliverycalendar`, `/products/detail/<sayı>`, `/kaden/mtalk` ve `/?j=<rastgele>` (j değeri harf+rakam karışımı kodlanmış bir anahtar kelime). **Gerçek** Googlebot (ters DNS doğrulandı) iki günde ~730 bin, Bingbot ~47 bin istek attı; Bing dizininde ~36 bin sayfa göründü. Sahte adresler site tarafından hiç üretilmiyordu: dış spam bağlantı ağı ve eski kalıntı. Zarar: tarama bütçesi israfı, dizinde yinelenen/sahte adresler.
+
+**Çözüm katmanları:**
+1. **nginx (`conf/vhost_nginx.conf`):** bilinen kalıplara 410 + `X-Robots-Tag: noindex` (Node'a hiç girmez; `.php` yolu PHP işleyicisine düşmesin diye `location ^~`). Değişiklik sunucuya özeldir.
+2. **Uygulama (`seo.crawlHygiene`, `packages/core/src/crawl-hygiene.ts`, ara katman):** `goneRules` (yol kalıpları, `*` devamı), `goneParams` (taşıyan her istek 410), `noindexUnknownParams` (bilinmeyen sorgu parametreli sayfa `noindex, follow`; izleme/sayfalama/site parametreleri bilinendir). Panel/API/medya/site haritası/kök dosyalar korumalıdır.
+3. **Panel:** Webmaster Merkezi → *Tarama temizliği*: 404 günlüğü yol kalıbına göre gruplanır, "410 yap" ile kural eklenir; GSC/Bing sayfa raporlarında sorgu dizeli adresler uyarı olarak çıkar.
+4. **Yapılmaması gerekenler:** spam yollarını `robots.txt` ile engellemek (taranamayan adres dizinden de düşmez); 404 yerine yönlendirme (spam bağlantıya değer aktarır).
+5. **Elle (arayüz):** Search Console → Kaldırmalar (önek bazlı) ve Bing → URL engelle; spam bağlantı alan adları çoksa Google reddetme (disavow) listesi.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

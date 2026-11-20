@@ -13,5 +13,5 @@ export async function GET(request: NextRequest) {
   const seo = resolveSiteSettings(site?.settings).seo;
   const index = seo.searchIndexing !== false;
   const permalink = sanitizePermalinkStructure(seo.permalinkStructure);
-  return NextResponse.json({ single: isPrefixless(site, locale), locale, index, permalink }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ single: isPrefixless(site, locale), locale, index, permalink, hygiene: seo.crawlHygiene ?? null }, { headers: { "Cache-Control": "no-store" } });
 }

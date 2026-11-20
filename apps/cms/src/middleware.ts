@@ -6,13 +6,17 @@ import { verifySessionToken } from "@nexpress/core/session";
 import { canOpenAdminPath, isLimitedRole } from "@nexpress/core/permissions";
 import { htmlCacheControl } from "@nexpress/core/html-cache";
 import { canonicalHostRedirect } from "@nexpress/core/host-redirect";
+import { DEFAULT_CRAWL_HYGIENE, hasGoneParam, hasUnknownQueryParams, matchesGoneRule, sanitizeCrawlHygiene, type CrawlHygiene } from "@nexpress/core/crawl-hygiene";
 import { SESSION_COOKIE, getAuthSecret } from "@/lib/auth/config";
 import { isReservedPath } from "@/lib/public-paths";
 
 /** Yalnızca `admin` rolünün açabildiği yönetim yolları. */
 const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/audit", "/admin/settings", "/admin/requests", "/admin/system", "/admin/redirects", "/admin/backup", "/admin/forms/email", "/admin/integrations", "/admin/content-types", "/admin/users/roles", "/admin/plugins/packages", "/admin/members"];
 
-type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure };
+/** 410 kurallarının asla uygulanmadığı yollar: panel, API, medya, oturum sayfaları, site haritası ve kök dosyalar. */
+const PROTECTED_PATH = /^\/(?:admin|api|_next|media|og|login|forgot-password|reset-password|sitemaps|\.well-known)(?:\/|$)|^\/(?:robots\.txt|sitemap\.xml|llms(?:-full)?\.txt|favicon\.ico|feed\.xml|atom\.xml|indexnow-key\.txt|manifest\.webmanifest)$/;
+
+type SiteGate = LocaleMode & { index: boolean; permalink: PermalinkStructure; hygiene: CrawlHygiene };
 
 const modeCache = new Map<string, { mode: SiteGate; at: number }>();
 
@@ -20,7 +24,7 @@ const modeCache = new Map<string, { mode: SiteGate; at: number }>();
 async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate> {
   const hit = modeCache.get(siteId);
   if (hit && Date.now() - hit.at < 15_000) return hit.mode;
-  let fetched: (LocaleMode & { index?: boolean; permalink?: string }) | null = null;
+  let fetched: (LocaleMode & { index?: boolean; permalink?: string; hygiene?: unknown }) | null = null;
   const port = process.env.PORT || "3000";
   const origins = [...new Set([process.env.INTERNAL_APP_URL, `http://127.0.0.1:${port}`, request.nextUrl.origin].filter((o): o is string => Boolean(o)))];
   for (const origin of origins) {
@@ -31,7 +35,7 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
         cache: "no-store",
       });
       if (!res.ok) continue;
-      fetched = (await res.json()) as LocaleMode & { index?: boolean; permalink?: string };
+      fetched = (await res.json()) as LocaleMode & { index?: boolean; permalink?: string; hygiene?: unknown };
       break;
     } catch {
       /* sonraki adres */
@@ -40,7 +44,8 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
   const mode = resolveLocaleMode(fetched, hit?.mode ?? null);
   const index = typeof fetched?.index === "boolean" ? fetched.index : hit?.mode.index ?? true;
   const permalink = sanitizePermalinkStructure(fetched?.permalink ?? hit?.mode.permalink);
-  const gate: SiteGate = { ...mode, index, permalink };
+  const hygiene = fetched ? sanitizeCrawlHygiene(fetched.hygiene) : (hit?.mode.hygiene ?? DEFAULT_CRAWL_HYGIENE);
+  const gate: SiteGate = { ...mode, index, permalink, hygiene };
   modeCache.set(siteId, { mode: gate, at: Date.now() });
   return gate;
 }
@@ -64,6 +69,10 @@ export async function middleware(request: NextRequest) {
   // Tek dilli sitede dil ön eki yoktur: `/tr/x` → 308 `/x`; ön eksiz yol içeride `/tr/x` olarak yeniden yazılır.
   const gate = pathname === "/api/locale-mode" ? null : await siteGate(request, siteId);
   const indexing = gate?.index !== false;
+  // Spam/artık adresler: `410 Gone` (arama motoruna "kalıcı silindi"); yönetim, API, medya ve dosya yolları hariç
+  if (gate && (request.method === "GET" || request.method === "HEAD") && !PROTECTED_PATH.test(pathname) && (matchesGoneRule(pathname, gate.hygiene.goneRules) || hasGoneParam(searchParams, gate.hygiene.goneParams))) {
+    return new NextResponse(request.method === "HEAD" ? null : "410 Gone\n", { status: 410, headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex, nofollow", "Cache-Control": "public, max-age=86400" } });
+  }
   const publicPath = gate ? stripPermalinkPrefix(pathname, gate.permalink) : pathname;
   const seal = (response: NextResponse) => {
     if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
@@ -184,6 +193,10 @@ export async function middleware(request: NextRequest) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
   if (!indexing) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  // Bilinmeyen sorgu parametreli sayfa (`/?j=rastgele`) yinelenen adres olarak dizinlenmesin; izleme/sayfalama parametreleri etkilenmez
+  else if (gate?.hygiene.noindexUnknownParams && (request.method === "GET" || request.method === "HEAD") && !isReservedPath(pathname) && !pathname.startsWith("/admin") && !pathname.startsWith("/api") && hasUnknownQueryParams(searchParams)) {
+    response.headers.set("X-Robots-Tag", "noindex, follow");
+  }
   // Paylaşımlı (CDN/vekil) HTML önbelleği: çalışma zamanında `PUBLIC_CACHE_SECONDS`; yalnızca herkese aynı çıktı veren istekler
   if (!previewing && !searchParams.has("nx_draft")) {
     const cacheControl = htmlCacheControl({

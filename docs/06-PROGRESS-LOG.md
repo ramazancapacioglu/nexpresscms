@@ -1353,3 +1353,6 @@
 
 ### [2026-11-20] — Webmaster Merkezi: bağlantı penceresi, sekmeli raporlar, gerçek veri
 - ✅ Eski panel örnek/sahte sorgu (ör. "wolvox erp fiyat") gösteriyor ve hata nedenini yutuyordu; kaldırıldı. Yerine `WebmasterDashboard` (Genel bakış + 4 kaynak, bağlantı penceresi, bağlantı testi), `packages/seo-core/src/webmaster-reports.ts` (GSC, GA4, Bing, Yandex raporları, URL denetimi, hata açıklama), `lib/webmaster/connection.ts`. Gizli alanlar istemciye gönderilmez. Testler: seo-core (9 yeni).
+
+### [2026-11-20] — Tarama temizliği (spam adres saldırısı)
+- ✅ Günlük + GSC/Bing analizi: gerçek Googlebot/Bingbot yüz binlerce spam adres istiyor. nginx 410 kuralları (yedekli), uygulamada `crawlHygiene` (410 yolları/parametreleri, bilinmeyen parametreye noindex), panelde *Tarama temizliği* sekmesi. Bkz. `docs/04` §11h. Testler: core.

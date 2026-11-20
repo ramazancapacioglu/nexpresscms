@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { ArrowDownUp, Info, Search } from "lucide-react";
+import { AlertTriangle, ArrowDownUp, Info, Search } from "lucide-react";
 import type { ReportColumn, ReportTable, WebmasterReport } from "@nexpress/seo-core";
 import { StatTile, TimelineChart } from "./charts";
 import { formatValue } from "./format";
@@ -138,6 +138,21 @@ function Opportunities({ table }: { table: ReportTable }) {
   );
 }
 
+/** Sorgu dizeli adresler (ör. `/?j=rastgele`) çoğu zaman spam ya da yinelenen adrestir: dizinde görünüyorsa uyarır. */
+function SuspiciousUrls({ table }: { table: ReportTable }) {
+  const rows = (table.rows as Array<{ label: string; impressions: number }>).filter((r) => /\?[^=#\s]+=/.test(String(r.label)));
+  if (rows.length === 0) return null;
+  return (
+    <div role="note" className="v-card flex gap-3 p-3" style={{ borderColor: "color-mix(in srgb, var(--v-s2) 45%, transparent)" }}>
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--v-s2)" }} aria-hidden="true" />
+      <div className="space-y-1 text-[12px]">
+        <p className="v-ink font-semibold">{rows.length} sorgu dizeli adres arama sonuçlarında görünüyor</p>
+        <p className="v-ink2">Bunlar genellikle spam ya da yinelenen adreslerdir. Örnekler: {rows.slice(0, 3).map((r) => String(r.label).replace(/^https?:\/\/[^/]+/, "")).join(" · ")}. <strong>Tarama temizliği</strong> sekmesinden ilgili parametre ya da yola 410 kuralı ekleyin.</p>
+      </div>
+    </div>
+  );
+}
+
 /** Tek rapor (kaynak fark etmeksizin): notlar, KPI'lar, zaman serileri, tablolar. */
 export function ReportView({ report, loading = false, days }: { report: WebmasterReport; loading?: boolean; days: number }) {
   return (
@@ -160,6 +175,7 @@ export function ReportView({ report, loading = false, days }: { report: Webmaste
       ) : null}
       {report.source === "gsc" && report.section === "queries" && report.tables[0] ? <Opportunities table={report.tables[0]} /> : null}
       {report.source === "bing" && report.section === "queries" && report.tables[0] ? <Opportunities table={report.tables[0]} /> : null}
+      {(report.source === "gsc" || report.source === "bing") && report.section === "pages" && report.tables[0] ? <SuspiciousUrls table={report.tables[0]} /> : null}
       {report.tables.map((t) => <DataTable key={t.id} table={t} loading={loading} />)}
     </div>
   );

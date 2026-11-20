@@ -8,6 +8,7 @@ import { sanitizeStylePresets, type StylePreset } from "./style-presets";
 import type { ContentType } from "./types";
 import type { WebmasterVerification } from "./webmaster-connect";
 import { sanitizeOrganizationSchema } from "./organization-schema";
+import { sanitizeCrawlHygiene, type CrawlHygiene } from "./crawl-hygiene";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
 
 export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
@@ -76,6 +77,8 @@ export interface SeoEngineSettings {
   sameAs: string[];
   /** Kuruluş düğümüne eklenen yerel işletme bilgisi. İzin listesinden geçer. */
   organizationSchema?: Record<string, unknown>;
+  /** Tarama temizliği: spam/artık adresler için 410 kuralları ve bilinmeyen sorgu parametresi politikası. */
+  crawlHygiene?: CrawlHygiene;
   robotsTxtExtra: string;
   /**
    * Arama motoru indeksi. `false` iken tüm site `noindex`, site haritası boş
@@ -381,6 +384,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       ...mergeSection(DEFAULT_SEO_SETTINGS, r.seo),
       schemaPlacements: sanitizeSchemaPlacements(seoRaw.schemaPlacements),
       organizationSchema: sanitizeOrganizationSchema(seoRaw.organizationSchema),
+      crawlHygiene: sanitizeCrawlHygiene(seoRaw.crawlHygiene),
       permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
     },
     general: {

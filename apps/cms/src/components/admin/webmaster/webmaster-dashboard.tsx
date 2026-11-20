@@ -2,18 +2,19 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, CircleDashed, KeyRound, LayoutDashboard } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDashed, KeyRound, LayoutDashboard, ShieldAlert } from "lucide-react";
 import type { WebmasterVerification } from "@nexpress/core";
 import type { WebmasterSource } from "@nexpress/seo-core";
 import type { SaveIntegrationsInput } from "@/app/admin/seo/actions";
 import type { ConnectionStatus } from "@/lib/webmaster/connection";
 import { Sparkline } from "./charts";
 import { ConnectionDialog, type SecretsSet } from "./connection-dialog";
+import { CrawlHygienePanel } from "./crawl-hygiene-panel";
 import { formatValue } from "./format";
 import { SOURCE_NAMES, SourcePanel, useReport } from "./source-panel";
 import { VizTheme } from "./viz-theme";
 
-type Tab = "overview" | WebmasterSource;
+type Tab = "overview" | WebmasterSource | "hygiene";
 const SOURCES: WebmasterSource[] = ["gsc", "ga4", "bing", "yandex"];
 const BLURB: Record<WebmasterSource, string> = {
   gsc: "Google aramasında tıklama, gösterim, sorgu, dizin durumu",
@@ -126,7 +127,7 @@ export function WebmasterDashboard({
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => connect(tab === "overview" ? "gsc" : tab)} className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[12px] font-semibold v-ink hover:bg-[var(--v-wash)]" style={{ borderColor: "var(--v-ring)" }}>
+          <button type="button" onClick={() => connect(tab === "overview" || tab === "hygiene" ? "gsc" : tab)} className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[12px] font-semibold v-ink hover:bg-[var(--v-wash)]" style={{ borderColor: "var(--v-ring)" }}>
             <KeyRound className="h-3.5 w-3.5" aria-hidden="true" /> Bağlantı bilgileri
           </button>
         </div>
@@ -137,11 +138,11 @@ export function WebmasterDashboard({
       ) : null}
 
       <nav aria-label="Webmaster bölümleri" className="flex flex-wrap gap-2">
-        {(["overview", ...SOURCES] as Tab[]).map((id) => (
+        {(["overview", ...SOURCES, "hygiene"] as Tab[]).map((id) => (
           <button key={id} type="button" aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)} className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-semibold transition ${tab === id ? "bg-nx-primary text-nx-primary-fg shadow-sm" : "bg-nx-subtle text-nx-soft hover:text-nx-fg"}`}>
-            {id === "overview" ? <LayoutDashboard className="h-3.5 w-3.5" aria-hidden="true" /> : <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${statuses[id].configured ? "bg-emerald-500" : "bg-nx-soft/40"}`} />}
-            {id === "overview" ? "Genel bakış" : SOURCE_NAMES[id]}
-            {id !== "overview" ? <span className="sr-only">{statuses[id].configured ? "(bağlı)" : "(bağlı değil)"}</span> : null}
+            {id === "overview" ? <LayoutDashboard className="h-3.5 w-3.5" aria-hidden="true" /> : id === "hygiene" ? <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" /> : <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${statuses[id].configured ? "bg-emerald-500" : "bg-nx-soft/40"}`} />}
+            {id === "overview" ? "Genel bakış" : id === "hygiene" ? "Tarama temizliği" : SOURCE_NAMES[id]}
+            {id !== "overview" && id !== "hygiene" ? <span className="sr-only">{statuses[id].configured ? "(bağlı)" : "(bağlı değil)"}</span> : null}
           </button>
         ))}
       </nav>
@@ -152,6 +153,8 @@ export function WebmasterDashboard({
             <OverviewCard key={`${s}-${version}`} source={s} status={statuses[s]} days={days} onOpen={() => setTab(s)} onConnect={() => connect(s)} />
           ))}
         </div>
+      ) : tab === "hygiene" ? (
+        <CrawlHygienePanel />
       ) : (
         <SourcePanel key={`${tab}-${version}`} source={tab} days={days} origin={siteUrl} onOpenConnection={connect} />
       )}
