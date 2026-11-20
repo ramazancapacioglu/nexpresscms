@@ -133,6 +133,10 @@ export interface SeoEngineSettings {
   /** IndexNow anahtarı. Veritabanında şifreli durur. Ortam değişkeni yoksa bu kullanılır. */
   indexNowKey?: string;
   noIndexTagArchives: boolean;
+  /** Görsel meta verisi (Google görsel lisans/telif): sayfa görsellerine yaratıcı, kredi, telif ve lisans bilgisi yazılır. Varsayılan açık. */
+  imageRights: boolean;
+  /** Görsel lisans sayfası adresi (`license`); boşsa site kökü. */
+  imageLicenseUrl: string;
   /** Kategori arşivleri site haritasına girer. Kayıt yoksa girer. */
   sitemapIncludeCategories?: boolean;
   /** Etiket arşivleri site haritasına girer. Kayıt yoksa girer. `noIndexTagArchives` açıksa yine girmez. */

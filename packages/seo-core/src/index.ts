@@ -1,4 +1,6 @@
-import { cmsHooks, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
+import { cmsHooks, normalizeAppCategory, softwareReference, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
+
+export { softwareReference };
 import { buildBreadcrumbNode, deriveAutoSchemaNodes, plainFaqText } from "./engine";
 
 export * from "./engine";
@@ -32,6 +34,8 @@ export interface BuildCoreSchemaInput {
     schemaType: string;
     schemaAttributes?: Record<string, unknown>;
     authorName?: string;
+    /** Yazar sayfası adresi (mutlak ya da göreli): Article `author.url`. */
+    authorUrl?: string;
     updatedAt?: Date;
     publishedAt?: Date | null;
     blocks?: BlockNode[];
@@ -46,14 +50,22 @@ export interface BuildCoreSchemaInput {
   };
   /** Motor ayarları: bloklardan otomatik FAQPage/HowTo/Review üret. */
   autoSchema?: boolean;
-  organization?: { name?: string; logo?: string; sameAs?: string[]; /** Yerel işletme alanları; `@type` dizisi `LocalBusiness` içerebilir. */ schema?: Record<string, unknown> };
+  organization?: {
+    name?: string;
+    logo?: string;
+    sameAs?: string[];
+    /** Yerel işletme alanları; `@type` dizisi `LocalBusiness` içerebilir. */
+    schema?: Record<string, unknown>;
+    /** Verilirse sayfa görsellerine yaratıcı/kredi/telif/lisans yazılır (Google görsel meta verisi). `licenseUrl` boşsa site kökü. */
+    imageRights?: { licenseUrl?: string };
+  };
   breadcrumbs?: Array<{ name: string; url: string }>;
   /** Gövde görselleri (en çok 12): sayfa varlığına `associatedMedia` (yazılımda `screenshot`) olarak işlenir. */
   images?: SchemaImageInput[];
   /** Site içi arama adres şablonu (`https://x.test/ara?q={search_term_string}`): WebSite `SearchAction`. */
   searchUrlTemplate?: string;
   /** Ana sayfada kuruluşun ürün/hizmet kataloğu (`hasOfferCatalog`). */
-  offerCatalog?: Array<{ name: string; url: string; description?: string }>;
+  offerCatalog?: Array<{ name: string; url: string; description?: string; applicationCategory?: string; operatingSystem?: string; price?: string; currency?: string }>;
   aggregateRating?: { ratingValue: number; reviewCount: number };
 }
 
@@ -76,22 +88,39 @@ const WEBPAGE_FAMILY = new Set(["WebPage", "AboutPage", "ContactPage", "Collecti
 
 const normName = (value: string | undefined | null): string => (value ?? "").toLocaleLowerCase("tr").replace(/\s+/g, " ").trim();
 
+/** Görsel hakları (Google görsel meta verisi): yaratıcı, kredi, telif bildirimi, lisans ve lisans edinme sayfası. */
+function imageRightsFor(orgName: string, baseUrl: string, pageUrl: string, licenseUrl: string | undefined, now: Date = new Date()): Record<string, unknown> {
+  return {
+    creator: { "@type": "Organization", name: orgName },
+    creditText: orgName,
+    copyrightNotice: `© ${now.getFullYear()} ${orgName}`,
+    license: licenseUrl || `${baseUrl}/`,
+    acquireLicensePage: pageUrl,
+  };
+}
+
 /** Tek görsel için `ImageObject`: `contentUrl` (sorgu parametresiz özgün adres), ad, açıklama, boyut. */
 function imageObject(baseUrl: string, image: SchemaImageInput, id?: string, extra?: Record<string, unknown>): SchemaGraphNode {
-  const abs = image.url.startsWith("/") ? `${baseUrl}${image.url}` : image.url;
-  const bare = abs.split("?")[0] ?? abs;
+  const given = image.url.startsWith("/") ? `${baseUrl}${image.url}` : image.url;
+  // Yerel medya: yönlendirme veren `/media/<kimlik>` değil, doğrudan dosya adresi (`/media/<kimlik>/1280.webp`, site haritasındakiyle aynı).
+  // Google görseli sayfadaki/sitemap'teki gerçek dosya adresiyle eşler; boyut 1280 px üst sınırıyla ölçeklenir.
+  const mediaId = /\/media\/(med_[A-Za-z0-9_-]+)/.exec(given)?.[1];
+  const abs = mediaId ? `${baseUrl}/media/${mediaId}/1280.webp` : given;
+  const scale = mediaId && image.width && image.height && image.width > 1280 ? 1280 / image.width : 1;
+  const width = image.width ? Math.round(image.width * scale) : undefined;
+  const height = image.height ? Math.round(image.height * scale) : undefined;
   const name = image.title?.trim() || image.alt?.trim() || "";
   const caption = image.caption?.trim() || image.alt?.trim() || "";
   return {
     "@type": "ImageObject",
     ...(id ? { "@id": id } : {}),
     url: abs,
-    contentUrl: /\/media\/med_[A-Za-z0-9_-]+$/.test(bare) ? bare : abs,
+    contentUrl: abs,
     ...(name ? { name } : {}),
     ...(caption ? { caption } : {}),
     ...(image.alt?.trim() && image.alt.trim() !== caption ? { description: image.alt.trim() } : {}),
-    ...(image.width && image.height ? { width: image.width, height: image.height } : {}),
-    ...(image.mime ? { encodingFormat: image.mime } : {}),
+    ...(width && height ? { width, height } : {}),
+    ...(mediaId ? { encodingFormat: "image/webp" } : image.mime ? { encodingFormat: image.mime } : {}),
     ...(extra ?? {}),
   };
 }
@@ -119,6 +148,9 @@ export async function buildPageSchemaGraph(
   if (input.pageUrl.replace(/\/$/, "") === baseUrl) input = { ...input, pageUrl: `${baseUrl}/` };
   const orgId = `${baseUrl}/#organization`;
   const websiteId = `${baseUrl}/#website`;
+
+  const orgDisplayName = input.organization?.name || input.siteName;
+  const rights = input.organization?.imageRights ? imageRightsFor(orgDisplayName, baseUrl, input.pageUrl, input.organization.imageRights.licenseUrl) : undefined;
 
   const baseNodes: SchemaGraphNode[] = [
     {
@@ -154,7 +186,7 @@ export async function buildPageSchemaGraph(
     orgNode.hasOfferCatalog = {
       "@type": "OfferCatalog",
       name: `${input.organization?.name || input.siteName} ürün ve hizmetleri`,
-      itemListElement: input.offerCatalog.slice(0, 40).map((item) => ({ "@type": "Offer", itemOffered: { "@type": "SoftwareApplication", name: item.name, url: item.url, ...(item.description ? { description: item.description } : {}) } })),
+      itemListElement: input.offerCatalog.slice(0, 40).map((item) => ({ "@type": "Offer", itemOffered: softwareReference(item) })),
     };
   }
   if (input.searchUrlTemplate) {
@@ -172,6 +204,7 @@ export async function buildPageSchemaGraph(
     const cleanAttrs = Object.fromEntries(
       Object.entries((c.schemaAttributes ?? {}) as Record<string, unknown>).filter(([k]) => !k.startsWith("_") && !INTERNAL_ATTRS.has(k) && !IMPORT_TRACE.test(k))
     );
+    if (typeof cleanAttrs.applicationCategory === "string") cleanAttrs.applicationCategory = normalizeAppCategory(cleanAttrs.applicationCategory) ?? cleanAttrs.applicationCategory;
     const entity: SchemaGraphNode = {
       "@type": c.schemaType || "WebPage",
       "@id": entityId,
@@ -190,12 +223,12 @@ export async function buildPageSchemaGraph(
             // Yazar adı kuruluşun adıyla aynıysa kişi değil kuruluştur (ör. "Akınsoft İzmir Ana Bayi" Person olmaz)
             author:
               c.authorName?.trim() && ![normName(input.siteName), normName(input.organization?.name)].includes(normName(c.authorName))
-                ? { "@type": "Person", name: c.authorName.trim() }
-                : { "@id": orgId },
+                ? { "@type": "Person", name: c.authorName.trim(), ...(c.authorUrl ? { url: c.authorUrl.startsWith("/") ? `${baseUrl}${c.authorUrl}` : c.authorUrl } : {}) }
+                : { "@type": "Organization", "@id": orgId, name: orgDisplayName, url: baseUrl },
           }
         : {}),
       ...(c.imageUrl && !c.imageUrl.startsWith("data:")
-        ? { image: imageObject(baseUrl, { ...(c.imageMeta ?? {}), url: c.imageUrl, alt: c.imageMeta?.alt || c.imageAlt || c.title }, `${input.pageUrl}#primaryimage`) }
+        ? { image: imageObject(baseUrl, { ...(c.imageMeta ?? {}), url: c.imageUrl, alt: c.imageMeta?.alt || c.imageAlt || c.title }, `${input.pageUrl}#primaryimage`, rights) }
         : {}),
       ...(c.keywords && c.keywords.length > 0 ? { keywords: c.keywords.join(", ") } : {}),
       ...(c.articleSection ? { articleSection: c.articleSection } : {}),
@@ -226,7 +259,7 @@ export async function buildPageSchemaGraph(
         name: sw.name || c.title,
         ...(sw.alternateName ? { alternateName: sw.alternateName } : {}),
         operatingSystem: sw.os || "Windows, Web",
-        applicationCategory: sw.category || "BusinessApplication",
+        applicationCategory: normalizeAppCategory(sw.category) || "BusinessApplication",
         ...(sw.subCategory ? { applicationSubCategory: sw.subCategory } : {}),
         ...(sw.version ? { softwareVersion: sw.version } : {}),
         ...(sw.requirements ? { memoryRequirements: sw.requirements } : {}),
@@ -307,7 +340,7 @@ export async function buildPageSchemaGraph(
         return true;
       })
       .slice(0, 12)
-      .map((img) => imageObject(baseUrl, img));
+      .map((img, index) => imageObject(baseUrl, img, `${input.pageUrl}#image-${index}`, rights));
     if (bodyImages.length > 0) {
       if (c.schemaType === "SoftwareApplication") entity.screenshot = bodyImages.slice(0, 6);
       else entity.associatedMedia = bodyImages;

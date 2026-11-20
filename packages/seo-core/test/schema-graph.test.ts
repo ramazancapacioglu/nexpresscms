@@ -28,7 +28,7 @@ test("yazı şeması: yayın tarihi, kırıntı, görsel ve kuruluş yazarı; i�
   const post = nodes.find((n) => n["@type"] === "BlogPosting") as Record<string, unknown>;
   assert.equal(post.datePublished, "2026-07-03T11:23:13.000Z");
   assert.equal(post.dateModified, "2026-11-10T00:00:00.000Z");
-  assert.deepEqual(post.author, { "@id": "https://ornek.test/#organization" }, "yazar adı yoksa uydurma kişi yazılmaz");
+  assert.deepEqual(post.author, { "@type": "Organization", "@id": "https://ornek.test/#organization", name: "Örnek Site", url: "https://ornek.test" }, "yazar adı yoksa uydurma kişi yazılmaz");
   assert.ok(post.image);
   for (const leaked of ["wpId", "wpKind", "migratedFrom", "importedAt", "_demo", "canvas"]) assert.equal(leaked in post, false, leaked);
   assert.equal(post.operatingSystem, "Windows", "gerçek özellikler korunur");
@@ -87,7 +87,7 @@ test("ana varlık SoftwareApplication ise zengin yazılım alanları aynı düğ
   assert.equal(apps.length, 1, "ikinci SoftwareApplication düğümü yok");
   assert.equal(apps[0]!.applicationCategory, "FinanceApplication");
   assert.deepEqual(apps[0]!.offers, { "@type": "Offer", price: "19490", priceCurrency: "TRY", url: "https://ornek.test/yazi", availability: "https://schema.org/InStock", seller: { "@id": "https://ornek.test/#organization" } });
-  assert.equal((apps[0]!.image as { url: string }).url, "https://ornek.test/media/med_x?w=1200&h=800");
+  assert.equal((apps[0]!.image as { url: string }).url, "https://ornek.test/media/med_x/1280.webp");
 });
 
 test("kuruluş: açıklama ve görsel korunur, logo @id alır, iletişim noktası ve çalışan sayısı sayısal üretilir; WebSite arama eylemi taşır", async () => {
@@ -99,7 +99,7 @@ test("kuruluş: açıklama ve görsel korunur, logo @id alır, iletişim noktas�
   const org = graph["@graph"].find((n) => n["@id"] === "https://ornek.test/#organization") as Record<string, any>;
   assert.equal(org.description, "İzmir bayisi");
   assert.equal(org.logo["@id"], "https://ornek.test/#logo");
-  assert.equal(org.logo.contentUrl, "https://ornek.test/media/med_logo");
+  assert.equal(org.logo.contentUrl, "https://ornek.test/media/med_logo/1280.webp");
   assert.deepEqual(org.image, { "@id": "https://ornek.test/#logo" });
   assert.equal(org.contactPoint[0].telephone, "+90232");
   assert.equal(org.numberOfEmployees.value, 5);
@@ -121,9 +121,10 @@ test("ürün sayfası: WebPage düğümü, birincil görsel (boyutlu), gövde g�
   const app = nodes.find((n) => n["@type"] === "SoftwareApplication")!;
   assert.equal(app.image["@id"], "https://ornek.test/yazi#primaryimage");
   assert.equal(app.image.width, 1200);
-  assert.equal(app.image.contentUrl, "https://ornek.test/media/med_main");
+  assert.equal(app.image.contentUrl, "https://ornek.test/media/med_main/1280.webp");
   assert.equal(app.screenshot.length, 1, "birincil görselin kopyası gövdeden elenir");
-  assert.equal(app.screenshot[0].contentUrl, "https://ornek.test/media/med_a1");
+  assert.equal(app.screenshot[0].contentUrl, "https://ornek.test/media/med_a1/1280.webp");
+  assert.equal(app.screenshot[0].encodingFormat, "image/webp");
   assert.equal(app.screenshot[0].caption, "Ana ekran");
   const page = nodes.find((n) => n["@type"] === "WebPage")!;
   assert.deepEqual(page.primaryImageOfPage, { "@id": "https://ornek.test/yazi#primaryimage" });
@@ -133,7 +134,7 @@ test("ürün sayfası: WebPage düğümü, birincil görsel (boyutlu), gövde g�
 
   const post = await buildPageSchemaGraph({ ...input, content: { ...input.content, authorName: "Örnek Site" } } as never);
   const blog = (post["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "BlogPosting")!;
-  assert.deepEqual(blog.author, { "@id": "https://ornek.test/#organization" });
+  assert.deepEqual(blog.author, { "@type": "Organization", "@id": "https://ornek.test/#organization", name: "Örnek Site", url: "https://ornek.test" });
 });
 
 test("ana sayfa: ürün kataloğu kuruluşa OfferCatalog olarak bağlanır", async () => {
@@ -154,4 +155,36 @@ test("SSS: soru/cevap düz metin olur (HTML yok) ve yinelenen soru bir kez yazı
   const faq = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "FAQPage")!;
   assert.deepEqual(faq.mainEntity.map((q: any) => q.name), ["Nereden alırım ?", "Fiyat?"]);
   assert.equal(faq.mainEntity[0].acceptedAnswer.text, "Bayiden & web.");
+});
+
+test("görsel hakları: yaratıcı, kredi, telif, lisans ve lisans edinme sayfası; ölçek 1280 sınırı; yazar adresi", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    organization: { name: "Örnek Ltd", imageRights: { licenseUrl: "https://ornek.test/lisans" } },
+    images: [{ url: "/media/med_big", alt: "Geniş", width: 2560, height: 1440 }],
+    content: { ...input.content, imageUrl: "/media/med_cover", authorName: "Ayşe Yılmaz", authorUrl: "/yazar/ayse-yilmaz" },
+  } as never);
+  const nodes = graph["@graph"] as Array<Record<string, any>>;
+  const post = nodes.find((n) => n["@type"] === "BlogPosting")!;
+  for (const image of [post.image, post.associatedMedia[0]]) {
+    assert.deepEqual(image.creator, { "@type": "Organization", name: "Örnek Ltd" });
+    assert.equal(image.creditText, "Örnek Ltd");
+    assert.match(image.copyrightNotice, /^© \d{4} Örnek Ltd$/);
+    assert.equal(image.license, "https://ornek.test/lisans");
+    assert.equal(image.acquireLicensePage, "https://ornek.test/yazi");
+  }
+  assert.equal(post.associatedMedia[0].width, 1280);
+  assert.equal(post.associatedMedia[0].height, 720);
+  assert.equal(post.author.url, "https://ornek.test/yazar/ayse-yilmaz");
+  const bare = await buildPageSchemaGraph({ ...input, content: { ...input.content, imageUrl: "/media/med_cover" } } as never);
+  assert.equal((bare["@graph"].find((n) => n["@type"] === "BlogPosting") as any).image.creator, undefined, "ayar yoksa hak alanı yazılmaz");
+});
+
+test("ürün göndermesi: en az iki bilgi varsa SoftwareApplication, yoksa türsüz", async () => {
+  const { softwareReference } = await import("../src/index");
+  assert.equal((softwareReference({ name: "A", url: "https://o.test/a" }) as any)["@type"], undefined);
+  assert.equal((softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication" }) as any)["@type"], undefined);
+  const full = softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication", operatingSystem: "Windows 11" }) as any;
+  assert.equal(full["@type"], "SoftwareApplication");
+  assert.equal(full.operatingSystem, "Windows 11");
 });

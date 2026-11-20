@@ -197,6 +197,13 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **Sahte veri:** varsayılan kenar çubuğu ön ayarları (blog, SSS, sayfa) ve eski kayıt yedeği artık örnek kuponlu "Kampanya" kutusu (`AVANTAJ25`) ve örnek iletişim kartı (`+90 (212) 000 00 00`, `destek@ornek.com`) içermez (ziyaretçiye sahte veri gösterilmez). Bu sitede SSS kenar çubuğuna gerçek iletişim kartı panel verisi olarak eklendi.
 - **Veri bakımı (sitede):** kesik TL;DR/meta açıklamaları tamamlandı, kısa ÖKC açıklamaları uzatıldı, iç bağlantılarda sondaki eğik çizgi ve bilinen yönlendirmeler doğrudan hedefe çevrildi, `site_dna` ve iletişim e-postası yazıldı, KDV aracı `Web` işletim sistemi. İçerikler `saveContent` ile yeniden kaydedilip markdown yeniden üretildi (`updatedAt` korunur).
 
+## 11f. Görsel meta verisi, Article ve ürün göndermeleri (2026-11-20)
+
+Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Article):
+- **Görsel meta verisi:** `contentUrl` + `creator`/`creditText`/`copyrightNotice`/`license` alanlarından en az biri gerekir; `license` "Licensable" rozeti için, `acquireLicensePage` önerilir. Eşleme, görselin sayfadaki **gerçek dosya adresiyle** yapılır; bu yüzden `contentUrl`/`url` yerel medyada yönlendirme veren `/media/<kimlik>` değil `/media/<kimlik>/1280.webp`'tir (site haritasıyla aynı; boyut 1280 px üst sınırıyla ölçeklenir). Ayarlar: `seo.imageRights` (varsayılan açık) ve `seo.imageLicenseUrl` (boşsa site kökü); `acquireLicensePage` sayfanın kendisidir. Kapatmak için `imageRights=false`.
+- **SoftwareApplication:** Google kategori, işletim sistemi, teklif ve puandan en az ikisini ister. Katalog (`hasOfferCatalog`) ve kampanya `itemOffered` göndermeleri `softwareReference` ile üretilir: ürün sayfasındaki `richSchema.software` bilgisi (`softwareFactsOf`) varsa tam `SoftwareApplication`, yoksa türsüz (`@id`, ad, adres). Eksik özellikli tür artık yazılmaz.
+- **Kampanya sayfası:** `Article` (yazar `Person` + `url`, bölüm, anahtar sözcük, görsel hakları) + `WebPage` + `Offer` + kuruluş + kırıntı. Yazı yazarının `Person.url` değeri `/yazar/<ad>` sayfasıdır.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

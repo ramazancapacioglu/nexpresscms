@@ -14,5 +14,6 @@ export function organizationFor(seo: SeoEngineSettings) {
     ...(seo.organizationLogo ? { logo: seo.organizationLogo } : {}),
     ...(seo.sameAs?.length ? { sameAs: seo.sameAs } : {}),
     ...(seo.organizationSchema ? { schema: seo.organizationSchema } : {}),
+    ...(seo.imageRights !== false ? { imageRights: { ...(seo.imageLicenseUrl ? { licenseUrl: seo.imageLicenseUrl } : {}) } } : {}),
   };
 }

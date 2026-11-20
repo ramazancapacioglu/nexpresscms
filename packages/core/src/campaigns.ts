@@ -5,6 +5,8 @@
  * birleştirir; Schema.org Offer ve ItemList JSON-LD şemaları üretir.
  */
 
+import { softwareReference } from "./software-reference";
+
 export interface CampaignFields {
   /** İndirim oranı veya tutarı (örn: "%35 İndirim", "5.000 TL İndirim") */
   discount?: string;
@@ -189,6 +191,8 @@ export function buildCampaignOfferJsonLd(
     siteUrl: string;
     pageUrl: string;
     siteName: string;
+    /** İlgili ürün sayfasının yazılım bilgisi (varsa): ürün göndermesi geçerli `SoftwareApplication` olur. */
+    product?: { applicationCategory?: string; operatingSystem?: string; price?: string; currency?: string };
   }
 ): Record<string, unknown> {
   const { siteUrl, pageUrl, siteName } = options;
@@ -229,16 +233,19 @@ export function buildCampaignOfferJsonLd(
 
   if (campaign.productName) {
     const isProduct = campaign.productUrl?.includes("/urun") || campaign.productUrl?.includes("/product");
-    const itemOffered: Record<string, unknown> = {
-      "@type": isProduct ? "Product" : "SoftwareApplication",
-      name: campaign.productName,
-    };
-    if (campaign.productUrl) {
-      itemOffered.url = campaign.productUrl.startsWith("http")
+    const productUrl = campaign.productUrl
+      ? campaign.productUrl.startsWith("http")
         ? campaign.productUrl
-        : `${siteUrl.replace(/\/$/, "")}/${campaign.productUrl.replace(/^\//, "")}`;
+        : `${siteUrl.replace(/\/$/, "")}/${campaign.productUrl.replace(/^\//, "")}`
+      : undefined;
+    if (isProduct) {
+      offer.itemOffered = { "@type": "Product", name: campaign.productName, ...(productUrl ? { url: productUrl } : {}) };
+    } else if (productUrl) {
+      // Eksik özellikli `SoftwareApplication` Google'da kritik hata üretir: bilgi yoksa türsüz gönderme yazılır
+      offer.itemOffered = softwareReference({ name: campaign.productName, url: productUrl, ...(options.product ?? {}) });
+    } else {
+      offer.itemOffered = { name: campaign.productName };
     }
-    offer.itemOffered = itemOffered;
   }
 
   return offer;

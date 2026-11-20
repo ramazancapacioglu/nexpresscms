@@ -1343,3 +1343,6 @@
 
 ### [2026-11-20] — akinsoftizmir.com.tr: anlamsal arama ve HTML önbelleği
 - ✅ Sunucuda `OPENAI_API_KEY` tanımlandı; `reindexSite` ile 132 içerik / 492 parça `text-embedding-3-small` ile dizinlendi (MCP `nexpress_search_corpus` artık `semantic`). `PUBLIC_CACHE_SECONDS=60` (paylaşımlı önbellek için `s-maxage=60`; çerezli/sorgulu/oturumlu istekler hariç). `/wolvox-erp` başlık ve açıklaması güncel sürüm 26 ile eşlendi.
+
+### [2026-11-20] — Görsel meta verisi ve ürün/kampanya şemaları
+- ✅ `ImageObject`: doğrudan dosya adresi (`/media/<kimlik>/1280.webp`), yaratıcı/kredi/telif/lisans/lisans edinme sayfası; yazar `url`; kampanya sayfası `Article`; kampanya ve ana sayfa katalog ürün göndermeleri geçerli (`softwareReference`). Bkz. `docs/04` §11f. Testler: seo-core, core.

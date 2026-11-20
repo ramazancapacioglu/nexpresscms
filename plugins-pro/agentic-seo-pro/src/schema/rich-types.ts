@@ -1,4 +1,4 @@
-import type { SchemaGraphNode } from "@nexpress/core";
+import { normalizeAppCategory, type SchemaGraphNode } from "@nexpress/core";
 
 /**
  * Zengin şema türleri (saf mantık). Editörde `schemaAttributes.richSchema` olarak saklanır; yalnızca ilgili modül
@@ -103,7 +103,7 @@ export function buildRichNodes(rich: RichSchema | null | undefined, ctx: RichCon
       "@type": "SoftwareApplication",
       "@id": `${ctx.url}#software`,
       name: clip(s.name, 120) || ctx.title,
-      applicationCategory: clip(s.category, 60),
+      applicationCategory: normalizeAppCategory(clip(s.category, 60)),
       operatingSystem: clip(s.os, 80),
       ...(clip(s.version, 30) ? { softwareVersion: clip(s.version, 30) } : {}),
       ...(safeUrl(s.url) ? { url: safeUrl(s.url) } : {}),

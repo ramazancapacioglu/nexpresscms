@@ -34,6 +34,8 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   enableLlmsTxt: true,
   enableIndexNow: true,
   noIndexTagArchives: false,
+  imageRights: true,
+  imageLicenseUrl: "",
   sitemapIncludeCategories: true,
   sitemapIncludeTags: true,
   sitemapTypes: ["page", "post", "kb_tech", "ai_prompt", "campaign", "product"],

@@ -437,6 +437,7 @@ export default async function PublicDynamicContentPage({
       schemaType: placement?.schemaType ?? content.schemaType,
       schemaAttributes: content.schemaAttributes,
       authorName: pub.authorName || content.authorName,
+      authorUrl: authorHref ?? undefined,
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,

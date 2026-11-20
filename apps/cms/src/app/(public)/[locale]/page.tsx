@@ -1,4 +1,4 @@
-import { hasDynamicQueryParams, pickFrontSlug, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
+import { hasDynamicQueryParams, pickFrontSlug, softwareFactsOf, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
 import { siteLocaleBase } from "@/lib/locale-url";
 import React from "react";
 import { headers } from "next/headers";
@@ -114,7 +114,7 @@ export default async function PublicHomePage({
     .filter((c) => c.type === "page" && c.schemaType === "SoftwareApplication")
     .sort((a, b) => b.importanceScore - a.importanceScore)
     .slice(0, 30)
-    .map((c) => ({ name: c.title, url: `${baseUrl}${lb}/${c.slug}`, ...(c.tldr ? { description: c.tldr } : {}) }));
+    .map((c) => ({ name: c.title, url: `${baseUrl}${lb}/${c.slug}`, ...(c.tldr ? { description: c.tldr } : {}), ...softwareFactsOf(c.schemaAttributes) }));
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: localizedSite.name,

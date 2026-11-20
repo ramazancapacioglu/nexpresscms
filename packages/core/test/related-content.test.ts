@@ -38,3 +38,15 @@ test("markdown: kalın/italik kenar boşlukları işaretin dışına alınır; k
   assert.equal(contentPath(undefined, { type: "campaign", slug: "x" }), "/kampanya/x");
   assert.equal(contentPath(undefined, { type: "page", slug: "x" }), "/x");
 });
+
+import { normalizeAppCategory, softwareFactsOf } from "../src/software-reference";
+
+test("uygulama kategorisi: Google'ın desteklediği değerler korunur, diğerleri en yakın desteklenene çevrilir", () => {
+  assert.equal(normalizeAppCategory("FinanceApplication"), "FinanceApplication");
+  assert.equal(normalizeAppCategory("businessapplication"), "BusinessApplication");
+  assert.equal(normalizeAppCategory("RestaurantApplication"), "BusinessApplication");
+  assert.equal(normalizeAppCategory("ApplicationSuite"), "BusinessApplication");
+  assert.equal(normalizeAppCategory("Ticari Program, Muhasebe Programı"), "FinanceApplication");
+  assert.equal(normalizeAppCategory(""), undefined);
+  assert.deepEqual(softwareFactsOf({ richSchema: { software: { category: "RetailApplication", os: "Windows 11", price: "100", currency: "TRY" } } }), { applicationCategory: "BusinessApplication", operatingSystem: "Windows 11", price: "100", currency: "TRY" });
+});

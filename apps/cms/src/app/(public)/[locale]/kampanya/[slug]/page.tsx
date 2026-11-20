@@ -11,6 +11,7 @@ import { resolveDraftPreview } from "@/lib/draft-preview";
 import {
   resolveCampaignData,
   resolveLocalizedSiteIdentity,
+  softwareFactsOf,
   buildCampaignOfferJsonLd,
   type ResolvedCampaign,
 } from "@nexpress/core";
@@ -18,6 +19,7 @@ import { jsonLdString, buildPageSchemaGraph } from "@nexpress/seo-core";
 import { createTranslator } from "@nexpress/i18n";
 import { organizationFor } from "@/lib/organization-schema";
 import { schemaImagesFor } from "@/lib/schema-images";
+import { authorSlug } from "@/lib/author-slug";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 
 export const dynamic = "force-dynamic";
@@ -134,11 +136,17 @@ export default async function PublicCampaignDetailPage({
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const themeTokens = site?.designTokens ?? activeTheme.tokens;
 
+  // İlgili ürün sayfasının yazılım bilgisi (kategori, işletim sistemi, fiyat): teklifteki ürün göndermesi eksiksiz olsun
+  const allContents = await repo.listContents({ locale });
+  const productSlug = camp.productUrl ? camp.productUrl.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop() : undefined;
+  const productRow = productSlug ? allContents.find((c) => c.slug === productSlug && c.status === "published") : undefined;
+
   // Google Schema.org Offer JSON-LD
   const offerJsonLd = buildCampaignOfferJsonLd(camp, {
     siteUrl: baseUrl,
     pageUrl,
     siteName,
+    product: productRow ? softwareFactsOf(productRow.schemaAttributes) : undefined,
   });
 
   // Tek bağlantılı grafik: kuruluş, site, sayfa (görselli), kırıntı ve teklif; yalnızca Offer düğümü değil
@@ -163,7 +171,12 @@ export default async function PublicCampaignDetailPage({
       id: content.id,
       title: camp.title,
       tldr: camp.tldr || undefined,
-      schemaType: "WebPage",
+      // Makale: Google'ın Article zengin sonucu (yazar, görsel, tarih); teklif ayrıca Offer düğümüdür
+      schemaType: "Article",
+      authorName: content.authorName || undefined,
+      authorUrl: content.authorName ? `${lb}/yazar/${authorSlug(content.authorName)}` : undefined,
+      articleSection: "Kampanyalar",
+      keywords: [camp.title],
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       imageUrl: camp.featuredImageUrl || `${baseUrl}/og?title=${encodeURIComponent(camp.title)}&site=${encodeURIComponent(siteName)}`,
@@ -174,7 +187,6 @@ export default async function PublicCampaignDetailPage({
   campaignGraph["@graph"].push(offerNode as never);
 
   // Diğer Aktif Kampanyalar
-  const allContents = await repo.listContents({ locale });
   const otherCampaigns = allContents
     .filter(
       (c) =>
