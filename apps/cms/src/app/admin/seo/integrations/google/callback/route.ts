@@ -3,12 +3,16 @@ import { resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireAdmin } from "@/lib/auth/session";
 import { revalidatePath } from "@/lib/cache";
+import { clearWebmasterCaches } from "@/lib/webmaster/connection";
 import { GOOGLE_CALLBACK_PATH, clearGoogleOauthState, googleRedirectOrigin, readGoogleOauthState } from "../../google-oauth";
 
-function back(origin: string, code: string): NextResponse {
+function back(origin: string, code: string, detail = ""): NextResponse {
   const url = new URL("/admin/seo/integrations", origin || "http://localhost");
   url.searchParams.set("google", code === "ok" ? "ok" : "hata");
   if (code !== "ok") url.searchParams.set("neden", code);
+  // Google'ın verdiği ham neden (redirect_uri_mismatch, invalid_client…): yalnızca güvenli karakterler, kısa
+  const safe = detail.replace(/[^A-Za-z0-9 _:.,'()/-]/g, "").slice(0, 160).trim();
+  if (safe) url.searchParams.set("detay", safe);
   return NextResponse.redirect(url);
 }
 
@@ -21,7 +25,7 @@ export async function GET(request: Request) {
   const saved = await readGoogleOauthState();
   await clearGoogleOauthState();
   if (!state || state !== saved) return back(origin, "state");
-  if (url.searchParams.get("error")) return back(origin, "reddedildi");
+  if (url.searchParams.get("error")) return back(origin, "reddedildi", url.searchParams.get("error") ?? "");
   const code = url.searchParams.get("code") ?? "";
   if (!code) return back(origin, "kod");
 
@@ -44,7 +48,10 @@ export async function GET(request: Request) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
-  if (!response.ok) return back(origin, "token");
+  if (!response.ok) {
+    const failure = (await response.json().catch(() => ({}))) as { error?: string; error_description?: string };
+    return back(origin, "token", [failure.error, failure.error_description].filter(Boolean).join(": "));
+  }
   const data = (await response.json()) as { refresh_token?: string };
   if (!data.refresh_token) return back(origin, "jeton");
 
@@ -57,6 +64,7 @@ export async function GET(request: Request) {
       },
     },
   });
+  clearWebmasterCaches(admin.siteId);
   await revalidatePath("/admin/seo/integrations");
   return back(origin, "ok");
 }

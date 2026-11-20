@@ -236,7 +236,14 @@ Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Artic
 4. **Yandex Webmaster / Metrika:**
    - Metrika v1 API üzerinden organik arama motoru açılış sayfaları (`fetchYandexOrganicLandings`)
 
-Arama konsolu ve analitik formları yalnızca `/admin/seo/integrations` içindeki `<SeoIntegrationsStudio>` üzerindedir. Her sekmenin başında o hizmetin anahtarının nereden alınacağı ve ne işe yaradığı yazılıdır. `/admin/seo` motor ayarı, dizin ve bağlantı denetimidir; entegrasyon sekmelerini tekrar etmez. CSV performans paneli de webmaster sayfasındadır.
+**Webmaster Merkezi (`/admin/seo/integrations`, 2026-11-20):** tek ekranda Genel bakış + Search Console / Analytics 4 / Bing / Yandex sekmeleri; tarih aralığı (7/28/90 gün) hepsini kapsar. Bağlantı bilgileri ayrı bir **pencerede** (yerel `<dialog>`) tutulur: alanlar, site doğrulama, Google hesabı bağlama ve **adım adım bağlantı testi** (neden + çözüm). Gizli alanlar (istemci sırrı, yenileme jetonu, Bing anahtarı, Yandex jetonu) istemciye hiç gönderilmez; yalnızca "kayıtlı" bilgisi gider, yeni değer yazılmazsa korunur. Raporlar sunucuda çekilir (`lib/webmaster/connection.ts`, 10 dk önbellek, `WebmasterReport` tek biçimi), **örnek/sahte veri yoktur**; bağlı olmayan kaynak boş durum + eksik alan listesi gösterir.
+
+- **Search Console:** Performans (tıklama/gösterim/TO/konum + önceki dönem farkı + günlük seri), Sorgular (+ ilk sayfaya yakın ve düşük TO fırsatları), Sayfalar, Ülkeler, Cihazlar, Görünüm, Site haritaları, **Sayfa denetimi** (URL Inspection: dizin kararı, son tarama, kanonik, mobil, zengin sonuç). Mülkler API'den listelenir ve seçilir.
+- **Analytics 4:** Özet (oturum, kullanıcı, yeni kullanıcı, görüntüleme, etkileşim oranı, süre + seri), Kanallar, Sayfalar, Kaynaklar, Konum, Cihazlar, Organik arama açılışları, **Yapay zekâ kaynakları** (ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, DeepSeek…), Gerçek zamanlı (60 sn yenilenir).
+- **Bing:** Performans (günlük trafik serisi), Sorgular, Sayfalar, **Tarama** (taranan/dizindeki sayfa, hata, robots engeli, 4xx/5xx), Site haritaları, Geri bağlantılar.
+- **Yandex Metrika:** Özet (ziyaret, ziyaretçi, görüntüleme, hemen çıkma, süre + seri), Kaynaklar, Giriş sayfaları (organik), Arama motorları, Ülkeler, Cihazlar. Jeton `metrika:read` yetkili OAuth jetonu olmalıdır.
+- **Hata açıklamaları:** `googleError`/`WebmasterApiError` kaynağına göre neden ve çözüm üretir (geçersiz yenileme jetonu, yanlış istemci, Cloud'da API kapalı, mülk izni yok, mülk adı hatalı, kota). OAuth yönlendirme kökü kanonik adrestir (`NEXT_PUBLIC_APP_URL`); Google'ın ham hata nedeni dönüşte gösterilir. Zamanlanmış eşitleme (`seo-sync.ts`) not satırlarına hata nedenini yazar.
+- Grafikler bağımlılıksız SVG'dir (`components/admin/webmaster/charts.tsx`): tek eksen, 2 px çizgi, uç işareti, imleç + klavye ile tooltip, tablo görünümü; renkler doğrulanmış kategorik palet (açık/koyu).
 
 Site sahipliği API anahtarından ayrıdır ve ham HTML saklanmaz:
 

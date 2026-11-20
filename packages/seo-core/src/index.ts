@@ -535,3 +535,4 @@ export async function generateCoreLlmsTxt(options: {
   return result.lines.join("\n").trim() + "\n";
 }
 export * from "./sitemap";
+export * from "./webmaster-reports";

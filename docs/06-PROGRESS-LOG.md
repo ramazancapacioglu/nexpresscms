@@ -1350,3 +1350,6 @@
 ### [2026-11-20] — Yazar profilleri, `.md`, küçük düzenleme, iç bağlantı önericisi, AI alt metin
 - ✅ Göç `0024_user_author_profile` (yalnızca `ADD COLUMN`; uygulamadan önce tam yedek, sonra satır sayısı/özet karşılaştırması). Yazar profili paneli, `AuthorBox`, `/yazar/<ad>` `ProfilePage`+`Person`, yazı `author` Person zenginleştirme.
 - ✅ `/sayfa.md`; TL;DR 40–60 kelime sayacı + SEO kontrolü; "Küçük düzenleme" (tarih korunur); editörde iç bağlantı önericisi; medyada AI alt metin (tek + toplu). Bkz. `docs/04` §11g. Testler: core, seo-core, database (göç).
+
+### [2026-11-20] — Webmaster Merkezi: bağlantı penceresi, sekmeli raporlar, gerçek veri
+- ✅ Eski panel örnek/sahte sorgu (ör. "wolvox erp fiyat") gösteriyor ve hata nedenini yutuyordu; kaldırıldı. Yerine `WebmasterDashboard` (Genel bakış + 4 kaynak, bağlantı penceresi, bağlantı testi), `packages/seo-core/src/webmaster-reports.ts` (GSC, GA4, Bing, Yandex raporları, URL denetimi, hata açıklama), `lib/webmaster/connection.ts`. Gizli alanlar istemciye gönderilmez. Testler: seo-core (9 yeni).

@@ -117,6 +117,7 @@ export function ConnectGuide({
   metrikaPlacement,
   onGaPlacement,
   onMetrikaPlacement,
+  redirectUri: givenRedirectUri,
 }: {
   service: Service;
   domain: string;
@@ -126,12 +127,15 @@ export function ConnectGuide({
   metrikaPlacement: "head" | "body";
   onGaPlacement: (next: "head" | "body") => void;
   onMetrikaPlacement: (next: "head" | "body") => void;
+  /** Google Cloud'a kaydedilecek yönlendirme adresi (sunucu kanonik adresten üretir) */
+  redirectUri?: string;
 }) {
-  const [redirectUri, setRedirectUri] = useState("");
+  const [fallbackRedirect, setRedirectUri] = useState("");
+  const redirectUri = givenRedirectUri || fallbackRedirect;
   const [note, setNote] = useState<string | null>(null);
   useEffect(() => {
-    setRedirectUri(`${window.location.origin}/admin/seo/integrations/google/callback`);
-  }, []);
+    if (!givenRedirectUri) setRedirectUri(`${window.location.origin}/admin/seo/integrations/google/callback`);
+  }, [givenRedirectUri]);
   const [pending, start] = useTransition();
   const patch = (partial: WebmasterVerification) => onVerification({ ...verification, ...partial });
 

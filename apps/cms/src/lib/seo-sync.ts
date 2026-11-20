@@ -1,7 +1,10 @@
 import { pluginActions, resolveSiteSettings } from "@nexpress/core";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
-import { fetchBingQueryStats, fetchGscSearchQueries, fetchYandexOrganicLandings } from "@nexpress/seo-core";
+import { aggregateBingQueryStats, fetchBingQueryStats, fetchGscSearchQueries, fetchYandexOrganicLandings } from "@nexpress/seo-core";
 import "@/plugins/register";
+
+/** Eşitleme notlarında nedeni görünür kılar (anahtarlar ve uzun yanıtlar kırpılır). */
+const reasonOf = (error: unknown): string => (error instanceof Error ? error.message.replace(/[A-Za-z0-9_-]{24,}/g, "…").slice(0, 160) : "yanıt vermedi.");
 
 export interface SeoSyncReport {
   notes: string[];
@@ -27,8 +30,8 @@ export async function runSeoSync(siteId: string): Promise<SeoSyncReport> {
         input: { live: true, source: "gsc", rows: rows.map((row) => ({ keyword: row.query, clicks: row.clicks, impressions: row.impressions, ctr: row.ctr, position: row.position })) },
       });
       notes.push(`Search Console: ${rows.length}`);
-    } catch {
-      notes.push("Search Console yanıt vermedi.");
+    } catch (error) {
+      notes.push(`Search Console: ${reasonOf(error)}`);
     }
   } else {
     notes.push("Search Console anahtarı yok.");
@@ -37,15 +40,15 @@ export async function runSeoSync(siteId: string): Promise<SeoSyncReport> {
   const bing = integrations?.bing;
   if (bing?.enabled && bing.apiKey && bing.siteUrl) {
     try {
-      const rows = await fetchBingQueryStats(bing.apiKey, bing.siteUrl);
+      const rows = aggregateBingQueryStats(await fetchBingQueryStats(bing.apiKey, bing.siteUrl));
       await pluginActions.run("intel.import", {
         siteId,
         userId: "cron",
         input: { live: true, source: "bing", rows: rows.map((row) => ({ keyword: row.query, clicks: row.clicks, impressions: row.impressions, position: row.position })) },
       });
       notes.push(`Bing: ${rows.length}`);
-    } catch {
-      notes.push("Bing yanıt vermedi.");
+    } catch (error) {
+      notes.push(`Bing: ${reasonOf(error)}`);
     }
   } else {
     notes.push("Bing anahtarı yok.");
@@ -61,8 +64,8 @@ export async function runSeoSync(siteId: string): Promise<SeoSyncReport> {
         input: { live: true, source: "yandex", rows: rows.map((row) => ({ keyword: row.path, impressions: row.visits })) },
       });
       notes.push(`Yandex: ${rows.length}`);
-    } catch {
-      notes.push("Yandex yanıt vermedi.");
+    } catch (error) {
+      notes.push(`Yandex: ${reasonOf(error)}`);
     }
   } else {
     notes.push("Yandex anahtarı yok.");

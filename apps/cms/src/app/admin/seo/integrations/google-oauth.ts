@@ -9,8 +9,18 @@ export const GOOGLE_OAUTH_SCOPES = [
   "https://www.googleapis.com/auth/analytics.readonly",
 ].join(" ");
 
-/** Panelin gördüğü kök adres. Yönlendirme adresi Google Cloud kaydıyla aynı olmalı. */
+/**
+ * Google yönlendirme adresinin kökü. Kanonik adres (`NEXT_PUBLIC_APP_URL`) varsa o kullanılır: ters vekil arkasında başlıklar
+ * ("Host", "X-Forwarded-*") güvenilir olmayabilir ve adres Google Cloud'a kaydedilenle birebir aynı olmalıdır. Yoksa istek başlıklarından türetilir.
+ */
 export async function googleRedirectOrigin(): Promise<string> {
+  const canonical = (process.env.NEXT_PUBLIC_APP_URL ?? "").trim();
+  try {
+    const url = new URL(canonical);
+    if (url.protocol === "https:" && !["localhost", "127.0.0.1"].includes(url.hostname)) return url.origin;
+  } catch {
+    // başlıklardan türet
+  }
   const h = await headers();
   const host = (h.get("x-forwarded-host") ?? h.get("host") ?? "").split(",")[0]?.trim() ?? "";
   const forwarded = h.get("x-forwarded-proto")?.split(",")[0]?.trim();

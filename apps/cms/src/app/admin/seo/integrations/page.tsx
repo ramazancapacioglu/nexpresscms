@@ -3,61 +3,67 @@ import { headers } from "next/headers";
 import { resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { SeoTabs } from "@/components/admin/section-tabs";
-import { SearchConsolePanel } from "@/components/admin/seo/search-console-panel";
-import { SeoIntegrationsStudio } from "@/components/admin/seo/seo-integrations-studio";
+import { WebmasterDashboard } from "@/components/admin/webmaster/webmaster-dashboard";
+import { requireAdminPage } from "@/lib/auth/session";
+import { connectionStatus } from "@/lib/webmaster/connection";
+import { GOOGLE_CALLBACK_PATH, googleRedirectOrigin } from "./google-oauth";
 
 export const dynamic = "force-dynamic";
 
 const GOOGLE_NOTICES: Record<string, string> = {
-  ok: "Google hesabı bağlandı. Search Console ve Analytics aynı kimliği kullanır.",
-  state: "Google dönüşü doğrulanamadı. Bağlantıyı yeniden başlatın.",
-  reddedildi: "Google izin ekranı kapatıldı.",
+  ok: "Google hesabı bağlandı. Search Console ve Analytics aynı kimliği kullanır; mülk adresini seçip bağlantıyı test edin.",
+  state: "Google dönüşü doğrulanamadı (oturum süresi dolmuş olabilir). Bağlantıyı yeniden başlatın.",
+  reddedildi: "Google izin ekranı kapatıldı ya da izin verilmedi.",
   kod: "Google dönüş kodu gelmedi.",
-  eksik: "İstemci kimliği kayıtlı değil. Önce kaydedip yeniden bağlanın.",
-  token: "Google jetonu alınamadı. Yönlendirme adresinin Cloud kaydıyla aynı olduğunu kontrol edin.",
-  jeton: "Google yenileme jetonu vermedi. Bağlantıyı yeniden deneyin.",
+  eksik: "İstemci kimliği ve sırrı kayıtlı değil. Önce kaydedip yeniden bağlanın.",
+  token: "Google jetonu alınamadı. Çoğunlukla yönlendirme adresi Cloud kaydıyla birebir aynı değildir ya da istemci sırrı hatalıdır.",
+  jeton: "Google yenileme jetonu vermedi. Hesap izinlerinden uygulamayı kaldırıp bağlantıyı yeniden deneyin.",
 };
 
-export default async function AdminSeoIntegrationsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ google?: string; neden?: string }>;
-}) {
+export default async function AdminSeoIntegrationsPage({ searchParams }: { searchParams: Promise<{ google?: string; neden?: string; detay?: string }> }) {
+  await requireAdminPage();
   const reqHeaders = await headers();
   const query = await searchParams;
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
-  const repo = getScopedRepository(siteId);
-  const site = await repo.getSite();
+  const site = await getScopedRepository(siteId).getSite();
   const seo = resolveSiteSettings(site?.settings).seo;
+  const integrations = seo.integrations;
+  const statuses = await connectionStatus(siteId);
+  const origin = await googleRedirectOrigin();
+  const siteHost = (site?.domain ?? "").replace(/^https?:\/\//, "").split("/")[0] || origin.replace(/^https?:\/\//, "");
+
   const googleNotice =
     query.google === "ok"
-      ? GOOGLE_NOTICES.ok
+      ? GOOGLE_NOTICES.ok!
       : query.google === "hata"
-        ? (GOOGLE_NOTICES[query.neden ?? ""] ?? "Google bağlantısı tamamlanmadı.")
+        ? `${GOOGLE_NOTICES[query.neden ?? ""] ?? "Google bağlantısı tamamlanmadı."}${query.detay ? ` (Google: ${query.detay})` : ""}`
         : null;
-  const siteHost = (site?.domain ?? "").replace(/^https?:\/\//, "").split("/")[0] ?? "";
 
   return (
     <div className="space-y-4">
       <SeoTabs />
-      <div className="rounded-lg border border-[#D5D8DE] bg-white p-4 dark:border-[#2C303A] dark:bg-[#1A1D24]">
-        <h1 className="text-lg font-semibold text-[#111318] dark:text-white">
-          Arama Motoru & Analitik Entegrasyonları
-        </h1>
-        <p className="mt-1 text-sm text-[#5C6470] dark:text-[#9DA4B0]">
-          Google Search Console, Google Analytics 4, Bing Webmaster ve Yandex Metrika API bağlantılarını
-          tek bir panelden yönetin, anahtar kelime fırsatlarını ve AI arama yönlendirmelerini canlı izleyin.
-        </p>
-      </div>
-      <SeoIntegrationsStudio
-        initialIntegrations={seo.integrations}
-        initialVerification={seo.verification}
-        siteUrl={site?.domain ? `https://${site.domain}` : "http://localhost:3000"}
+      <WebmasterDashboard
+        // Gizli alanlar (sır, jeton, API anahtarı) istemciye gönderilmez; yalnızca kayıtlı olup olmadığı bildirilir
+        initial={{
+          gsc: { clientId: integrations?.gsc?.clientId ?? "", clientSecret: "", refreshToken: "", siteUrl: integrations?.gsc?.siteUrl || (origin ? `${origin}/` : ""), enabled: integrations?.gsc?.enabled ?? false },
+          ga4: { propertyId: integrations?.ga4?.propertyId ?? "", measurementId: integrations?.ga4?.measurementId ?? "", placement: integrations?.ga4?.placement === "body" ? "body" : "head", enabled: integrations?.ga4?.enabled ?? false },
+          bing: { apiKey: "", siteUrl: integrations?.bing?.siteUrl || (origin ? `${origin}/` : ""), enabled: integrations?.bing?.enabled ?? false },
+          yandex: { token: "", counterId: integrations?.yandex?.counterId ?? "", placement: integrations?.yandex?.placement === "body" ? "body" : "head", enabled: integrations?.yandex?.enabled ?? false },
+        }}
+        initialVerification={seo.verification ?? {}}
+        secrets={{
+          gscClientSecret: Boolean(integrations?.gsc?.clientSecret),
+          gscRefreshToken: Boolean(integrations?.gsc?.refreshToken),
+          bingApiKey: Boolean(integrations?.bing?.apiKey),
+          yandexToken: Boolean(integrations?.yandex?.token),
+        }}
+        statuses={statuses}
+        siteUrl={origin}
         siteHost={siteHost}
+        redirectUri={`${origin}${GOOGLE_CALLBACK_PATH}`}
         googleNotice={googleNotice}
+        openDialog={query.google === "hata"}
       />
-      <SearchConsolePanel verification={seo.verification} />
     </div>
   );
 }
-
