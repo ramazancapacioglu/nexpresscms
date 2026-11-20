@@ -27,6 +27,12 @@ test("tarama temizliği: yol eşleşmesi (önek, tam yol, dil öneki, sorgu dize
 test("tarama temizliği: spam parametresi ve bilinmeyen parametre ayrımı (izleme ve sayfalama bilinen sayılır)", () => {
   assert.ok(hasGoneParam(new URLSearchParams("j=d8a2l5"), ["j"]));
   assert.equal(hasGoneParam(new URLSearchParams("sayfa=2"), ["j"]), false);
+  // joker: adında eğik çizgi geçen anahtar (`/?kelime/41271068011`), meşru parametrelere dokunmaz
+  assert.ok(hasGoneParam(new URLSearchParams("arctopithecus/41271068011"), ["*/*"]));
+  assert.ok(hasGoneParam(new URLSearchParams("utm_x=1&a/b="), ["*/*"]));
+  assert.equal(hasGoneParam(new URLSearchParams("sayfa=2&utm_source=x"), ["*/*"]), false);
+  assert.ok(hasGoneParam(new URLSearchParams("tmp_abc=1"), ["tmp_*"]));
+  assert.deepEqual(sanitizeCrawlHygiene({ goneParams: ["*/*", "tmp_*"] }).goneParams, ["*/*", "tmp_*"]);
   assert.equal(hasUnknownQueryParams(new URLSearchParams("utm_source=x&gclid=1&sayfa=2&ysclid=3&qab_page=2")), false);
   assert.equal(hasUnknownQueryParams(new URLSearchParams("j=abc")), true);
   assert.equal(hasUnknownQueryParams(new URLSearchParams("")), false);

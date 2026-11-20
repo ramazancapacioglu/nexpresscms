@@ -224,6 +224,7 @@ Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Artic
 3. **Panel:** Webmaster Merkezi → *Tarama temizliği*: 404 günlüğü yol kalıbına göre gruplanır, "410 yap" ile kural eklenir; GSC/Bing sayfa raporlarında sorgu dizeli adresler uyarı olarak çıkar.
 4. **Yapılmaması gerekenler:** spam yollarını `robots.txt` ile engellemek (taranamayan adres dizinden de düşmez); 404 yerine yönlendirme (spam bağlantıya değer aktarır).
 5. **Elle (arayüz):** Search Console → Kaldırmalar (önek bazlı) ve Bing → URL engelle; spam bağlantı alan adları çoksa Google reddetme (disavow) listesi.
+6. **İkinci dalga (GSC "bağlantı verilen sayfalar" dışa aktarımı, 39.866 bağlantı):** yeni kalıplar `/category/<rakam>/…`, `/contents/<kelime>/`, `/info/…html`, `/information/…html`, `/hg/`, `/jukyuban/` ve `/?kelime/<rakam>` sorgularıdır (siteden hiç yayınlanmamış, yabancı bir sitenin yol yapısı). Kurallar: `goneRules` + nginx `location ~*` (eğik çizgi yönlendirmesi 308'den önce 410 versin diye nginx'te de var) ve `goneParams` için **joker** desteği: `*` + `/` + `*` biçimi, adında eğik çizgi geçen her sorgu parametresini yakalar (`/?kelime/41271068011`); nginx tarafında `$args` düzenli ifadesi. Meşru parametreler (`sayfa`, `utm_*`, `q`…) etkilenmez. Dışa aktarım yalnızca hedef sayfaları verdiği için bağlantı veren alan adları (reddetme listesi) ayrı "bağlantı veren siteler" dışa aktarımından çıkarılır.
 
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 

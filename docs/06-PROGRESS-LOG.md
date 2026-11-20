@@ -1356,3 +1356,6 @@
 
 ### [2026-11-20] — Tarama temizliği (spam adres saldırısı)
 - ✅ Günlük + GSC/Bing analizi: gerçek Googlebot/Bingbot yüz binlerce spam adres istiyor. nginx 410 kuralları (yedekli), uygulamada `crawlHygiene` (410 yolları/parametreleri, bilinmeyen parametreye noindex), panelde *Tarama temizliği* sekmesi. Bkz. `docs/04` §11h. Testler: core.
+
+### [2026-11-20] — Tarama temizliği: ikinci dalga ve parametre jokeri
+- ✅ GSC bağlantı dışa aktarımındaki yeni spam kalıpları (`/category|contents|info|information|hg|jukyuban`, `/?kelime/rakam`) nginx (yedekli) + `seo.crawlHygiene` ile 410'a bağlandı; `goneParams` joker (`*`) kabul eder (`hasGoneParam`, testli); panel ipucu güncellendi. Canlı doğrulama: spam yolları 410, sitemap'teki sayfalar 200. Bkz. `docs/04` §11h madde 6.

@@ -6,7 +6,7 @@
 export interface CrawlHygiene {
   /** Yol kalıpları: `/ajax/*`, `/products/detail/*`, `/pc/index.php` (`*` = herhangi bir devam) */
   goneRules: string[];
-  /** Taşıyan her isteğin 410 aldığı sorgu parametresi adları (ör. `j`) */
+  /** Taşıyan her isteğin 410 aldığı sorgu parametresi adları (ör. `j`); `*` joker kabul eder, örn. yıldız-eğik çizgi-yıldız adında eğik çizgi geçen parametreleri yakalar (`/?kelime/12345`) */
   goneParams: string[];
   /** Bilinmeyen sorgu parametresi taşıyan sayfalara `X-Robots-Tag: noindex, follow` ver */
   noindexUnknownParams: boolean;
@@ -26,7 +26,7 @@ const DYNAMIC_PARAM = /^q[A-Za-z0-9]{1,8}_(q|cat|sort|page|min|max)$/;
 export const isKnownQueryParam = (key: string): boolean => KNOWN_PARAMS.has(key) || key.startsWith("utm_") || DYNAMIC_PARAM.test(key);
 
 const RULE_CHARS = /^\/[A-Za-z0-9/_\-.*%~]*$/;
-const PARAM_NAME = /^[A-Za-z0-9_\-[\]]{1,40}$/;
+const PARAM_NAME = /^[A-Za-z0-9_\-[\]*/]{1,40}$/;
 
 const unique = (list: string[]): string[] => [...new Set(list)];
 
@@ -60,7 +60,23 @@ export function matchesGoneRule(pathname: string, rules: readonly string[]): boo
   return rules.some((rule) => ruleRegex(rule).test(path) || (withoutLocale !== path && ruleRegex(rule).test(withoutLocale)));
 }
 
-export const hasGoneParam = (searchParams: URLSearchParams, params: readonly string[]): boolean => params.length > 0 && params.some((p) => searchParams.has(p));
+const paramRegexes = new Map<string, RegExp>();
+function paramMatches(pattern: string, key: string): boolean {
+  if (!pattern.includes("*")) return pattern === key;
+  let re = paramRegexes.get(pattern);
+  if (!re) {
+    re = new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`);
+    if (paramRegexes.size > 100) paramRegexes.clear();
+    paramRegexes.set(pattern, re);
+  }
+  return re.test(key);
+}
+
+export function hasGoneParam(searchParams: URLSearchParams, params: readonly string[]): boolean {
+  if (params.length === 0) return false;
+  for (const key of searchParams.keys()) if (params.some((p) => paramMatches(p, key))) return true;
+  return false;
+}
 
 export const hasUnknownQueryParams = (searchParams: URLSearchParams): boolean => {
   for (const key of searchParams.keys()) if (!isKnownQueryParam(key)) return true;

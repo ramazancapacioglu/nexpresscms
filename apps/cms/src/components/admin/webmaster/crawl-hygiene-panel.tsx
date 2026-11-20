@@ -97,7 +97,7 @@ export function CrawlHygienePanel() {
         <label className="block text-[11px]">
           <span className="v-ink2 font-semibold">Taşıyan her isteğe 410 verilecek sorgu parametreleri (virgülle)</span>
           <input value={params} onChange={(e) => setParams(e.target.value)} placeholder="j" className={`${input} mt-1`} style={{ borderColor: "var(--v-ring)" }} />
-          <span className="v-ink2 mt-0.5 block">Örn. spam bağlantılar <code>/?j=…</code> ile geliyorsa <code>j</code> yazın. Sitenin kendi kullandığı parametreleri (sayfa, q, utm_*) yazmayın.</span>
+          <span className="v-ink2 mt-0.5 block">Örn. spam bağlantılar <code>/?j=…</code> ile geliyorsa <code>j</code> yazın. Joker: <code>*/*</code> adında eğik çizgi geçen parametreleri (<code>/?kelime/12345</code>) yakalar. Sitenin kendi kullandığı parametreleri (sayfa, q, utm_*) yazmayın.</span>
         </label>
         <label className="flex cursor-pointer items-center gap-2 text-[12px]">
           <input type="checkbox" checked={noindex} onChange={(e) => setNoindex(e.target.checked)} />
