@@ -6,14 +6,14 @@ import { Monitor, Smartphone } from "lucide-react";
 const border = "border-border";
 
 /** Uzunluk ölçeri: ideal aralıkta yeşil, kısa/uzun amber; metinle de söyler (renk tek başına anlam taşımaz). */
-export function LengthMeter({ value, min, max, label }: { value: number; min: number; max: number; label: string }) {
+export function LengthMeter({ value, min, max, label, unit = "karakter" }: { value: number; min: number; max: number; label: string; unit?: string }) {
   const state = value === 0 ? "boş" : value < min ? "kısa" : value > max ? "uzun" : "ideal";
   const pct = Math.min(100, Math.round((value / (max * 1.25)) * 100));
   const color = state === "ideal" ? "bg-emerald-600" : state === "boş" ? "bg-muted-foreground/40" : "bg-amber-600";
   return (
     <div>
       <div className="flex justify-between text-[10px] text-muted-foreground"><span>{label}</span><span>{value}/{max} · {state} (ideal {min}–{max})</span></div>
-      <div className="mt-0.5 h-1 rounded-full bg-muted" role="img" aria-label={`${label}: ${value} karakter, ${state}`}><div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} /></div>
+      <div className="mt-0.5 h-1 rounded-full bg-muted" role="img" aria-label={`${label}: ${value} ${unit}, ${state}`}><div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} /></div>
     </div>
   );
 }

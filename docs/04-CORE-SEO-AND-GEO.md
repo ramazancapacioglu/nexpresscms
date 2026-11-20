@@ -204,6 +204,15 @@ Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Artic
 - **SoftwareApplication:** Google kategori, işletim sistemi, teklif ve puandan en az ikisini ister. Katalog (`hasOfferCatalog`) ve kampanya `itemOffered` göndermeleri `softwareReference` ile üretilir: ürün sayfasındaki `richSchema.software` bilgisi (`softwareFactsOf`) varsa tam `SoftwareApplication`, yoksa türsüz (`@id`, ad, adres). Eksik özellikli tür artık yazılmaz.
 - **Kampanya sayfası:** `Article` (yazar `Person` + `url`, bölüm, anahtar sözcük, görsel hakları) + `WebPage` + `Offer` + kuruluş + kırıntı. Yazı yazarının `Person.url` değeri `/yazar/<ad>` sayfasıdır.
 
+## 11g. Yazar profili, küçük düzenleme, iç bağlantı önericisi, AI alt metin (2026-11-20)
+
+- **Yazar profili (E-E-A-T):** `users` tablosuna isteğe bağlı sütunlar (`bio`, `job_title`, `expertise`, `same_as` JSON, `avatar_url`; göç `0024_user_author_profile`, yalnızca `ADD COLUMN`, mevcut veriye dokunmaz). Panel: **Profilim → Yazar profili** (`updateAuthorProfileAction`; girdi `sanitizeAuthorProfile` ile temizlenir: düz metin, yalnızca https `sameAs`, yerel medya/https avatar). Ön yüz: yazı altında `AuthorBox`, `/yazar/<ad>` sayfası (ünvan, biyografi, uzmanlık, profil bağlantıları, `ProfilePage` + `Person`), yazı şemasında `author` = `Person` (`@id` = yazar sayfası#person; `jobTitle`, `description`, `knowsAbout`, `sameAs`, `image`, `worksFor`). Alan boşsa hiçbir yerde gösterilmez/yazılmaz.
+- **`/sayfa.md`:** ara katman `.md` sonekini `?format=md` gibi işler (panel/API/medya yolları hariç).
+- **TL;DR:** editörde kelime sayacı (hedef 40–60 kelime) ve `analyzeSeo` `tldr_words` kontrolü (ağırlık 2). "TL;DR'yi meta açıklamaya kopyala" artık cümle/kelime sınırında keser.
+- **Küçük düzenleme:** editörde "Küçük düzenleme" kutusu (yalnızca var olan yayındaki içerik, her kayıttan sonra kapanır): `saveContentAction({ keepModified })` `updatedAt`'i korur; `dateModified` ve site haritası `lastmod` değişmez.
+- **İç bağlantı önericisi (editör):** SEO sekmesi → "İç bağlantı önerileri" (`suggestLinksAction`, `suggestLinksForText`): Türkçe çekim eklerini tanır, bağlı sayfaları önermez; "Bağlantı ekle" ilk uygun zengin metin bloğunda bağlantı kurar (`applyLinkToBlocks`). Site geneli denetim `admin/seo/audit` (`suggestInternalLinks`) ayrıdır.
+- **AI alt metin:** medya ayrıntısında "AI ile öner", kitaplıkta "Boş alt metinleri AI ile doldur" (her seferde ≤15; dolu alt metne dokunmaz). `OPENAI_API_KEY` gerekir (`OPENAI_VISION_MODEL` ya da `OPENAI_CHAT_MODEL`, varsayılan `gpt-4o-mini`); OpenAI'ye yalnızca 768 px'lik küçültülmüş JPEG kopyası gider (EXIF yok). Dakikada kullanıcı başına 20 sınırı.
+
 ## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:

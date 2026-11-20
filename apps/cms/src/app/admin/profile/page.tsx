@@ -1,7 +1,10 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+import { authorProfileFromRow } from "@nexpress/core";
 import { getUserRepository } from "@nexpress/database";
+import { authorSlug } from "@/lib/author-slug";
+import { AuthorProfileForm } from "@/components/admin/users/author-profile-form";
 import { TwoFactorCard } from "@/components/admin/users/two-factor-card";
 import { ProfileForms } from "@/components/admin/users/profile-forms";
 
@@ -20,6 +23,7 @@ export default async function AdminProfilePage({ searchParams }: { searchParams:
         </p>
       )}
       <ProfileForms name={me.name} email={me.email} role={me.role} uiLocale={me.uiLocale} />
+      {user ? <AuthorProfileForm initial={authorProfileFromRow(user)} authorPath={`/yazar/${authorSlug(user.name)}`} /> : null}
       <TwoFactorCard enabled={Boolean(user?.totpEnabledAt)} />
     </div>
   );

@@ -18,6 +18,12 @@ export interface UserSummaryDto {
   uiLocale: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
+  /** Yazar profili alanları (herkese açık, isteğe bağlı): `authorProfileFromRow` ile çözülür */
+  bio: string | null;
+  jobTitle: string | null;
+  expertise: string | null;
+  sameAs: string | null;
+  avatarUrl: string | null;
   /** İki adımlı doğrulama açık mı (anahtar ve kodlar arayüze verilmez) */
   twoFactorEnabled: boolean;
 }
@@ -51,6 +57,11 @@ type Row = {
   totpEnabledAt: Date | null;
   totpLastStep: number | null;
   recoveryCodes: string | null;
+  bio: string | null;
+  jobTitle: string | null;
+  expertise: string | null;
+  sameAs: string | null;
+  avatarUrl: string | null;
 };
 
 const toDto = (r: Row): UserDto => ({ ...r });
@@ -115,6 +126,11 @@ export class UserRepository {
       totpEnabledAt: null,
       totpLastStep: null,
       recoveryCodes: null,
+      bio: null,
+      jobTitle: null,
+      expertise: null,
+      sameAs: null,
+      avatarUrl: null,
     };
     await db.insert(users).values(record);
     return toDto(record);
@@ -133,6 +149,10 @@ export class UserRepository {
   }
   public setName(id: string, name: string) {
     return this.patch(id, { name: name.trim() });
+  }
+  /** Yazar profilini yazar (alanlar `authorProfileToRow` ile temizlenmiş gelir); başka hiçbir sütuna dokunmaz. */
+  public setAuthorProfile(id: string, row: { jobTitle: string | null; bio: string | null; expertise: string | null; sameAs: string | null; avatarUrl: string | null }) {
+    return this.patch(id, { jobTitle: row.jobTitle, bio: row.bio, expertise: row.expertise, sameAs: row.sameAs, avatarUrl: row.avatarUrl });
   }
   /** Rol değişince oturum sürümü de artar: eski oturumlar yeni yetkiyle devam etmez. */
   public async setRole(id: string, role: UserRole) {

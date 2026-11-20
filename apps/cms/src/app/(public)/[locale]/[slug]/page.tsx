@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
+import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
@@ -16,7 +16,7 @@ import { getSession } from "@/lib/auth/session";
 import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
 import { schemaImagesFor } from "@/lib/schema-images";
-import { PostByline, PostFooter, PostShareRow, RelatedLinks } from "@/components/public/post-extras";
+import { AuthorBox, PostByline, PostFooter, PostShareRow, RelatedLinks } from "@/components/public/post-extras";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -363,6 +363,9 @@ export default async function PublicDynamicContentPage({
   const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
   const authorName = pub.authorName || content.authorName;
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
+  // Yazar profili (E-E-A-T): doluysa yazı altında yazar kutusu ve şemada zenginleştirilmiş Person
+  const authorEntry = content.type === "post" && authorName ? (await getPublicAuthors(siteId))[authorSlug(authorName)] : undefined;
+  const authorProfile = authorEntry && hasAuthorProfile(authorEntry.profile) ? authorEntry.profile : null;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
   // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
@@ -438,6 +441,7 @@ export default async function PublicDynamicContentPage({
       schemaAttributes: content.schemaAttributes,
       authorName: pub.authorName || content.authorName,
       authorUrl: authorHref ?? undefined,
+      authorProfile: authorProfile ?? undefined,
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,
@@ -689,6 +693,8 @@ export default async function PublicDynamicContentPage({
           shareHeading={t("content.shareHeading")}
         />
       )}
+
+      {content.type === "post" && authorProfile && authorHref && authorName ? <div className="mt-8"><AuthorBox t={t} name={authorName} href={authorHref} profile={authorProfile} /></div> : null}
 
       {content.type === "post" ? (
         <PostFooter

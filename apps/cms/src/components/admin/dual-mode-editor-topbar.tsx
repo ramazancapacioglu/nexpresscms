@@ -217,6 +217,12 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
               <Save className="h-3.5 w-3.5" />
               <span className={canPublish ? "hidden sm:inline" : ""}>{canPublish ? "Taslak" : "Taslağı kaydet"}</span>
             </button>
+            {canPublish && s.contentId ? (
+              <label className="hidden cursor-pointer items-center gap-1.5 text-[11px] text-muted-foreground lg:inline-flex" title="Küçük bir düzeltme için işaretleyin: güncelleme tarihi ve site haritası lastmod değişmez. Her kayıttan sonra kapanır.">
+                <input type="checkbox" checked={s.keepModified} onChange={(e) => s.setKeepModified(e.target.checked)} className="h-3.5 w-3.5" />
+                Küçük düzenleme
+              </label>
+            ) : null}
             {canPublish && <button
               type="button"
               className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"

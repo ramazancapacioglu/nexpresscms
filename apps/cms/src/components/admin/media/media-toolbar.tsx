@@ -1,6 +1,7 @@
 "use client";
 
 import { LayoutGrid, List, Search } from "lucide-react";
+import { AiAltBulkButton } from "./ai-alt-bulk-button";
 import type { KindFilter, MediaQuery, ProblemFilter, SortKey } from "./media-filter";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
@@ -22,6 +23,7 @@ export function MediaToolbar({ query, onQuery, view, onView, showView = true }: 
       <select aria-label="Sırala" value={query.sort} onChange={(e) => onQuery({ ...query, sort: e.target.value as SortKey })} className={ctl}>
         <option value="newest">En yeni</option><option value="oldest">En eski</option><option value="name">Ada göre</option><option value="size">Boyuta göre</option><option value="score">SEO (düşükten)</option>
       </select>
+      {showView && <AiAltBulkButton />}
       {showView && (
         <div role="group" aria-label="Görünüm" className={`inline-flex overflow-hidden rounded border ${border}`}>
           {([["grid", LayoutGrid, "Izgara"], ["list", List, "Liste"]] as const).map(([v, Icon, name]) => (

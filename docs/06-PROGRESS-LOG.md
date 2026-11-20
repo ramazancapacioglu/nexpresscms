@@ -1346,3 +1346,7 @@
 
 ### [2026-11-20] — Görsel meta verisi ve ürün/kampanya şemaları
 - ✅ `ImageObject`: doğrudan dosya adresi (`/media/<kimlik>/1280.webp`), yaratıcı/kredi/telif/lisans/lisans edinme sayfası; yazar `url`; kampanya sayfası `Article`; kampanya ve ana sayfa katalog ürün göndermeleri geçerli (`softwareReference`). Bkz. `docs/04` §11f. Testler: seo-core, core.
+
+### [2026-11-20] — Yazar profilleri, `.md`, küçük düzenleme, iç bağlantı önericisi, AI alt metin
+- ✅ Göç `0024_user_author_profile` (yalnızca `ADD COLUMN`; uygulamadan önce tam yedek, sonra satır sayısı/özet karşılaştırması). Yazar profili paneli, `AuthorBox`, `/yazar/<ad>` `ProfilePage`+`Person`, yazı `author` Person zenginleştirme.
+- ✅ `/sayfa.md`; TL;DR 40–60 kelime sayacı + SEO kontrolü; "Küçük düzenleme" (tarih korunur); editörde iç bağlantı önericisi; medyada AI alt metin (tek + toplu). Bkz. `docs/04` §11g. Testler: core, seo-core, database (göç).

@@ -169,6 +169,13 @@
       "when": 1794497976929,
       "tag": "0023_rich_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795154797964,
+      "tag": "0024_user_author_profile",
+      "breakpoints": true
     }
   ]
 }

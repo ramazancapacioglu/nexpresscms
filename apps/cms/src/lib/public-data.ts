@@ -1,6 +1,7 @@
 import "server-only";
-import { collectFormIds, isPrefixless, resolvePublishing, stripLocaleDeep, type BlockNode } from "@nexpress/core";
-import { getFormDefinitionRepository, getScopedRepository, getSitemapRepository } from "@nexpress/database";
+import { authorProfileFromRow, collectFormIds, isPrefixless, resolvePublishing, stripLocaleDeep, type AuthorProfile, type BlockNode } from "@nexpress/core";
+import { getFormDefinitionRepository, getScopedRepository, getSitemapRepository, getUserRepository } from "@nexpress/database";
+import { authorSlug } from "./author-slug";
 import { cachedRead } from "./cache";
 
 /** `form_block`ların bağlı olduğu kurucu formlar (virgüllü kimlik listesi → kimlik → tanım); yönetim kaydında düşer. */
@@ -84,6 +85,16 @@ export const getPublicMediaMeta = cachedRead("media-meta", async (siteId: string
   const map: Record<string, { alt: string; title: string; caption: string; width: number | null; height: number | null; mime: string }> = {};
   for (const a of assets) {
     map[a.id] = { alt: a.altText ?? "", title: a.titleText ?? "", caption: a.caption || a.description || "", width: a.width ?? null, height: a.height ?? null, mime: a.mimeType ?? "" };
+  }
+  return map;
+});
+
+/** Yazar adresi (`/yazar/<slug>`) → herkese açık yazar bilgisi. İçe aktarılan yazarlar giriş yapamayan (devre dışı) hesaplardır ama yazı sahibidir, bu yüzden durum süzülmez; parola, e-posta ve rol dışarı çıkmaz. Yönetim kaydında düşer. */
+export const getPublicAuthors = cachedRead("authors", async (siteId: string) => {
+  const map: Record<string, { name: string; profile: AuthorProfile }> = {};
+  for (const user of await getUserRepository(siteId).list()) {
+    if (!user.name.trim()) continue;
+    map[authorSlug(user.name)] = { name: user.name.trim(), profile: authorProfileFromRow(user) };
   }
   return map;
 });

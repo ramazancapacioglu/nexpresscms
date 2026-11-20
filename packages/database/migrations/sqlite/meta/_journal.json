@@ -169,6 +169,13 @@
       "when": 1794497976550,
       "tag": "0023_luxuriant_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1795154799284,
+      "tag": "0024_user_author_profile",
+      "breakpoints": true
     }
   ]
 }

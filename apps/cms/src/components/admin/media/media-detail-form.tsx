@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertTriangle, Check, Copy, Info, XCircle } from "lucide-react";
+import { AlertTriangle, Check, Copy, Info, Sparkles, XCircle } from "lucide-react";
+import { suggestAltTextAction } from "@/app/admin/media/alt-actions";
 import { thumbnailUrl } from "@nexpress/core";
 import type { MediaAssetDto } from "@nexpress/database";
 import { saveMediaAssetAction } from "@/app/admin/actions";
@@ -34,6 +35,7 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
   const [f, setF] = useState<MediaFields>(() => fieldsOf(asset));
   const [prevId, setPrevId] = useState(asset.id);
   const [pending, start] = useTransition();
+  const [aiPending, startAi] = useTransition();
   const [note, setNote] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [copied, setCopied] = useState(false);
   if (prevId !== asset.id) {
@@ -96,6 +98,23 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
         <div>
           <label className={label} htmlFor="md-alt">Alt metin (görseli betimleyin)</label>
           <textarea id="md-alt" rows={2} value={f.altText} onChange={field("altText")} className={`${input} resize-none`} />
+          <button
+            type="button"
+            disabled={pending || aiPending}
+            onClick={() =>
+              startAi(async () => {
+                const res = await suggestAltTextAction({ id: asset.id });
+                if (res.ok) {
+                  setF((prev) => ({ ...prev, altText: res.alt }));
+                  setNote({ kind: "ok", text: "AI önerisi alana yazıldı; gözden geçirip Kaydet'e basın." });
+                } else setNote({ kind: "error", text: res.error });
+              })
+            }
+            className="mt-1 inline-flex items-center gap-1 rounded border border-[#E6E7EA] px-2 py-1 text-[11px] font-medium hover:bg-black/5 disabled:opacity-60 dark:border-[#23262E] dark:hover:bg-white/5"
+          >
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
+            {aiPending ? "Öneriliyor…" : "AI ile öner"}
+          </button>
           <p className="mt-0.5 text-[10px] text-[#5F6570] dark:text-[#8C9099]">{f.altText.trim().length}/125 • Süs görseli ise boş bırakmak yerine kısa bir betimleme yazın.</p>
         </div>
       )}

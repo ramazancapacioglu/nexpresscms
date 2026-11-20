@@ -203,3 +203,50 @@ export function RelatedLinks({ heading, lb, items }: { heading: string; lb: stri
     </nav>
   );
 }
+
+/** Yazı altı yazar kutusu (E-E-A-T): avatar, ad, ünvan, biyografi, uzmanlık, profil bağlantıları. Yalnızca dolu alanlar görünür; şemadaki `Person` ile aynı veriden gelir. */
+export function AuthorBox({
+  t,
+  name,
+  href,
+  profile,
+}: {
+  t: T;
+  name: string;
+  href: string;
+  profile: { jobTitle: string; bio: string; expertise: string[]; sameAs: string[]; avatarUrl: string };
+}) {
+  return (
+    <aside aria-label={t("content.aboutAuthor")} className="flex gap-4 rounded-xl border border-nx-line bg-nx-card p-4">
+      {profile.avatarUrl ? (
+        <ResponsiveImage src={profile.avatarUrl} alt={name} sizes="64px" className="h-16 w-16 shrink-0 rounded-full object-cover" />
+      ) : (
+        <span aria-hidden="true" className="grid h-16 w-16 shrink-0 place-items-center rounded-full text-xl font-bold text-white" style={{ backgroundColor: "var(--nx-secondary,#042646)" }}>
+          {(name.trim()[0] ?? "•").toLocaleUpperCase()}
+        </span>
+      )}
+      <div className="min-w-0 space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-nx-muted">{t("content.aboutAuthor")}</p>
+        <p className="text-base font-bold text-nx-fg">
+          <a href={href} className="hover:underline">{name}</a>
+          {profile.jobTitle ? <span className="ml-2 text-sm font-normal text-nx-soft">{profile.jobTitle}</span> : null}
+        </p>
+        {profile.bio ? <p className="text-sm leading-relaxed text-nx-soft">{profile.bio}</p> : null}
+        {profile.expertise.length > 0 ? (
+          <p className="text-xs text-nx-muted">
+            <span className="font-semibold">{t("content.authorExpertise")}:</span> {profile.expertise.join(", ")}
+          </p>
+        ) : null}
+        {profile.sameAs.length > 0 ? (
+          <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label={t("content.authorProfileLinks")}>
+            {profile.sameAs.map((url) => (
+              <li key={url}>
+                <a href={url} rel="me noopener" target="_blank" className="text-nx-link hover:underline">{new URL(url).hostname.replace(/^www\./, "")}</a>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </aside>
+  );
+}

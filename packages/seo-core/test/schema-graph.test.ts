@@ -188,3 +188,26 @@ test("ürün göndermesi: en az iki bilgi varsa SoftwareApplication, yoksa türs
   assert.equal(full["@type"], "SoftwareApplication");
   assert.equal(full.operatingSystem, "Windows 11");
 });
+
+test("yazar profili: Person ünvan, biyografi, uzmanlık, sameAs, avatar ve kuruluşa bağ taşır; profil yoksa yalın kalır", async () => {
+  const { buildAuthorPerson } = await import("../src/index");
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    content: {
+      ...input.content,
+      authorName: "Ayşe Yılmaz",
+      authorUrl: "/yazar/ayse-yilmaz",
+      authorProfile: { jobTitle: "Yazılım Danışmanı", bio: "10 yıldır ERP kurulumu yapıyor.", expertise: ["ERP", "e-Fatura"], sameAs: ["https://www.linkedin.com/in/ayse"], avatarUrl: "/media/med_ayse" },
+    },
+  } as never);
+  const post = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "BlogPosting")!;
+  assert.equal(post.author["@id"], "https://ornek.test/yazar/ayse-yilmaz#person");
+  assert.equal(post.author.jobTitle, "Yazılım Danışmanı");
+  assert.equal(post.author.description, "10 yıldır ERP kurulumu yapıyor.");
+  assert.deepEqual(post.author.knowsAbout, ["ERP", "e-Fatura"]);
+  assert.deepEqual(post.author.sameAs, ["https://www.linkedin.com/in/ayse"]);
+  assert.equal(post.author.image.contentUrl, "https://ornek.test/media/med_ayse/1280.webp");
+  assert.deepEqual(post.author.worksFor, { "@id": "https://ornek.test/#organization" });
+  const bare = buildAuthorPerson({ baseUrl: "https://ornek.test", orgId: "https://ornek.test/#organization", name: "Ali" }) as Record<string, unknown>;
+  assert.deepEqual(bare, { "@type": "Person", name: "Ali" });
+});

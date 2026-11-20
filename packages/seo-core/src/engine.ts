@@ -320,6 +320,20 @@ export function analyzeSeo(input: SeoAnalyzeInput): SeoAnalysis {
     6
   );
 
+  // TL;DR uzunluğu: doğrudan cevap bloğu için 40-60 kelime ideal (kısa/uzun özetler AI alıntısında zayıf kalır)
+  if (hasTldr) {
+    const tldrWordCount = (input.tldr ?? "").trim().split(/\s+/).filter(Boolean).length;
+    const tldrIdeal = tldrWordCount >= 40 && tldrWordCount <= 60;
+    add(
+      "tldr_words",
+      "basic",
+      tldrIdeal ? "pass" : "warn",
+      "TL;DR kelime sayısı",
+      tldrIdeal ? `${tldrWordCount} kelime: doğrudan cevap için ideal.` : `${tldrWordCount} kelime: doğrudan cevap bloğu için 40-60 kelime hedefleyin.`,
+      2
+    );
+  }
+
   // ANAHTAR KELİME
   if (!kw) {
     add("kw_set", "keyword", "warn", "Odak anahtar kelime", "Belirlenmedi — anahtar kelime kontrolleri atlandı.", 4);

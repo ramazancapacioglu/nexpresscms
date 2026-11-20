@@ -84,3 +84,6 @@ export * from "./comments-discussion";
 export * from "./related-content";
 export * from "./block-images";
 export * from "./software-reference";
+export * from "./author-profile";
+export * from "./alt-text";
+export * from "./link-suggestions";

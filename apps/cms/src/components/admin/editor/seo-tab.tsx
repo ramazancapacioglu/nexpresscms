@@ -2,8 +2,22 @@
 
 import { useState } from "react";
 import { AiSuggestPanel } from "./ai-suggest-panel";
+import { LinkSuggestPanel } from "./link-suggest-panel";
 import { RichSchemaPanel } from "./rich-schema-panel";
 import { LengthMeter, SerpPreview, SocialPreview } from "./seo-previews";
+
+const tldrWords = (value: string): number => value.trim().split(/\s+/).filter(Boolean).length;
+
+/** TL;DR'den meta açıklama: 160 karakteri aşıyorsa cümle sonunda, yoksa kelime sınırında keser (yarım kelime/virgülle bitmez). */
+function metaFromTldr(value: string): string {
+  const text = value.trim();
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 160);
+  const sentence = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  if (sentence >= 70) return cut.slice(0, sentence + 1);
+  const space = cut.lastIndexOf(" ");
+  return `${cut.slice(0, space > 0 ? space : 159).replace(/[,;:\s-]+$/, "")}…`;
+}
 import { SchemaIssues } from "./schema-issues";
 import { useStudioInspector } from "./studio-inspector-context";
 
@@ -95,11 +109,13 @@ export function SeoTab() {
                     <div>
                       <label htmlFor="seo-tldr" className="block text-[11px] font-medium mb-1">TL;DR — Answer-First özet <span className="font-normal text-muted-foreground">(sayfada gösterilir; yapay zeka alıntısı için)</span></label>
                       <textarea id="seo-tldr" rows={3} value={tldr} onChange={(e) => setTldr(e.target.value)} className="w-full rounded border border-border bg-background p-2" />
-                      <LengthMeter value={tldr.length} min={40} max={260} label="TL;DR uzunluğu" />
-                      {tldr && tldr !== metaDescription && <button type="button" onClick={() => setMetaDescription(tldr.slice(0, 160))} className="mt-1 text-[10px] font-medium text-blue-700 underline dark:text-blue-300">TL;DR'yi meta açıklamaya kopyala (160 karaktere kırpar)</button>}
+                      <LengthMeter value={tldrWords(tldr)} min={40} max={60} label="TL;DR kelime sayısı" unit="kelime" />
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">Doğrudan cevap: 40–60 kelimelik, soruyu ilk cümlede yanıtlayan net bir özet. Yapay zeka ve arama özetleri alıntıyı ilk olarak bu bloktan alır.</p>
+                      {tldr && tldr !== metaDescription && <button type="button" onClick={() => setMetaDescription(metaFromTldr(tldr))} className="mt-1 text-[10px] font-medium text-blue-700 underline dark:text-blue-300">TL;DR'yi meta açıklamaya kopyala (160 karakteri aşarsa cümle sonunda keser)</button>}
                     </div>
                   </div>
           <AiSuggestPanel />
+          <LinkSuggestPanel />
         </div>
       )}
 

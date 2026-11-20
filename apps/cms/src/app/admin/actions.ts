@@ -169,6 +169,8 @@ export async function saveContentAction(input: {
   metaDescription?: string;
   canonicalUrl?: string;
   noIndex?: boolean;
+  /** Küçük düzenleme: güncelleme tarihi korunur (`dateModified` ve site haritası `lastmod` değişmez). Yalnızca var olan, yayındaki içerikte uygulanır. */
+  keepModified?: boolean;
   schemaAttributes?: Record<string, unknown>;
   /** Düzenlenen dil; etkin diller dışındaki değer varsayılan dile düşer */
   locale?: string;
@@ -243,6 +245,7 @@ export async function saveContentAction(input: {
     metaDescription: input.metaDescription,
     canonicalUrl: input.canonicalUrl,
     noIndex: input.noIndex,
+    ...(input.keepModified && existing && existing.status === "published" && status === "published" ? { updatedAt: existing.updatedAt } : {}),
   });
 
   await revalidatePath("/admin");

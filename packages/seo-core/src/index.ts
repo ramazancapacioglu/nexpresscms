@@ -10,6 +10,35 @@ export * from "./commerce-schema";
 export * from "./search-console";
 export * from "./analytics-integrations";
 
+/** `Person` düğümü için yazar profili alanları (hepsi isteğe bağlı). */
+export interface AuthorPersonProfile {
+  jobTitle?: string;
+  bio?: string;
+  expertise?: string[];
+  sameAs?: string[];
+  avatarUrl?: string;
+}
+
+/**
+ * Yazar `Person` düğümü: ad, sayfa adresi, ünvan, biyografi (`description`), uzmanlık (`knowsAbout`), `sameAs`, avatar ve kuruluşa bağ (`worksFor`).
+ * Yalnızca dolu alanlar yazılır; `@id` yazar sayfası adresine bağlıdır (makale ve profil sayfası aynı düğümü paylaşır).
+ */
+export function buildAuthorPerson(input: { baseUrl: string; orgId: string; name: string; url?: string; profile?: AuthorPersonProfile }): SchemaGraphNode {
+  const { baseUrl, orgId, name, profile } = input;
+  const url = input.url ? (input.url.startsWith("/") ? `${baseUrl}${input.url}` : input.url) : undefined;
+  return {
+    "@type": "Person",
+    ...(url ? { "@id": `${url}#person`, url } : {}),
+    name,
+    ...(profile?.jobTitle ? { jobTitle: profile.jobTitle } : {}),
+    ...(profile?.bio ? { description: profile.bio } : {}),
+    ...(profile?.expertise && profile.expertise.length > 0 ? { knowsAbout: profile.expertise } : {}),
+    ...(profile?.sameAs && profile.sameAs.length > 0 ? { sameAs: profile.sameAs } : {}),
+    ...(profile?.avatarUrl ? { image: imageObject(baseUrl, { url: profile.avatarUrl, alt: name, caption: name }) } : {}),
+    ...(profile && Object.keys(profile).length > 0 ? { worksFor: { "@id": orgId } } : {}),
+  };
+}
+
 /** Sayfadaki bir görselin şema bilgisi (medya kitaplığından: alt, başlık, açıklama, boyut). */
 export interface SchemaImageInput {
   url: string;
@@ -36,6 +65,8 @@ export interface BuildCoreSchemaInput {
     authorName?: string;
     /** Yazar sayfası adresi (mutlak ya da göreli): Article `author.url`. */
     authorUrl?: string;
+    /** Yazar profili (ünvan, biyografi, uzmanlık, sameAs, avatar): doluysa `Person` bu bilgilerle zenginleşir. */
+    authorProfile?: AuthorPersonProfile;
     updatedAt?: Date;
     publishedAt?: Date | null;
     blocks?: BlockNode[];
@@ -223,7 +254,7 @@ export async function buildPageSchemaGraph(
             // Yazar adı kuruluşun adıyla aynıysa kişi değil kuruluştur (ör. "Akınsoft İzmir Ana Bayi" Person olmaz)
             author:
               c.authorName?.trim() && ![normName(input.siteName), normName(input.organization?.name)].includes(normName(c.authorName))
-                ? { "@type": "Person", name: c.authorName.trim(), ...(c.authorUrl ? { url: c.authorUrl.startsWith("/") ? `${baseUrl}${c.authorUrl}` : c.authorUrl } : {}) }
+                ? buildAuthorPerson({ baseUrl, orgId, name: c.authorName.trim(), url: c.authorUrl, profile: c.authorProfile })
                 : { "@type": "Organization", "@id": orgId, name: orgDisplayName, url: baseUrl },
           }
         : {}),

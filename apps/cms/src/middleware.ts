@@ -46,6 +46,11 @@ async function siteGate(request: NextRequest, siteId: string): Promise<SiteGate>
 }
 
 export async function middleware(request: NextRequest) {
+  // `/sayfa.md`: aynı içeriğin Markdown karşılığı (`?format=md` ve `Accept: text/markdown` ile aynı yanıt). Panel, API, medya ve dosya yolları hariç.
+  if (/^\/(?!admin\/|api\/|_next\/|media\/|wp-content\/|sitemaps\/|\.well-known\/)[^?]+\.md$/.test(request.nextUrl.pathname)) {
+    request.nextUrl.pathname = request.nextUrl.pathname.slice(0, -3);
+    request.nextUrl.searchParams.set("format", "md");
+  }
   const { pathname, searchParams } = request.nextUrl;
   const host = request.headers.get("host");
   // www ↔ apeks: kanonik adres NEXT_PUBLIC_APP_URL. Kiracı alt alanına ve localhost'a uygulanmaz.

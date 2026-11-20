@@ -112,3 +112,15 @@ test("llms.txt: yazılım sayfaları ayrı ve en üst bölümde, önem puanına 
   assert.ok(txt.indexOf("Ürün Yüksek") < txt.indexOf("Ürün Düşük"));
   assert.ok(!txt.slice(txt.indexOf("## Kurumsal Sayfalar")).includes("Ürün Yüksek"));
 });
+
+test("TL;DR kelime sayısı: 40-60 kelime ideal; kısa ya da uzun özet uyarı verir; özet yoksa ayrı kontrol eklenmez", () => {
+  const words = (n: number) => Array.from({ length: n }, (_, i) => `kelime${i}`).join(" ");
+  const run = (tldr: string) => analyzeSeo({ title: "Başlık", slug: "baslik", tldr, blocks });
+  const status = (tldr: string) => run(tldr).checks.find((c) => c.id === "tldr_words")?.status;
+  assert.equal(status(words(50)), "pass");
+  assert.equal(status(words(40)), "pass");
+  assert.equal(status(words(60)), "pass");
+  assert.equal(status(words(25)), "warn");
+  assert.equal(status(words(90)), "warn");
+  assert.equal(status(""), undefined);
+});

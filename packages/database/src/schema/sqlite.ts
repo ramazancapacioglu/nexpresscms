@@ -676,6 +676,12 @@ export const sqliteUsers = sqliteTable(
     totpLastStep: integer("totp_last_step"),
     /** Kurtarma kodu SHA-256 özetleri (JSON dizi) */
     recoveryCodes: text("recovery_codes"),
+    /** Yazar profili (herkese açık, hepsi isteğe bağlı): biyografi, ünvan, uzmanlık alanları (virgülle), sameAs bağlantıları (JSON dizi), avatar adresi. */
+    bio: text("bio"),
+    jobTitle: text("job_title"),
+    expertise: text("expertise"),
+    sameAs: text("same_as"),
+    avatarUrl: text("avatar_url"),
   },
   (t) => [
     index("users_site_id_idx").on(t.siteId),

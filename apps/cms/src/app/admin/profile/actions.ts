@@ -1,13 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { PASSWORD_PROBLEM_MESSAGES, validatePassword } from "@nexpress/core";
+import { authorProfileToRow, PASSWORD_PROBLEM_MESSAGES, sanitizeAuthorProfile, validatePassword } from "@nexpress/core";
 import { hashPassword, verifyPassword } from "@nexpress/core/password";
 import { isUiLocale } from "@nexpress/i18n";
 import { getUserRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
 import { issueSession } from "@/lib/auth/issue";
 import { requireUser } from "@/lib/auth/session";
+import { revalidatePath } from "@/lib/cache";
 
 export type ProfileResult = { ok: true } | { ok: false; error: string };
 
@@ -17,6 +18,23 @@ export async function updateProfileAction(input: { name: string }): Promise<Prof
   if (name.length > 80) return { ok: false, error: "Ad en çok 80 karakter olabilir." };
   await getUserRepository(me.siteId).setName(me.sub, name);
   return { ok: true };
+}
+
+/**
+ * Yazar profili (E-E-A-T): ünvan, biyografi, uzmanlık, sameAs ve avatar. Yalnızca kendi profilini yazar; girdi temizlenir
+ * (düz metin, https bağlantılar, yerel medya). Kaydedince ziyaretçi önbelleği düşer; yazı şemaları ve yazar sayfası güncellenir.
+ */
+export async function updateAuthorProfileAction(input: { jobTitle: string; bio: string; expertise: string; sameAs: string; avatarUrl: string }): Promise<ProfileResult & { profile?: ReturnType<typeof sanitizeAuthorProfile> }> {
+  const me = await requireUser({ audit: "profile.author", allowWithout2fa: true });
+  const dropped = String(input.sameAs ?? "").split(/\n/).map((line) => line.trim()).filter(Boolean);
+  const profile = sanitizeAuthorProfile(input);
+  if (dropped.length > profile.sameAs.length) {
+    return { ok: false, error: "Bağlantılar https:// ile başlamalı ve geçerli bir adres olmalı (en çok 8, satır başına bir tane)." };
+  }
+  if (input.avatarUrl.trim() && !profile.avatarUrl) return { ok: false, error: "Avatar, medya kitaplığından bir görsel (/media/…) ya da https adresi olmalı." };
+  await getUserRepository(me.siteId).setAuthorProfile(me.sub, authorProfileToRow(profile));
+  await revalidatePath("/");
+  return { ok: true, profile };
 }
 
 /**

@@ -30,6 +30,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
         metaDescription: metaDescription.trim(),
         canonicalUrl: canonicalUrl || undefined,
         noIndex,
+        keepModified: Boolean(contentId) && nextStatus === "published" && p.keepModified,
         schemaAttributes: writeFieldValues(writePageOptions({
           ...(initialDoc?.schemaAttributes ?? {}),
           richSchema: Object.keys(richSchema).length > 0 ? richSchema : undefined,
@@ -65,6 +66,7 @@ export function useDualModeEditorSave(p: ReturnType<typeof useDualModeEditorDirt
             : `Yayına alındı! 0-KB RSC, Markdown ve JSON-LD güncellendi (${res.seoScore}/100)`
         );
         markSaved(sigAtStart);
+        p.setKeepModified(false);
         router.refresh();
       } else {
         showToast(("error" in res && res.error) || "Kaydedilemedi: sunucu isteği reddetti. Değişiklikleriniz sayfada duruyor.");
