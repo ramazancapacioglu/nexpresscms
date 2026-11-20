@@ -21,6 +21,7 @@ export async function schemaImagesFor(siteId: string, blocks: readonly BlockNode
       width: m?.width ?? null,
       height: m?.height ?? null,
       mime: m?.mime || null,
+      filename: m?.filename || null,
     };
   };
   return {

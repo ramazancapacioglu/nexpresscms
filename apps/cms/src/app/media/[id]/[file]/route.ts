@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { isValidMediaId, parseVariantFile } from "@nexpress/core";
+import { isValidMediaId, parseFriendlyImageFile, parseVariantFile, seoImageName } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { serveStoredFile } from "@/lib/media/serve-file";
 import { contentTypeOf, renderVariant } from "@/lib/media/process";
@@ -33,26 +33,37 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const data = await getOriginal(siteId, id);
     return data ? serveStoredFile(data, { mime: asset.mimeType, filename: file, rangeHeader: request.headers.get("range") }) : new NextResponse("Not found", { status: 404 });
   }
-  if (!variant || !isValidMediaId(id)) return new NextResponse("Not found", { status: 404 });
+  if (!isValidMediaId(id)) return new NextResponse("Not found", { status: 404 });
 
-  const cached = await getVariant(siteId, id, file);
-  if (cached) return respond(cached, variant.format);
+  // Anlamlı ad: `/media/<kimlik>/<dosya-adi>.webp` = 1280 px türev. Ad kitaplıktaki dosya adından türeyenle eşleşmezse 404 (sonsuz yinelenen adres üretilmez).
+  const friendly = variant ? null : parseFriendlyImageFile(file);
+  if (!variant && !friendly) return new NextResponse("Not found", { status: 404 });
+  if (friendly) {
+    const asset = await getScopedRepository(siteId).findMediaAsset(id);
+    if (!asset || asset.kind !== "image" || seoImageName(asset.filename) !== friendly.name) return new NextResponse("Not found", { status: 404 });
+  }
+  const effective = variant ?? { width: 1280, format: friendly!.format };
+  // Türev dosyası ortak: anlamlı ad ve `1280.webp` aynı depolanan dosyayı paylaşır
+  const storedFile = variant ? file : `1280.${effective.format}`;
 
-  const key = `${siteId}|${id}|${file}`;
+  const cached = await getVariant(siteId, id, storedFile);
+  if (cached) return respond(cached, effective.format);
+
+  const key = `${siteId}|${id}|${storedFile}`;
   let job = inflight.get(key);
   if (!job) {
     job = (async () => {
       const original = await getOriginal(siteId, id);
       if (!original) return null;
-      const data = await renderVariant(original, variant.width, variant.format);
-      await putVariant(siteId, id, file, data);
+      const data = await renderVariant(original, effective.width, effective.format);
+      await putVariant(siteId, id, storedFile, data);
       return data;
     })().finally(() => inflight.delete(key));
     inflight.set(key, job);
   }
   try {
     const data = await job;
-    return data ? respond(data, variant.format) : new NextResponse("Not found", { status: 404 });
+    return data ? respond(data, effective.format) : new NextResponse("Not found", { status: 404 });
   } catch (error) {
     console.error("[media] türev üretilemedi:", error instanceof Error ? error.message : error);
     return new NextResponse("Image processing failed", { status: 500 });

@@ -1,3 +1,4 @@
+import { slugFromTitle } from "./slug";
 /**
  * Medya hattının saf kısmı: kaynak başvurusu, türev adresleri, srcset üretimi.
  * Görsel işleme (sharp) ve depolama `apps/cms/src/lib/media` içindedir.
@@ -103,6 +104,26 @@ export function isValidMediaId(id: string): boolean {
 
 export function variantPath(id: string, width: number, format: MediaFormat): string {
   return `/media/${id}/${width}.${format}`;
+}
+
+/** Arama motorlarına gösterilen anlamlı görsel dosya adı (`wolvox-restoran-kampanyasi-10-2026`): kitaplıktaki dosya adından türer; anlamsız/boş ad için `null`. */
+export function seoImageName(filename: string | null | undefined): string | null {
+  const base = (filename ?? "").replace(/^.*[\\/]/, "").replace(/\.[a-z0-9]{2,5}$/i, "");
+  const slug = slugFromTitle(base, 70);
+  return slug.length >= 3 && /[a-z]/.test(slug) ? slug : null;
+}
+
+/** Adı anlamlı görsel adresi `/media/<kimlik>/<ad>.webp` (1280 px WebP); ad türetilemezse `/media/<kimlik>/1280.webp`. */
+export function friendlyImagePath(id: string, filename: string | null | undefined, format: MediaFormat = "webp"): string {
+  const name = seoImageName(filename);
+  return name ? `/media/${id}/${name}.${format}` : variantPath(id, 1280, format);
+}
+
+/** `wolvox-restoran-kampanyasi.webp` -> `{ name, format }`; sayısal türev adları (`1280.webp`) ve belge uzantıları bu kapıdan geçmez. */
+export function parseFriendlyImageFile(file: string): { name: string; format: MediaFormat } | null {
+  const m = /^([a-z0-9][a-z0-9-]{2,69})\.(avif|webp|jpg|png)$/.exec(file);
+  if (!m || !/[a-z]/.test(m[1]!)) return null;
+  return { name: m[1]!, format: m[2] as MediaFormat };
 }
 
 /** `1280.webp` -> `{ width: 1280, format: "webp" }`; sınırlı kümenin dışı `null` (DoS ve yol gezinmesine karşı). */

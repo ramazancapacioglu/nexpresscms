@@ -1,9 +1,9 @@
 import "server-only";
-import { contentPrefix, isPrefixless, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
+import { contentPrefix, friendlyImagePath, isPrefixless, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
-import { getPublicSite, listSitemapEntries } from "./public-data";
+import { getPublicMediaMeta, getPublicSite, listSitemapEntries } from "./public-data";
 
 export function sitemapBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -21,7 +21,13 @@ export async function loadSitemap(siteId: string) {
   const types = settings.general.contentTypes ?? [];
   // Kampanya yerleşik türdür: adresi `/kampanya/{slug}` (öneksiz adres oraya yönlendirir)
   const prefixOf = (type: string) => contentPrefix(types, type) ?? (type === "campaign" ? "kampanya" : null);
-  const entries = [...contentEntries.map((e) => (prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
+  // Görsel adresleri anlamlı dosya adı taşır (`/media/<kimlik>/<ad>.webp`): görsel aramasında dosya adı sinyal olur
+  const media = await getPublicMediaMeta(siteId);
+  const named = (e: SitemapEntry): SitemapEntry =>
+    e.images?.length
+      ? { ...e, images: e.images.map((img) => { const id = /^\/media\/(med_[A-Za-z0-9_-]+)\/1280\.webp$/.exec(img.loc)?.[1]; return id ? { ...img, loc: friendlyImagePath(id, media[id]?.filename) } : img; }) }
+      : e;
+  const entries = [...contentEntries.map((e) => named(prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
   return {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), ...sitemapArchiveTypes(settings.seo)]),

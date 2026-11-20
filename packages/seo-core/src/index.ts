@@ -1,4 +1,4 @@
-import { cmsHooks, normalizeAppCategory, softwareReference, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
+import { cmsHooks, friendlyImagePath, normalizeAppCategory, softwareReference, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
 
 export { softwareReference };
 import { buildBreadcrumbNode, deriveAutoSchemaNodes, plainFaqText } from "./engine";
@@ -48,6 +48,8 @@ export interface SchemaImageInput {
   width?: number | null;
   height?: number | null;
   mime?: string | null;
+  /** Kitaplıktaki dosya adı: görsel adresi anlamlı ad taşır (`/media/<kimlik>/<ad>.webp`) */
+  filename?: string | null;
 }
 
 export interface BuildCoreSchemaInput {
@@ -136,7 +138,7 @@ function imageObject(baseUrl: string, image: SchemaImageInput, id?: string, extr
   // Yerel medya: yönlendirme veren `/media/<kimlik>` değil, doğrudan dosya adresi (`/media/<kimlik>/1280.webp`, site haritasındakiyle aynı).
   // Google görseli sayfadaki/sitemap'teki gerçek dosya adresiyle eşler; boyut 1280 px üst sınırıyla ölçeklenir.
   const mediaId = /\/media\/(med_[A-Za-z0-9_-]+)/.exec(given)?.[1];
-  const abs = mediaId ? `${baseUrl}/media/${mediaId}/1280.webp` : given;
+  const abs = mediaId ? `${baseUrl}${friendlyImagePath(mediaId, image.filename)}` : given;
   const scale = mediaId && image.width && image.height && image.width > 1280 ? 1280 / image.width : 1;
   const width = image.width ? Math.round(image.width * scale) : undefined;
   const height = image.height ? Math.round(image.height * scale) : undefined;

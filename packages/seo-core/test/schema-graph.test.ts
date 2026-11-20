@@ -211,3 +211,13 @@ test("yazar profili: Person ünvan, biyografi, uzmanlık, sameAs, avatar ve kuru
   const bare = buildAuthorPerson({ baseUrl: "https://ornek.test", orgId: "https://ornek.test/#organization", name: "Ali" }) as Record<string, unknown>;
   assert.deepEqual(bare, { "@type": "Person", name: "Ali" });
 });
+
+test("görsel adresi: kitaplık dosya adı varsa anlamlı ad taşır, yoksa 1280.webp", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    images: [{ url: "/media/med_a1", alt: "Ekran", filename: "wolvox-restoran-kampanyasi-10-2026.webp" }, { url: "/media/med_b2", alt: "Diğer", filename: "7.png" }],
+  } as never);
+  const post = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "BlogPosting")!;
+  assert.equal(post.associatedMedia[0].contentUrl, "https://ornek.test/media/med_a1/wolvox-restoran-kampanyasi-10-2026.webp");
+  assert.equal(post.associatedMedia[1].contentUrl, "https://ornek.test/media/med_b2/1280.webp");
+});
