@@ -9,53 +9,15 @@ import type { ContentType } from "./types";
 import type { WebmasterVerification } from "./webmaster-connect";
 import { sanitizeOrganizationSchema } from "./organization-schema";
 import { sanitizeCrawlHygiene, type CrawlHygiene } from "./crawl-hygiene";
+import {
+  sanitizeSchemaPlacements,
+  schemaPlacementFor,
+  type SchemaPlacement,
+} from "./schema-rules";
 import { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS } from "./site-settings-defaults";
 
-export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS };
-
-/** SEO sekmesinde tutulan şema kuralı. Kategori kuralı tür kuralından önce gelir. */
-export interface SchemaPlacement {
-  id: string;
-  name: string;
-  schemaType: string;
-  scope: "page" | "post" | "category";
-  category: string;
-  enabled: boolean;
-}
-
-const SCHEMA_TYPES = new Set(["WebPage", "Article", "BlogPosting", "NewsArticle", "FAQPage", "QAPage", "AboutPage", "ContactPage", "Organization", "SoftwareApplication", "Service", "Product", "HowTo"]);
-
-export function sanitizeSchemaPlacements(value: unknown): SchemaPlacement[] {
-  if (!Array.isArray(value)) return [];
-  const out: SchemaPlacement[] = [];
-  for (const item of value.slice(0, 40)) {
-    if (!item || typeof item !== "object") continue;
-    const row = item as Record<string, unknown>;
-    const id = typeof row.id === "string" ? row.id.replace(/[^a-z0-9_-]/gi, "").slice(0, 40) : "";
-    const name = typeof row.name === "string" ? row.name.trim().slice(0, 80) : "";
-    const schemaType = typeof row.schemaType === "string" && SCHEMA_TYPES.has(row.schemaType) ? row.schemaType : "";
-    const scope = row.scope === "post" || row.scope === "category" || row.scope === "page" ? row.scope : "";
-    const category = typeof row.category === "string" ? row.category.trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 80) : "";
-    if (!id || !name || !schemaType || !scope) continue;
-    if (scope === "category" && !category) continue;
-    out.push({ id, name, schemaType, scope, category, enabled: row.enabled !== false });
-  }
-  return out;
-}
-
-/** İçeriğe uygulanacak şema kuralı. Özel şema türü (SSS, yazılım, hakkımızda) ezilmez. */
-export function schemaPlacementFor(
-  rules: SchemaPlacement[] | undefined,
-  input: { type: string; schemaType: string; categories: string[] }
-): SchemaPlacement | null {
-  const generic = input.schemaType === "WebPage" || input.schemaType === "Article" || input.schemaType === "BlogPosting";
-  if (!generic) return null;
-  const list = rules ?? [];
-  const byCategory = list.find((rule) => rule.enabled && rule.scope === "category" && input.categories.includes(rule.category));
-  if (byCategory) return byCategory;
-  const scope = input.type === "post" ? "post" : input.type === "page" ? "page" : "";
-  return list.find((rule) => rule.enabled && rule.scope === scope) ?? null;
-}
+export { DEFAULT_CUSTOMIZER_SETTINGS, DEFAULT_SEO_SETTINGS, sanitizeSchemaPlacements, schemaPlacementFor };
+export type { SchemaPlacement };
 
 /**
  * SEO MOTORU AYARLARI — SEO bir eklenti değil, her kayıtta ve her render'da çalışan çekirdek motordur.

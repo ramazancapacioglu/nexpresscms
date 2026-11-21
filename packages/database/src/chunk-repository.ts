@@ -86,6 +86,43 @@ export class ChunkRepository {
       .where(and(eq(t.siteId, this.siteId), eq(t.contentId, contentId), eq(t.locale, locale)));
   }
 
+  /** Tek bir içeriğin dizinlenmiş RAG parçalarını sırayla döner (önizleme/denetim için). */
+  public async listForContent(
+    contentId: string,
+    locale: string
+  ): Promise<Array<{ chunkIndex: number; headingPath: string; wordCount: number; chunkText: string }>> {
+    if (this.dialect === "sqlite") {
+      const { db } = getSqliteClient();
+      const t = sqliteContentChunks;
+      const rows = await db
+        .select({
+          chunkIndex: t.chunkIndex,
+          headingPath: t.headingPath,
+          wordCount: t.wordCount,
+          chunkText: t.chunkText,
+        })
+        .from(t)
+        .where(and(eq(t.siteId, this.siteId), eq(t.contentId, contentId), eq(t.locale, locale)));
+      return rows
+        .map((r) => ({ ...r, headingPath: r.headingPath ?? "" }))
+        .sort((a, b) => a.chunkIndex - b.chunkIndex);
+    }
+    const { db } = getPgClient();
+    const t = pgContentChunks;
+    const rows = await db
+      .select({
+        chunkIndex: t.chunkIndex,
+        headingPath: t.headingPath,
+        wordCount: t.wordCount,
+        chunkText: t.chunkText,
+      })
+      .from(t)
+      .where(and(eq(t.siteId, this.siteId), eq(t.contentId, contentId), eq(t.locale, locale)));
+    return rows
+      .map((r) => ({ ...r, headingPath: r.headingPath ?? "" }))
+      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+  }
+
   /** İçeriğin (dil bazında) tüm parçalarını tek işlemde değiştirir. */
   public async replaceForContent(contentId: string, locale: string, model: string, rows: ChunkWrite[]): Promise<void> {
     const now = new Date();

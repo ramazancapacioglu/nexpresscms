@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-21] — Gelişmiş Şema & Entity Graph Stüdyosu ve "Bot & AI Gözüyle Gör" Canlı Doğrulayıcı
+- **Çekirdek Kural Motoru (`packages/core/src/schema-rules.ts`, `test/schema-rules.test.ts`):** 19 Schema.org türü (`SCHEMA_TYPE_CATALOG`), dahil/hariç hedefleme (`all`, `page`, `post`, `category`, `tag`, `content`, `custom_type` + `excludeCategories` / `excludeContentIds`), öncelik sırası, iki mod (`primary` ve `@graph`'a `@id` ile bağlanan `additional`), 11 dinamik değişken (`%title%`, `%tldr%`, `%author%`, `%site%`, `%category%`, `%keywords%`…), `SpeakableSpecification` (AI alıntı işaretlemesi) ve Wikipedia/Wikidata `sameAs` destekli Entity Graph (`about` / `mentions`). Eski 6 alanlı kayıtlarla %100 geriye dönük uyumlu (veritabanı göçü yok).
+- **Görsel Stüdyo & Canlı Doğrulayıcı (`/admin/seo/schemas`, `schema-studio/*`, `preview-action.ts`):** Hazır şema şablonları, canlı etki sayacı (*"X içeriğe uygulanır"*), aranabilir çoklu kategori/etiket/içerik seçici ve **"Bot & AI Gözüyle Gör"** 3 sekmeli canlı önizleyici (`JSON-LD @graph` + `validateSchemaGraph`, `AI Markdown`, `RAG Parçaları` — `ChunkRepository.listForContent`).
+- **Ön Yüz (0-KB RSC):** `(public)/[locale]/[slug]/page.tsx` artık birincil kural özelliklerini, Entity Graph düğümlerini, `SpeakableSpecification`'ı ve `additional` `@graph` düğümlerini doğrudan sunucuda basar.
+
 ### [2026-11-21] — Yönetim paneli erişilebilirlik (WCAG AA kontrast, dokunma hedefi, etiket) düzeltmeleri
 - `theme-gallery-view`, `users-board`, `header-builder`, `menu-tree`, `footer-editor`, `footer-style-panel`, `sidebar-editor`, `dual-mode-editor-topbar`, `block-outline` ve `a11y-audit.mjs` içindeki kontrast, `24×24px` dokunma hedefi, `aria-label` ve form bekleme sorunları giderildi.
 

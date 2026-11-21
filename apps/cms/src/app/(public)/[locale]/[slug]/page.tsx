@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, schemaPlacementFor, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -260,11 +260,14 @@ export default async function PublicDynamicContentPage({
   const pageUrl = `${baseUrl}${lb}${cPath}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
-  const placement = schemaPlacementFor(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
+  const placements = resolveSchemaPlacements(resolveSiteSettings(site?.settings).seo.schemaPlacements, {
+    contentId: content.id,
     type: content.type,
     schemaType: content.schemaType,
     categories: pub.categories,
+    tags: pub.tags,
   });
+  const placement = placements.primary;
   const t = createTranslator(locale);
   // Öne çıkan görsel: sayfalarda başlığın yanında (4:3), yazılarda WordPress gibi künyenin altında sütun genişliğinde
   const headerFigure = featuredImageUrl ? (
@@ -404,6 +407,19 @@ export default async function PublicDynamicContentPage({
       : [];
 
   const schemaMedia = await schemaImagesFor(siteId, content.blocks, featuredImageUrl);
+  const schemaVars = {
+    title: content.title,
+    tldr: content.tldr ?? undefined,
+    url: pageUrl,
+    image: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
+    author: pub.authorName || content.authorName || localizedSite.name,
+    site: localizedSite.name,
+    siteUrl: baseUrl,
+    category: pub.categories[0] ?? "",
+    keywords: [pub.focusKeyword, ...pub.tags].filter(Boolean).join(", "),
+    datePublished: (content.publishedAt ?? content.createdAt ?? content.updatedAt)?.toISOString?.() ?? "",
+    dateModified: content.updatedAt?.toISOString?.() ?? "",
+  };
   const schemaGraph = await buildPageSchemaGraph({
     siteId,
     siteName: localizedSite.name,
@@ -436,11 +452,17 @@ export default async function PublicDynamicContentPage({
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,
       imageMeta: schemaMedia.featured,
-      extraProps: fieldSchemaProps(customDef, content.schemaAttributes, { baseUrl }),
+      extraProps: {
+        ...buildPlacementExtraProps(placement, schemaVars),
+        ...fieldSchemaProps(customDef, content.schemaAttributes, { baseUrl }),
+      },
       // Öne çıkan görsel yoksa meta ile aynı üretilmiş paylaşım görseli (Article için görsel önerilir)
       imageUrl: featuredImageUrl ?? `${baseUrl}/og?title=${encodeURIComponent(content.title)}&site=${encodeURIComponent(localizedSite.name)}`,
     },
   });
+  for (const extraNode of buildAdditionalSchemaNodes(placements.additional, schemaVars)) {
+    schemaGraph["@graph"].push(extraNode as never);
+  }
 
   const children = pub.pillar ? family.filter((item) => item.id !== content.id && item.status === "published" && resolvePublishing(item.schemaAttributes).parentId === content.id) : [];
   const pillarList = children.length > 0 ? (

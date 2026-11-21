@@ -78,8 +78,8 @@ export interface BuildCoreSchemaInput {
     imageMeta?: Omit<SchemaImageInput, "url"> | null;
     keywords?: string[];
     articleSection?: string;
-    /** Özel alanlardan gelen Schema.org özellikleri (`fieldSchemaProps`); temel alanları ezmez. */
-    extraProps?: Record<string, string | number | boolean>;
+    /** Özel alanlardan ve şema kurallarından gelen Schema.org özellikleri; temel alanları ezmez. */
+    extraProps?: Record<string, unknown>;
   };
   /** Motor ayarları: bloklardan otomatik FAQPage/HowTo/Review üret. */
   autoSchema?: boolean;
@@ -158,12 +158,17 @@ function imageObject(baseUrl: string, image: SchemaImageInput, id?: string, extr
   };
 }
 
-/** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; yalnızca ilkel değerler geçer. */
+/** Özel alan özellikleri: `@` ile başlayanlar ve temel varlık alanları atılır; ilkel değerler ve izinli yapısal alanlar (`about`, `mentions`, `speakable`, `brand`) geçer. */
 const RESERVED_NODE_KEYS = new Set(["name", "headline", "description", "url", "inLanguage", "isPartOf", "publisher", "author", "datePublished", "dateModified", "mainEntityOfPage", "image", "aggregateRating", "sameAs"]);
-function safeExtraProps(extra: Record<string, string | number | boolean> | undefined): Record<string, string | number | boolean> {
+const STRUCTURED_EXTRA_KEYS = new Set(["about", "mentions", "speakable", "brand"]);
+function safeExtraProps(extra: Record<string, unknown> | undefined): Record<string, unknown> {
   if (!extra) return {};
   return Object.fromEntries(
-    Object.entries(extra).filter(([k, v]) => /^[a-z][A-Za-z]{1,40}$/.test(k) && !RESERVED_NODE_KEYS.has(k) && ["string", "number", "boolean"].includes(typeof v))
+    Object.entries(extra).filter(([k, v]) => {
+      if (!/^[a-z][A-Za-z]{1,40}$/.test(k) || RESERVED_NODE_KEYS.has(k)) return false;
+      if (["string", "number", "boolean"].includes(typeof v)) return true;
+      return STRUCTURED_EXTRA_KEYS.has(k) && v !== null && typeof v === "object";
+    })
   );
 }
 
