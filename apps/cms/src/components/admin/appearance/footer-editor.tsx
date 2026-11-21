@@ -423,7 +423,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                 <span>{activeLayout.columnLabels[colIdx] ?? `${colIdx + 1}. Sütun`}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                    isCurrent ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-800 dark:text-blue-300"
+                    isCurrent ? "bg-blue-800/80 text-white" : "bg-blue-500/10 text-blue-800 dark:text-blue-300"
                   }`}
                 >
                   {count} bileşen • {span}/12
