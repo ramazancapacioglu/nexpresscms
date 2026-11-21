@@ -52,7 +52,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-[16px] font-bold tracking-tight">Kullanıcılar & Roller <Link href="/admin/users/roles" className="ml-2 align-middle text-[11px] font-medium text-[#266DF0] hover:underline">İzin matrisi →</Link></h1>
+        <h1 className="text-[16px] font-bold tracking-tight">Kullanıcılar &amp; Roller <Link href="/admin/users/roles" className="ml-2 align-middle text-[11px] font-medium text-[#1D5ED8] hover:underline dark:text-[#7AA7FF]">İzin matrisi →</Link></h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
           Yönetici her şeyi yönetir; Editör içerik, medya, tema ve katalogla çalışır, ayarlara ve kullanıcılara erişemez.
           Rol, devre dışı bırakma ve parola sıfırlama kullanıcının açık oturumlarını hemen kapatır.

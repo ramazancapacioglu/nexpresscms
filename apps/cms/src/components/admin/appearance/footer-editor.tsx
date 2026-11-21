@@ -332,6 +332,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
           {footer.topBanner?.enabled && (
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-5">
               <input
+                aria-label="Kampanya rozeti"
                 className={fieldClass}
                 placeholder="Rozet (FIRSAT)"
                 value={footer.topBanner.badge ?? ""}
@@ -343,6 +344,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                 }
               />
               <input
+                aria-label="Kampanya başlığı"
                 className={`${fieldClass} sm:col-span-2`}
                 placeholder="Başlık"
                 value={footer.topBanner.title}
@@ -354,6 +356,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                 }
               />
               <input
+                aria-label="Kampanya buton metni"
                 className={fieldClass}
                 placeholder="Buton metni"
                 value={footer.topBanner.ctaLabel}
@@ -365,6 +368,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                 }
               />
               <input
+                aria-label="Kampanya buton adresi"
                 className={`${fieldClass} font-mono`}
                 placeholder="/tr/kurumsal"
                 value={footer.topBanner.ctaHref}
@@ -419,7 +423,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                 <span>{activeLayout.columnLabels[colIdx] ?? `${colIdx + 1}. Sütun`}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                    isCurrent ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-600"
+                    isCurrent ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-800 dark:text-blue-300"
                   }`}
                 >
                   {count} bileşen • {span}/12
@@ -511,6 +515,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
               {(footer.bottomLinks ?? []).map((bl, idx) => (
                 <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-1.5">
                   <input
+                    aria-label={`Alt bağlantı ${idx + 1} etiketi`}
                     className={fieldClass}
                     value={bl.label}
                     onChange={(e) =>
@@ -523,6 +528,7 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                     }
                   />
                   <input
+                    aria-label={`Alt bağlantı ${idx + 1} adresi`}
                     className={`${fieldClass} font-mono`}
                     value={bl.href}
                     onChange={(e) =>
@@ -536,13 +542,14 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
                   />
                   <button
                     type="button"
+                    aria-label={`${bl.label || "Alt"} bağlantısını sil`}
                     onClick={() =>
                       setFooter((prev) => ({
                         ...prev,
                         bottomLinks: (prev.bottomLinks ?? []).filter((_, i) => i !== idx),
                       }))
                     }
-                    className="px-2 text-rose-600"
+                    className="px-2 text-rose-700 dark:text-rose-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

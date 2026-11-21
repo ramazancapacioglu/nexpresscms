@@ -214,7 +214,7 @@ function OutlineRow({
                 onToggleCollapse(b.id);
               }}
               aria-label={isCollapsed ? "Alt blokları genişlet" : "Alt blokları daralt"}
-              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded hover:bg-black/10"
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-black/10"
             >
               {isCollapsed ? (
                 <ChevronRight className="h-3 w-3" />
@@ -252,7 +252,7 @@ function OutlineRow({
             disabled={idx === 0}
             onClick={() => onMove(b.id, "up")}
             aria-label="Yukarı taşı"
-            className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-black/10 disabled:opacity-30"
+            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-black/10 disabled:opacity-30"
           >
             <ArrowUp className="h-3 w-3" />
           </button>
@@ -261,7 +261,7 @@ function OutlineRow({
             disabled={idx === total - 1}
             onClick={() => onMove(b.id, "down")}
             aria-label="Aşağı taşı"
-            className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-black/10 disabled:opacity-30"
+            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-black/10 disabled:opacity-30"
           >
             <ArrowDown className="h-3 w-3" />
           </button>
@@ -269,7 +269,7 @@ function OutlineRow({
             type="button"
             onClick={() => onDuplicate(b.id)}
             aria-label="Çoğalt"
-            className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-black/10"
+            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-black/10"
           >
             <Copy className="h-3 w-3" />
           </button>
@@ -277,7 +277,7 @@ function OutlineRow({
             type="button"
             onClick={() => onRemove(b.id)}
             aria-label="Sil"
-            className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-rose-500/20"
+            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-rose-500/20"
           >
             <Trash2 className="h-3 w-3" />
           </button>

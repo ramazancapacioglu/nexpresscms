@@ -25,7 +25,7 @@ export function FooterStylePanel({ value, onChange, menus = [] }: { value: Foote
 
   const rowControls = (key: "main" | "bottom", title: string, row: FooterRowStyle, pad: number) => (
     <fieldset className="space-y-2.5 rounded-lg border border-[#E6E7EA] p-3 dark:border-[#23262E]">
-      <legend className="px-1 text-[11px] font-bold uppercase tracking-wider text-blue-600">{title}</legend>
+      <legend className="px-1 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">{title}</legend>
       <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={`${title} zemini`}>
         {FOOTER_BACKGROUNDS.map((bg: FooterBackground) => {
           const c = footerRowColors({ background: bg, customColor: row.customColor ?? "#ffffff" }, PREVIEW_TOKENS);

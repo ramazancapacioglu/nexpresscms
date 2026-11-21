@@ -50,6 +50,7 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
       <div className="flex min-w-0 items-center gap-1.5">
         <Link
           href={backHref}
+          aria-label={isTemplateMode ? "Şablonlara dön" : "İçeriklere dön"}
           className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
@@ -177,6 +178,7 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
         <button
           type="button"
           onClick={() => s.setLibraryOpen(true)}
+          aria-label="Tasarım Kütüphanesini aç"
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-indigo-200 bg-gradient-to-r from-indigo-600 to-blue-600 px-3 text-xs font-semibold text-white shadow-xs transition hover:from-indigo-700 hover:to-blue-700 dark:border-indigo-800"
         >
           <Sparkles className="h-3.5 w-3.5" />
@@ -212,6 +214,7 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
           <>
             <button
               type="button"
+              aria-label={canPublish ? "Taslak olarak kaydet" : "Taslağı kaydet"}
               className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-50"
               disabled={s.isPending}
               onClick={() => s.handleSave("draft")}

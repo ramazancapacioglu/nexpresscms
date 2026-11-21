@@ -21,7 +21,7 @@ interface Props {
   onReorder?: (draggedId: string, targetId: string) => void;
 }
 
-const btn = "inline-flex h-5 w-5 items-center justify-center rounded text-[#5C6370] hover:bg-[#E9ECF1] disabled:opacity-30 dark:text-[#9AA1AD] dark:hover:bg-[#22252D]";
+const btn = "inline-flex h-6 w-6 items-center justify-center rounded text-[#454B55] hover:bg-[#E9ECF1] disabled:opacity-30 dark:text-[#9AA1AD] dark:hover:bg-[#22252D]";
 
 /** Düz satırlar: küçük ad, küçük simge, girinti kutusu yok. Onay kutusu çoklu seçimdir. */
 export function MenuTree(props: Props) {
@@ -82,9 +82,9 @@ export function MenuTree(props: Props) {
               <button type="button" onClick={() => onSelect(n.id)} aria-current={active ? "true" : undefined} className="flex min-w-0 flex-1 items-center gap-1.5 text-left">
                 {n.icon ? <SvgIconPreview name={n.icon} size={12} /> : null}
                 <span className="truncate text-[12px] font-medium leading-5">{n.label}</span>
-                <span className="shrink-0 text-[10px] uppercase tracking-wide text-[#6A7180]">{KIND_LABEL[n.source?.kind ?? "custom"]}</span>
-                {mega ? <span className="shrink-0 text-[10px] font-semibold text-[#266DF0]">Mega</span> : null}
-                <span className="min-w-0 truncate font-mono text-[10px] text-[#8B919C]">{resolved ?? n.href}</span>
+                <span className="shrink-0 text-[10px] uppercase tracking-wide text-[#454B55] dark:text-[#9CA3AF]">{KIND_LABEL[n.source?.kind ?? "custom"]}</span>
+                {mega ? <span className="shrink-0 text-[10px] font-semibold text-[#1D5ED8] dark:text-[#7AA7FF]">Mega</span> : null}
+                <span className="min-w-0 truncate font-mono text-[10px] text-[#454B55] dark:text-[#9CA3AF]">{resolved ?? n.href}</span>
                 {broken ? <AlertTriangle className="h-3 w-3 shrink-0 text-red-600" aria-label="Hedef yok" /> : null}
               </button>
               <div className="flex shrink-0 items-center opacity-60 group-hover:opacity-100 group-focus-within:opacity-100">

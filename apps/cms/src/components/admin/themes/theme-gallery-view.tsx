@@ -337,7 +337,7 @@ export function ThemeGalleryView({
               </div>
             )}
             <div className="absolute top-2.5 left-2.5">
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-extrabold text-white shadow-xs">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-extrabold text-white shadow-xs">
                 <Check className="h-3 w-3 stroke-[3]" /> ETKİN TEMA
               </span>
             </div>
@@ -493,7 +493,7 @@ export function ThemeGalleryView({
                     )}
 
                     {isCurrentlyActive && (
-                      <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                      <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
                         ✓ Aktif
                       </span>
                     )}

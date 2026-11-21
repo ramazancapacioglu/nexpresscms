@@ -222,7 +222,7 @@ export function WidgetItemCard({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-[12px] font-bold">{widget.title || meta.name}</span>
-              <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-600">
+              <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-800 dark:text-blue-300">
                 {meta.name}
               </span>
             </div>
@@ -1046,7 +1046,7 @@ export function WidgetPreviewBox({ widget, compact = false }: { widget: SiteWidg
                 {lnk.label}
               </span>
               {lnk.badge && (
-                <span className="rounded bg-blue-500/10 px-1 py-0.2 text-[9px] font-bold text-blue-600">
+                <span className="rounded bg-blue-500/10 px-1 py-0.2 text-[9px] font-bold text-blue-800 dark:text-blue-300">
                   {lnk.badge}
                 </span>
               )}

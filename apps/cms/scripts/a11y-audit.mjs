@@ -80,7 +80,8 @@ for (const mode of ["mobil", "masaüstü"]) {
   await Promise.all([page.waitForURL(/\/admin/, { timeout: 30000 }), page.click("button[type=submit]")]);
   for (const p of ADMIN_PATHS) await scan(page, `${mode}/yönetim`, p);
   // Form kurucusu: boş form oluşturup kurucuyu tara
-  await page.goto(`${BASE}/admin/forms/new`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/admin/forms/new`, { waitUntil: "load" });
+  await page.waitForTimeout(400);
   // Tıklama, istemci bileşeni hazır olmadan boşa gidebilir (yavaş CI): URL değişene kadar en çok 3 kez dene
   for (let attempt = 1; attempt <= 3 && !/\/admin\/forms\/frm_/.test(page.url()); attempt++) {
     await page.waitForTimeout(500 * attempt);

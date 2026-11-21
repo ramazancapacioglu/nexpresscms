@@ -263,7 +263,7 @@ export function SidebarEditor({ initial, menus = [] }: { initial: SidebarConfig;
                   {a.widgets?.length ?? 0}
                 </span>
                 {!a.enabled ? (
-                  <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] text-amber-600">
+                  <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-semibold text-amber-900 dark:text-amber-300">
                     Kapalı
                   </span>
                 ) : null}

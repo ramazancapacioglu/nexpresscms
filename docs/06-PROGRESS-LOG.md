@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-21] — Yönetim paneli erişilebilirlik (WCAG AA kontrast, dokunma hedefi, etiket) düzeltmeleri
+- `theme-gallery-view`, `users-board`, `header-builder`, `menu-tree`, `footer-editor`, `footer-style-panel`, `sidebar-editor`, `dual-mode-editor-topbar`, `block-outline` ve `a11y-audit.mjs` içindeki kontrast, `24×24px` dokunma hedefi, `aria-label` ve form bekleme sorunları giderildi.
+
 ### [2026-11-21] — Kampanya detay sayfasında tek `<h1>` kuralı (`seo:contract` CI düzeltmesi)
 - `demoteHeroTitles` yardımcısı ortak modüle (`apps/cms/src/lib/demote-headings.ts`) alındı; kampanya detay sayfası (`/kampanya/[slug]`) kendi `<h1>` başlığını bastığından gövde bloklarındaki `hero` / 1. düzey başlıklar artık `<h2>`'ye düşürülür.
 

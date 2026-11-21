@@ -139,10 +139,10 @@ export function HeaderBuilder({ header, onChange }: { header: HeaderConfig; onCh
             const zones = readZones(header, bar, device);
             const rowSelected = selected?.kind === "row" && selected.bar === bar;
             return (
-              <div key={bar} className={`rounded-lg border ${rowSelected ? "border-blue-500 ring-1 ring-blue-500/30" : "border-[#E6E7EA] dark:border-[#2E333D]"} ${cfg.enabled ? "" : "opacity-60"}`}>
+              <div key={bar} className={`rounded-lg border ${rowSelected ? "border-blue-500 ring-1 ring-blue-500/30" : "border-[#E6E7EA] dark:border-[#2E333D]"} ${cfg.enabled ? "" : "bg-[#F8FAFC] dark:bg-[#111318]"}`}>
                 <div className="flex items-center justify-between gap-2 border-b border-[#E6E7EA] px-3 py-1.5 dark:border-[#2E333D]">
-                  <button type="button" onClick={() => setSelected({ kind: "row", bar })} className="text-[11px] font-bold uppercase tracking-wide text-[#454B55] hover:text-blue-600 dark:text-[#B4BAC5]">
-                    {BAR_LABEL[bar]} {bar === "main" ? "· zorunlu" : ""}
+                  <button type="button" onClick={() => setSelected({ kind: "row", bar })} className="text-[11px] font-bold uppercase tracking-wide text-[#14151A] hover:text-blue-700 dark:text-[#E5E7EB]">
+                    {BAR_LABEL[bar]} {bar === "main" ? "· zorunlu" : !cfg.enabled ? "· kapalı" : ""}
                   </button>
                   <label className="inline-flex items-center gap-1.5 text-[11px]">
                     <input type="checkbox" checked={cfg.enabled} disabled={bar === "main"} onChange={(e) => onChange({ ...header, [BAR_KEY[bar]]: { ...cfg, enabled: e.target.checked } } as HeaderConfig)} />
