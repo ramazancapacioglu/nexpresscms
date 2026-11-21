@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-21] — Kampanya detay sayfasında tek `<h1>` kuralı (`seo:contract` CI düzeltmesi)
+- `demoteHeroTitles` yardımcısı ortak modüle (`apps/cms/src/lib/demote-headings.ts`) alındı; kampanya detay sayfası (`/kampanya/[slug]`) kendi `<h1>` başlığını bastığından gövde bloklarındaki `hero` / 1. düzey başlıklar artık `<h2>`'ye düşürülür.
+
 ### [2026-11-21] — SEO Raporları sekmeli 2 sütunlu ızgara ve Genel Ayarlar sol dikey menü
 - **SEO Raporları (`/admin/seo/reports`):** 13 rapor kartının alt alta yığılması kaldırıldı; `?group=visibility|content|queries` kategori seçicisi (`Görünürlük & AI`, `İçerik Sağlığı`, `Sorgular & Kümeler`) ve her kategoride kart sayacıyla yalnızca seçili grubu sunucuda yükleyen **2 sütunlu ızgara** (`xl:grid-cols-2`) düzenine geçildi.
 - **Genel Ayarlar (`/admin/settings`) & Eklentiler (`/admin/plugins`):** Genel Ayarlar `SEO Ayarları` ile aynı sol dikey alt menü (`Genel & Sistem`, `Diller`, `Çerez & KVKK`, `Bakım & Sıfırlama`) ve `AdminPageHeader` düzenine çekildi; Eklentiler sayfası `AdminPageHeader` ile tek tipleştirildi.

@@ -20,6 +20,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { organizationFor } from "@/lib/organization-schema";
 import { schemaImagesFor } from "@/lib/schema-images";
 import { authorSlug } from "@/lib/author-slug";
+import { demoteHeroTitles } from "@/lib/demote-headings";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 
 export const dynamic = "force-dynamic";
@@ -451,7 +452,7 @@ export default async function PublicCampaignDetailPage({
         {content.blocks && content.blocks.length > 0 && (
           <div className="pt-4 space-y-6">
             <RscBlockRenderer
-              blocks={content.blocks}
+              blocks={demoteHeroTitles(content.blocks)}
               themeId={site?.activeThemeId ?? "corporate-aurora"}
               tokens={themeTokens}
             />

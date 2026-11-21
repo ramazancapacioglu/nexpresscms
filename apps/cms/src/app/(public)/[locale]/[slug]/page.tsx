@@ -33,18 +33,8 @@ import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
 import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
 import { authorSlug } from "@/lib/author-slug";
+import { demoteHeroTitles } from "@/lib/demote-headings";
 import { getMembership, getVisitorMember } from "@/lib/members";
-
-/** Sayfa başlığı zaten h1 ise içerikteki vitrin (hero) başlığı h2'ye düşer: sayfada tek h1 kalır (SEO ve erişilebilirlik). */
-function demoteHeroTitles<T extends { type: string; props: Record<string, unknown>; children?: T[] }>(nodes: T[]): T[] {
-  return nodes.map((node) => ({
-    ...node,
-    ...(node.type === "hero" ? { props: { ...node.props, demoteTitle: true } } : {}),
-    // İçerikteki 1. düzey başlık da h2 olur (sayfa başlığı h1'i tek kalır)
-    ...((node.type === "heading" || node.type === "heading_element") && /^(h?1)$/i.test(String(node.props.level ?? "")) ? { props: { ...node.props, level: typeof node.props.level === "number" ? 2 : "h2" } } : {}),
-    ...(node.children ? { children: demoteHeroTitles(node.children) } : {}),
-  }));
-}
 
 function treeHas(nodes: Array<{ type: string; children?: unknown[] }>, type: string): boolean {
   for (const node of nodes) {
