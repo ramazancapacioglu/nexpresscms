@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { listStorefrontProducts } from "@/lib/plugin-gate";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { ChromeSubNav } from "@/components/admin/section-tabs";
 import { MenuEditor } from "@/components/admin/appearance/menu-editor";
 import type { MenuSourceLists } from "@/components/admin/appearance/menu/menu-sources";
 import { requireUser } from "@/lib/auth/session";
@@ -30,12 +32,11 @@ export default async function MenuAppearancePage({ searchParams }: { searchParam
   };
   return (
     <div className="space-y-4">
-      <header className="border-b border-[#D5D8DE] pb-3 dark:border-[#2E333D]">
-        <h1 className="text-[18px] font-semibold">Menüler</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-          Birden çok menü kaydı açın. Header’da birini seçin; diğerlerini footer sütununda ve kenar çubuğunda “Menü” bileşenine bağlayın. Onay kutusuyla çoklu seçim yapılır.
-        </p>
-      </header>
+      <AdminPageHeader
+        title="Site İskeleti — Menüler"
+        description="Birden çok menü kaydı yönetin. Birini Header’a atayın; diğerlerini Footer ve Kenar çubuğu bileşenlerinde kullanın."
+        actions={<ChromeSubNav />}
+      />
       <MenuEditor key={chrome.locale} menus={chrome.menus} lists={lists} locale={chrome.locale} locales={chrome.locales} defaultLocale={chrome.defaultLocale} hasOwn={chrome.hasOwn} />
     </div>
   );

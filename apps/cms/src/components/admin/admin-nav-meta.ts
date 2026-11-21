@@ -130,7 +130,7 @@ export const QUICK_COMMANDS = [
   },
   {
     title: "WordPress → NexPress Göç Aracı",
-    subtitle: "Elementor/WPBakery kısa kod temizleyici ve 301 yönlendirme aktarıcısı",
+    subtitle: "Kısa kod temizleyici, içerik dönüştürücü ve 301 yönlendirme aktarıcısı",
     href: "/admin/migration",
   },
   {
@@ -139,9 +139,9 @@ export const QUICK_COMMANDS = [
     href: "/admin/plugins",
   },
   {
-    title: "Canlı 100/100 RSC Vitrin (/tr)",
+    title: "Canlı 100/100 RSC Vitrin",
     subtitle: "Sıfır istemci JavaScript yüküyle çalışan ön yüzü yeni sekmede aç",
-    href: "/tr",
+    href: "/",
   },
 ];
 

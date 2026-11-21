@@ -5,7 +5,7 @@ import { addMenuNode, countMenuNodes, findMenuNode, indentMenuNode, indentMenuNo
 import { MENU_TEMPLATES } from "@nexpress/themes";
 import { saveChromeAction } from "@/app/admin/actions";
 import { SvgIconPreview } from "@/components/admin/editor/icon-picker-modal";
-import { AppearanceTabs, SaveBar, TemplateRow } from "./appearance-ui";
+import { SaveBar, TemplateRow } from "./appearance-ui";
 import { MenuAddPanel, type AddRequest } from "./menu/menu-add-panel";
 import { MenuItemSettings } from "./menu/menu-item-settings";
 import { buildClientLookup, type MenuSourceLists } from "./menu/menu-sources";
@@ -100,7 +100,6 @@ export function MenuEditor({ menus: initialMenus, lists, locale, locales, defaul
 
   return (
     <div className="space-y-4">
-      <AppearanceTabs current="menu" />
       {locales.length > 1 && (
         <nav aria-label="Menü dili" className="flex flex-wrap items-center gap-1 text-[13px]">
           <span className="mr-1 font-medium">Dil:</span>

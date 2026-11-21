@@ -12,7 +12,7 @@ import {
 } from "@nexpress/core";
 import { Columns, Plus, Sparkles, Trash2 } from "lucide-react";
 import { saveChromeAction } from "@/app/admin/actions";
-import { AppearanceTabs, SaveBar, fieldClass } from "./appearance-ui";
+import { SaveBar, fieldClass } from "./appearance-ui";
 import { ChromeLibraryModal } from "./chrome-library-modal";
 import { FooterStylePanel } from "./footer-style-panel";
 import { WidgetItemCard, WidgetPickerModal, WidgetPreviewBox } from "./widget-studio";
@@ -118,7 +118,6 @@ export function FooterEditor({ initial, menus = [] }: { initial: FooterConfig; m
 
   return (
     <div className="space-y-4">
-      <AppearanceTabs current="footer" />
       <SaveBar
         title="Footer Yerleşimi ve Bileşen (Widget) Stüdyosu"
         pending={pending}

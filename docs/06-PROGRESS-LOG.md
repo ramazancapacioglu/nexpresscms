@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-21] — Yönetim paneli tek tipleştirme, Tasarım (5 durak) ve SEO Merkezi sadeleştirmesi
+- **Ortak Panel Tasarım Sistemi (Faz 1):** Tüm admin sayfaları için tek tip üst başlık çerçevesi (`components/admin/admin-page-header.tsx`) eklendi; 1. seviye bölüm sekmeleri (`SectionTabs`: `SeoTabs`, `AppearanceNav`) ağır mavi kutulardan modern alt çizgili (underline) sekmelere çekildi; 2. seviye segmentli alt seçici (`ChromeSubNav`) eklendi. `app/admin/appearance/layout.tsx` ile tüm `/admin/appearance/*` sayfaları üst sekme çubuğunu başlığın üstünde sabit konumda alır (`header/footer/menus/sidebar` içindeki başlık altı mükerrer `<AppearanceTabs />` kaldırıldı).
+- **Tasarım, Özelleştirici & Şablonlar Sadeleştirmesi (Faz 2):** Tasarım 5 net durağa indirildi: **Temalar** · **Özelleştirici** · **Site İskeleti** (`Header | Footer | Menüler | Kenar çubuğu`) · **Şablonlar & Modeller** · **Kütüphane & AI**. Özelleştirici’deki mükerrer tema çekmecesi kaldırıldı, **Özel CSS / Header-Footer Kodları** (`theme-store-tab-code.tsx`) Özelleştirici’nin 5. sekmesine (`/admin/themes/customize?tab=code`) taşındı. 945 satırlık `studio-client.tsx` mükerrer şablon/kod sekmelerinden arındırılarak ~250 satıra indirildi.
+- **SEO Merkezi Sadeleştirmesi (Faz 3):** Tüm SEO sayfaları (`Genel Bakış`, `Denetim`, `Site Haritası`, `Şemalar & Dizin`, `Yönlendirmeler`, `Webmaster`, `Raporlar`, `Ayarlar`) `AdminPageHeader` ile tek tipleştirildi. `SEO Ayarları` (`settings-shell.tsx`) üst üste çift yatay mavi sekme yerine **sol dikey alt menü + sağ form** düzenine geçti. Tek kartlık `/admin/seo/engine` sayfası `/admin/seo/schemas#arama-dizini` içine birleştirildi (eski URL yönlendirmeyle korunur).
+- **Sol Menü, Üst Bar & Kural Uyumu (Faz 4):** `Tasarım` sol menüsü 5 net öğeye sadeleştirildi; üst bar `?format=md` ve sol alt `Canlı RSC Vitrin` linkleri sabit `/tr` yerine sitenin gerçek dil kipine (`publicBase`: tek dilde `/`, çok dilde `/{locale}`) bağlandı. `QUICK_COMMANDS` içindeki eski üçüncü parti ürün adları temizlendi (`AGENTS.md` Kural 6). Veritabanı şeması ve mevcut ayar anahtarlarına dokunulmadı (sıfır veri kaybı).
+
 ### [2026-11-16] — Performans ve mobil
 - ✅ Ölçüm (Lighthouse 12, 6 temsilci sayfa, masaüstü + mobil): performans 99–100, erişilebilirlik 96–100, en iyi uygulamalar 100, SEO 66–69 (tek kayıp `is-crawlable`: arama indeksi bilerek kapalı). FCP 0.3–0.7 sn, LCP 0.3–0.7 sn, TBT 0, CLS 0–0,06; sayfa başına 190–400 KB (JS yaklaşık 100 KB Next çalışma zamanı, tek CSS 14 KB).
 - ✅ Hata: ana sayfa mobilde Chrome'da LCP üretmiyordu (`NO_LCP`, Lighthouse performans 0). Neden: kampanya atlıkarıncasının kaydırma kabındaki negatif kenar boşluğu (`-mx-4`). Kaldırıldı; karosel bileşenine not düşüldü.
@@ -63,6 +69,7 @@
 - ✅ Hata: ana sayfa SSS listesi yüzünden `FAQPage` varlığı olmuştu; sayfa türü `WebPage`, SSS düğümü bloklardan gelir.
 - ✅ Form girdileri 365 günden eskiyse yazılmaz (zamanlayıcı siler; KVKK). Girdi ve yorum kayıtları özgün zamanı taşır (`createdAt`).
 - ⚠️ Bilinçli yapılmayanlar: kullanıcılar giriş kapalı (`disabled`, parola özeti yok); teknik hesap alınmadı; WP'deki elle yazılmış `aggregateRating` (5 / 89) taşınmadı (ön yüzde uydurma puan yok); arama indeksi kapalı, alan adı yönlendirmesi yapılmadı.
+
 ### [2026-11-18] — Akınsoft tasarımı ana dala alındı
 - Yazılım bayi kabuğu, `contact_campaign` bloğu, hızlı arama ve WhatsApp düğmesi, gizlilik gömme ve `/wp-content/uploads` köprüsü ana dalla birleşti.
 - SEO paneli, CrUX ayrımı, IndexNow, site haritası ve webmaster doğrulaması duruyor. Ölçüm etiketleri head veya gövde yerleşimini korur.

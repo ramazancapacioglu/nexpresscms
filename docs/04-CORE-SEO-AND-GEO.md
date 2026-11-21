@@ -62,13 +62,18 @@ SEO bir eklenti veya harici araç değil, her `saveContent` / `patchContent` kay
 
 **Sözleşme testi:** `pnpm --filter @nexpress/cms seo:contract` çalışan uygulamada her içerik için dolu başlık, tek h1, canonical, og:title, geçerli ve sızıntısız JSON-LD, yazılarda `datePublished`/yazar/`og:type=article` denetler (CI'da koşar).
 
-## 5. SEO sayfası (`/admin/seo`)
+## 5. SEO Merkezi (`/admin/seo`)
 
-Motor ayarları tema özelleştiricisinden ayrıdır. Kayıt `sites.settings.seo` içindedir.
+Motor ayarları tema özelleştiricisinden ayrıdır. Kayıt `sites.settings.seo` içindedir. Tüm SEO sayfaları ortak `AdminPageHeader` ve alt çizgili 8 sekmeli üst çubukla (`SeoTabs`) açılır:
 
-- **Durum:** ortalama skor, harf dağılımı, eksik meta, noindex yayın, görselsiz kayıt, odak kelime ve kısa metin. En zayıf sekiz kayıt stüdyoya bağlanır.
-- **Ayarlar:** başlık şablonları, açıklama kaynağı, kurum kimliği, otomatik şema, canonical, slug 301, `/llms.txt`, sitemap türleri ve `robots.txt` ek satırları.
-- Sitemap yalnızca seçili içerik türlerini basar. `/llms.txt`, ayar kapalıyken 404 döner. `robots.txt` yönetim ve API yollarını kapatır, ek satırları sona ekler.
+- **Genel Bakış (`/admin/seo`):** ortalama skor, harf dağılımı, sorun dağılımı, indeks durumu rozeti ve hızlı geçiş kartları.
+- **Denetim (`/admin/seo/audit`):** sayfa bazlı SEO sorunları, konu kümesi iç bağlantı önerileri, kırık iç ve dış bağlantı denetimi.
+- **Site Haritası (`/admin/seo/sitemap`):** içerik türleri, kategori ve etiket haritası seçimi.
+- **Şemalar & Dizin (`/admin/seo/schemas`):** JSON-LD şema yerleşim kuralları ve RAG vektör arama dizini (`/admin/seo/engine` buraya yönlenir).
+- **Yönlendirmeler (`/admin/redirects`):** 301/302 kuralları ve 404 izleyici.
+- **Webmaster (`/admin/seo/integrations`):** Google Search Console, GA4, Bing ve Yandex doğrulama/API bağlantıları.
+- **Raporlar (`/admin/seo/reports`):** sorgu, içerik ve görünürlük kartları.
+- **Ayarlar (`/admin/seo/settings`):** sol dikey alt menüyle `Yayın & İndeks`, `Başlık & Kimlik`, `Yerel İşletme`, `Marka & Yazım` ve `Anahtarlar`. Sitemap yalnızca seçili içerik türlerini basar. `/llms.txt`, ayar kapalıyken 404 döner. `robots.txt` yönetim ve API yollarını kapatır, ek satırları sona ekler.
 
 ---
 

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getRedirectRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { NotFoundTable } from "./not-found-table";
 import { RedirectsManager } from "./redirects-manager";
@@ -20,22 +21,22 @@ export default async function AdminRedirectsPage({ searchParams }: { searchParam
   return (
     <div className="space-y-5">
       <SeoTabs />
-      <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
-        <div>
-          <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Yönlendirmeler & 404</h1>
-          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Elle 301/302 yönlendirmeleri ve bulunamayan adresler. Adres değişince eski adrese otomatik 301 zaten verilir; burası dış/eski adresler içindir.</p>
-        </div>
-        <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-0.5 text-[12px] font-medium">
-          {[
-            ["rules", `Yönlendirmeler (${rules.length})`, "/admin/redirects"],
-            ["404", `404 izleyici (${missing.length})`, "/admin/redirects?tab=404"],
-          ].map(([id, label, href]) => (
-            <Link key={id} role="tab" aria-selected={tab === id} href={href!} className={`rounded px-3 py-1 ${tab === id ? "bg-white dark:bg-[#2A2D35] shadow-sm text-[#14151A] dark:text-[#F3F4F6]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}>
-              {label}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Yönlendirmeler & 404"
+        description="Elle 301/302 kuralları ve bulunamayan adres günlüğü. Adres değişince eski URL için otomatik 301 zaten oluşturulur."
+        actions={
+          <div role="tablist" className="inline-flex rounded-lg border border-[#E6E7EA] bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:border-[#23262E] dark:bg-[#1C1E24]">
+            {[
+              ["rules", `Yönlendirmeler (${rules.length})`, "/admin/redirects"],
+              ["404", `404 izleyici (${missing.length})`, "/admin/redirects?tab=404"],
+            ].map(([id, label, href]) => (
+              <Link key={id} role="tab" aria-selected={tab === id} href={href!} className={`rounded-md px-3 py-1 ${tab === id ? "bg-white text-[#14151A] shadow-2xs dark:bg-[#2A2D35] dark:text-[#F3F4F6]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}>
+                {label}
+              </Link>
+            ))}
+          </div>
+        }
+      />
 
       {tab === "rules" ? (
         <RedirectsManager

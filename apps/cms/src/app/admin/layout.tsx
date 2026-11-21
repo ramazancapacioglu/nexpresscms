@@ -41,6 +41,11 @@ export default async function AdminLayout({
     ...(speedOn ? [] : ["/admin/perfornext"]),
   ];
 
+  const publicBase =
+    (site?.supportedLocales.length ?? 1) > 1
+      ? `/${site?.defaultLocale ?? "tr"}`
+      : "/";
+
   return (
     <ThemeBoundary>
     <ClearChunkReload />
@@ -50,6 +55,7 @@ export default async function AdminLayout({
       cmsMode={cmsMode}
       dbDialect={dbDialect}
       activeThemeId={site?.activeThemeId ?? "corporate-aurora"}
+      publicBase={publicBase}
       accountSlot={
         <div className="pt-2 border-t border-[#E6E7EA] dark:border-[#23262E] space-y-0.5">
         <Link

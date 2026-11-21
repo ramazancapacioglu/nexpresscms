@@ -45,7 +45,7 @@ export function SaveBar({
       </div>
       <div className="flex items-center gap-2">
         <Link
-          href="/tr"
+          href="/"
           target="_blank"
           className="inline-flex h-7 items-center gap-1.5 rounded-md border border-[#E6E7EA] px-2.5 text-[12px] text-[#5C5F66] dark:border-[#23262E]"
         >

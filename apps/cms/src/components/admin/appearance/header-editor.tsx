@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { HeaderConfig } from "@nexpress/core";
 import { Sparkles } from "lucide-react";
 import { saveChromeAction } from "@/app/admin/actions";
-import { AppearanceTabs, SaveBar } from "./appearance-ui";
+import { SaveBar } from "./appearance-ui";
 import { ChromeLibraryModal } from "./chrome-library-modal";
 import { HeaderBuilder } from "./header-builder";
 
@@ -24,7 +24,6 @@ export function HeaderEditor({ initial, templateActive = false }: { initial: Hea
 
   return (
     <div className="space-y-4">
-      <AppearanceTabs current="header" />
       <SaveBar title="Header" pending={pending} notice={notice} onSave={save} />
 
       {templateActive ? (

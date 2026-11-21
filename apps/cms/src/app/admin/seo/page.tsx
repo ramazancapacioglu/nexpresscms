@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auditSeo, countImagesMissingAlt, resolvePublishing, resolveSiteSettings, SEO_ISSUE_LABELS, sitemapArchiveTypes, type SeoIssueId } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { SyncNowButton } from "@/components/admin/seo/sync-now-button";
 import { buildSeoSummary } from "@/components/admin/seo/seo-summary";
@@ -10,12 +11,12 @@ import { buildSeoSummary } from "@/components/admin/seo/seo-summary";
 export const dynamic = "force-dynamic";
 
 const links = [
-  { href: "/admin/seo/audit", label: "Denetim", detail: "Sayfa sayfa sorun listesi ve bağlantı kontrolü" },
-  { href: "/admin/seo/sitemap", label: "Site haritası", detail: "Tür, kategori ve etiket seçimi" },
-  { href: "/admin/seo/settings", label: "Ayarlar", detail: "Başlık, indeks, marka ve kalıcı bağlantı" },
-  { href: "/admin/seo/integrations", label: "Webmaster", detail: "Search Console, Bing, Yandex" },
-  { href: "/admin/seo/reports", label: "Raporlar", detail: "Sorgu, içerik ve görünürlük" },
-  { href: "/admin/seo/schemas", label: "Şemalar", detail: "Tür, sayfa ve kategori yerleşimi" },
+  { href: "/admin/seo/audit", label: "Denetim & Bağlantılar", detail: "Sayfa sayfa sorun listesi, konu kümesi ve kırık bağlantı kontrolü" },
+  { href: "/admin/seo/sitemap", label: "Site Haritası", detail: "İçerik türü, kategori ve etiket haritası seçimi" },
+  { href: "/admin/seo/schemas", label: "Şemalar & Arama Dizini", detail: "JSON-LD şema kuralları ve RAG vektör arama dizini" },
+  { href: "/admin/redirects", label: "Yönlendirmeler & 404", detail: "301/302 kuralları ve bulunamayan adres günlüğü" },
+  { href: "/admin/seo/integrations", label: "Webmaster", detail: "Google Search Console, GA4, Bing ve Yandex bağlantıları" },
+  { href: "/admin/seo/settings", label: "SEO Ayarları", detail: "Yayın, başlık, yerel işletme, marka DNA ve anahtarlar" },
 ];
 
 /** Site sağlığı. Ayar ve rapor bu sayfada yok. */
@@ -61,15 +62,22 @@ export default async function AdminSeoPage() {
   return (
     <div className="space-y-4">
       <SeoTabs />
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">SEO</h1>
-          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            {site?.name ?? "Site"} · {indexed ? "indeks açık" : "indeks kapalı"} · harita: {archives.includes("etiket") ? "etiketler dahil" : "etiketler hariç"}
-          </p>
-        </div>
-        <SyncNowButton />
-      </div>
+      <AdminPageHeader
+        title="SEO Genel Bakış"
+        description={`${site?.name ?? "Site"} · Harita: ${archives.includes("etiket") ? "etiketler dahil" : "etiketler hariç"}`}
+        badge={
+          <span
+            className={`rounded-md border px-2 py-0.5 text-[11px] font-medium ${
+              indexed
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+            }`}
+          >
+            {indexed ? "İndeks açık" : "İndeks kapalı"}
+          </span>
+        }
+        actions={<SyncNowButton />}
+      />
       {!indexed ? (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
           Site arama motorlarına kapalı. Açmak için Ayarlar.

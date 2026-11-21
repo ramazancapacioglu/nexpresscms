@@ -4,6 +4,7 @@ import { pluginRegistry, resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireAdminPage } from "@/lib/auth/session";
 import { getPluginState } from "@/lib/plugin-state";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import "@/plugins/register";
 import { SeoSettingsShell } from "./settings-shell";
@@ -31,10 +32,10 @@ export default async function AdminSeoSettingsPage() {
   return (
     <div className="space-y-4">
       <SeoTabs />
-      <div>
-        <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">SEO ayarları</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Yayın, başlık, yerel işletme, marka ve anahtarlar ayrı sekmelerde. Site haritası kendi sayfasındadır.</p>
-      </div>
+      <AdminPageHeader
+        title="SEO Ayarları"
+        description="Yayın, başlık ve kimlik, yerel işletme, marka yazımı ve anahtarlar. Site haritası kendi sekmesindedir."
+      />
       <SeoSettingsShell
         seo={seoForm}
         siteName={site?.name ?? "Site"}

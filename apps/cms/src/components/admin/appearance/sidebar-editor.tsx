@@ -23,7 +23,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { saveChromeAction } from "@/app/admin/actions";
-import { AppearanceTabs, SaveBar, fieldClass } from "./appearance-ui";
+import { SaveBar, fieldClass } from "./appearance-ui";
 import { WidgetItemCard, WidgetPickerModal, WidgetPreviewBox } from "./widget-studio";
 
 const SIDEBAR_WIDGET_PRESETS: Array<{
@@ -217,9 +217,8 @@ export function SidebarEditor({ initial, menus = [] }: { initial: SidebarConfig;
 
   return (
     <div className="space-y-4">
-      <AppearanceTabs current="sidebar" />
       <SaveBar
-        title="Çoklu Kenar Çubuğu (Multi-Sidebar) & Bileşen (Widget) Stüdyosu"
+        title="Çoklu Kenar Çubuğu & Bileşen (Widget) Stüdyosu"
         pending={pending}
         notice={notice}
         onSave={save}

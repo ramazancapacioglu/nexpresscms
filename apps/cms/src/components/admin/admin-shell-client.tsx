@@ -40,6 +40,8 @@ interface AdminShellClientProps {
   hiddenHrefs?: string[];
   /** Özel içerik türleri (kenar çubuğuna eklenir). */
   customTypes?: Array<{ id: string; label: string }>;
+  /** Ziyaretçi vitrini kök adresi (tek dilde `/`, çok dilde `/tr`). */
+  publicBase?: string;
 }
 
 export function AdminShellClient({
@@ -54,6 +56,7 @@ export function AdminShellClient({
   uiLocale = "tr",
   hiddenHrefs = [],
   customTypes,
+  publicBase = "/",
 }: AdminShellClientProps) {
   const WORKSPACE_SECTIONS = withCustomTypes(BASE_SECTIONS, customTypes);
   const t = createTranslator(uiLocale);
@@ -288,11 +291,11 @@ export function AdminShellClient({
             </div>
 
             <Link
-              href="/tr"
+              href={publicBase}
               target="_blank"
               className="w-full h-7 flex items-center justify-between rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 text-[12px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] transition"
             >
-              <span>Canlı RSC Vitrin (/tr)</span>
+              <span>Canlı RSC Vitrin</span>
               <ExternalLink className="h-3 w-3 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
             </Link>
           </div>
@@ -352,7 +355,7 @@ export function AdminShellClient({
                 /llms.txt
               </Link>
               <Link
-                href="/tr?format=md"
+                href={publicBase === "/" ? "/?format=md" : `${publicBase}?format=md`}
                 target="_blank"
                 className="h-6 inline-flex items-center rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2 text-[#5C5F66] dark:text-[#9CA3AF] hover:text-[#14151A] dark:hover:text-white transition"
               >

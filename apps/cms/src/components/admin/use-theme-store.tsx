@@ -28,6 +28,7 @@ export interface ThemeStoreClientProps {
   currentTokens: DesignTokens;
   currentSettings?: SiteSettings;
   initialTemplates?: CustomizerTemplateSummary[];
+  initialTab?: CustomizerTabId;
 }
 
 export type CustomizerTabId =
@@ -36,6 +37,7 @@ export type CustomizerTabId =
   | "typography"
   | "layout"
   | "chrome"
+  | "code"
   | "templates";
 
 export type PreviewPageType =
@@ -55,6 +57,7 @@ export function useThemeStore({
   currentTokens,
   currentSettings,
   initialTemplates = [],
+  initialTab = "colors",
 }: ThemeStoreClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -72,7 +75,7 @@ export function useThemeStore({
   // Sol özelleştirici panelini gizleyip canlı önizlemeyi tam ekran yapma durumu
   const [hideControlPanel, setHideControlPanel] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<CustomizerTabId>("colors");
+  const [activeTab, setActiveTab] = useState<CustomizerTabId>(initialTab);
   const [previewDevice, setPreviewDevice] = useState<
     "desktop" | "tablet" | "mobile"
   >("desktop");

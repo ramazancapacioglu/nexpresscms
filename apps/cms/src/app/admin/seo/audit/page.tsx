@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, suggestInternalLinks, type SeoIssueId } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireUser } from "@/lib/auth/session";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { ExternalLinkAudit } from "@/components/admin/seo/external-link-audit";
@@ -45,17 +46,21 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-5">
       <SeoTabs />
-      <div className={`flex flex-wrap items-end justify-between gap-3 border-b ${border} pb-3.5`}>
-        <div>
-          <h1 className="text-[18px] font-semibold tracking-tight">SEO denetimi</h1>
-          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Yayındaki {s.pages} içeriğin başlık, açıklama, TL;DR, içerik derinliği, alt metin ve yinelenme kontrolü. Her satır düzenleyiciye gider.</p>
-        </div>
-        {locales.length > 1 && (
-          <div role="tablist" aria-label="Dil" className="inline-flex rounded-md bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:bg-[#1C1E24]">
-            {locales.map((l) => <Link key={l} role="tab" aria-selected={l === locale} href={`/admin/seo/audit?locale=${l}`} className={`rounded px-3 py-1 ${l === locale ? "bg-white shadow-sm dark:bg-[#2A2D35]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}>{l.toUpperCase()}</Link>)}
-          </div>
-        )}
-      </div>
+      <AdminPageHeader
+        title="SEO Denetimi & Bağlantılar"
+        description={`Yayındaki ${s.pages} içeriğin başlık, açıklama, TL;DR, içerik derinliği, alt metin, iç bağlantı fırsatı ve kırık bağlantı kontrolü.`}
+        actions={
+          locales.length > 1 ? (
+            <div role="tablist" aria-label="Dil" className="inline-flex rounded-md bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:bg-[#1C1E24]">
+              {locales.map((l) => (
+                <Link key={l} role="tab" aria-selected={l === locale} href={`/admin/seo/audit?locale=${l}`} className={`rounded px-3 py-1 ${l === locale ? "bg-white shadow-sm dark:bg-[#2A2D35]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}>
+                  {l.toUpperCase()}
+                </Link>
+              ))}
+            </div>
+          ) : undefined
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[["Ortalama puan", s.avgScore], ["Hatalı sayfa", s.withErrors], ["Uyarılı sayfa", s.withWarnings], ["Sorunsuz", s.clean]].map(([label, v]) => (

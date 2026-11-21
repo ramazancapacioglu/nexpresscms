@@ -2,7 +2,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { readTemplateMeta, TEMPLATE_KIND_IDS, validateTemplate } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { AppearanceNav } from "@/components/admin/section-tabs";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { requireUser } from "@/lib/auth/session";
 import { TemplatesManager, type TemplateRow } from "./templates-manager";
 
@@ -19,11 +19,10 @@ export default async function TemplatesPage() {
   });
   return (
     <div className="space-y-4">
-      <AppearanceNav />
-      <header className="border-b border-[#D5D8DE] pb-3 dark:border-[#2E333D]">
-        <h1 className="text-[18px] font-semibold">Şablonlar (Tema oluşturucu)</h1>
-        <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Header, footer, kenar çubuğu, sayfa, blog yazısı, kategori, etiket, ürün ve mağaza görünümlerini hazır şablondan oluşturun, stüdyoda düzenleyin ve varsayılan yapın. Sayfa/yazı ve kategori/etiket düzenlerken şablonu tek tek de seçebilirsiniz.</p>
-      </header>
+      <AdminPageHeader
+        title="Şablonlar & Modeller"
+        description="Header, footer, kenar çubuğu, sayfa, blog yazısı, arşiv, ürün, mağaza şablonları ve senkronize modeller. Varsayılan atayın veya içerik bazında seçin."
+      />
       <TemplatesManager rows={rows} kinds={TEMPLATE_KIND_IDS} />
     </div>
   );

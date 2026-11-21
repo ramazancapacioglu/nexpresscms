@@ -55,3 +55,14 @@ Sonuç (üç tarif): sayfa 100/100 (9 blok, 206 sözcük, ilk denemede, editörd
   - Sunucu tarafında temizlenip optimize edilen `customCss`, ayrı bir HTTP isteği oluşturmadan doğrudan `<style id="nx-custom-css">` inlined kritik CSS olarak basılır.
   - `headerScripts` ve `footerScripts`, sayfa ilk açılışını kilitlemeyen Next.js Script stratejisiyle yüklenir; 100/100 Lighthouse ve 0-KB RSC kuralı korunur.
 - **İçe/Dışa Aktarma:** `.nxtemplate` JSON paketi ile tek tıkla şablon indirme ve sürükle-bırak içe aktarma mekanizması kuruldu.
+
+---
+
+## 5. Panel Tek Tipleştirme Planı ve Uygulaması (2026-11-21)
+
+Sıfır veri kaybı ilkesiyle (`akinsoftizmir.com.tr` ve `ileriseo.com` veritabanlarına, `sites.settings` anahtarlarına ve eski URL'lere dokunmadan) yalnızca arayüz ve gezinme katmanı 4 fazda sadeleştirildi:
+
+1. **Faz 1 — Ortak Panel Tasarım Sistemi:** Tüm admin sayfaları için tek tip `AdminPageHeader` (`apps/cms/src/components/admin/admin-page-header.tsx`); ağır mavi kutu yerine alt çizgili (underline) 1. seviye `SectionTabs` (`section-tabs.tsx`); 2. seviye segmentli `ChromeSubNav`; `/admin/appearance/layout.tsx` ile tüm görünüm sayfalarında sabit üst sekme konumu.
+2. **Faz 2 — Tasarım (5 Net Durak):** `Temalar` · `Özelleştirici` · `Site İskeleti` (`Header | Footer | Menüler | Kenar çubuğu`) · `Şablonlar & Modeller` · `Kütüphane & AI`. Özelleştirici'deki mükerrer tema çekmecesi kaldırıldı; **Özel CSS / Header-Footer Kodları** (`theme-store-tab-code.tsx`) Özelleştirici'nin 5. sekmesine (`/admin/themes/customize?tab=code`) alındı. `studio-client.tsx` 945 satırdan 253 satıra indirildi.
+3. **Faz 3 — SEO Merkezi:** 8 sekmeli tek tip üst çubuk (`Genel Bakış`, `Denetim`, `Site Haritası`, `Şemalar & Dizin`, `Yönlendirmeler`, `Webmaster`, `Raporlar`, `Ayarlar`). `SEO Ayarları` (`settings-shell.tsx`) çift yatay sekme yerine **sol dikey alt menü + sağ form** yapısına geçti. Tek kartlık `/admin/seo/engine` sayfası `/admin/seo/schemas#arama-dizini` altına birleştirildi (eski adres yönlenir).
+4. **Faz 4 — Sol Menü, Üst Bar & Kural Uyumu:** `Tasarım` sol menüsü 5 öğeye indirildi; üst bar `?format=md` ve sol alt vitrin bağlantıları sitenin gerçek dil kipine (`publicBase`) bağlandı; `QUICK_COMMANDS` içindeki eski üçüncü parti ürün adları temizlendi.

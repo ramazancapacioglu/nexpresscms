@@ -260,6 +260,7 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G E",
       },
       { href: "/admin/seo/sitemap", label: "Site haritası", icon: Search, shortcut: "G M" },
+      { href: "/admin/seo/schemas", label: "Şemalar & Dizin", icon: Search, shortcut: "G Ş" },
       { href: "/admin/seo/engine", label: "Arama dizini", icon: Search, shortcut: "G E" },
       { href: "/admin/seo/reports", label: "SEO raporları", icon: Activity, shortcut: "G R" },
       { href: "/admin/seo/settings", label: "SEO ayarları", icon: SettingsIcon, shortcut: "G A" },
@@ -409,24 +410,23 @@ export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
     label: "Tasarım",
     items: [
       ...pick(
-        ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/templates", "/admin/studio"],
+        ["/admin/themes", "/admin/themes/customize", "/admin/appearance/header", "/admin/appearance/templates", "/admin/studio"],
         {
           "/admin/themes": { label: "Temalar", count: undefined },
           "/admin/themes/customize": { label: "Özelleştirici", count: undefined },
-          "/admin/appearance/header": { label: "Header & Footer", count: undefined },
-          "/admin/appearance/menus": { label: "Menüler", count: undefined },
-          "/admin/appearance/templates": { label: "Şablonlar", count: undefined },
+          "/admin/appearance/header": { label: "Site İskeleti", count: undefined },
+          "/admin/appearance/templates": { label: "Şablonlar & Modeller", count: undefined },
           "/admin/studio": { label: "Kütüphane & AI", count: undefined },
         }
       ),
-      ...pick(["/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/appearance/footer", "/admin/appearance/menus", "/admin/appearance/sidebar", "/admin/design-library"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   {
     label: "SEO",
     items: [
       ...pick(["/admin/seo"], { "/admin/seo": { label: "SEO Merkezi", count: undefined } }),
-      ...pick(["/admin/seo/audit", "/admin/seo/sitemap", "/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
+      ...pick(["/admin/seo/audit", "/admin/seo/sitemap", "/admin/seo/schemas", "/admin/seo/engine", "/admin/seo/reports", "/admin/seo/settings", "/admin/seo/integrations", "/admin/redirects"]).map((i) => ({ ...i, sidebar: false })),
     ],
   },
   { label: "Sistem", items: pick(["/admin/plugins", "/admin/settings", "/admin/users", "/admin/members", "/admin/backup", "/admin/integrations", "/admin/migration", "/admin/wp-bridge", "/admin/system", "/admin/perfornext", "/admin/audit", "/admin/help"]) },
