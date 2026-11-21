@@ -72,7 +72,7 @@ Motor ayarları tema özelleştiricisinden ayrıdır. Kayıt `sites.settings.seo
 - **Şemalar & Dizin (`/admin/seo/schemas`):** JSON-LD şema yerleşim kuralları ve RAG vektör arama dizini (`/admin/seo/engine` buraya yönlenir).
 - **Yönlendirmeler (`/admin/redirects`):** 301/302 kuralları ve 404 izleyici.
 - **Webmaster (`/admin/seo/integrations`):** Google Search Console, GA4, Bing ve Yandex doğrulama/API bağlantıları.
-- **Raporlar (`/admin/seo/reports`):** sorgu, içerik ve görünürlük kartları.
+- **Raporlar (`/admin/seo/reports`):** `?group=visibility|content|queries` kategori sekmeleri (`Görünürlük & AI`, `İçerik Sağlığı`, `Sorgular & Kümeler`) ve 2 sütunlu kart ızgarasıyla yalnızca aktif kategoriyi yükler.
 - **Ayarlar (`/admin/seo/settings`):** sol dikey alt menüyle `Yayın & İndeks`, `Başlık & Kimlik`, `Yerel İşletme`, `Marka & Yazım` ve `Anahtarlar`. Sitemap yalnızca seçili içerik türlerini basar. `/llms.txt`, ayar kapalıyken 404 döner. `robots.txt` yönetim ve API yollarını kapatır, ek satırları sona ekler.
 
 ---

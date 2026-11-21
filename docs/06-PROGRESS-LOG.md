@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-21] — SEO Raporları sekmeli 2 sütunlu ızgara ve Genel Ayarlar sol dikey menü
+- **SEO Raporları (`/admin/seo/reports`):** 13 rapor kartının alt alta yığılması kaldırıldı; `?group=visibility|content|queries` kategori seçicisi (`Görünürlük & AI`, `İçerik Sağlığı`, `Sorgular & Kümeler`) ve her kategoride kart sayacıyla yalnızca seçili grubu sunucuda yükleyen **2 sütunlu ızgara** (`xl:grid-cols-2`) düzenine geçildi.
+- **Genel Ayarlar (`/admin/settings`) & Eklentiler (`/admin/plugins`):** Genel Ayarlar `SEO Ayarları` ile aynı sol dikey alt menü (`Genel & Sistem`, `Diller`, `Çerez & KVKK`, `Bakım & Sıfırlama`) ve `AdminPageHeader` düzenine çekildi; Eklentiler sayfası `AdminPageHeader` ile tek tipleştirildi.
+
 ### [2026-11-21] — Yönetim paneli tek tipleştirme, Tasarım (5 durak) ve SEO Merkezi sadeleştirmesi
 - **Ortak Panel Tasarım Sistemi (Faz 1):** Tüm admin sayfaları için tek tip üst başlık çerçevesi (`components/admin/admin-page-header.tsx`) eklendi; 1. seviye bölüm sekmeleri (`SectionTabs`: `SeoTabs`, `AppearanceNav`) ağır mavi kutulardan modern alt çizgili (underline) sekmelere çekildi; 2. seviye segmentli alt seçici (`ChromeSubNav`) eklendi. `app/admin/appearance/layout.tsx` ile tüm `/admin/appearance/*` sayfaları üst sekme çubuğunu başlığın üstünde sabit konumda alır (`header/footer/menus/sidebar` içindeki başlık altı mükerrer `<AppearanceTabs />` kaldırıldı).
 - **Tasarım, Özelleştirici & Şablonlar Sadeleştirmesi (Faz 2):** Tasarım 5 net durağa indirildi: **Temalar** · **Özelleştirici** · **Site İskeleti** (`Header | Footer | Menüler | Kenar çubuğu`) · **Şablonlar & Modeller** · **Kütüphane & AI**. Özelleştirici’deki mükerrer tema çekmecesi kaldırıldı, **Özel CSS / Header-Footer Kodları** (`theme-store-tab-code.tsx`) Özelleştirici’nin 5. sekmesine (`/admin/themes/customize?tab=code`) taşındı. 945 satırlık `studio-client.tsx` mükerrer şablon/kod sekmelerinden arındırılarak ~250 satıra indirildi.

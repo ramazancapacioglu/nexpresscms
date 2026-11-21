@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { pluginRegistry, pluginSummary, verifyPluginLicenseKey } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { requireAdminPage } from "@/lib/auth/session";
 import { getPluginState } from "@/lib/plugin-state";
 import "@/plugins/register";
@@ -79,29 +80,29 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#E6E7EA] dark:border-[#23262E] pb-3.5">
-        <div>
-          <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">Eklentiler</h1>
-          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Bu site için eklentileri ve modüllerini aç/kapat. Değişiklikler anında geçerli olur.</p>
-        </div>
-        <div role="tablist" className="inline-flex rounded-md bg-[#F4F5F7] dark:bg-[#1C1E24] p-0.5 text-[12px] font-medium">
-          {[
-            { id: "installed", label: "Kurulu eklentiler", href: "/admin/plugins" },
-            { id: "dev", label: "Geliştirici", href: "/admin/plugins?tab=dev" },
-            { id: "packages", label: "Paket yükle (.nxplugin)", href: "/admin/plugins/packages" },
-          ].map((t) => (
-            <Link
-              key={t.id}
-              href={t.href}
-              role="tab"
-              aria-selected={tab === t.id}
-              className={`rounded px-3 py-1 transition ${tab === t.id ? "bg-white dark:bg-[#2A2D35] text-[#14151A] dark:text-[#F3F4F6] shadow-sm" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}
-            >
-              {t.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Eklentiler"
+        description="Bu site için eklentileri ve modüllerini aç/kapat. Değişiklikler anında geçerli olur."
+        actions={
+          <div role="tablist" className="inline-flex rounded-lg border border-[#E6E7EA] bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:border-[#23262E] dark:bg-[#1C1E24]">
+            {[
+              { id: "installed", label: "Kurulu eklentiler", href: "/admin/plugins" },
+              { id: "dev", label: "Geliştirici", href: "/admin/plugins?tab=dev" },
+              { id: "packages", label: "Paket yükle (.nxplugin)", href: "/admin/plugins/packages" },
+            ].map((t) => (
+              <Link
+                key={t.id}
+                href={t.href}
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`rounded-md px-3 py-1 transition ${tab === t.id ? "bg-white text-[#14151A] shadow-2xs dark:bg-[#2A2D35] dark:text-[#F3F4F6]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+        }
+      />
 
       {tab === "installed" ? (
         <>
