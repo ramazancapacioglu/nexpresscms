@@ -114,8 +114,8 @@ export function AdminShellClient({
     studioType === "post" || studioType === "kb_tech" || studioType === "ai_prompt";
   const studioIsTemplate = studioType === "template";
   const customStudioType = customTypes?.find((c) => c.id === studioType);
-  const studioBackHref = studioIsTemplate ? "/admin/appearance/templates" : customStudioType ? `/admin/entries/${customStudioType.id}` : studioIsPost ? "/admin/posts" : "/admin/pages";
-  const studioBackLabel = studioIsTemplate ? "Şablonlara Dön" : customStudioType ? `${customStudioType.label} listesine dön` : studioIsPost ? "Blog Yazılarına Dön" : "Sayfalara Dön";
+  const studioBackHref = studioIsTemplate ? "/admin/appearance/templates" : customStudioType ? `/admin/entries/${customStudioType.id}` : studioType === "ai_prompt" ? "/admin/qa" : studioIsPost ? "/admin/posts" : "/admin/pages";
+  const studioBackLabel = studioIsTemplate ? "Şablonlara Dön" : customStudioType ? `${customStudioType.label} listesine dön` : studioType === "ai_prompt" ? "Soru-Cevap Sayfalarına Dön" : studioIsPost ? "Blog Yazılarına Dön" : "Sayfalara Dön";
 
   // Üst çubuk yolu: bölüm / sayfa; en uzun eşleşen menü öğesi (alt sayfalar üst öğenin adını taşır)
   const navMatch = WORKSPACE_SECTIONS.flatMap((section) => section.items.map((item) => ({ section, item })))

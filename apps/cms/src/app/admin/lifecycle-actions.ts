@@ -12,6 +12,7 @@ async function commit() {
   await revalidatePath("/admin");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/admin/trash");
   await revalidatePath("/admin/schedule");

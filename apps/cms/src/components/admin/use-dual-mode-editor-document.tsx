@@ -81,7 +81,7 @@ export function useDualModeEditorDocument({
     (initialDoc?.status as ContentStatus) ?? "draft"
   );
   const [schemaType, setSchemaType] = useState<string>(
-    initialDoc?.schemaType ?? (lockedType === "post" ? "BlogPosting" : "WebPage")
+    initialDoc?.schemaType ?? (lockedType === "post" ? "BlogPosting" : lockedType === "ai_prompt" ? "FAQPage" : "WebPage")
   );
   const [importanceScore, setImportanceScore] = useState<number>(
     initialDoc?.importanceScore ?? 5
@@ -104,7 +104,7 @@ export function useDualModeEditorDocument({
     if (slugSeeded.current) return;
     slugSeeded.current = true;
     const suffix = Date.now().toString().slice(-4);
-    setSlug(lockedType === "post" ? `yeni-blog-yazisi-${suffix}` : `yeni-sayfa-${suffix}`);
+    setSlug(lockedType === "post" ? `yeni-blog-yazisi-${suffix}` : lockedType === "ai_prompt" ? `yeni-soru-${suffix}` : `yeni-sayfa-${suffix}`);
   }, [lockedType]);
 
   // Yeni içerikte adres, kullanıcı elle değiştirene kadar başlığı izler (ilk kayıttan sonra sabitlenir)

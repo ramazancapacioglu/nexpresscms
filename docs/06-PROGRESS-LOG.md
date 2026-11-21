@@ -1359,3 +1359,6 @@
 
 ### [2026-11-20] — Tarama temizliği: ikinci dalga ve parametre jokeri
 - ✅ GSC bağlantı dışa aktarımındaki yeni spam kalıpları (`/category|contents|info|information|hg|jukyuban`, `/?kelime/rakam`) nginx (yedekli) + `seo.crawlHygiene` ile 410'a bağlandı; `goneParams` joker (`*`) kabul eder (`hasGoneParam`, testli); panel ipucu güncellendi. Canlı doğrulama: spam yolları 410, sitemap'teki sayfalar 200. Bkz. `docs/04` §11h madde 6.
+
+### [2026-11-21] — Panel: Soru-Cevap Sayfaları listesi
+- ✅ Panelde yalnızca ziyaretçi soruları ("Gelen sorular") vardı; soru sayfalarını (`ai_prompt`) ekleme/düzenleme ekranı yoktu, kayıtlar blog listesine karışıyordu. Yeni `/admin/qa` (menü: İçerik → Soru-Cevap Sayfaları, komut paleti), blog listesinden çıkarıldı, editör geri bağlantıları ve önbellek geçersizleme eklendi. Bkz. `docs/13`.

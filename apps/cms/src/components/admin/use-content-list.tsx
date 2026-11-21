@@ -5,7 +5,7 @@ import { buildTaxonomyTree, flattenTaxonomyTree, resolvePublishing, type Content
 import { bulkContentAction, duplicateContentAction, patchContentAction } from "@/app/admin/actions";
 
 export interface ContentListClientProps {
-  mode: "page" | "post";
+  mode: "page" | "post" | "ai_prompt";
   items: ContentDto[];
   taxonomies: TaxonomyDto[];
 }
@@ -237,10 +237,11 @@ export function useContentList({
   };
 
   const isPage = mode === "page";
-  const labelSingular = isPage ? "Sayfa" : "Blog Yazısı";
-  const labelPlural = isPage ? "Sayfalar" : "Blog Yazıları";
+  const isQa = mode === "ai_prompt";
+  const labelSingular = isPage ? "Sayfa" : isQa ? "Soru" : "Blog Yazısı";
+  const labelPlural = isPage ? "Sayfalar" : isQa ? "Soru-Cevap Sayfaları" : "Blog Yazıları";
 
-  return { mode, initialItems, taxonomies, isPending, startTransition, items, setItems, searchQuery, setSearchQuery, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter, tagFilter, setTagFilter, selectedIds, setSelectedIds, bulkCategorySlug, setBulkCategorySlug, bulkTagSlug, setBulkTagSlug, quickEditId, setQuickEditId, qeTitle, setQeTitle, qeSlug, setQeSlug, qeStatus, setQeStatus, qeVisibility, setQeVisibility, qeImportance, setQeImportance, qeNoIndex, setQeNoIndex, qeTldr, setQeTldr, qeCategories, setQeCategories, qeTags, setQeTags, toastMsg, setToastMsg, router, showToast, categories, tags, flatCategoryTree, filteredItems, avgSeoScore, allSelected, toggleSelectAll, toggleSelectRow, openQuickEdit, handleSaveQuickEdit, handleBulkAction, handleDuplicate, handleSingleDelete, isPage, labelSingular, labelPlural };
+  return { mode, isQa, initialItems, taxonomies, isPending, startTransition, items, setItems, searchQuery, setSearchQuery, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter, tagFilter, setTagFilter, selectedIds, setSelectedIds, bulkCategorySlug, setBulkCategorySlug, bulkTagSlug, setBulkTagSlug, quickEditId, setQuickEditId, qeTitle, setQeTitle, qeSlug, setQeSlug, qeStatus, setQeStatus, qeVisibility, setQeVisibility, qeImportance, setQeImportance, qeNoIndex, setQeNoIndex, qeTldr, setQeTldr, qeCategories, setQeCategories, qeTags, setQeTags, toastMsg, setToastMsg, router, showToast, categories, tags, flatCategoryTree, filteredItems, avgSeoScore, allSelected, toggleSelectAll, toggleSelectRow, openQuickEdit, handleSaveQuickEdit, handleBulkAction, handleDuplicate, handleSingleDelete, isPage, labelSingular, labelPlural };
 }
 
 export type ContentListState = ReturnType<typeof useContentList>;

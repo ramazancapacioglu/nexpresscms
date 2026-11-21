@@ -64,6 +64,11 @@ export const QUICK_COMMANDS = [
     href: "/admin/posts",
   },
   {
+    title: "Soru-Cevap Sayfaları (/admin/qa)",
+    subtitle: "SSS şemalı soru sayfaları: ekle, düzenle, yayınla; ziyaretçi soruları Gelen sorular'da",
+    href: "/admin/qa",
+  },
+  {
     title: "Görsel Blok & Doküman Stüdyosu (/admin/contents)",
     subtitle: "Novel/TipTap metin akışı, iç içe satır/sütun düzenleri ve canlı 17-noktalı SEO Motoru",
     href: "/admin/contents",

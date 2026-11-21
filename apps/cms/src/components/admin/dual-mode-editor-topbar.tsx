@@ -38,9 +38,11 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
 
   const backHref = isTemplateMode
     ? "/admin/appearance/templates"
-    : s.lockedType === "post"
-      ? "/admin/posts"
-      : "/admin/pages";
+    : s.lockedType === "ai_prompt"
+      ? "/admin/qa"
+      : s.lockedType === "post"
+        ? "/admin/posts"
+        : "/admin/pages";
 
   return (
     <header className="relative z-30 flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-card px-2.5 py-1.5 select-none">

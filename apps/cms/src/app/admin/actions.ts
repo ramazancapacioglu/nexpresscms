@@ -122,6 +122,7 @@ export async function saveSeoEngineSettingsAction(input: {
   await revalidatePath("/admin/seo");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/");
   await revalidatePath("/tr", "layout");
@@ -251,6 +252,7 @@ export async function saveContentAction(input: {
   await revalidatePath("/admin");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath(`/${locale}`);
   await revalidatePath(`/${locale}/${res.slug}`);
@@ -306,6 +308,7 @@ export async function patchContentAction(input: {
   await revalidatePath("/admin");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/tr");
   await revalidatePath("/llms.txt");
@@ -338,6 +341,7 @@ export async function bulkContentAction(input: {
     await revalidatePath("/admin");
     await revalidatePath("/admin/pages");
     await revalidatePath("/admin/posts");
+    await revalidatePath("/admin/qa");
     await revalidatePath("/admin/contents");
     await revalidatePath("/tr");
     return { ok: true, affected: deletedCount };
@@ -379,6 +383,7 @@ export async function bulkContentAction(input: {
   await revalidatePath("/admin");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/tr");
   return { ok: true, affected };
@@ -394,6 +399,7 @@ export async function duplicateContentAction(input: { contentId: string }) {
   await revalidatePath("/admin");
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   return { ok: true, contentId: newContentId };
 }
@@ -418,6 +424,7 @@ export async function saveTaxonomyAction(input: {
   const saved = await repo.saveTaxonomy(input);
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/admin/taxonomies");
   return { ok: true, taxonomy: saved };
@@ -431,6 +438,7 @@ export async function deleteTaxonomyAction(input: { id: string }) {
   const res = await repo.deleteTaxonomy(input.id);
   await revalidatePath("/admin/pages");
   await revalidatePath("/admin/posts");
+  await revalidatePath("/admin/qa");
   await revalidatePath("/admin/contents");
   await revalidatePath("/admin/taxonomies");
   return { ok: true, deletedId: res.deletedId };

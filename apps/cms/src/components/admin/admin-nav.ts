@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   MessageSquare,
   HelpCircle,
+  MessageCircleQuestion,
   Newspaper,
   Sparkles,
   ShoppingBag,
@@ -134,6 +135,13 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         label: "Yorum & İncelemeler",
         icon: MessageSquare,
         shortcut: "G R",
+      },
+      {
+        href: "/admin/qa",
+        label: "Soru-Cevap Sayfaları",
+        icon: MessageCircleQuestion,
+        count: "Hızlı/Toplu",
+        shortcut: "G A",
       },
       {
         href: "/admin/questions",
@@ -395,7 +403,7 @@ export function navVisibleForRole(item: Pick<NavItem, "adminOnly" | "limited" | 
 
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
   { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
-  { label: "İçerik", items: pick(["/admin/my-content", "/admin/pages", "/admin/posts", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/questions", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
+  { label: "İçerik", items: pick(["/admin/my-content", "/admin/pages", "/admin/posts", "/admin/qa", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/questions", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {
     label: "Tasarım",

@@ -16,7 +16,7 @@ export default async function AdminPostsListPage() {
 
   const postItems = allContents
     .filter(
-      (c) => c.type === "post" || c.type === "kb_tech" || c.type === "ai_prompt"
+      (c) => c.type === "post" || c.type === "kb_tech"
     )
     .map((c) => ({
       ...c,

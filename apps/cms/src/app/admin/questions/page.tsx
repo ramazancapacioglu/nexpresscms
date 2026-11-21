@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { headers } from "next/headers";
 import { sanitizeQaState } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
@@ -29,6 +30,9 @@ export default async function AdminQuestionsPage() {
       <header>
         <h1 className="text-xl font-bold">Gelen sorular</h1>
         <p className="text-sm text-muted-foreground">Ziyaretçinin soru sayfasında bıraktığı kayıtlar. Cevap, sayfada ve SSS şemasında yayınlanır.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Soru sayfalarının kendisini eklemek ve düzenlemek için <Link href="/admin/qa" className="font-medium text-foreground underline underline-offset-2">Soru-Cevap Sayfaları</Link> listesini kullanın.
+        </p>
       </header>
       <QuestionsInbox rows={pending} />
     </div>

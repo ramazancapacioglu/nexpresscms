@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { FileText, FolderTree, Newspaper, Plus, Sparkles } from "lucide-react";
+import { FileText, FolderTree, MessageCircleQuestion, Newspaper, Plus, Sparkles } from "lucide-react";
 import type { ContentListState } from "./use-content-list";
 
 /** Üst Başlık & Yeni Ekle Aksiyonu */
 export function ContentListHeader({ s }: { s: ContentListState }) {
-  const { mode, taxonomies, items, filteredItems, avgSeoScore, isPage, labelSingular, labelPlural } = s;
+  const { mode, isQa, taxonomies, items, filteredItems, avgSeoScore, isPage, labelSingular, labelPlural } = s;
   return (
     <>
       {/* Üst Başlık & Yeni Ekle Aksiyonu */}
@@ -14,6 +14,8 @@ export function ContentListHeader({ s }: { s: ContentListState }) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted/50 text-foreground">
               {isPage ? (
                 <FileText className="h-4 w-4 text-blue-600" />
+              ) : isQa ? (
+                <MessageCircleQuestion className="h-4 w-4 text-violet-700 dark:text-violet-400" />
               ) : (
                 <Newspaper className="h-4 w-4 text-emerald-800 dark:text-emerald-400" />
               )}
@@ -32,7 +34,9 @@ export function ContentListHeader({ s }: { s: ContentListState }) {
           <p className="text-xs text-muted-foreground">
             {isPage
               ? "Kurumsal sayfalarınızı filtreleyin, satır içi hızlı düzenleyin, toplu işlem uygulayın veya Görsel Stüdyoda açın."
-              : "Blog yazılarınızı, kategori/etiket kırılımlarını ve otomatik SEO Motoru skorlarını tek ekrandan yönetin."}
+              : isQa
+                ? "Soru sayfalarınızı (SSS şemalı, /sorular arşivinde yayınlanır) ekleyin, düzenleyin ve toplu yönetin. Ziyaretçi soruları için Gelen sorular'a bakın."
+                : "Blog yazılarınızı, kategori/etiket kırılımlarını ve otomatik SEO Motoru skorlarını tek ekrandan yönetin."}
           </p>
         </div>
 
