@@ -43,11 +43,46 @@ function catalogBlockToMarkdown(props: Record<string, unknown>): string {
  * - İçerik kaydedildiği anda `markdownCache` sütununa yazılır.
  * - `?format=md`, `Accept: text/markdown`, `/llms.txt` ve RAG chunking için 0ms CPU maliyeti sağlar.
  */
+/** Soru-cevap alanları (`richSchema.qa`): `schema_card` (qa) bloğunun bulunduğu yerde Markdown olarak yazılır. */
+export interface QaMarkdownData {
+  question?: string;
+  shortAnswer?: string;
+  detail?: string;
+  areaServed?: string;
+  audience?: string;
+  about?: string;
+  serviceType?: string;
+  productUrl?: string;
+}
+
+export function qaToMarkdown(qa: QaMarkdownData): string {
+  const text = (v: unknown) => (typeof v === "string" ? v.replace(/[ \t]+/g, " ").trim() : "");
+  const parts: string[] = [];
+  if (text(qa.question)) parts.push(`## ${text(qa.question)}`);
+  if (text(qa.shortAnswer)) parts.push(`> **Kısa Yanıt (Answer-First):** ${text(qa.shortAnswer)}`);
+  const detail = text(qa.detail).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (detail.length > 0) parts.push(detail.join("\n\n"));
+  const facts = [
+    ["Hizmet bölgesi", qa.areaServed],
+    ["Hedef kitle", qa.audience],
+    ["Hakkında", qa.about],
+    ["Hizmet tipi", qa.serviceType],
+  ]
+    .filter((row): row is [string, string] => Boolean(text(row[1])))
+    .map(([label, value]) => `- **${label}:** ${text(value)}`);
+  if (text(qa.productUrl)) facts.push(`- **Ayrıntılı bilgi:** ${text(qa.productUrl)}`);
+  if (facts.length > 0) parts.push(facts.join("\n"));
+  return parts.join("\n\n");
+}
+
+let activeQa: QaMarkdownData | null = null;
+
 export function compileBlocksToMarkdown(
   blocks: BlockNode[],
-  options?: { title?: string; tldr?: string | null; /** Blokların sonuna eklenen Markdown (ör. özel alan listesi). */ appendix?: string }
+  options?: { title?: string; tldr?: string | null; /** Blokların sonuna eklenen Markdown (ör. özel alan listesi). */ appendix?: string; /** Soru-cevap alanları (schema_card qa bloğu yerinde yazılır). */ qa?: QaMarkdownData | null }
 ): string {
   const sections: string[] = [];
+  activeQa = options?.qa ?? null;
 
   if (options?.title) {
     sections.push(`# ${options.title.trim()}`);
@@ -63,6 +98,7 @@ export function compileBlocksToMarkdown(
       sections.push(rendered.trim());
     }
   }
+  activeQa = null;
 
   if (options?.appendix && options.appendix.trim()) sections.push(options.appendix.trim());
 
@@ -286,6 +322,10 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
         out.push(`### ${label}\n${childMd}`.trim());
       }
       return `${heading}${out.join("\n\n")}`.trim();
+    }
+
+    case "schema_card": {
+      return p.schema === "qa" && activeQa ? qaToMarkdown(activeQa) : "";
     }
 
     case "section":

@@ -151,6 +151,11 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       title: input.title,
       tldr: input.tldr,
       appendix: fieldsMarkdown(findContentType(siteSettings.general.contentTypes, input.type), input.schemaAttributes, input.locale),
+      // Soru-cevap alanları (richSchema.qa): schema_card bloğunun yerinde Markdown'a yazılır (tek kaynak: alanlar)
+      qa: (() => {
+        const qa = (input.schemaAttributes?.richSchema as { qa?: { enabled?: boolean } } | undefined)?.qa;
+        return (qa?.enabled ? qa : null) as never;
+      })(),
     });
     const existing = input.contentId
       ? await this.getContentById(input.contentId, input.locale)

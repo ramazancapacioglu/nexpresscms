@@ -1,34 +1,16 @@
 import "server-only";
-import type { BlockNode } from "@nexpress/core";
-import { qaItemId, sanitizeQaState } from "@nexpress/core";
+import { qaItemId, sanitizeQaState, type BlockNode } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { parseQaPage, type QaPageData } from "@nexpress/wp-importer";
+import { parseQaPage } from "@nexpress/wp-importer";
 import { revalidatePath } from "@/lib/cache";
 import { bridgeOrigin } from "./store";
 
-/** Soru-cevap sayfasının görünür gövdesi: soru, kısa cevap, ayrıntı paragrafları, künye ve ürün bağlantısı (markdown'a da aynen yazılır). */
-export function qaBlocks(wpId: string, d: QaPageData): BlockNode[] {
-  const id = (n: string) => `qa_${wpId}_${n}`;
-  const children: BlockNode[] = [
-    { id: id("q"), type: "heading", props: { level: 2, text: d.question } },
-    { id: id("a"), type: "tldr_box", props: { summary: d.shortAnswer } },
-  ];
-  if (d.detail.length > 0) {
-    children.push({ id: id("dh"), type: "heading", props: { level: 3, text: "Ayrıntılı açıklama" } });
-    d.detail.forEach((line, n) => children.push({ id: id(`d${n}`), type: "paragraph", props: { text: line } }));
-  }
-  const facts = [
-    d.areaServed && `Hizmet bölgesi: ${d.areaServed}`,
-    d.audience && `Hedef kitle: ${d.audience}`,
-    d.about && `Hakkında: ${d.about}`,
-    d.serviceType && `Hizmet tipi: ${d.serviceType}`,
-  ].filter((x): x is string => Boolean(x));
-  if (facts.length > 0) {
-    children.push({ id: id("fh"), type: "heading", props: { level: 3, text: "Bu cevap kimler için?" } });
-    children.push({ id: id("f"), type: "list_element", props: { ordered: false, items: facts } });
-  }
-  if (d.productUrl) children.push({ id: id("p"), type: "button_element", props: { label: "Ürünü incele", href: d.productUrl } });
-  return [{ id: id("s"), type: "section", props: {}, children }];
+/**
+ * Soru-cevap sayfası gövdesi: tek `schema_card` (qa) bloğu. Soru, cevap, açıklama ve künye `richSchema.qa` alanlarında durur
+ * (tek kaynak); kart sayfada, şema JSON-LD'de, derleyici Markdown'da aynı alanları kullanır. Düz metin blokları yazılmaz.
+ */
+export function qaBlocks(wpId: string): BlockNode[] {
+  return [{ id: `qa_${wpId}_card`, type: "schema_card", props: { schema: "qa" } }];
 }
 
 export interface QaRepairResult {
@@ -85,6 +67,7 @@ export async function repairQaPages(siteId: string, opts: { dryRun?: boolean; or
         about: d.about,
         serviceType: d.serviceType,
         productUrl: d.productUrl,
+        ...(d.upvotes > 0 ? { upvotes: d.upvotes } : {}),
       };
       attrs.richSchema = richSchema;
       const state = sanitizeQaState(attrs._qa);
@@ -109,7 +92,7 @@ export async function repairQaPages(siteId: string, opts: { dryRun?: boolean; or
           title: row.title,
           excerpt: row.excerpt ?? undefined,
           tldr: row.tldr ?? undefined,
-          blocks: qaBlocks(wpId, d),
+          blocks: qaBlocks(wpId),
           metaTitle: row.metaTitle ?? undefined,
           metaDescription: row.metaDescription ?? undefined,
           canonicalUrl: row.canonicalUrl ?? undefined,

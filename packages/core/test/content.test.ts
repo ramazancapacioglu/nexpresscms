@@ -77,3 +77,14 @@ test("BlockNodeSchema (zod 4): iç içe bloğu doğrular, geçersiz türü ve s�
   assert.equal(BlockNodeSchema.safeParse({ id: "a", type: "yok-boyle-tur", props: {} }).success, false);
   assert.equal(BlockNodeSchema.safeParse({ id: "a", type: "paragraph", props: "düz metin" }).success, false);
 });
+
+test("soru-cevap: schema_card (qa) bloğu alanlardan Markdown üretir; alanlar yoksa boş kalır", async () => {
+  const { compileBlocksToMarkdown } = await import("../src/markdown-compiler");
+  const blocks = [{ id: "c", type: "schema_card", props: { schema: "qa" } }] as never;
+  const md = compileBlocksToMarkdown(blocks, {
+    title: "Başlık",
+    qa: { question: "ERP nedir?", shortAnswer: "Kurumsal kaynak planlama.", detail: "Birinci paragraf.\nİkinci paragraf.", areaServed: "TR", about: "ERP tanımı", productUrl: "/wolvox-erp" },
+  });
+  assert.match(md, /## ERP nedir\?\n\n> \*\*Kısa Yanıt \(Answer-First\):\*\* Kurumsal kaynak planlama\.\n\nBirinci paragraf\.\n\nİkinci paragraf\.\n\n- \*\*Hizmet bölgesi:\*\* TR\n- \*\*Hakkında:\*\* ERP tanımı\n- \*\*Ayrıntılı bilgi:\*\* \/wolvox-erp/);
+  assert.equal(compileBlocksToMarkdown(blocks, { title: "Başlık" }).includes("ERP"), false);
+});

@@ -368,6 +368,10 @@ export async function buildPageSchemaGraph(
       if (aboutNodes.length > 0) entity.about = aboutNodes;
       if (audience) entity.audience = { "@type": "Audience", audienceType: audience };
       if (area) entity.spatialCoverage = { "@type": "Place", name: area };
+      // Referans URL: konunun ürün/hizmet sayfası (WebPage.significantLink)
+      const ref = qaText(qaMain.productUrl, 500);
+      if (/^https?:\/\//i.test(ref)) entity.significantLink = ref;
+      else if (ref.startsWith("/") && !ref.startsWith("//")) entity.significantLink = `${baseUrl}${ref}`;
     } else if (rich.qa) {
       const q = rich.qa;
       const list: Array<{ question?: unknown; answer?: unknown }> = Array.isArray(q.faqList) ? q.faqList : [];
