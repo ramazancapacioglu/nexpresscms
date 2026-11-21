@@ -224,6 +224,13 @@ export function SchemaCardView({ kind, data, tokens, locale = "tr", preview = fa
   if (kind === "qa") {
     const q = d.rich.qa ?? {};
     const shortAns = q.shortAnswer || d.tldr;
+    const details = (q.detail ?? "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+    const facts = [
+      ["Hizmet bölgesi", q.areaServed],
+      ["Hedef kitle", q.audience],
+      ["Hakkında", q.about],
+      ["Hizmet tipi", q.serviceType],
+    ].filter((row): row is [string, string] => Boolean(row[1]));
     return (
       <section aria-label="Soru ve uzman cevabı" style={box} className="space-y-4 border p-6">
         <div className="space-y-2">
@@ -236,7 +243,7 @@ export function SchemaCardView({ kind, data, tokens, locale = "tr", preview = fa
             ) : null}
           </div>
           <h2 style={{ fontFamily: tokens.typography.headingFont }} className="text-2xl font-bold tracking-tight">
-            {d.title}
+            {q.question || d.title}
           </h2>
           {q.author ? (
             <p className="text-xs opacity-75">Cevaplayan: <strong>{q.author}</strong></p>
@@ -255,12 +262,30 @@ export function SchemaCardView({ kind, data, tokens, locale = "tr", preview = fa
           </div>
         ) : null}
 
-        {/* Detaylı Açıklama */}
-        {q.detail ? (
-          <div className="space-y-1 text-sm leading-relaxed opacity-90 pt-2 border-t border-dashed" style={{ borderColor: tokens.colors.border }}>
-            <span className="text-xs font-bold uppercase tracking-wider block opacity-70">Detaylı Açıklama & Mevzuat</span>
-            <p>{q.detail}</p>
+        {/* Detaylı Açıklama: her satır ayrı paragraf */}
+        {details.length > 0 ? (
+          <div className="space-y-2 text-sm leading-relaxed opacity-90 pt-2 border-t border-dashed" style={{ borderColor: tokens.colors.border }}>
+            <span className="text-xs font-bold uppercase tracking-wider block opacity-70">Detaylı Açıklama</span>
+            {details.map((line, idx) => <p key={idx}>{line}</p>)}
           </div>
+        ) : null}
+
+        {/* Künye: kime hitap ediyor, neyle ilgili */}
+        {facts.length > 0 || q.productUrl ? (
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-1.5 border-t border-dashed pt-3 text-xs sm:grid-cols-[max-content_1fr]" style={{ borderColor: tokens.colors.border }}>
+            {facts.map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="font-semibold opacity-70">{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+            {q.productUrl ? (
+              <div className="contents">
+                <dt className="font-semibold opacity-70">Detaylı bilgi</dt>
+                <dd><a href={q.productUrl} className="font-semibold underline underline-offset-2">Ürünü incele →</a></dd>
+              </div>
+            ) : null}
+          </dl>
         ) : null}
 
         {/* İlgili Alt Sorular */}

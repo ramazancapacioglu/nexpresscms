@@ -12,8 +12,17 @@ export interface PageSchemaData {
   rich: {
     qa?: {
       enabled?: boolean;
+      /** Asıl soru (sayfa başlığı uzun/SEO odaklıysa kısa, doğal soru cümlesi) */
+      question?: string;
       shortAnswer?: string;
       detail?: string;
+      /** Cevabın kime hitap ettiği ve neyle ilgili olduğu (künye): hizmet bölgesi, hedef kitle, konu, hizmet tipi */
+      areaServed?: string;
+      audience?: string;
+      about?: string;
+      serviceType?: string;
+      /** Konuyla ilgili ürün/hizmet sayfası (ayrıntılı bilgi bağlantısı) */
+      productUrl?: string;
       category?: string;
       author?: string;
       upvotes?: number;

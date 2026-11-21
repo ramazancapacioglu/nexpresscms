@@ -289,3 +289,7 @@ Ziyaretçi sayfalarının altındaki tartışma ve değerlendirme bölümü (`Po
 5. **Yönetim Moderasyon Stüdyosu (`/admin/comments`):**
    - Durum sekmeleri (`Tümü`, `Beklemede`, `Onaylı`, `Spam`), içerik/etiket/metin arama süzgeci ve toplu işlem çubuğu (`Seçilenleri Onayla`, `Beklemeye Al`, `Spam İşaretle`, `Kalıcı Sil`).
    - Kart üzerinde tek tıkla **Sabitle (`_pinned`)**, **Ekip Rozeti (`_official`)**, **Doğrulanmış (`isVerified`)**, **Hemen Onayla**, **Sil** ve doğrudan kartın altında açılan **Resmi Ekip Yanıtı** çekmecesi.
+
+## 11i. Soru-cevap sayfası şeması (QAPage) (2026-11-21)
+
+`schemaType = QAPage` iken `buildPageSchemaGraph` tek bir QAPage varlığı üretir: `mainEntity` = `Question` (gerçek soru `richSchema.qa.question`, boşsa başlık), `acceptedAnswer.text` = kısa cevap + ayrıntı (düz metin), `upvoteCount` (`richSchema.qa.upvotes` ya da `_qa.upvotes`), `author` (Person), tarihler; künye: `about` (Thing + Service/`serviceType`/`areaServed`), `audience`, `spatialCoverage`. Aynı sayfada FAQPage ya da ikinci `Question` düğümü yazılmaz (tek soru-cevap varlığı); Pro `faq-qa` modülü aynı `@id` varsa QAPage'i ikinci kez eklemez. Cevap yoksa `mainEntity` uydurulmaz. Editör: SEO › Gelişmiş şema › Soru-cevap alanları (soru, kısa cevap, ayrıntı, künye, ürün bağlantısı); şema kartı (`schema_card` qa) aynı alanları gösterir.

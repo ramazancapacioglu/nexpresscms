@@ -49,7 +49,11 @@ async function appendRichSchema(payload: HookPayloads["seo:buildSchemaGraph"], n
   const flags = await Promise.all(RICH_MODULES.map((m) => isPluginModuleEnabled(payload.siteId, PLUGIN_ID, m)));
   if (!flags.some(Boolean)) return nodes;
   const enabled = Object.fromEntries(RICH_MODULES.map((m, i) => [m, flags[i]!])) as Record<RichModule, boolean>;
-  const { extra, entityPatch } = buildRichNodes(rich, { url: payload.url, title: payload.content?.title ?? "", tldr: payload.content?.tldr, now: new Date(), enabled });
+  const built = buildRichNodes(rich, { url: payload.url, title: payload.content?.title ?? "", tldr: payload.content?.tldr, now: new Date(), enabled });
+  // Aynı @id'li düğüm grafikte zaten varsa (ör. çekirdeğin QAPage varlığı) ikinci kez eklenmez
+  const have = new Set(nodes.map((n) => String(n["@id"] ?? "")).filter(Boolean));
+  const extra = built.extra.filter((n) => !n["@id"] || !have.has(String(n["@id"])));
+  const entityPatch = built.entityPatch;
   // Sayfanın birincil türü zaten SoftwareApplication ise ikinci bir düğüm yerine ana varlık zenginleştirilir (yinelenen varlık yok)
   const soft = extra.find((n) => n["@type"] === "SoftwareApplication");
   const hasEntity = soft && nodes.some((n) => n["@type"] === "SoftwareApplication" && n.url === payload.url);

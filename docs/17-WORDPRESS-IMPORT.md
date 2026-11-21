@@ -83,3 +83,9 @@ Kadence satırları, kartlaştırma ve sayfa toparlama (`kadence`, `cardify`, `p
 REST ile canlı site çekme, WooCommerce fiyat/stok/varyasyon, yorumlar, kullanıcılar/yazar eşleme, menüler, özel alanlar, galeri/slider kısa kodları ve resim alt metni ekleri aktarılmaz. İstek tek parçadır (`maxDuration` 300 sn): çok büyük dosya + görsel indirme için dosyayı bölün.
 
 - **Dosya boyutu (2026-11-03):** sınır 64 MB'tır; Next'in middleware gövde kesmesi (varsayılan 10 MB) `middlewareClientMaxBodySize: "70mb"` ile yükseltildi. Daha büyük dışa aktarmalar WordPress'te türe göre bölünmelidir.
+
+## Soru-cevap (AI Prompt) sayfaları — eksik alan onarımı (2026-11-21)
+
+Aktarım, soru-cevap sayfasını yalnızca soru + kısa cevap olan tek bir SSS akordeonuna indirgiyordu. Kaybolanlar: kısa soru metni, **ayrıntılı cevap** (ikinci sütun), **künye** (Hizmet bölgesi, Hedef kitle, Hakkında, Hizmet tipi), **ürün bağlantısı** ("Ürünü İncele"), **faydalı oyu** ve cevaplanmış ziyaretçi soruları; şema da FAQPage + uydurma QAPage çiftiydi.
+- `packages/wp-importer/src/qa-page.ts` (`parseQaPage`, testli): REST `content.rendered` (3 metin bloğu) + herkese açık sayfa HTML'i.
+- `apps/cms/src/lib/wp-bridge/qa-pages.ts` (`repairQaPages`) + `apps/cms/scripts/repair-qa-pages.ts [--dry] [--origin=https://kaynak]`: yayındaki kayıtları kaynaktan tamamlar; gövdeyi görünür bloklara (soru, kısa cevap, ayrıntı, künye listesi, ürün düğmesi → markdown'a da yazılır), alanları `schemaAttributes.richSchema.qa`'ya, oyu/cevaplanan soruları `_qa`'ya yazar; şemayı `QAPage` yapar. Özgün güncelleme tarihi korunur. Taslaklar kaynakta herkese açık olmadığı için atlanır (WordPress oturumlu içe aktarma gerekir). Çalıştırmadan önce `contents` + `content_translations` yedeği alın.

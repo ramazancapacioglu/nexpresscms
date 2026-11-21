@@ -4,7 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 /** `schemaAttributes.richSchema` (Pro eklenti): sunucuda doğrulanır; burada yalnızca düz metin alanları tutulur. */
 export interface RichSchemaFields {
-  qa?: { enabled?: boolean };
+  qa?: { enabled?: boolean; question?: string; shortAnswer?: string; detail?: string; about?: string; audience?: string; areaServed?: string; serviceType?: string; productUrl?: string };
   offer?: { price?: string; currency?: string; validThrough?: string; availability?: string; name?: string; url?: string };
   tech?: { level?: string; dependencies?: string };
   software?: { name?: string; url?: string; category?: string; os?: string; version?: string; price?: string; currency?: string; features?: string };
@@ -39,8 +39,22 @@ export function RichSchemaPanel({ value, onChange, only }: { value: RichSchemaFi
   return (
     <div className="space-y-2.5">
       {!only && <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Gelişmiş şema (Pro)</div>}
-      {show("qa") && (<Group title="Soru-cevap (QAPage)" hint="Sayfa başlığı soru, TL;DR (en az 20 karakter) cevap olarak işaretlenir.">
+      {show("qa") && (<Group title="Soru-cevap (QAPage)" hint="Sayfa tek bir soruyu yanıtlar: soru, kısa cevap ve ayrıntı şemada ve sayfada aynen yer alır.">
         <label className="flex items-center gap-2 text-[11px]"><input type="checkbox" checked={Boolean(value.qa?.enabled)} onChange={(e) => set("qa", { enabled: e.target.checked })} /> Bu sayfayı QAPage olarak işaretle</label>
+        {value.qa?.enabled ? (
+          <>
+            <div><label className={cap} htmlFor="rs-q">Soru <span className="font-normal">(boşsa sayfa başlığı)</span></label><input id="rs-q" maxLength={300} placeholder="E-Fatura kesildiğini nasıl anlarız?" value={value.qa?.question ?? ""} onChange={(e) => set("qa", { question: e.target.value })} className={box} /></div>
+            <div><label className={cap} htmlFor="rs-sa">Kısa cevap <span className="font-normal">(40–60 kelime; boşsa TL;DR)</span></label><textarea id="rs-sa" rows={3} maxLength={600} value={value.qa?.shortAnswer ?? ""} onChange={(e) => set("qa", { shortAnswer: e.target.value })} className="w-full rounded border border-border bg-background px-2 py-1 text-[11px]" /></div>
+            <div><label className={cap} htmlFor="rs-sd">Ayrıntılı cevap <span className="font-normal">(her satır ayrı paragraf)</span></label><textarea id="rs-sd" rows={5} maxLength={3000} value={value.qa?.detail ?? ""} onChange={(e) => set("qa", { detail: e.target.value })} className="w-full rounded border border-border bg-background px-2 py-1 text-[11px]" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className={cap} htmlFor="rs-about">Hakkında (konu)</label><input id="rs-about" maxLength={160} value={value.qa?.about ?? ""} onChange={(e) => set("qa", { about: e.target.value })} className={box} /></div>
+              <div><label className={cap} htmlFor="rs-type">Hizmet tipi</label><input id="rs-type" maxLength={120} placeholder="e-Dönüşüm bilgi içeriği" value={value.qa?.serviceType ?? ""} onChange={(e) => set("qa", { serviceType: e.target.value })} className={box} /></div>
+              <div><label className={cap} htmlFor="rs-aud">Hedef kitle</label><input id="rs-aud" maxLength={160} value={value.qa?.audience ?? ""} onChange={(e) => set("qa", { audience: e.target.value })} className={box} /></div>
+              <div><label className={cap} htmlFor="rs-area">Hizmet bölgesi</label><input id="rs-area" maxLength={80} placeholder="TR" value={value.qa?.areaServed ?? ""} onChange={(e) => set("qa", { areaServed: e.target.value })} className={box} /></div>
+            </div>
+            <div><label className={cap} htmlFor="rs-prod">Ayrıntılı bilgi (ürün/hizmet sayfası)</label><input id="rs-prod" placeholder="/e-fatura" value={value.qa?.productUrl ?? ""} onChange={(e) => set("qa", { productUrl: e.target.value })} className={`${box} font-mono`} /></div>
+          </>
+        ) : null}
       </Group>)}
       {show("offer") && (<Group title="Kampanya (Offer)" hint="Bitiş günü geçince teklif işareti kendiliğinden kalkar.">
         <div className="grid grid-cols-3 gap-2">

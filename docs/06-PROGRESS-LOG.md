@@ -1362,3 +1362,6 @@
 
 ### [2026-11-21] — Panel: Soru-Cevap Sayfaları listesi
 - ✅ Panelde yalnızca ziyaretçi soruları ("Gelen sorular") vardı; soru sayfalarını (`ai_prompt`) ekleme/düzenleme ekranı yoktu, kayıtlar blog listesine karışıyordu. Yeni `/admin/qa` (menü: İçerik → Soru-Cevap Sayfaları, komut paleti), blog listesinden çıkarıldı, editör geri bağlantıları ve önbellek geçersizleme eklendi. Bkz. `docs/13`.
+
+### [2026-11-21] — Soru-cevap sayfaları: eksik aktarım onarımı ve QAPage şeması
+- ✅ WordPress'ten aktarılan soru-cevap sayfalarında ayrıntılı cevap, künye, ürün bağlantısı, faydalı oyu ve gerçek soru eksikti; şema FAQPage+uydurma QAPage çiftiydi. Kaynak sayfa ayrıştırıcısı (`parseQaPage`), onarım betiği, tek varlıklı QAPage şeması (`seo-core`), editörde soru-cevap alanları, şema kartında künye. 12 yayındaki sayfa onarıldı (yedek: `/root/nx-qa-before-20261121.sql`); 20 taslak kaynakta açık olmadığı için bekliyor. Bkz. `docs/04` §11i, `docs/17`.

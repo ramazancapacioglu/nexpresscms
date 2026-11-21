@@ -16,3 +16,4 @@ export * from "./campaign-text";
 export * from "./heading-match";
 export * from "./page-tidy";
 export * from "./cardify";
+export * from "./qa-page";

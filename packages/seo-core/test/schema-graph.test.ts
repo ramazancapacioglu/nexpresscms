@@ -221,3 +221,39 @@ test("görsel adresi: kitaplık dosya adı varsa anlamlı ad taşır, yoksa 1280
   assert.equal(post.associatedMedia[0].contentUrl, "https://ornek.test/media/med_a1/wolvox-restoran-kampanyasi-10-2026.webp");
   assert.equal(post.associatedMedia[1].contentUrl, "https://ornek.test/media/med_b2/1280.webp");
 });
+
+test("soru-cevap sayfası: tek QAPage; gerçek soru, tam cevap, oy, yazar ve künye; FAQPage/ikinci soru düğümü yok", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    pageUrl: "https://ornek.test/soru",
+    content: {
+      ...input.content,
+      title: "Uzun SEO odaklı başlık: e-fatura kesildi mi?",
+      schemaType: "QAPage",
+      authorName: "Hatice",
+      schemaAttributes: {
+        _qa: { upvotes: 5 },
+        richSchema: { qa: { enabled: true, question: "E-Fatura kesildiğini nasıl anlarız?", shortAnswer: "GİB durum kodlarına bakılır.", detail: "Başarılı, Kabul Edildi gibi durumlar olumludur.\nHata ve Red olumsuzdur.", about: "E-Fatura kontrolü", audience: "Mali müşavirler", areaServed: "TR", serviceType: "Bilgi içeriği", faqList: [{ question: "Başka soru?", answer: "Başka cevap." }] } },
+      },
+    },
+  } as never);
+  const nodes = graph["@graph"] as Array<Record<string, any>>;
+  assert.equal(nodes.filter((n) => n["@type"] === "QAPage").length, 1);
+  assert.equal(nodes.some((n) => n["@type"] === "FAQPage" || n["@type"] === "Question"), false);
+  const qa = nodes.find((n) => n["@type"] === "QAPage")!;
+  assert.equal(qa.mainEntity.name, "E-Fatura kesildiğini nasıl anlarız?");
+  assert.match(qa.mainEntity.acceptedAnswer.text, /GİB durum kodlarına bakılır\.\n\nBaşarılı, Kabul Edildi/);
+  assert.equal(qa.mainEntity.upvoteCount, 5);
+  assert.equal(qa.mainEntity.acceptedAnswer.upvoteCount, 5);
+  assert.equal(qa.mainEntity.author["@type"], "Person");
+  assert.equal(qa.mainEntity.author.name, "Hatice");
+  assert.equal(qa.audience.audienceType, "Mali müşavirler");
+  assert.equal(qa.about[1].serviceType, "Bilgi içeriği");
+  assert.equal(qa.spatialCoverage.name, "TR");
+});
+
+test("soru-cevap: cevap yoksa QAPage mainEntity uydurulmaz", async () => {
+  const graph = await buildPageSchemaGraph({ ...input, content: { ...input.content, tldr: "", schemaType: "QAPage", schemaAttributes: { richSchema: { qa: { enabled: true } } } } } as never);
+  const qa = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "QAPage");
+  assert.equal(qa?.mainEntity, undefined);
+});

@@ -321,7 +321,54 @@ export async function buildPageSchemaGraph(
       });
     }
     let faqNodeDone = false;
-    if (rich.qa) {
+    // Soru-cevap sayfası (QAPage): tek ana soru; gerçek soru, tam cevap, oy, yazar ve künye (konu, hedef kitle, bölge) tek varlıkta toplanır.
+    // FAQPage ile birlikte yazılmaz (aynı sayfada iki çelişen soru-cevap varlığı olmasın).
+    const qaText = (v: unknown, max: number): string => (typeof v === "string" ? plainFaqText(v).slice(0, max) : "");
+    const qaMain = rich.qa && c.schemaType === "QAPage" ? rich.qa : null;
+    const qaAnswer = qaMain ? [qaText(qaMain.shortAnswer, 600), qaText(qaMain.detail, 3000)].filter(Boolean).join("\n\n") || qaText(c.tldr, 600) : "";
+    if (qaMain && qaAnswer) {
+      faqNodeDone = true;
+      const question = qaText(qaMain.question, 300) || c.title;
+      const qaAuthorName = (c.authorName?.trim() || qaText(qaMain.author, 80)).trim();
+      const qaAuthor = qaAuthorName && ![normName(input.siteName), normName(input.organization?.name)].includes(normName(qaAuthorName))
+        ? buildAuthorPerson({ baseUrl, orgId, name: qaAuthorName, url: c.authorUrl, profile: c.authorProfile })
+        : { "@type": "Organization", "@id": orgId, name: orgDisplayName, url: baseUrl };
+      const published = c.publishedAt ? new Date(c.publishedAt).toISOString() : undefined;
+      const modified = c.updatedAt ? new Date(c.updatedAt).toISOString() : undefined;
+      const storedVotes = Number(((c.schemaAttributes as Record<string, unknown> | undefined)?._qa as { upvotes?: unknown } | undefined)?.upvotes);
+      const rawVotes = Math.max(Number(qaMain.upvotes) || 0, Number.isFinite(storedVotes) ? storedVotes : 0);
+      const votes = rawVotes > 0 ? Math.floor(rawVotes) : 0;
+      entity.mainEntity = {
+        "@type": "Question",
+        name: question,
+        text: question,
+        answerCount: 1,
+        ...(votes ? { upvoteCount: votes } : {}),
+        ...(published ? { datePublished: published } : {}),
+        ...(modified ? { dateModified: modified } : {}),
+        author: qaAuthor,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: qaAnswer,
+          url: input.pageUrl,
+          ...(published ? { datePublished: published } : {}),
+          ...(modified ? { dateModified: modified } : {}),
+          ...(votes ? { upvoteCount: votes } : {}),
+          author: qaAuthor,
+        },
+      };
+      const about = qaText(qaMain.about, 160);
+      const serviceType = qaText(qaMain.serviceType, 120);
+      const audience = qaText(qaMain.audience, 160);
+      const area = qaText(qaMain.areaServed, 80);
+      const aboutNodes: SchemaGraphNode[] = [
+        ...(about ? [{ "@type": "Thing", name: about }] : []),
+        ...(serviceType ? [{ "@type": "Service", name: serviceType, serviceType, ...(area ? { areaServed: area } : {}), provider: { "@id": orgId } }] : []),
+      ];
+      if (aboutNodes.length > 0) entity.about = aboutNodes;
+      if (audience) entity.audience = { "@type": "Audience", audienceType: audience };
+      if (area) entity.spatialCoverage = { "@type": "Place", name: area };
+    } else if (rich.qa) {
       const q = rich.qa;
       const list: Array<{ question?: unknown; answer?: unknown }> = Array.isArray(q.faqList) ? q.faqList : [];
       const seenQuestions = new Set<string>();
