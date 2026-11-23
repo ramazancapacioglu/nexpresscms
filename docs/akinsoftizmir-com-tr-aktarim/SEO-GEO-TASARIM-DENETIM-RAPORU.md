@@ -149,3 +149,17 @@ Aşağıdaki sayfalarda hiç `bento_features`, `faq_accordion`, `howto_steps`, `
 | **Faz 2 — `yazilim-bayi` Tema & Tipografi Cilası** | Başlık fontu (`Plus Jakarta Sans`), `.nx-rich` 72ch okuma genişliği, kart/bant ritmi, gerçek logo, footer telif düzeltmesi | 🟢 Kurumsal algı & okunabilirlik artışı |
 | **Faz 3 — Webmaster Odaklı İçerik & Tazelik Güncellemesi** | `proforma-fatura`, `teblig-ne-demek` + 11 adet 2024/2025 yazısının 2026'ya doğal dille güncellenmesi; `web socket` sayfalarına e-Dönüşüm dönüşüm köprüsü; 77–84 puanlı düşük skorlu ticari sayfaların güçlendirilmesi; 21 taslak Q&A'nın yayına hazırlanması | 🟢 Yüksek organik tık & lead artışı |
 | **Faz 4 — Düz Metin Sayfaların Görsel Dönüşümü & Entity Bağları** | İlk 5 dev düz metin ürün sayfası (`genel-muhasebe-programi`, `e-ofis`, `super-market-yonetimi`, `insan-kaynaklari-yonetimi`, `wolvox-crm-yonetimi`) ve en uzun blog yazılarının `bento_features` + `howto_steps` + `faq_accordion` + `contact_campaign` ile yeniden düzenlenmesi + `content_entity_links` bağlarının kurulması | 🟢 Sayfada kalma süresi, dönüşüm ve AI alıntı liderliği |
+
+---
+
+## 8. Uygulama Günlüğü (2026-11-23 — Tamamlananlar)
+
+- **Yedek:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB).
+- ✅ **Faz 1:** 4 Şema & Varlık Grafı kuralı (`/admin/seo/schemas`: `BlogPosting + Speakable`, `e-Dönüşüm Service + GİB`, `WebPage + Speakable + Akınsoft/İzmir`, `Yazılım Service + ERP`), 3 adet 301 yönlendirme (`/akinsoft-wolvox-erp`, `/demo`, `/contact`), 7 yazım/klişe/kısa TL;DR düzeltmesi (`mobil-satis`, `wolvox-crm-yonetimi`, `akinsoft-wolvox-restoran-yonetimi`, `insan-kaynaklari-yonetimi`, `pavo-n86-android-mobil-pos`, `e-arsiv-portal`, `bagkur-7200`) ve spam 404 temizliği tamamlandı.
+- ✅ **Faz 2 (`04eb95e`):** `packages/themes/src/yazilim-bayi.ts` içinde `.nx-rich` 74ch okuma ölçüsü, `.nx-tldr` Answer-First kutusu, `.yf-card`/`.yb-card` hover yükseltmesi, `.nx-text-card` üst vurgu şeridi ve altlık telif yazımı güncellenip her iki sitede canlıya alındı.
+- ✅ **Faz 3:** 30 sayfa/yazı güncellendi — `proforma-fatura-nedir`, `teblig-ne-demek`, `e-fatura-web-socket-indir`, `ana-sayfa`, tüm **2024/2025 tarihli 10 yazı (0 eski yıl kaldı)**, 7 düşük skorlu ticari sayfa ve 10 ÖKC entegrasyon sayfasının başlık/meta/TL;DR alanları doğal Türkçe ile yenilendi.
+- ✅ **Faz 4:** `content_entity_links` **0 → 43** anlamsal `@id` bağı (`29 mentions`, `9 offer_for`, `5 about`), 9 yoğun sayfaya Answer-First `tldr_box`, `e-fatura-web-socket-indir` ve `proforma-fatura-nedir` sayfalarına dönüşüm `cta_banner` bloğu, 4 büyük düz metin ürün sayfasına (`genel-muhasebe-programi`, `super-market-yonetimi`, `insan-kaynaklari-yonetimi`, `wolvox-crm-yonetimi`) otomatik `FAQPage` üreten `faq_accordion` bloğu eklendi.
+- **Sonraki Opsiyonel Adımlar (Panelden 1 Tıkla):**
+  1. `/admin/media` → **AI ile Eksik Alt Metin Üret** (223 görsel).
+  2. `/admin/seo/schemas#arama-dizini` → **Dizini Yeniden Oluştur** (yeni eklenen TL;DR ve SSS bloklarını RAG'a işlemek için).
+  3. `/admin/qa` → Taslaktaki 21 soru-cevap sayfasını gözden geçirip yayına almak.
