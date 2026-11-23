@@ -7,13 +7,14 @@ import type { KindFilter, MediaQuery, ProblemFilter, SortKey } from "./media-fil
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const ctl = `h-8 rounded border ${border} bg-transparent px-2 text-[12px]`;
 
-export function MediaToolbar({ query, onQuery, view, onView, showView = true }: { query: MediaQuery; onQuery: (q: MediaQuery) => void; view: "grid" | "list"; onView: (v: "grid" | "list") => void; showView?: boolean }) {
+export function MediaToolbar({ query, onQuery, view, onView, showView = true, folderSelect }: { query: MediaQuery; onQuery: (q: MediaQuery) => void; view: "grid" | "list"; onView: (v: "grid" | "list") => void; showView?: boolean; folderSelect?: React.ReactNode }) {
   return (
     <div role="search" className="flex flex-wrap items-center gap-2">
       <div className="relative min-w-40 flex-1">
         <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-[#5F6570]" aria-hidden="true" />
         <input type="search" aria-label="Medyada ara" placeholder="Ad, başlık, alt metin ara…" value={query.search} onChange={(e) => onQuery({ ...query, search: e.target.value })} className={`${ctl} w-full pl-8`} />
       </div>
+      {folderSelect}
       <select aria-label="Tür" value={query.kind} onChange={(e) => onQuery({ ...query, kind: e.target.value as KindFilter })} className={ctl}>
         <option value="all">Tüm türler</option><option value="image">Görseller</option><option value="document">Belgeler</option><option value="video">Videolar</option><option value="audio">Sesler</option>
       </select>

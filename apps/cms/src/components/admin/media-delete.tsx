@@ -6,7 +6,7 @@ import { deleteMediaAssetAction } from "@/app/admin/actions";
 import { Trash2 } from "lucide-react";
 
 /** İki adımlı silme: kullanımdaysa içerik listesini gösterir, ancak ikinci onayla zorla siler. */
-export function MediaDelete({ media, onDeleted }: { media: MediaAssetDto; onDeleted: (id: string) => void }) {
+export function MediaDelete({ media, onDeleted, compact = false }: { media: MediaAssetDto; onDeleted: (id: string) => void; compact?: boolean }) {
   const [pending, start] = useTransition();
   const [usage, setUsage] = useState<MediaUsageDto[] | null>(null);
   const [armed, setArmed] = useState(false);
@@ -26,9 +26,14 @@ export function MediaDelete({ media, onDeleted }: { media: MediaAssetDto; onDele
       <button
         type="button"
         onClick={() => setArmed(true)}
-        className="w-full h-8 inline-flex items-center justify-center gap-1.5 rounded-md border border-red-500/40 text-red-600 hover:bg-red-500/10"
+        aria-label="Görseli sil"
+        className={
+          compact
+            ? "inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded border border-red-500/40 px-2.5 text-[12px] font-medium text-red-600 hover:bg-red-500/10"
+            : "inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-red-500/40 text-red-600 hover:bg-red-500/10"
+        }
       >
-        <Trash2 className="h-3.5 w-3.5" /> Görseli sil
+        <Trash2 className="h-3.5 w-3.5" /> {compact ? "Sil" : "Görseli sil"}
       </button>
     );
   }

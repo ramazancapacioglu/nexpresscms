@@ -31,7 +31,21 @@ const fieldsOf = (a: MediaAssetDto): MediaFields => ({ titleText: a.titleText ??
  * Hem kitaplıkta hem editördeki medya seçicide kullanılır. `primary` verilirse kaydetme sonrası onu çalıştıran
  * ikinci bir düğme çıkar (ör. "Kaydet ve ekle").
  */
-export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: MediaAssetDto; onSaved: (a: MediaAssetDto) => void; primary?: { label: string; onDone: (a: MediaAssetDto) => void }; children?: React.ReactNode }) {
+export function MediaDetailForm({
+  asset,
+  onSaved,
+  primary,
+  children,
+  footer,
+  stickyLayout = false,
+}: {
+  asset: MediaAssetDto;
+  onSaved: (a: MediaAssetDto) => void;
+  primary?: { label: string; onDone: (a: MediaAssetDto) => void };
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
+  stickyLayout?: boolean;
+}) {
   const [f, setF] = useState<MediaFields>(() => fieldsOf(asset));
   const [prevId, setPrevId] = useState(asset.id);
   const [pending, start] = useTransition();
@@ -65,8 +79,8 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
   const field = (k: keyof MediaFields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((cur) => ({ ...cur, [k]: e.target.value }));
   const absolute = typeof window !== "undefined" ? new URL(asset.url, window.location.origin).toString() : asset.url;
 
-  return (
-    <div className="space-y-3 text-[12px]">
+  const bodyContent = (
+    <>
       {primary && (
         <div className="sticky top-0 z-10 -mx-1 bg-white/95 pb-2 pt-0.5 backdrop-blur-xs dark:bg-[#15171C]/95">
           <button
@@ -80,7 +94,7 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
           </button>
         </div>
       )}
-      <div className={`h-40 overflow-hidden rounded border ${border} bg-slate-900`}>
+      <div className={`${stickyLayout ? "h-32" : "h-40"} overflow-hidden rounded border ${border} bg-slate-900`}>
         {isImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={thumbnailUrl(asset.url, 480)} alt={f.altText} style={{ objectPosition: `${f.focalX}% ${f.focalY}%` }} className="h-full w-full object-cover" />
@@ -96,7 +110,10 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
       <div><label className={label} htmlFor="md-title">Başlık</label><input id="md-title" value={f.titleText} onChange={field("titleText")} className={input} /></div>
       {isImage && (
         <div>
-          <label className={label} htmlFor="md-alt">Alt metin (görseli betimleyin)</label>
+          <div className="mb-0.5 flex items-center justify-between gap-1">
+            <label className={label} htmlFor="md-alt">Alt metin</label>
+            <span className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{f.altText.trim().length}/125</span>
+          </div>
           <textarea id="md-alt" rows={2} value={f.altText} onChange={field("altText")} className={`${input} resize-none`} />
           <button
             type="button"
@@ -106,7 +123,7 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
                 const res = await suggestAltTextAction({ id: asset.id });
                 if (res.ok) {
                   setF((prev) => ({ ...prev, altText: res.alt }));
-                  setNote({ kind: "ok", text: "AI önerisi alana yazıldı; gözden geçirip Kaydet'e basın." });
+                  setNote({ kind: "ok", text: "AI önerisi yazıldı; Kaydet'e basın." });
                 } else setNote({ kind: "error", text: res.error });
               })
             }
@@ -115,11 +132,10 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
             <Sparkles className="h-3 w-3" aria-hidden="true" />
             {aiPending ? "Öneriliyor…" : "AI ile öner"}
           </button>
-          <p className="mt-0.5 text-[10px] text-[#5F6570] dark:text-[#8C9099]">{f.altText.trim().length}/125 • Süs görseli ise boş bırakmak yerine kısa bir betimleme yazın.</p>
         </div>
       )}
-      <div><label className={label} htmlFor="md-caption">Alt yazı (görselin altında görünür)</label><textarea id="md-caption" rows={2} value={f.caption} onChange={field("caption")} className={`${input} resize-none`} /></div>
-      <div><label className={label} htmlFor="md-desc">Açıklama</label><textarea id="md-desc" rows={3} value={f.description} onChange={field("description")} className={`${input} resize-none`} /></div>
+      <div><label className={label} htmlFor="md-caption">Alt yazı</label><textarea id="md-caption" rows={2} value={f.caption} onChange={field("caption")} className={`${input} resize-none`} /></div>
+      <div><label className={label} htmlFor="md-desc">Açıklama</label><textarea id="md-desc" rows={2} value={f.description} onChange={field("description")} className={`${input} resize-none`} /></div>
 
       {isImage && (
         <div className="grid grid-cols-2 gap-2">
@@ -128,9 +144,11 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
         </div>
       )}
 
+      {children}
+
       <div className={`rounded border ${border} p-2`}>
         <div className="mb-1 flex items-center justify-between"><span className={label}>SEO denetimi</span><span className="rounded bg-[#266DF0]/10 px-1.5 py-0.5 font-mono text-[10px] font-bold">{report.score}/100</span></div>
-        {report.issues.length === 0 ? <p className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><Check className="h-3.5 w-3.5" /> Sorun görünmüyor.</p> : (
+        {report.issues.length === 0 ? <p className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><Check className="h-3.5 w-3.5" /> Sorun yok.</p> : (
           <ul className="space-y-1">{report.issues.map((i) => { const Icon = SEVERITY[i.severity]; return <li key={i.code} className={`flex gap-1.5 text-[11px] ${SEVERITY_CLASS[i.severity]}`}><Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" /><span>{i.message}</span></li>; })}</ul>
         )}
       </div>
@@ -139,13 +157,44 @@ export function MediaDetailForm({ asset, onSaved, primary, children }: { asset: 
         <input readOnly aria-label="Dosya adresi" value={absolute} onFocus={(e) => e.currentTarget.select()} className={`${input} font-mono text-[10px]`} />
         <button type="button" aria-label="Adresi kopyala" onClick={() => { void navigator.clipboard?.writeText(absolute).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }} className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded border ${border}`}>{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}</button>
       </div>
+    </>
+  );
 
+  const actionsContent = (
+    <div className="space-y-1.5">
       {note && <p role={note.kind === "error" ? "alert" : "status"} className={`text-[11px] ${note.kind === "error" ? "text-red-600" : "text-emerald-700 dark:text-emerald-400"}`}>{note.text}</p>}
-      <div className="flex gap-2">
-        <button type="button" disabled={pending || !dirty} onClick={() => save()} className={`h-8 flex-1 rounded border ${border} font-medium disabled:opacity-50`}>{pending ? "Kaydediliyor…" : "Kaydet"}</button>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={pending || !dirty}
+          onClick={() => save()}
+          className={`h-8 flex-1 rounded font-medium transition disabled:opacity-50 ${
+            dirty
+              ? "bg-[#266DF0] text-white hover:bg-blue-700"
+              : `border ${border}`
+          }`}
+        >
+          {pending ? "Kaydediliyor…" : "Kaydet"}
+        </button>
         {primary && <button type="button" disabled={pending} onClick={() => (dirty ? save(primary.onDone) : primary.onDone(asset))} className="h-8 flex-1 rounded bg-[#266DF0] font-medium text-white disabled:opacity-50">{primary.label}</button>}
+        {footer}
       </div>
-      {children}
+    </div>
+  );
+
+  if (stickyLayout) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col text-[12px]">
+        <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-3">{bodyContent}</div>
+        <div className={`shrink-0 border-t ${border} bg-white px-3 py-2.5 dark:bg-[#15171C]`}>{actionsContent}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 text-[12px]">
+      {bodyContent}
+      {actionsContent}
     </div>
   );
 }

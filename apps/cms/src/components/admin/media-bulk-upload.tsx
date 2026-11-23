@@ -64,18 +64,18 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
       onDragOver={(e) => { e.preventDefault(); setOver(true); }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => { e.preventDefault(); setOver(false); void start([...e.dataTransfer.files]); }}
-      className={`rounded-lg border border-dashed p-3 text-[12px] ${over ? "border-[#266DF0] bg-[#266DF0]/5" : border}`}
+      title={`JPEG, PNG, WebP, AVIF (≤12 MB), PDF/MP4/WebM/MP3 (≤40 MB) • En çok ${MAX_FILES} dosya`}
+      className={`rounded-lg border border-dashed px-2.5 py-2 text-[12px] ${over ? "border-[#266DF0] bg-[#266DF0]/5" : border}`}
     >
       <div className="flex flex-wrap items-center gap-2">
         <input ref={input} type="file" multiple accept={ACCEPT} hidden onChange={(e) => { void start([...(e.target.files ?? [])]); e.target.value = ""; }} />
-        <button type="button" onClick={() => input.current?.click()} disabled={running} className="inline-flex h-7 items-center gap-1.5 rounded bg-[#266DF0] px-3 font-medium text-white disabled:opacity-60"><Upload className="h-3.5 w-3.5" /> Görselleri seç</button>
-        <span className="text-[#5C5F66] dark:text-[#9CA3AF]">veya sürükleyip bırakın → <strong>{folderName}</strong></span>
-        <input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Ortak alt metin (isteğe bağlı)" className={`ml-auto h-7 min-w-48 flex-1 rounded border ${border} bg-transparent px-2 sm:max-w-xs`} aria-label="Ortak alt metin" />
+        <button type="button" onClick={() => input.current?.click()} disabled={running} className="inline-flex h-8 items-center gap-1.5 rounded bg-[#266DF0] px-3 text-[12px] font-medium text-white hover:bg-blue-700 disabled:opacity-60"><Upload className="h-3.5 w-3.5" /> Dosya Yükle</button>
+        <span className="text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">Sürükle bırak → <strong className="text-foreground">{folderName}</strong></span>
+        <input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Ortak alt metin (isteğe bağlı)" className={`ml-auto h-8 min-w-40 flex-1 rounded border ${border} bg-transparent px-2 text-[12px] sm:max-w-56`} aria-label="Ortak alt metin" />
       </div>
-      <p className="mt-1.5 text-[11px] text-[#5F6570] dark:text-[#8C9099]">Görsel (JPEG, PNG, WebP, AVIF; en çok 12 MB), PDF, MP4/WebM video, MP3/OGG/WAV ses (en çok 40 MB) • tek seferde {MAX_FILES} dosya • EXIF/konum verisi silinir • animasyonlu ve SVG dosyalar desteklenmez.</p>
       {note && <p role="status" className="mt-1 text-[11px] text-amber-800 dark:text-amber-300">{note}</p>}
       {items.length > 0 && (
-        <div className="mt-2 space-y-1" aria-live="polite">
+        <div className="mt-1.5 space-y-1" aria-live="polite">
           <p className="text-[11px] font-medium">{running ? `Yükleniyor… ${done}/${items.length}` : `${done} dosya yüklendi${failed.length ? `, ${failed.length} hata` : ""}.`}{!running && <button type="button" onClick={() => setItems([])} className="ml-2 text-[#1D5ED8] dark:text-[#7AA7FF] underline">Temizle</button>}</p>
           {failed.length > 0 && <ul className="list-disc pl-5 text-[11px] text-red-600">{failed.map((f, i) => <li key={i}>{f.name}: {f.message}</li>)}</ul>}
         </div>
