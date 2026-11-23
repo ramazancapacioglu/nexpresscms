@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import type { ResolvedCampaign } from "@nexpress/core";
 import { buildCampaignOfferJsonLd, thumbnailUrl } from "@nexpress/core";
+import { LinkField } from "@/components/admin/editor/link-picker";
 import { MediaPickerDialog } from "@/components/admin/media/media-picker-dialog";
 import { saveCampaignAction } from "../actions";
 
@@ -476,12 +477,14 @@ export function CampaignEditorClient({
                   <label className="block text-xs font-semibold text-[#14151A] dark:text-[#F3F4F6] mb-1">
                     Hedef Ürün URL'si
                   </label>
-                  <input
-                    type="text"
+                  <LinkField
+                    label="Hedef Ürün URL'si"
                     value={productUrl}
-                    onChange={(e) => setProductUrl(e.target.value)}
-                    placeholder="Örn: /wolvox-restoran veya https://..."
-                    className="h-9 w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-transparent px-3 text-xs text-[#14151A] dark:text-[#F3F4F6] focus:border-blue-600 focus:outline-hidden"
+                    onChange={setProductUrl}
+                    placeholder="Örn: /wolvox-restoran veya arayıp seçin"
+                    onSelect={(item) => {
+                      if (!productName.trim()) setProductName(item.title);
+                    }}
                   />
                 </div>
               </div>
@@ -650,12 +653,11 @@ export function CampaignEditorClient({
                   <label className="block text-xs font-semibold text-[#14151A] dark:text-[#F3F4F6] mb-1">
                     Eylem Butonu URL
                   </label>
-                  <input
-                    type="text"
+                  <LinkField
+                    label="Eylem Butonu URL"
                     value={ctaUrl}
-                    onChange={(e) => setCtaUrl(e.target.value)}
-                    placeholder="/demo-talebi veya /iletisim"
-                    className="h-9 w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-transparent px-3 text-xs text-[#14151A] dark:text-[#F3F4F6] focus:border-blue-600 focus:outline-hidden"
+                    onChange={setCtaUrl}
+                    placeholder="/demo-talebi veya arayıp seçin"
                   />
                 </div>
               </div>
