@@ -7,7 +7,7 @@ Mağaza bir eklentidir. Tipler ve sepet hesabı `@nexpress/commerce` paketinde k
 | Katman | Konum |
 | :--- | :--- |
 | Tipler, para birimi, sepet çerezi | `packages/commerce` |
-| Drizzle şema + `CommerceRepository` | `packages/database` (`commerce_products`, `commerce_orders`, `commerce_order_items`) |
+| Drizzle şema + `CommerceRepository` | `packages/database` (15 tablo: `commerce_products`, `commerce_categories`, `commerce_product_categories`, `commerce_attributes`, `commerce_attribute_values`, `commerce_variants`, `commerce_customer_groups`, `commerce_customers`, `commerce_loyalty_entries`, `commerce_campaigns`, `commerce_coupons`, `commerce_orders`, `commerce_order_items`, `commerce_returns`, `commerce_shipping_methods`) |
 | Admin UI + ön yüz mağaza | `apps/cms` |
 
 Tüm tablolarda `siteId` zorunludur; sorgular `getCommerceRepository(siteId)` üzerinden yapılır.
@@ -51,7 +51,7 @@ Bloklar `product_embed` / `product_row` tema katmanında kalır; mağaza vitrini
 
 ```bash
 pnpm install
-pnpm db:push    # packages/database
+pnpm db:migrate # packages/database (Drizzle göçleri)
 pnpm db:seed    # örnek ürünler
 ```
 

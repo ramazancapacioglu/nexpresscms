@@ -7,7 +7,7 @@ Makine doğrulaması bu belgeden ayrı ikinci bir sözleşme değildir. Kaynak d
 | Ürün | Ne işe yarar | Nereye gider | Doğrulayan |
 | :--- | :--- | :--- | :--- |
 | Tema paketi (`.nxtheme`) | Renk, yazı, geometri, üst/alt şerit, başlangıç sayfaları, kapsamlı CSS | `/admin/themes` yükleme | `@nexpress/themes/package` |
-| Tasarım kütüphanesi | Tekrar kullanılan bölüm veya tam sayfa bloğu | `/admin/design-library` JSON aktar | `lintDesign` / `lintDesignOutput` |
+| Tasarım kütüphanesi | Tekrar kullanılan bölüm veya tam sayfa bloğu | `/admin/studio` JSON aktar | `lintDesign` / `lintDesignOutput` |
 | Şablon | Sayfa, yazı, arşiv, header, footer, kenar çubuğu yerleşimi | `/admin/appearance/templates` | `validateTemplate` |
 
 Üçü birbirinin yerine geçmez.
@@ -156,9 +156,9 @@ Yazı yığını en çok 6 aile. **Son aile** şunlardan biri olmalı: `serif`, 
 
 Menü ağacı bu dosyada yoktur. Menü etiketleri `/admin/appearance/menus` kaydından gelir. Dil başına birden çok menü vardır; header’a işaretlenen kayıt ziyaretçi şeridinde basılır. Footer ve kenar çubuğundaki `nav_menu` bileşeni `settings.menuId` ile aynı kaydı seçer. Üç bölge de boşsa o şeridin varsayılanı kullanılır.
 
-Kanonic öğe kimlikleri: `announcement`, `contact`, `logo`, `menu`, `search`, `cta`, `links`.
+Kanonik öğe kimlikleri (14 adet): `announcement`, `contact`, `logo`, `menu`, `search`, `cta`, `links`, `phone`, `email`, `button2`, `social`, `cart`, `html`, `divider`. Öğe ayarları isteğe bağlı kök `options` nesnesindedir (`ctaStyle`: `solid | outline | ghost`, `secondaryLabel`, `secondaryHref`, `htmlText`).
 
-Eski adlar kayda dokunulmadan çözülür: `contact_info` → `contact`, `mega_menu` → `menu`, `search_bar` → `search`, `cta_button` → `cta`, `campaign_links` → `links`. Bilinmeyen kimlik (`geo_selector` gibi) yok sayılır.
+Eski adlar kayda dokunulmadan çözülür: `contact_info` → `contact`, `mega_menu` → `menu`, `search_bar` → `search`, `cta_button` → `cta`, `campaign_links` → `links`, `category_drawer` → `links`. Bilinmeyen kimlik (`geo_selector` gibi) yok sayılır.
 
 ```json
 {
@@ -418,15 +418,15 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 | `heading` | Bölüm başlığı | düzey 2–4, atlama yok | `level` 2–4; `text` ≤110 zorunlu |
 | `paragraph` | Düz paragraf, 2–4 cümle | — | `text` ≤900 zorunlu |
 | `stats_strip` | 2–4 ölçülebilir kanıt | yer tutucu. variant: `metrics-bar` | `stats[]` 2–4: `value` ≤16 zorunlu, `label` ≤48 zorunlu |
-| `bento_features` | 2–12 fayda veya modül kartı | variant: `bento-2x2` | `title` ≤90; `subtitle` ≤240; `columns` 2–4; `items[]` 2–12: `icon`, `image`, `title` ≤60 zorunlu, `description` ≤200 zorunlu, `href` |
-| `icon_list` | 2–24 kısa madde / kontrol listesi | — | `columns` 1–3; `items[]` 2–24: `icon`, `mark` ≤4, `title` ≤70 zorunlu, `text` ≤180, `href` |
+| `bento_features` | 2–12 fayda veya modül kartı | variant: `bento-2x2` | `title` ≤90; `subtitle` ≤220; `columns` 2–4; `items[]` 2–12: `icon`, `title` ≤70 zorunlu, `description` ≤240 zorunlu, `href` |
+| `icon_list` | 2–18 kısa madde / kontrol listesi | — | `columns` 1–3; `items[]` 2–18: `icon`, `mark` ≤4, `title` ≤80 zorunlu, `text` ≤180, `href` |
 | `split_content` | Metin yanında görsel | görsel kitaplıktan | `title` ≤90 zorunlu; `text` ≤500 zorunlu; `image`; `alt` ≤125 |
 | `howto_steps` | Sıralı yönerge, HowTo şeması | 3–8 adım. variant: `numbered-steps` | `title` ≤90 zorunlu; `steps[]` 3–8: `title` ≤70 zorunlu, `description` ≤260 zorunlu |
 | `faq_accordion` | Gerçek sorular, FAQPage | sayfada 1, 3–8 soru. variant: `clean-border` | `title` ≤90 zorunlu; `items[]` 2–8: `question` ≤140 zorunlu, `answer` ≤420 zorunlu |
 | `comparison_table` | Seçenek karşılaştırması | en çok 6 sütun | `title` ≤90 zorunlu; `headers` ≤6, hücre ≤40; `rows` ≤24×6, hücre ≤80 |
 | `pricing_table` | 2–4 plan | sayfada 1, yer tutucu. variant: `tiers-3` | `title` ≤90 zorunlu; `plans[]` 2–4: `name` ≤40 zorunlu, `price` ≤30 zorunlu, `description` ≤180, `ctaLabel` ≤36, `featured` boolean |
 | `callout` | Tek not | variant: `info-border` | `tone`: `TIP` \| `NOTE` \| `IMPORTANT` \| `WARNING`; `title` ≤60; `text` ≤320 zorunlu |
-| `info_box` | Kısa kart + görsel/bağlantı | — | `icon`; `image`; `kicker` ≤40; `title` ≤70 zorunlu; `text` ≤260; `linkLabel` ≤40; `href` (`mailto:` ve `tel:` dahil) |
+| `info_box` | Kısa kart + bağlantı | — | `icon`; `kicker` ≤40; `title` ≤70 zorunlu; `text` ≤260; `linkLabel` ≤40; `href` (`mailto:` ve `tel:` dahil) |
 | `cta_banner` | Sonda tek eylem | sayfada en çok 2. variant: `dark-contrast` | `title` ≤90 zorunlu; `subtitle` ≤200; `buttonLabel` ≤40 zorunlu; `buttonHref` zorunlu |
 | `button_row` | 1–3 düğme | — | `align`: `left` \| `center` \| `right`; `buttons[]` 1–3: `label` ≤40 zorunlu, `href` zorunlu, `variant`: `primary` \| `secondary` \| `outline` |
 | `tabs` | Aynı konunun 2–5 yüzü | Önemli metni sekmeye gizleme | `title` ≤90; `tabStyle`: `pills` \| `underline` \| `boxed` \| `segmented` \| `vertical` \| `cards` \| `steps`; `align`: `left` \| `center` \| `stretch`; `items[]` 2–5: `label` ≤40 zorunlu, `icon`, `subtitle` ≤40, `title` ≤80, `body` ≤500 zorunlu |
@@ -436,7 +436,7 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 | `code_block` | Yalnızca teknik içerik | — | `language`: `typescript` \| `javascript` \| `bash` \| `json` \| `html` \| `css` \| `text` \| `python`; `code` ≤2000 zorunlu |
 | `image_figure` | Kitaplıktaki görsel | alt zorunlu | `url` zorunlu; `altText` ≤125 zorunlu; `titleText` ≤80; `caption` ≤160; `aspectRatio` ≤10 (`16/9`) |
 | `single_icon` | Tek yerleşik simge | — | `icon`; `size` 12–160; `color` ≤30; `background` ≤30; `href`; `label` ≤60; `align` |
-| `countup` | Tek gerçek sayı | sayfada en çok 6, yer tutucu | `value` sayı; `prefix` ≤8; `suffix` ≤12; `label` ≤60; `duration` 1–10 saniye |
+| `countup` | Tek gerçek sayı | sayfada en çok 6 | `value` sayı; `prefix` ≤8; `suffix` ≤12; `label` ≤60; `duration` 1–10 saniye |
 | `marquee` | Kısa kayan ifadeler | sayfada en çok 2 | `items` ≤12, her biri ≤40; `speed` 5–180; `direction`: `left` \| `right` |
 | `shape_divider` | Bölüm arası süs | sayfada en çok 4 | `shape`: `wave` \| `tilt` \| `curve` \| `triangle` \| `slant`; `color` ≤30; `height` 20–300; `flip` boolean |
 | `form_block` | Var olan form | form uydurma | `formId` ≤60 zorunlu; `title` ≤80 |
@@ -447,7 +447,7 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 
 Bunlar editörde elle eklenebilir ve tema paketinin `pages/*.json` şeması tür adını kabul eder. **Kütüphane doğrulaması reddeder.** Model, kullanıcı özellikle “şablon” istemedikçe bunları yazmaz. Sebep: sahte yorum/puan, istemci davranışı veya uydurma sorgu.
 
-`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`, `contact_campaign`.
+`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `custom_fields`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`, `contact_campaign`.
 
 Şablonda kullanılanların alanı §6’dadır. Aşağıdakiler sayfa içeriği içindir, AI kataloğunda yoktur:
 
@@ -646,7 +646,7 @@ Döndürmeden önce:
 9. Şablonda zorunlu yuva tam bir kez var. Header/footer içinde içerik yuvası yok.
 10. Metin düz metin. HTML yok. Üçüncü parti ürün adı yok.
 
-Kurulum: `files` içeriğini aynı yollarla zip’leyip `.nxtheme` yapın, `/admin/themes` ekranına bırakın. Kurmak etkinleştirmek değildir. Kütüphane JSON’unu `/admin/design-library` aktarımına, şablon JSON’unu `/admin/appearance/templates` içine alın. Başlangıç sayfası taslaktır; yayına editörden alınır.
+Kurulum: `files` içeriğini aynı yollarla zip’leyip `.nxtheme` yapın, `/admin/themes` ekranına bırakın. Kurmak etkinleştirmek değildir. Kütüphane JSON’unu `/admin/studio` aktarımına, şablon JSON’unu `/admin/appearance/templates` içine alın. Başlangıç sayfası taslaktır; yayına editörden alınır.
 
 ---
 
@@ -666,11 +666,11 @@ Aynı turda burayı güncelle:
 
 `docs/07` sayfa/kütüphane aktarımı, `docs/08` yerleşik header/footer aktarımı içindir. Yeni blok veya tema alanı yalnızca o dosyalara yazılırsa bu belge eksik kalır; modele bu belge verildiği için asıl sözleşme budur.
 
-Son gözden geçirme: 2026-11-04. Kaynaklar yukarıdaki tabloyla karşılaştırıldı.
+Son gözden geçirme: 2026-11-23. Kaynaklar yukarıdaki tabloyla karşılaştırıldı.
 
 **Form + kampanya kartı modeli (`contact_campaign`, 2026-11-16).** Tek blok: solda ürüne bağlı canlı kampanya kartı, sağda form (`props.formId`, `productUrl`, `campaignSlug`, `heading`, `note`). Kampanya `schemaAttributes.campaign.productUrl` son yol parçasıyla (veya `campaignSlug`) eşleşir; süresi dolmuşsa kart çizilmez, form ortalanır. Her sayfada tasarım tekrarlanmaz, yalnızca model eklenir. Sabit hızlı iletişim: ayar `general.quickContactFormId` ve `general.whatsappNumber`; sağ altta "Sizi arayalım!" (CSS `:target` penceresi), sol altta WhatsApp. Yazı sayfası: künye (avatar, Tarafından, tarihler, kategori, yorum), künye altında tam genişlik görsel + başlık altyazısı, "Paylaş :" yuvarlak düğmeler; kenar çubuğu sağdadır.
 
-**Yazılım Bayi başlık/altlık düzeltmeleri (2026-11-16).** Arama düğmesi büyüteç ikonlu, açılır pencere (popover) olarak çalışır (`liveSearch`: `yazilim-firmasi` ve `yazilim-bayi`); ana şeritte logo solda, menü ortada, sağda arama ve "Ücretsiz Demo" düğmesi bulunur (üst şeritte yalnızca bağlantılar ve telefon). `button_row` renkleri tema jetonlarındandır (`--nx-primary`, ghost düğme bulunduğu bandın rengini devralır). Sabit WhatsApp düğmesi altlık telif satırını örtmez. `info_box`/`bento_features` açıklaması satır sonlarını korur; Kadence bilgi kutusunda başlık yoksa etiket başlık, `learnmore` değerleri açıklama olur. Harita gömme adresi anahtarsızdır (`google.com/maps?q=…&output=embed`) ve CSP `frame-src` Google'a izin verir.
+**Yazılım Bayi başlık/altlık düzeltmeleri (2026-11-16).** Arama düğmesi büyüteç ikonlu, açılır pencere (popover) olarak çalışır (`liveSearch`: `yazilim-firmasi` ve `yazilim-bayi`); ana şeritte logo solda, menü ortada, sağda arama ve "Ücretsiz Demo" düğmesi bulunur (üst şeritte yalnızca bağlantılar ve telefon). `button_row` renkleri tema jetonlarındandır (`--nx-primary`, ghost düğme bulunduğu bandın rengini devralır). Sabit WhatsApp düğmesi altlık telif satırını örtmez. `info_box`/`bento_features` açıklaması satır sonlarını korur; kaynak bilgi kutusunda başlık yoksa etiket başlık, `learnmore` değerleri açıklama olur. Harita gömme adresi anahtarsızdır (`google.com/maps?q=…&output=embed`) ve CSP `frame-src` Google'a izin verir.
 
 **Kart yerleşimleri, sosyal simgeler ve açık rıza (2026-11-16).** `list_element` `listType: "cards"` (onay simgeli kart ızgarası; 4+ maddelik listeler için aktarım bunu yazar). Düz metin sayfalarda başlık + metin öbekleri `style.cssClass: "yb-card nx-text-card"` taşıyan iç içe `section` kartlarıdır (`cardifyPlainBlocks`; zengin sayfalara dokunmaz). Altlıkta sosyal ağlar yalnızca simgedir (`SocialIconLinks`; adres/etiketten ağ tanınır, `aria-label` ve `title` verilir). Form onay kutusu etiketi "gizlilik politikası" / "rıza" içeriyorsa bağlantı olur ve `?embed=1` ile gömülü gizlilik sayfasını CSS `:target` penceresinde açar (iframe yalnızca açılınca yüklenir; `FormRenderContext.privacyUrl`). `?embed=1` üst, alt, yan çubuk, yüzen düğmeleri gizler. Tek satırlık form denetimleri `h-10` ile hizalıdır.
 

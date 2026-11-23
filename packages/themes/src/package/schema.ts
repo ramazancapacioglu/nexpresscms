@@ -74,13 +74,53 @@ const bar = z.object({
   mobileRightWidgets: z.array(z.string().max(40)).max(8).optional(),
 });
 
+const headerOptions = z.object({
+  ctaStyle: z.enum(["solid", "outline", "ghost"]).optional(),
+  secondaryLabel: z.string().max(60).optional(),
+  secondaryHref: z.string().max(300).optional(),
+  htmlText: z.string().max(160).optional(),
+});
+
+const footerRowStyle = z.object({
+  background: z.enum(["default", "muted", "primary", "dark", "custom"]).optional(),
+  customColor: colorValue.optional(),
+  paddingY: z.number().min(8).max(120).optional(),
+  divider: z.boolean().optional(),
+  width: z.enum(["contained", "full"]).optional(),
+});
+
+const footerOptions = z.object({
+  main: footerRowStyle.optional(),
+  bottom: footerRowStyle
+    .extend({
+      socials: z
+        .object({
+          x: z.string().max(300).optional(),
+          linkedin: z.string().max(300).optional(),
+          instagram: z.string().max(300).optional(),
+          youtube: z.string().max(300).optional(),
+          github: z.string().max(300).optional(),
+          facebook: z.string().max(300).optional(),
+        })
+        .optional(),
+      menuId: z.string().max(60).optional(),
+      layout: z.enum(["split", "centered"]).optional(),
+      backToTop: z.boolean().optional(),
+    })
+    .optional(),
+  gap: z.enum(["sm", "md", "lg"]).optional(),
+});
+
 export const HeaderSchema = z.object({
+  options: headerOptions.optional(),
   topBar: bar.extend({ announcementText: z.string().max(200).optional(), contactPhone: z.string().max(40).optional(), contactEmail: z.string().max(120).optional() }),
   mainBar: bar.extend({ sticky: z.boolean().optional(), glassmorphism: z.boolean().optional(), ctaLabel: z.string().max(60).optional(), ctaHref: z.string().max(300).optional() }),
   bottomBar: bar.extend({ links: z.array(z.object({ label: z.string().max(80), href: z.string().max(300) })).max(20).optional() }),
 });
 
 export const FooterSchema = z.object({
+  layoutPreset: z.enum(["4-equal", "brand-wide-4", "3-equal", "2-asymmetric", "1-centered", "6-equal"]).optional(),
+  options: footerOptions.optional(),
   columns: z.array(z.object({ id: z.string().max(40), title: z.string().max(80), colSpan: z.number().int().min(1).max(12), links: z.array(link).max(20) })).max(6),
   showNewsletter: z.boolean(),
   showLocalBusinessCard: z.boolean(),

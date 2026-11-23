@@ -85,3 +85,7 @@ Geliştirme yaparken her zaman aşağıdaki dokümanları referans alın:
 - Panel düzenlemesi, eksik sayfalar ve AI tasarım planı: `./docs/18-PANEL-AND-AI-DESIGN-PLAN.md`
 - Yayına alma (dağıtım) rehberi: `./docs/19-DEPLOYMENT.md`
 - Agentic SEO Pro taşıma planı ve modül durumu: `./docs/15-AGENTIC-PRO-MIGRATION.md`
+- Referans inceleme ve editör yönü: `./docs/20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md`, `./docs/21-EDITOR-DIRECTION.md`, `./docs/22-DESIGN-STUDIO-PLAN.md`
+- Canlı WordPress Köprüsü: `./docs/24-WP-BRIDGE.md`
+- Proje durum ve derin inceleme raporları: `./docs/25-PROJECT-STATUS-AND-AUDIT-REPORT.md`, `./docs/26-DERIN-INCELEME-RAPORU.md`
+- Veri eklentisi (`.nxplugin`) sözleşmesi: `./docs/27-DATA-PLUGIN-AUTHORING.md`

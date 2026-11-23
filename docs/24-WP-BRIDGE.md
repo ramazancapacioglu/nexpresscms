@@ -82,6 +82,7 @@ Eşleme `packages/wp-importer` içinde testli saf fonksiyondur.
 | 2 | Satır ve sütun çizimi, kapak bandı, menü, üst şerit telefonu ve alt kart | **0.2.0** |
 | 3 | Form tanımları, sayfa ve site SEO'su, 301 | **0.2.0** |
 | 4 | Zengin HTML derleyicisi, 350 KB sınırı, veri kümesi ile onarımın ayrılması | **0.3.0** |
+| 5 | Okuma ayarları (`page_on_front` / `page_for_posts`) eşlemesi ve soru-cevap sayfası onarımı | **0.3.1** |
 
 ## 6. Güvenlik
 

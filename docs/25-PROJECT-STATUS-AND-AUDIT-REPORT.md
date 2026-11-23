@@ -1,7 +1,7 @@
 # 25 — Kapsamlı Proje İnceleme, Doküman Kıyaslama ve Durum Raporu
 
-> **Tarih:** 2026-11-09  
-> **Kapsam:** Monorepo genelindeki tüm paketler (`packages/*`, `plugins-pro/*`, `apps/cms`), veritabanı şemaları ve göçleri (`0000`–`0020`), CI/CD iş akışları ve `docs/01` – `docs/24` dokümantasyon seti.
+> **İlk Tarih:** 2026-11-09 · **Sayısal Senkronizasyon:** 2026-11-23  
+> **Kapsam:** Monorepo genelindeki tüm paketler (`packages/*`, `plugins-pro/*`, `apps/cms`), veritabanı şemaları ve göçleri (`0000`–`0024`), CI/CD iş akışları ve `docs/01` – `docs/27` dokümantasyon seti.
 
 ---
 
@@ -10,19 +10,20 @@
 NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100/100 RSC, 0-KB sayfa-özel istemci JS**) hem de yapay zeka ajanları (**MCP, `/llms.txt`, `/llms-full.txt`, `?format=md`, `@id` Entity Graph**) için tasarlanmış çift motorlu mimarisini **Faz 0'dan Faz 6'ya kadar %100 tamamlamış**, **Faz 7 – Faz 14** kapsamındaki güvenlik, çok dillilik, eklenti sistemi, tema paketleri, tasarım stüdyosu, e-ticaret, pazar yeri ve canlı WordPress köprüsü hedeflerinin büyük bölümünü canlıya (`ileriseo.com` üzerinde PostgreSQL 16 + `pgvector` ile) almış durumdadır.
 
 ### Monorepo Paket ve Eklenti Envanteri
-- **Açık Çekirdek Paketleri (`packages/*` — 9 Paket):**
-  1. `@nexpress/core` (`packages/core/src/index.ts`): 59 modül — Hook/Slot Bus, Implicit Tenancy, Markdown derleyici, blok stil motoru, AI tasarım sözleşmesi (`AI_BLOCK_CATALOG`), menü, şablon, form, kampanya, medya SEO, içerik ağırlığı (`content-weight`), TOTP ve `secret-box`.
-  2. `@nexpress/database` (`packages/database/src/schema/sqlite.ts` & `pg.ts`): LibSQL/SQLite ve PostgreSQL/`pgvector` çift diyalektli **33 tablo**, **21 göç dosyası** (`0000_baseline` – `0020_silent_jackal`), `backendFor(dialect)` ile tek kod yolu ve `upsertScoped` kiracı izolasyonu.
-  3. `@nexpress/themes` (`packages/themes/src/registry.ts`): **8 resmi tema** (`corporate-aurora`, `commerce-velocity`, `editorial-pulse`, `ink-grid`, `crimson-erp` — beyaz şerit ve üç parçalı ERP vitrini, `yazilim-firmasi`, `kuzey-atolye`, `sera-ajans`), `.nxtheme` veri paketi doğrulayıcısı ve 0-KB RSC blok çizicileri.
-  4. `@nexpress/editor` (`packages/editor/src/library.ts`): **77 blok türü** (`BLOCK_TYPES`), **194 hazır tasarım kütüphanesi öğesi**, tam sayfa başlangıç paketleri.
-  5. `@nexpress/seo-core` (`packages/seo-core/src/index.ts`): 17 kriterli SEO analizi, parçalı XML Sitemap + Hreflang, RSS/Atom, JSON-LD grafik derleyici & doğrulayıcı, GSC / GA4 / Bing / Yandex API istemcileri.
+- **Açık Çekirdek Paketleri (`packages/*` — 10 Paket):**
+  1. `@nexpress/core` (`packages/core/src/index.ts`): Hook/Slot Bus, Implicit Tenancy, Markdown derleyici, blok stil motoru, AI tasarım sözleşmesi (`AI_BLOCK_CATALOG`, 27 blok), şema & varlık grafı motoru (`schema-rules`), menü, şablon, form, kampanya, medya SEO, içerik ağırlığı (`content-weight`), Redis istemcisi, TOTP ve `secret-box`.
+  2. `@nexpress/database` (`packages/database/src/schema/sqlite.ts` & `pg.ts`): LibSQL/SQLite ve PostgreSQL/`pgvector` çift diyalektli **50 tablo**, **25 göç dosyası** (`0000_baseline` – `0024_user_author_profile`), `backendFor(dialect)` ile tek kod yolu ve `upsertScoped` kiracı izolasyonu.
+  3. `@nexpress/themes` (`packages/themes/src/registry.ts`): **9 resmi tema** (`corporate-aurora`, `commerce-velocity`, `editorial-pulse`, `ink-grid`, `crimson-erp`, `yazilim-firmasi`, `kuzey-atolye`, `sera-ajans`, `yazilim-bayi`), `.nxtheme` veri paketi doğrulayıcısı ve 0-KB RSC blok çizicileri.
+  4. `@nexpress/editor` (`packages/editor/src/library.ts`): 77 blok türü (`BLOCK_TYPES`), 194 hazır tasarım kütüphanesi öğesi, tam sayfa başlangıç paketleri.
+  5. `@nexpress/seo-core` (`packages/seo-core/src/index.ts`): SEO analizi (21'e kadar ağırlıklı denetim), parçalı XML Sitemap + Hreflang, RSS/Atom, JSON-LD grafik derleyici & doğrulayıcı, GSC / GA4 / Bing / Yandex API istemcileri.
   6. `@nexpress/rag`: Başlık duyarlı parçalayıcı (`chunker`), yerel sözcüksel + OpenAI anlamsal gömme, BM25 + Vektör **RRF hibrit arama**.
   7. `@nexpress/i18n` (`packages/i18n/src/index.ts`): Derleme zamanı tip güvenli `tr` / `en` mesaj kataloğu (0-KB kuralı gereği yalnızca sunucuda).
-  8. `@nexpress/commerce` & `@nexpress/marketplace`: Katalog, varyasyon, sepet, sipariş, kupon, sadakat ve 5 pazaryeri sürücüsü (Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti).
-  9. `@nexpress/wp-importer`: WXR (XML) ayrıştırıcı, canlı HTML kabuk okuyucu (`readPublicShell`) ve WordPress Köprüsü (`0.3.0`) dönüştürücüleri.
-- **Kompozisyon Kökü (`apps/cms/src/plugins/register.ts`) — Kayıtlı 9 Eklenti:**
+  8. `@nexpress/commerce`: Katalog, varyasyon, sepet, sipariş, kupon, sadakat ve kargo (15 ticaret tablosu).
+  9. `@nexpress/marketplace`: 5 pazaryeri sürücüsü (Trendyol, Hepsiburada, n11, Amazon, Çiçeksepeti).
+  10. `@nexpress/wp-importer`: WXR (XML) ayrıştırıcı, canlı HTML kabuk okuyucu (`readPublicShell`) ve WordPress Köprüsü (`0.3.1`) dönüştürücüleri.
+- **Kompozisyon Kökü (`apps/cms/src/plugins/register.ts`) — Kayıtlı 10 Eklenti:**
   - **2 Lisanslı Pro Eklenti (`plugins-pro/*`):** `@nexpress-pro/agentic-seo` (v6.0, 33 modül) ve `@nexpress-pro/ai-design`.
-  - **7 Ücretsiz/Yerleşik Eklenti (`apps/cms/src/plugins/*`):** `@nexpress/seo-basic`, `@nexpress/plugin-campaigns`, `@nexpress/plugin-design-studio`, `@nexpress/plugin-wp-bridge` (`0.3.0`), `@nexpress/plugin-commerce`, `@nexpress/plugin-marketplaces`, `@nexpress/plugin-perfornext`.
+  - **8 Ücretsiz/Yerleşik Eklenti (`apps/cms/src/plugins/*`):** `@nexpress/seo-basic`, `@nexpress/plugin-campaigns`, `@nexpress/plugin-design-studio`, `@nexpress/plugin-wp-bridge` (`0.3.1`), `@nexpress/plugin-commerce`, `@nexpress/plugin-marketplaces`, `@nexpress/plugin-perfornext`, `@nexpress/plugin-qa`.
 
 ---
 
@@ -31,10 +32,10 @@ NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100
 | Kural | Başlık | Kod Tabanı Durumu | Uyum |
 | :--- | :--- | :--- | :--- |
 | **Kural 1** | **Eş Zamanlı Dokümantasyon (`docs/` Senkronizasyonu)** | `docs/01`–`docs/24` ve `docs/06-PROGRESS-LOG.md` düzenli güncellenmiş. Küçük birkaç sayısal/liste sapması Aşama 1'de kapatıldı. | ✅ **%100** |
-| **Kural 2** | **Örtük Çoklu-Kiracı (`siteId` & `cachedRead`)** | `sqlite.ts` ve `pg.ts` içindeki **33 tablonun tamamında** `siteId` sütunu ve indeksi var (`schema-parity` testiyle zorlanıyor). Tüm yazmalar `upsertScoped` (`setWhere siteId`) kullanıyor. | ✅ **%100** |
+| **Kural 2** | **Örtük Çoklu-Kiracı (`siteId` & `cachedRead`)** | `sqlite.ts` ve `pg.ts` içindeki **50 tablonun tamamında** `siteId` sütunu ve indeksi var (`schema-parity` testiyle zorlanıyor). Tüm yazmalar `upsertScoped` (`setWhere siteId`) kullanıyor. | ✅ **%100** |
 | **Kural 3** | **Çift Veritabanı (LibSQL/SQLite & PostgreSQL/pgvector)** | `packages/database` dışında ham SQL yok. Depolar `backendFor(dialect)` üzerinden tek kod yolu kullanıyor; yalnızca vektör araması (`chunk-repository`) motora göre dallanıyor. | ✅ **%100** |
 | **Kural 4** | **Open-Core & Pro Eklenti Sınırı (`Slot & Hook Bus`)** | Çekirdek paketlerde `@nexpress-pro/*` importu sıfır. Tek kompozisyon kökü `apps/cms/src/plugins/register.ts`. Kapılar `isPluginModuleEnabled` ve `site_plugins` tablosu ile çalışıyor. | ✅ **%100** |
-| **Kural 5** | **Tema Motoru, Görsel Editör ve 0-KB RSC Hızı** | Ziyaretçi sayfalarında `"use client"`, `next/link` veya `next-themes` yok. `perf-budget.json` ile rota kodu ≤ **1.0 kB** (ölçülen 0.70 kB), toplam paylaşılan çalışma zamanı ≤ **108 kB** CI'da denetleniyor. | ✅ **%100** |
+| **Kural 5** | **Tema Motoru, Görsel Editör ve 0-KB RSC Hızı** | Ziyaretçi sayfalarında `"use client"`, `next/link` veya `next-themes` yok. `perf-budget.json` ile rota kodu ≤ **1.5 kB**, toplam paylaşılan çalışma zamanı ≤ **108 kB** CI'da denetleniyor. | ✅ **%100** |
 | **Kural 6** | **Kurumsal Admin UI/UX & Üçüncü Parti Ad Yasağı** | Attio tarzı keskin `shadcn/ui` arayüz, karanlık/aydınlık mod, `⌘K` komut paleti, axe-core AA erişilebilirlik taraması (`a11y-audit.mjs`) devrede. | ✅ **%100** |
 | **Kural 7** | **Dosya Boyutu (~400 Satır Sınırı)** | Büyük dosyalar (`renderer`, `block-inspector`, `repository`, `seed`, `dual-mode-editor-client`) bölünmüş; kalan 400+ satırlık dosyalar Aşama 2'de alt modüllere ayrıldı. | ✅ **%100** |
 | **Kural 8** | **Dil ve Tek Dilde Ön Eksiz URL (`localeBase`)** | `middleware.ts` tek dilde `/tr/x` → 308 `/x` yönlendirmesi ve dahili rewrite yapıyor. `@nexpress/i18n` derleme zamanı tip güvenli. | ✅ **%98** |
@@ -46,8 +47,8 @@ NexPress CMS; açık çekirdekli (**Open-Core**), hem insan ziyaretçiler (**100
 
 | Doküman | Kapsam | Kod Tabanındaki Karşılığı | Durum |
 | :--- | :--- | :--- | :--- |
-| `01-ARCHITECTURE.md` | Monorepo & Çift Motorlu Mimari | `apps/cms`, `packages/*` (9 paket), `plugins-pro/*` (2 paket) | ✅ Tam Uyumlu |
-| `02-DATABASE-AND-TENANCY.md` | Drizzle Şeması, Göçler, Tenancy | `sqlite.ts` & `pg.ts` (33 tablo), `0000`–`0020` göçleri | ✅ Tam Uyumlu |
+| `01-ARCHITECTURE.md` | Monorepo & Çift Motorlu Mimari | `apps/cms`, `packages/*` (10 paket), `plugins-pro/*` (2 paket) | ✅ Tam Uyumlu |
+| `02-DATABASE-AND-TENANCY.md` | Drizzle Şeması, Göçler, Tenancy | `sqlite.ts` & `pg.ts` (50 tablo), `0000`–`0024` göçleri | ✅ Tam Uyumlu |
 | `03-THEME-STORE-AND-EDITOR.md` | Tema Mağazası, 0-KB RSC Editör, Stüdyo v3 | `packages/themes`, `packages/editor`, `/admin/contents`, `/admin/themes` | ✅ Tam Uyumlu |
 | `04-CORE-SEO-AND-GEO.md` | Çekirdek SEO, Sitemap, RAG, Medya Hattı, GSC/GA4 | `packages/seo-core`, `packages/rag` | ✅ Tam Uyumlu |
 | `05-PRO-PLUGINS-AND-RAG.md` | `@nexpress-pro/agentic-seo` & `@nexpress-pro/ai-design` | `plugins-pro/agentic-seo-pro`, `plugins-pro/ai-design` | ✅ Tam Uyumlu (33 modül `ready`) |

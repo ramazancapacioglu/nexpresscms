@@ -135,7 +135,7 @@ export default async function PublicLocaleLayout({
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ lb, site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
 
-  // Sayfa türünü belirle (Kadence / WordPress tarzı akıllı kenar çubuğu eşleşmesi)
+  // Sayfa türünü belirle (akıllı kenar çubuğu eşleşmesi)
   const isHome = segs.length <= 1 || (segs.length === 1 && segs[0] === locale);
   const isCategory = segs.length >= 2 && (segs[1] === "kategori" || segs[1] === "etiket");
   const isShop = segs.length >= 2 && segs[1] === "magaza";

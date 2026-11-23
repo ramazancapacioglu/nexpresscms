@@ -22,7 +22,7 @@
 - **İnsan için dil önerisi (üst bar):** kişiselleştirilmiş HTML, CDN önbelleğiyle (`PUBLIC_CACHE_SECONDS`) çakışır (`Vary: Accept-Language` gerekir ve önbellek isabeti düşer). Dil değiştirici her sayfada zaten var; öneri ancak önbelleğe dokunmayan bir tasarımla (ör. kenar işlevi) eklenmeli.
 - **Ticaret çevirileri** (`commerce_product_translations`, bölge/para birimi fiyatı): ürün düzenleyici ve sepet akışını ilgilendiren ayrı bir tasarım kararı (para birimi dil değil bölgeye bağlı); `docs/09` ile birlikte ele alınmalı.
 - **AI çeviri taslağı (Pro):** `ai-writer` altyapısı hazır; çeviri istemi ve kalite denetimi OpenAI anahtarıyla birlikte tasarlanmalı.
-- Dil başına site adı/slogan/SEO şablonu ve navigasyon/footer dil yönetimi.
+- Header/footer düzeninin dil başına ayrılması (dil başına menü ve site adı/slogan/SEO şablonu tamamlandı).
 
 **Çıkış ölçütü durumu:** `en` örnek verisiyle uçtan uca doğrulandı (dil ekle → çeviri oluştur → taslak ziyaretçiye 404 → yayınla → hreflang her iki yönde, `lang="en"`, `/zzz` 404). Kataloğu eksik anahtarla **derleme** hatası: `Messages` tipi (`en`'de eksik anahtar tsc'yi kırar) + test.
 
@@ -59,7 +59,7 @@
 
 1. **URL stratejisi:** her zaman dil öneki (`/tr`, `/en`); varsayılan dil önekisiz sunulmaz (tekil canonical, basit hreflang). Bölge ayrımı isteğe bağlı (`en-us`, `en-gb`) ve `content_translations.region` ile saklanır; URL öneki yalnızca dildir, bölge ayrı site/alan adı gerektirir (v1 kapsam dışı).
 2. **Dil kaynağı:** `sites.supportedLocales` kalır (kural 8). İkinci dil açılırken **ayrı `locales` tablosu açılmaz**; gerekirse dil başına ayar `sites.settings.locales[locale]` altında tutulur (ad, slogan, SEO şablonu, sosyal görsel, tarih biçimi, yön `ltr|rtl`, yerel adı).
-3. **Mesaj kataloğu:** `@nexpress/i18n` paketi; `messages/tr.json`, `messages/en.json`; **anahtarlar TypeScript tipine derlenir** (eksik anahtar derleme hatası), ICU benzeri çoğul ve değişken desteği (`Intl.PluralRules`). Sunucu bileşenlerinde `getMessages(locale)`; **istemci JS'e katalog taşınmaz** (0 KB kuralı). Tema, bloklar ve ön yüz bileşenleri anahtar kullanır.
+3. **Mesaj kataloğu:** `@nexpress/i18n` paketi; `packages/i18n/src/messages/tr.ts`, `en.ts`; **anahtarlar TypeScript tipine derlenir** (eksik anahtar derleme hatası), ICU benzeri çoğul ve değişken desteği (`Intl.PluralRules`). Sunucu bileşenlerinde `createTranslator(locale)`; **istemci JS'e katalog taşınmaz** (0 KB kuralı). Tema, bloklar ve ön yüz bileşenleri anahtar kullanır.
 4. **İçerik çevirisi:** editörde "Diller" şeridi: her dil için durum (`yok | taslak | yayında | kaynak değişti`). "Kaynaktan çeviri oluştur" blok ağacını kopyalar, `translationOf` ve `sourceHash` ile bağlar; kaynak değişince çeviri "gözden geçir" olur. Çeviri, aynı `contentId` altında yeni `content_translations` satırıdır (şema hazır). İsteğe bağlı **AI çeviri taslağı** (Pro eklenti, sağlayıcı yapılandırılabilir; çıktı daima taslak).
 5. **SEO:** `generateMetadata` içinde `alternates.languages` + `x-default`; dil başına canonical; `og:locale:alternate`; JSON-LD `inLanguage`; çevirisi olmayan dile bağlantı verilmez (hreflang yalnızca var olan çeviriler).
 6. **Dil algılama:** botlara yönlendirme yok (mevcut kural); insanlara kapatılabilir üst bar önerisi (`Accept-Language` + çerez), zorunlu yönlendirme yok.

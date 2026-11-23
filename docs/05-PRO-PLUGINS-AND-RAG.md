@@ -23,10 +23,10 @@ Kaynak projeler `agentic-content-ops` ve `agentic-seo-gateway` (v5.8.0). Canlı 
    - **`/.well-known/mcp.json`** keşif manifestosu.
 3. **Yerleşik WebMCP Sunucusu (`/api/mcp` & `src/mcp-server.ts`):**
    - JSON-RPC 2.0 `tools/list` ve `tools/call` protokolü (`mcp:handleRequest` kancası).
-   - Salt-okunur (`nexpress_search_corpus`, `nexpress_fetch_markdown`, `nexpress_ask_site_dna`) ve `X-Agent-Key` korumalı yazma aracı (`nexpress_create_lead`).
+   - Salt-okunur (`nexpress_search_corpus`, `nexpress_fetch_markdown`, `nexpress_ask_site_dna`) ve `X-Agent-Key` korumalı 3 yazma aracı (`nexpress_create_lead`, `nexpress_create_ticket`, `nexpress_book_demo`).
 4. **Bot Tarama Günlüğü kartı (`src/bot-telemetry-card.tsx`):**
    - Bot imzaları çekirdektedir (`@nexpress/core` `ai-bots.ts`); `src/bot-verifier.ts` eski adlarla yeniden dışa aktarır.
-   - `dashboard.overview.cards` yuvasına `bot_daily_stats` tablosundan beslenen kartı enjekte eder (bot başına toplam, tür dağılımı, doğrulama oranı, son görülme).
+   - `seo.reports.visibility` yuvasına (`/admin/seo/reports?group=visibility`) `bot_daily_stats` tablosundan beslenen kartı enjekte eder (bot başına toplam, tür dağılımı, doğrulama oranı, son görülme).
 
 ---
 
@@ -59,7 +59,7 @@ Ayrı `@nexpress-pro/content-ops` paketi yok. 2026-10-28'de `agentic-seo` içine
 
 Prompt ile **bölüm, sayfa ve tema jetonu** tasarlar. Kompozisyon: `apps/cms/src/plugins/register.ts` → `registerAiDesignProPlugin()`; eylem `ai-design.generate` (`pluginActions`, panelde `requireUser` + denetim günlüğü `design.generate`).
 
-- **CMS bilgisi tek kaynaktır:** `@nexpress/core/ai-design` — `AI_BLOCK_CATALOG` (AI'a açık 21 blok, alan türleri, uzunluk/adet sınırları, değişkenler), `lintDesign` (temizler + SEO/GEO denetler), `lintThemeTokens` (WCAG kontrastı, yazı tipi ve geometri sınırları), `buildDesignSystemPrompt` (komut katalogtan ve kural listesinden üretilir). `packages/editor/test/library-contract.test.ts` gerçek tasarım kütüphanesinin katalogla ayrışmadığını doğrular.
+- **CMS bilgisi tek kaynaktır:** `@nexpress/core/ai-design` — `AI_BLOCK_CATALOG` (AI'a açık 27 blok, alan türleri, uzunluk/adet sınırları, değişkenler), `lintDesign` (temizler + SEO/GEO denetler), `lintThemeTokens` (WCAG kontrastı, yazı tipi ve geometri sınırları), `buildDesignSystemPrompt` (komut katalogtan ve kural listesinden üretilir). `packages/editor/test/library-contract.test.ts` gerçek tasarım kütüphanesinin katalogla ayrışmadığını doğrular.
 - **Site bağlamı:** `loadDesignSiteContext` (database): var olan herkese açık sayfa yolları, medya kimlikleri + alt metinleri, aktif formlar, marka alanları ve Site DNA. Model yalnızca bunları bilir; olmayan yol/görsel/form uyarı veya hata olur.
 - **Hat:** komut → model (OpenAI uyumlu, `OPENAI_API_KEY`; model `designModel` → `AI_DESIGN_MODEL` → `AI_WRITER_MODEL`) → doğrulama → hata varsa hata listesi + önceki çıktıyla **tek onarım turu** → en az hatalı sonuç. Hız sınırı 10 dakikada 8 üretim. Anahtar yoksa `unconfigured`; "Komutu kopyala" ve JSON yapıştırma yolu anahtarsız çalışır (aynı doğrulama).
 - **Yazmaz:** çıktı panelde önizlenir (skor, hata/uyarı, yapı, tema renkleri + kontrast tablosu) ve kullanıcı onayıyla `design_library` tablosuna (göç `0013`) kaydedilir. Kayıtta tasarım **sunucuda yeniden doğrulanır**; hatalı olan kaydedilmez. Sayfa tasarımı yalnızca **taslak** sayfa olur; tema yalnızca **kurulur** (etkinleştirme ayrı).

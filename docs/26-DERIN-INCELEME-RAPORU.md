@@ -4,7 +4,7 @@
 >
 > Bu rapor `docs/25` iç denetiminin yerine geçmez, onu **ölçümle sınar**. `docs/25` her satırı "✅ %100" işaretler; aşağıdaki bulgular bunun bazı yerlerde iyimser olduğunu gösterir.
 
-> **Durum güncellemesi (2026-11-11):** §2.1 başlık hatası, §2.2 şema eksikleri, §2.3 çözümleyici, §2.5 site simgesi ve §2.6'daki çift h1 / kesik açıklama bu dalda düzeltildi ve CI'a SEO sözleşme testi eklendi (`docs/06` günlüğü). Canlı sitede etkili olması için dağıtım gerekir. Kalanlar: `www` yönlendirmesi, IndexNow anahtarı, Search Console (sunucu/ortam işleri, §2.7).
+> **Durum güncellemesi (2026-11-23):** Bu belge **2026-11-11** tarihli anlık inceleme kaydıdır. Aşağıdaki bulguların büyük bölümü sonraki turlarda **kapatılmıştır**: §2.1–2.3, §2.5–2.6 (SEO sözleşme testi + CI), §3.2–3.4 (yerel Google Fonts, çerez onayı, özel içerik türleri, `.nxplugin` veri eklentileri, CrUX, 4 rol, S3 medya, çalışma zamanı `PUBLIC_CACHE_SECONDS`, ziyaretçi CSS ayrımı), Redis paylaşımlı hız sınırı/önbellek dönemi, ziyaretçi üyeliği ve kademeleri, `Person`/`Speakable`/`sameAs` şemaları ve `layout.tsx` yorum temizliği. Güncel açık borç listesi için `docs/12-ROADMAP.md` esas alınır.
 
 ---
 

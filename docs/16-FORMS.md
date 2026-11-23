@@ -22,11 +22,11 @@ Kurucu sekmeleri: Alanlar, Görünüm, Ayarlar, Bildirim, Yerleştirme. Görün�
 
 ## 3b. Kurucu (sürükle-bırak)
 
-`@dnd-kit` (core, sortable). Paletten sürükle-bırak veya tıklayıp ekle (klavye erişimi), kanvasta sırala (fare/klavye), çoğalt, sil; sağ panelde alan özellikleri; sekmeler: Alanlar, Ayarlar (ad, durum, düğme, başarı mesajı, yönlendirme), E-posta bildirimi, Yerleştirme. Ctrl/Cmd+S kaydeder, kaydedilmemiş değişiklikte sekme kapatma uyarısı vardır. Kurucu yalnızca `/admin` altında istemci kodudur; ziyaretçi formu sunucuda çizilir (istemci JS'i yok).
+`@dnd-kit` (core, sortable). Paletten sürükle-bırak veya tıklayıp ekle (klavye erişimi), kanvasta sırala (fare/klavye), çoğalt, sil; sağ panelde alan özellikleri; 5 sekme: Alanlar, Görünüm, Ayarlar (ad, durum, düğme, başarı mesajı, yönlendirme), Bildirim (e-posta & webhook), Yerleştirme. Ctrl/Cmd+S kaydeder, kaydedilmemiş değişiklikte sekme kapatma uyarısı vardır. Kurucu yalnızca `/admin` altında istemci kodudur; ziyaretçi formu sunucuda çizilir (istemci JS'i yok).
 
 ## 4. Şablonlar
 
-İletişim, bülten, teklif talebi, geri arama, randevu talebi (saat + koşullu telefon), destek talebi, memnuniyet/NPS, kısa anket, etkinlik kaydı, iş başvurusu (`packages/core/src/form-templates.ts`). Şablon bir kopyadır; sonradan şablon değişse form etkilenmez.
+17 hazır şablon (`packages/core/src/form-templates.ts`): iletişim, bülten, teklif talebi, geri arama (`call-me`), randevu talebi (adımlı + saat + koşullu telefon), destek talebi, memnuniyet/NPS, kısa anket, etkinlik kaydı, iş başvurusu, demo talebi (`demo-request`), iş ortağı başvurusu (`partner-application`), rezervasyon (`reservation`), bekleme listesi (`waitlist`), webinar (`webinar`), katalog indir (`catalog-download`) ve hızlı iletişim. Şablon bir kopyadır; sonradan şablon değişse form etkilenmez.
 
 ## 5. E-posta
 
@@ -38,7 +38,7 @@ Ayarlar: `/admin/forms/email` (host, port, TLS, kullanıcı, parola, gönderen) 
 
 ## 7. Sınırlar ve borçlar
 
-Dosya yükleme alanı, çok adımlı form, CAPTCHA (bal küpü + zaman belirteci + hız sınırı kullanılır) ve e-posta kuyruğu/yeniden deneme yoktur; e-posta ve webhook `after()` ile tek denemedir. Koşul tek cevap eşitliğidir; iç içe formül ve birden çok koşul yoktur.
+Dosya yükleme alanı, CAPTCHA (bal küpü + zaman belirteci + hız sınırı kullanılır) ve e-posta kuyruğu/yeniden deneme yoktur; e-posta ve webhook `after()` ile tek denemedir. Koşul tek cevap eşitliğidir; iç içe formül ve birden çok koşul yoktur. (Çok adımlı form 1–6 adım arası saf CSS radyo ile desteklenir.)
 
 ## Açık rıza ve gizlilik penceresi (2026-11-16)
 Onay kutusunun etiketi gizlilik/rıza/KVKK içeriyorsa "Gizlilik politikası" bağlantısı gizlilik sayfasını (`gizlilik-politikasi`, gömülü görünüm) pencerede açar; sayfa yoksa metin düz kalır. Pencere betiksizdir (`:target`), içerik iframe ile tembel yüklenir. Hızlı iletişim penceresindeki form da aynı bağlantıyı taşır.

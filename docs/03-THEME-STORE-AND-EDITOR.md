@@ -17,6 +17,7 @@ flowchart LR
         T6["Yazılım Firması Teması (cam şerit, siyah vitrin, mega menü, dizin footer, sağ form)"]
         T7["Kuzey Atölye (kâğıt zemin, serif, tek yeşil, üç sütun footer)"]
         T8["Sera Ajans (gül zemin, iri başlık, siyah kapsül, iş listesi)"]
+        T9["Yazılım Bayi (kurumsal yazılım bayisi, açılır arama, kampanya/demo vitrini)"]
     end
 
     subgraph ThemeContract [Tema Paketi Yapısı (theme.json)]
@@ -186,21 +187,20 @@ Görsel tuval `CanvasFrame` ile bir iframe'e portal edilir. Çerçeve içinde ç
 - **Alt Hiyerarşi (Breadcrumb) ve Durum Çubuğu (`editor/editor-status-bar.tsx`):**
   - Seçili bloğun kök sayfadan itibaren ata zincirini (`getBlockAncestors`, `summarizeBlockPreview`: `Sayfa › Kapsayıcı bölüm › Satır (6+6) › Sütun (50%) › Başlık`) tıklanabilir adımlar halinde ve sağda toplam blok/kelime sayacıyla gösterir.
 - **Görsel Simge Seçici Modal (`editor/icon-picker-modal.tsx`, `@nexpress/core/icons`):**
-  - 112 yerleşik saf SVG simge (`ICON_PATHS`, Türkçe `ICON_LABELS` ve 7 kategori `ICON_CATEGORIES` ile: `ui`, `corporate`, `tech`, `commerce`, `contact`, `media`, `sector`) aranabilir ve kategori sekmeli görsel ızgara modalında (`IconPickerModal`) sunulur; `button_element`, `single_icon`, `bento_features`, `icon_list`, `info_box`, `tabs` blokları ve menü/mega-menü editörlerinde simgeler hem düğme üzerinde hem modalda gerçek SVG grafiğiyle görünür.
+  - 121 yerleşik saf SVG simge (`ICON_PATHS`, Türkçe `ICON_LABELS` ve 7 kategori `ICON_CATEGORIES` ile: `ui`, `corporate`, `tech`, `commerce`, `contact`, `media`, `sector`) aranabilir ve kategori sekmeli görsel ızgara modalında (`IconPickerModal`) sunulur; `button_element`, `single_icon`, `bento_features`, `icon_list`, `info_box`, `tabs` blokları ve menü/mega-menü editörlerinde simgeler hem düğme üzerinde hem modalda gerçek SVG grafiğiyle görünür.
 - **Zengin Kapsayıcı Sekmeler (`tabs` & `editor/canvas-tabs-block.tsx`):**
   - `tabs` bloğu tam bir kapsayıcıdır (`CONTAINER_BLOCK_TYPES` içinde, alt düğümleri `column` sekme panelleridir): her sekmenin içine çok sütunlu satırlar (`columns`), görseller, butonlar, listeler veya tablolar eklenebilir. Ön yüzde 0 KB istemci JS (saf CSS radio-tab + `tabStyle`: `pills` | `underline` | `boxed`) olarak çizilir; editör tuvalinde ise sekmeler arası canlı geçiş, satır içi sekme adı/simgesi düzenleme ve sekmeye doğrudan satır/sütun ekleme çubuğu sunar.
 - **Doğrudan Sürükle-Bırak ve Sabit Seçimli Medya Penceresi (`editor/dnd.tsx`, `editor/canvas-block.tsx`, `media/media-picker-dialog.tsx`):**
   - Tuvaldeki her blok üzerine gelindiğinde sol üstteki tutamaçtan doğrudan sürüklenebilir; herhangi bir bloğun üst/alt yarısına, sütunlara, bölümlere, sekme panellerine veya sol yapı gezginindeki düğümlere bırakılarak kapsayıcılar arası taşınabilir.
   - `MediaPickerDialog` sol medya ızgarası ile sağ detay panelini bağımsız kaydırır, kart üzerinde tek tıkla/çift tıkla `Seç` aksiyonu ve pencere altında her zaman görünür sabit `✓ Seçilen Görseli Ekle` çubuğu barındırır.
 
-## Canlı Tema Özelleştirici v2, 11 Şablon Türü, Sol/Sağ Sidebar ve Zengin Mega Menü (2026-11-03)
-- **Canlı Tema Özelleştirici (`/admin/themes` — `theme-store-control-panel.tsx`, `theme-store-preview-canvas.tsx`, `theme-store-tab-layout.tsx`):**
-  - Sol kontrol çekmecesi 6 sekmeye ayrıldı: `Temalar`, `Renkler`, `Yazı Tipi`, `Sidebar & En`, `Header/Footer`, `Şablonlar`.
+## Canlı Tema Özelleştirici, 15 Şablon Türü (51 Hazır Şablon), Sol/Sağ Sidebar ve Zengin Mega Menü (Güncel: 2026-11-23)
+- **Tema Galerisi (`/admin/themes`) & Canlı Tema Özelleştirici (`/admin/themes/customize` — `theme-store-control-panel.tsx`, `theme-store-preview-canvas.tsx`, `theme-store-tab-layout.tsx`, `theme-store-tab-code.tsx`):**
+  - `/admin/themes` resmi + yüklenen `.nxtheme` temalarının galerisidir. Canlı özelleştirici ayrı olarak `/admin/themes/customize` adresinde çalışır ve sol kontrol çekmecesi 5 sekmeden oluşur: `Renkler`, `Yazı Tipi`, `Sidebar & En`, `Logo & Ölçü`, `Özel Kod` (`?tab=code`).
   - Sağ canlı önizleme kanvası 8 farklı sayfa/şablon görünümünü anlık olarak simüle eder: **Ana Sayfa**, **Blog Yazısı**, **Kategori**, **Etiket**, **Sayfa**, **Ürün Detay**, **Ürün Kategori** ve **Arama Sonuçları**.
   - **Sol / Sağ Sidebar ve Sayfa Genişliği:** `customizer.layout` altında `sidebarPosition` (`none` | `left` | `right`), `sidebarWidth` (`260px` | `300px` | `340px`), sayfa türü bazlı görünürlük anahtarları (`sidebarOnBlog`, `sidebarOnArchive`, `sidebarOnPage`, `sidebarOnShop`, `sidebarOnSearch`) ve arşiv/ürün ızgara sütun sayısı (`2 | 3 | 4`) hem canlı önizleme kanvasında hem de gerçek ziyaretçi düzeninde (`(public)/[locale]/layout.tsx`) anında uygulanır.
-- **11 Şablon Türü ve 32 Hazır Şablon (`packages/core/src/templates.ts`, `/admin/appearance/templates`):**
-  - `TemplateKind` kapsamı 11 türe çıkarıldı: `header`, `footer`, `sidebar`, `page`, `post`, `category`, `tag`, `product`, `shop`, `product_category`, `search` (arama sayfası `(public)/[locale]/ara/page.tsx` artık `search` şablonunu da destekler).
-  - `STARTER_TEMPLATES` 32 zengin başlangıç şablonuna yükseltildi: Sağ ve Sol Sidebarlı Sayfa şablonları, Sağ/Sol Sidebarlı ve Dergi (Magazine) Blog Yazısı şablonları, Sağ/Sol Sidebarlı Kategori ve Etiket arşiv şablonları, Sağ Sidebarlı (Güven/Teslimat Kutulu) Ürün Detay şablonu, Sol Filtre Sidebarlı Mağaza ve Ürün Kategorisi şablonları, 2 Arama Sonuçları şablonu, 6 Header, 3 Footer ve 3 Kenar Çubuğu şablonu.
+- **15 Şablon Türü ve 51 Hazır Şablon (`packages/core/src/templates.ts`, `/admin/appearance/templates`):**
+  - `TemplateKind` 15 türü kapsar (`header`, `footer`, `sidebar`, `page`, `post`, `category`, `tag`, `product`, `shop`, `product_category`, `search`, `not_found`, `author`, `campaign`, `pattern`); `STARTER_TEMPLATES` 51 hazır başlangıç şablonu içerir.
 - **Zengin Header, Footer, Kenar Çubuğu ve Mega Menü Editörleri (`/admin/appearance/*`):**
   - **Menü & Mega Menü (`/admin/appearance/menus`):** `NavigationLink` artık `icon` alanı destekler; ziyaretçi navigasyonunda (`site-nav.tsx`) masaüstü menü, açılır menü ve Mega Menü kartlarında 0-KB RSC SVG simgeler ve rozetler çizilir. Menü editörüne etkileşimli **Canlı Menü & Mega Menü Önizleme** çubuğu, simge seçici ve 3 adet tek tıkla **Hazır Mega Menü Şablonu** (`Kurumsal Çözüm & Ürün Vitrini (3 Sütun)`, `E-Ticaret & Katalog Mega Menü (4 Sütun)`, `Bilgi Bankası & Kaynak Merkezi (2 Sütun)`) eklendi.
   - **Header, Footer ve Sidebar Editörleri:** Her üç editöre de canlı görsel önizleme şeridi ve tek tıkla hazır kurumsal/e-ticaret/dokümantasyon şablonları eklendi.

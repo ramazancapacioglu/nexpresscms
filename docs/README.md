@@ -1,6 +1,6 @@
 # NexPress CMS — Dokümantasyon Merkezi (`@docs`)
 
-> **Vizyon:** WordPress, Gutenberg ve Elementor ihtiyacını tek çatı altında bitiren; **Next.js 15 (100/100 Lighthouse RSC)**, **Çift Veritabanı (Zero-Docker LibSQL/SQLite & PostgreSQL/pgvector)**, **Tema Mağazası (Theme Store)** ve **Pro Agentic SEO + RAG İçerik Fabrikası** destekli açık çekirdekli (Open-Core) yeni nesil CMS.
+> **Vizyon:** Klasik CMS ve ağır sayfa oluşturucu eklenti ihtiyacını tek çatı altında bitiren; **Next.js 15 (100/100 Lighthouse RSC)**, **Çift Veritabanı (Zero-Docker LibSQL/SQLite & PostgreSQL/pgvector)**, **Tema Mağazası (Theme Store)** ve **Pro Agentic SEO + RAG İçerik Fabrikası** destekli açık çekirdekli (Open-Core) yeni nesil CMS.
 
 ---
 
@@ -21,9 +21,20 @@
 | **10** | [10-MARKETPLACES.md](./10-MARKETPLACES.md) | Modüler pazar yeri sürücüleri ve kanal yönetimi | ✅ Güncel |
 | **11** | [11-SECURITY-AND-OPERATIONS.md](./11-SECURITY-AND-OPERATIONS.md) | Kimlik doğrulama, roller, sır şifreleme, MCP anahtarı, HTTP başlıkları, testler | ✅ Güncel |
 | **12** | [12-ROADMAP.md](./12-ROADMAP.md) | Öncelikli iş listesi (SEO/GEO/hız), güvenlik ve bakım borçları, yürütme sırası | 🔄 Canlı |
-| **13** | [13-PLUGINS-AND-THEME-PACKAGES.md](./13-PLUGINS-AND-THEME-PACKAGES.md) | Eklenti sistemi, tema paketleri (yükleme/etkinleştirme) ve panel eksikleri planı | 📋 Plan |
-| **14** | [14-MULTILINGUAL-PLAN.md](./14-MULTILINGUAL-PLAN.md) | Çok dilli altyapı planı (L1–L5) | 📋 Plan |
+| **13** | [13-PLUGINS-AND-THEME-PACKAGES.md](./13-PLUGINS-AND-THEME-PACKAGES.md) | Eklenti sistemi, tema paketleri (yükleme/etkinleştirme) ve panel eksikleri | ✅ Güncel |
+| **14** | [14-MULTILINGUAL-PLAN.md](./14-MULTILINGUAL-PLAN.md) | Çok dilli altyapı (L1–L5) ve tek dilde ön eksiz URL | ✅ Güncel |
+| **15** | [15-AGENTIC-PRO-MIGRATION.md](./15-AGENTIC-PRO-MIGRATION.md) | Agentic SEO Pro taşıma planı ve 33 modül durumu | ✅ Güncel |
+| **16** | [16-FORMS.md](./16-FORMS.md) | Form modülü, 17 şablon, çok adımlı form ve gelen kutusu | ✅ Güncel |
+| **17** | [17-WORDPRESS-IMPORT.md](./17-WORDPRESS-IMPORT.md) | WordPress WXR ve canlı site içe aktarma | ✅ Güncel |
+| **18** | [18-PANEL-AND-AI-DESIGN-PLAN.md](./18-PANEL-AND-AI-DESIGN-PLAN.md) | Panel tek tipleştirme, eksik sayfalar ve AI tasarım | ✅ Güncel |
 | **19** | [19-DEPLOYMENT.md](./19-DEPLOYMENT.md) | Yayına alma: ortam değişkenleri, kurulum, sağlık ucu, zamanlayıcı, yedek, güvenlik listesi | ✅ Güncel |
+| **20** | [20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md](./20-REFERENCE-ANALYSIS-AND-EDITOR-PLAN.md) | Referans inceleme ve 5 fazlı editör planı | ✅ Güncel |
+| **21** | [21-EDITOR-DIRECTION.md](./21-EDITOR-DIRECTION.md) | Editör yönü mimari kararı (Tuval v2) | ✅ Güncel |
+| **22** | [22-DESIGN-STUDIO-PLAN.md](./22-DESIGN-STUDIO-PLAN.md) | Tasarım Stüdyosu & Şablon Fabrikası planı | ✅ Güncel |
+| **24** | [24-WP-BRIDGE.md](./24-WP-BRIDGE.md) | Canlı WordPress Köprüsü (`0.3.1`) | ✅ Güncel |
+| **25** | [25-PROJECT-STATUS-AND-AUDIT-REPORT.md](./25-PROJECT-STATUS-AND-AUDIT-REPORT.md) | Proje durum ve mimari uyum raporu | ✅ Güncel |
+| **26** | [26-DERIN-INCELEME-RAPORU.md](./26-DERIN-INCELEME-RAPORU.md) | Derin inceleme raporu ve canlı ölçüm bulguları | ✅ Arşiv / Güncel |
+| **27** | [27-DATA-PLUGIN-AUTHORING.md](./27-DATA-PLUGIN-AUTHORING.md) | Veri eklentisi (`.nxplugin`) yazarlık ve güvenlik sözleşmesi | ✅ Güncel |
 
 ---
 

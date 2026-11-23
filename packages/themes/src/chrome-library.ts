@@ -317,9 +317,9 @@ Footer istenirse:
 
 Kurallar:
 - Menü ağacı bu JSON'da yoktur. Yalnızca header veya footer üret.
-- id alanları benzersiz olsun. Adresler /tr veya /admin ile başlasın.
+- id alanları benzersiz olsun. Adresler /tr ile başlasın; /admin bağlantısı üretme.
 - topBar.enabled true ise announcementText dolu olsun.
 - bottomBar.enabled true ise links en az iki öğe içersin.
 - Ana şeritte mobil dizi yaz: mobileLeftWidgets, mobileCenterWidgets, mobileRightWidgets. Küçük ekranda logo solda, menü sağda kalsın. Çağrı sığmıyorsa mobil sağ diziden çıkar.
 - Üst veya alt şerit mobilde farklıysa aynı üç alanı o şeride de yaz.
-- Kolon sayısı 0 ile 4 arasında kalsın.`;
+- Kolon sayısı 0 ile 6 arasında kalsın.`;

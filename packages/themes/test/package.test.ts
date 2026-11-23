@@ -76,3 +76,35 @@ test("seçici kapsamlama: virgül, :root/body, parantez içi virgül", () => {
   assert.match(sanitizeThemeCss("h1, .a:is(.b, .c) { color: red }", "t").css, /\[data-nx-skin="t"\] h1, \[data-nx-skin="t"\] \.a:is\(\.b, \.c\)/);
   assert.equal(badEntryName("chrome/header.json"), null);
 });
+
+test("header/footer options ve layoutPreset paket gidiş-dönüşünde korunur", () => {
+  const input = base();
+  input.header = {
+    options: { ctaStyle: "outline", secondaryLabel: "Giriş", secondaryHref: "/giris", htmlText: "7/24 destek" },
+    topBar: { enabled: false, leftWidgets: [], centerWidgets: [], rightWidgets: [] },
+    mainBar: { enabled: true, leftWidgets: ["logo"], centerWidgets: ["menu"], rightWidgets: ["button2", "cta"] },
+    bottomBar: { enabled: false, leftWidgets: [], centerWidgets: [], rightWidgets: [] },
+  };
+  input.footer = {
+    layoutPreset: "brand-wide-4",
+    options: {
+      main: { background: "dark", paddingY: 64, divider: false, width: "full" },
+      bottom: { background: "dark", layout: "centered", backToTop: true, socials: { github: "https://github.com/nexpress" } },
+      gap: "lg",
+    },
+    columns: [{ id: "c1", title: "Ürün", colSpan: 4, links: [{ label: "Ana Sayfa", href: "/" }] }],
+    showNewsletter: false,
+    showLocalBusinessCard: false,
+    copyrightText: "© 2026 Demo",
+    bottomLinks: [],
+  };
+  const r = parseThemePackage(buildThemePackage(input));
+  assert.ok(r.ok, JSON.stringify(errs(r)));
+  if (!r.ok) return;
+  assert.equal(r.value.header?.options?.ctaStyle, "outline");
+  assert.equal(r.value.header?.options?.htmlText, "7/24 destek");
+  assert.equal(r.value.footer?.layoutPreset, "brand-wide-4");
+  assert.equal(r.value.footer?.options?.main?.background, "dark");
+  assert.equal(r.value.footer?.options?.bottom?.backToTop, true);
+  assert.equal(r.value.footer?.options?.gap, "lg");
+});

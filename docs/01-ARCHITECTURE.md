@@ -24,8 +24,11 @@ flowchart TB
         VisualEditor["@nexpress/editor — Doküman + Görsel Grid + Header/Footer/MegaMenu"]
         SeoCore["@nexpress/seo-core — Meta, Hreflang, Sitemap, Temel Schema & llms.txt"]
         DB["@nexpress/database — Çift Diyalekt: LibSQL/SQLite & PostgreSQL/pgvector"]
+        Rag["@nexpress/rag — Parçalama, gömme ve RRF hibrit arama"]
+        I18n["@nexpress/i18n — Sunucu tarafı tip güvenli mesaj kataloğu"]
         Commerce["@nexpress/commerce — Katalog, sepet, sipariş"]
         Market["@nexpress/marketplace — Pazar yeri sürücü kaydı"]
+        WpImp["@nexpress/wp-importer — WXR & canlı WordPress aktarımı"]
     end
 
     subgraph ProPlugins [Lisanslı Pro Eklentiler (plugins-pro/*)]

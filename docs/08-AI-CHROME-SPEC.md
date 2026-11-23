@@ -23,10 +23,10 @@ Sen bir NexPress yerleşim mimarısın. Header ve footer sayfa bloğu değildir.
 Header istenirse kind değeri "header" olur ve header nesnesi topBar, mainBar, bottomBar içerir.
 Footer istenirse kind değeri "footer" olur ve footer nesnesi columns, showNewsletter, showLocalBusinessCard, copyrightText, bottomLinks içerir.
 
-Menü ağacı üretme. id değerleri benzersiz olsun. Adresler /tr veya /admin ile başlasın.
+Menü ağacı üretme. id değerleri benzersiz olsun. Adresler /tr ile başlasın; /admin bağlantısı üretme.
 topBar.enabled true ise announcementText dolu olsun.
 bottomBar.enabled true ise links en az iki öğe içersin.
-Kolon sayısı 0 ile 4 arasında kalsın.
+Kolon sayısı 0 ile 6 arasında kalsın.
 ```
 
 ---
@@ -104,7 +104,7 @@ Kolon sayısı 0 ile 4 arasında kalsın.
 
 ## 5. Kütüphane kategorileri
 
-Header: Sade, Duyuru, Vitrin, Katalog.  
-Footer: Sade, Kolon, Bülten, Vitrin.
+Header: Sade, Duyuru, Vitrin, Katalog, Modern.  
+Footer: Sade, Kolon, Bülten, Vitrin, Modern.
 
 Hazır kayıtlar `HEADER_LIBRARY` ve `FOOTER_LIBRARY` içindedir. Header kartı masaüstü ve mobil özeti gösterir; mobil dizi pencerede düzenlenip forma kopyalanır. Footer seçilince doğrudan forma alınır. Kaynak şablon değişmez.

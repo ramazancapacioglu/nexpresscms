@@ -1,6 +1,6 @@
 # 22 — NexPress CMS Tasarım Stüdyosu (Design Studio) & Şablon Fabrikası Planı
 
-> **Amaç:** Tasarım stüdyosu (`/admin/studio`) bölüm ve sayfa üretir, kütüphaneye kaydeder ve `.nxtemplate` alır. Tema galerisi ve özelleştirici (`/admin/themes`) ayrıdır; header, menü ve footer yerleşim sayfalarındadır. Şablonun varsayılan ataması `/admin/appearance/templates` sayfasındadır.
+> **Durum (2026-11-21):** Panel tek tipleştirme sonrasında (`docs/18` §6) Tasarım alanı 5 net durağa ayrıldı: `Temalar` (`/admin/themes`), `Özelleştirici & Özel Kod` (`/admin/themes/customize?tab=code`), `Site İskeleti` (`/admin/appearance/header|footer|menus|sidebar`), `Şablonlar & Modeller` (`/admin/appearance/templates` — `.nxtemplates.json` içe/dışa aktarma dahil) ve `Kütüphane & AI` (`/admin/studio` — `AI Üretici` + `Kütüphane` sekmeleri). Aşağıdaki bölüm ilk tasarım planıdır.
 
 ---
 
@@ -24,7 +24,7 @@ flowchart TD
 
     subgraph PUB["0-KB RSC Ziyaretçi Katmanı (Public)"]
         CSS_IN["⚡ Inlined Critical CSS (<style id='nx-custom-css'>)"]
-        JS_LAZY["🚀 Next.js Script (afterInteractive / lazyOnload)"]
+        JS_LAZY["🚀 Sunucu Enjeksiyonu (<div id='nx-header/footer-scripts'> — 0-KB RSC)"]
         RSC_BLOCKS["💎 %100 Server Rendered BlockNode AST"]
     end
 
@@ -65,7 +65,7 @@ flowchart TD
   - `footerScripts: string`
 - **Ön Yüz Enjeksiyonu (`apps/cms/src/app/(public)/[locale]/layout.tsx`):**
   - `customCss`: Sunucuda sanitize edilir ve doğrudan `<style id="nx-custom-css">` olarak gömülür (0 ek HTTP isteği, 0 FOUC).
-  - `headerScripts` / `footerScripts`: Güvenli meta/takip kodları `lazyOnload`/`afterInteractive` stratejisiyle sayfa hızını 100/100 tutacak şekilde basılır.
+  - `headerScripts` / `footerScripts`: Sunucu düzeninde (`(public)/[locale]/layout.tsx`) `<div id="nx-header-scripts">` / `<div id="nx-footer-scripts">` üzerinden ek istemci React bileşeni yüklemeden basılır.
 
 ### Adım 4: Tema Özelleştiriciye Ek Kod Sekmesi (`/admin/themes`)
 - Tema Özelleştiricide Paletler, Tipografi ve Geometri'nin yanına **"Özel Kodlar" (Ek CSS & Ek JS)** sekmesi eklenir. Canlı önizleme tuvalinde CSS değişiklikleri anında test edilebilir.

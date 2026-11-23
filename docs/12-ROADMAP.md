@@ -6,7 +6,7 @@
 
 | Faz | İş | Durum |
 | :--- | :--- | :--- |
-| **F8** | Performans bütçesi testi + GitHub Actions (typecheck, test, build) | ✅ Tamam (CI GitHub'da henüz çalıştırılmadı) |
+| **F8** | Performans bütçesi testi + GitHub Actions (typecheck, test, build, a11y, pgvector, deploy) | ✅ Tamam (GitHub Actions CI aktif ve yeşil) |
 | **F9** | Kullanıcı yönetimi, profil/parola, oturum iptali, denetim günlüğü, **Ayarlar** sayfası | ✅ Tamam (davet/parola sıfırlama e-postası ve 2FA eklendi) |
 | **F10** | Drizzle migration + şema paritesi testi + dialect dallarının sadeleştirilmesi + büyük dosyaların bölünmesi | ✅ Tamam (kalan: dondurulmuş `push.ts`) |
 | **F11** | RAG: gerçek anahtarla kalite ölçümü, hibrit arama, site içi arama; bot politikası arayüzü (`robots.txt`); RSS, JSON-LD doğrulayıcı, kırık bağlantı denetimi | ✅ Tamam (kalan: gerçek OpenAI anahtarıyla kalite ölçümü, "bu siteye sor" yanıtı, dile göre llms/ai-sitemap). Dış bağlantı denetimi 2026-11-04'te yönetici isteğiyle eklendi. |
@@ -18,8 +18,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## P0 — Vaadi gerçeğe çevirenler
 
-1. ~~İstekler arası önbellek~~ **Yapıldı (2026-10-28).** Bkz. `docs/04` §6. Kalanlar: (a) admin dışı yazma yolları (zamanlanmış yayın, harici betikler) yalnızca 120 sn yedek süresine güvenir; (b) çoklu örnekli kurulumda hem `unstable_cache` hem dönem sayacı süreç/örnek başınadır; ortak depo (Redis cache handler + paylaşılan dönem) gerekir; (c) HTML'i tamamen statik/ISR yapmak için `x-nexpress-site-id` başlığı yerine `siteId`'yi rota kesitine taşımak gerekir.
-2. ~~Gerçek bot telemetrisi~~ **Yapıldı (2026-10-28).** Bkz. `docs/04` §7. Kalanlar: (a) OpenAI / Anthropic / Perplexity için yayımlanan IP aralıklarıyla doğrulama (şu an `claimed`); (b) bot başına en çok çekilen yollar ve 4xx/5xx oranı (yolu saklamak için ayrı, sınırlı tablo); (c) CDN önbelleği arkasındaki istekler için CDN günlüğü içe aktarma veya kenar işlevi; (d) `bot_daily_stats` saklama süresi / temizlik (ör. 400 gün); (e) ~~`robots.txt` bot bazlı izin/engel arayüzü~~ yapıldı (F11, `docs/04` §10).
+1. ~~İstekler arası önbellek~~ **Yapıldı (2026-10-28, Redis önbellek dönemi 2026-11-12).** Bkz. `docs/04` §6 ve `docs/11` §6. Kalanlar: (a) admin dışı yazma yolları (zamanlanmış yayın, harici betikler) 120 sn yedek süresine güvenir; (b) `REDIS_URL` ile önbellek geçersiz kılma dönemi (`nx:epoch`) paylaşılır, ancak `unstable_cache` verisi hâlâ süreç/örnek başınadır; (c) HTML'i tamamen statik/ISR yapmak için `x-nexpress-site-id` başlığı yerine `siteId`'yi rota kesitine taşımak gerekir.
+2. ~~Gerçek bot telemetrisi~~ **Yapıldı (2026-10-28; OpenAI/Perplexity IP aralığı doğrulaması eklendi).** Bkz. `docs/04` §7. Kalanlar: (a) Anthropic için yayımlanan IP aralığı doğrulaması (şu an `claimed`); (b) bot başına en çok çekilen yollar ve 4xx/5xx oranı (yolu saklamak için ayrı, sınırlı tablo); (c) CDN önbelleği arkasındaki istekler için CDN günlüğü içe aktarma veya kenar işlevi; (d) `bot_daily_stats` saklama süresi / temizlik (ör. 400 gün); (e) ~~`robots.txt` bot bazlı izin/engel arayüzü~~ yapıldı (F11, `docs/04` §10).
 3. ~~Medya hattı~~ **Yapıldı (2026-10-28).** Bkz. `docs/04` §8. Odak noktası, silme (kullanım denetimiyle) ve ön ısıtma da yapıldı. **S3 uyumlu depo (2026-11-14):** `MEDIA_DRIVER=s3` isteğe bağlıdır; boşsa yerel disk. Kalanlar: (b) arka plan işçisi ve kuyruğu (Redis/BullMQ) ile yeniden boyutlandırma; (c) ticaret ürün görselleri ve seed'deki dış adresler yeni hatta geçmedi; (d) animasyonlu GIF/WebP ve SVG (temizlemeli) desteği; (e) virüs taraması kancası; (f) `sharp` sarmalayıcısı için otomatik test (şu an uçtan uca elle doğrulandı); (g) toplu içe aktarma ve 'kullanılmayan görselleri bul' raporu.
 4. ~~Gerçek RAG~~ **Yapıldı (2026-10-28).** Bkz. `docs/04` §9. **Site yanıtı (2026-11-14):** `/ara` anahtar varsa bulunan sayfalardan model yanıtı kurar; anahtar yoksa veya çıktı bağlanamazsa özete düşer. Ziyaretçiye betik eklenmez. Kalanlar: (a) OpenAI sağlayıcısı gerçek anahtarla ölçülmedi; (b) yeniden sıralama (cross-encoder); (c) kısmi parça yeniden kullanımı ve kuyruklu toplu dizinleme; (d) SQLite'ta ANN yok; (e) çok dilli dizin ve dile göre sorgu yönlendirme; (g) küme en çok 24 sorguda anlamdır; (h) dizin sağlık metrikleri panelde.
 5. ~~Site haritası~~ **Yapıldı (2026-10-28).** Bkz. `docs/04` §1. Kalanlar: (a) ~~`ai-sitemap.json` ve `llms*.txt` dile göre~~ yapıldı (`/{locale}/ai-sitemap.json`, `/{locale}/llms.txt`, `/{locale}/llms-full.txt`; kök adresler `Accept-Language`/varsayılan dile düşer, `localeEndpoints` tüm dilleri listeler); (b) haber/görsel/video uzantıları (Google News, image sitemap); (c) ~~seed `en` dili~~ giderildi (aşağıdaki not).
@@ -29,11 +29,11 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 > Panel arayüzü eksikleri, eklenti ve tema yükleme/etkinleştirme planı: `docs/13`. Çok dilli altyapı: `docs/14`.
 
-- ~~Kullanıcı yönetimi, profil/parola, rol, denetim günlüğü, oturum iptali~~ yapıldı (F9, `docs/11` §1, §8). ~~e-posta ile davet / parola sıfırlama~~ yapıldı (`docs/11` §1). ~~2FA (TOTP) ve kurtarma kodları~~ yapıldı (`docs/11` §1; QR kodu ve yönetici için zorunlu kılma (`REQUIRE_ADMIN_2FA`) eklendi). Kalanlar: (c) giriş denemesi sınırının Redis'e taşınması; (d) denetim günlüğünde eylem **sonucu** (başarı/hata) ve içerik başlığı gibi hedef ayrıntısı — bugün çoğu `cms.*` kaydı yalnızca yetkilendirilmiş çağrıdır; (e) ~~denetim günlüğü dışa aktarma ve elle temizleme~~ yapıldı (kalan: otomatik/zamanlanmış saklama süresi); (f) kullanıcı silme ve hesap devri; (g) ~~`author` rolü ve izin matrisi~~ yapıldı (`docs/11` §1; `contributor` da eklendi). Kalan: `shop-manager`/SEO gibi görev rolleri, düzenlenebilir (özel) izin matrisi, içerik silme/çöp izni (`content.delete` tanımlı, sınırlı rollerde eylem yok), editörün katkıcı taslağını bildirimle alması, yazarın kendi içeriğini silmesi, içerik devri (sahip değiştirme).
+- ~~Kullanıcı yönetimi, profil/parola, rol, denetim günlüğü, oturum iptali~~ yapıldı (F9, `docs/11` §1, §8). ~~e-posta ile davet / parola sıfırlama~~ yapıldı (`docs/11` §1). ~~2FA (TOTP) ve kurtarma kodları~~ yapıldı (`docs/11` §1; QR kodu ve yönetici için zorunlu kılma (`REQUIRE_ADMIN_2FA`) eklendi). ~~Giriş denemesi sınırının Redis'e taşınması~~ yapıldı (`REDIS_URL` + `shared-state.ts`). Kalanlar: (d) denetim günlüğünde eylem **sonucu** (başarı/hata) ve içerik başlığı gibi hedef ayrıntısı — bugün çoğu `cms.*` kaydı yalnızca yetkilendirilmiş çağrıdır; (e) ~~denetim günlüğü dışa aktarma ve elle temizleme~~ yapıldı (kalan: otomatik/zamanlanmış saklama süresi); (f) kullanıcı silme ve hesap devri; (g) ~~`author` rolü ve izin matrisi~~ yapıldı (`docs/11` §1; `contributor` da eklendi). Kalan: `shop-manager`/SEO gibi görev rolleri, düzenlenebilir (özel) izin matrisi, içerik silme/çöp izni (`content.delete` tanımlı, sınırlı rollerde eylem yok), editörün katkıcı taslağını bildirimle alması, yazarın kendi içeriğini silmesi, içerik devri (sahip değiştirme).
 - ~~Yorum / inceleme spam koruması~~ **Yapıldı (2026-11-09).** Ziyaretçi yorum, yanıt ve 5 yıldızlı inceleme gönderimi (`submitPublicDiscussionAction`, `docs/04` §12) bal küpü (`company`), IP başına hız sınırı (`createRateLimiter`), HTML temizliği ve bağlantı spam süzgeci (`validatePublicCommentSubmission`, >2 dış URL reddi) ile korunur; tüm ziyaretçi gönderimleri `status: "pending"` ve `isVerified: false` olarak kaydedilir. Faydalı oyu (`voteCommentHelpfulAction`) `HttpOnly` çerez ve hız sınırıyla korunur.
 - ~~Giriş akışı için otomatik uçtan uca test~~ yapıldı (`auth:e2e`, CI'da; davet, parola, sıfırlama yanıtı, 2FA — bkz. doc 11). Kalan: e-postayla gelen sıfırlama bağlantısının SMTP sahte sunucusuyla CI'da denenmesi.
 - Admin sayfalarının tarayıcıda (görsel) regresyon testi: bölünen denetçi sekmeleri yalnızca tip kontrolü ve SSR 200 ile doğrulandı.
-- ~~GitHub Actions~~ yapıldı (`.github/workflows/ci.yml`; GitHub'da ilk çalıştırma ve dal koruma kuralı sizde).
+- ~~GitHub Actions~~ yapıldı ve aktif (`.github/workflows/ci.yml`: `verify`, `a11y`, `pgvector`, `audit`, `deploy`).
 - ~~Yedekleme / geri yükleme komutu (`db:export`, `db:import`), kiracı bazında~~ **Yapıldı (2026-11-09).** Hem `/admin/backup` arayüzü hem de `pnpm db:export` / `pnpm db:import` CLI (`packages/database/src/scripts/backup-cli.ts`) ve `/api/cron/backup` devrede.
 - ~~Çerez/KVKK onayı~~ **Yapıldı (2026-11-11):** `/admin/settings` › Çerez onayı; JS'siz banner, GA4 ve özel betikler onay kapısında (`docs/11` §4). Kalan: kategori bazlı (analitik/pazarlama ayrı) onay ve onay kaydı (kanıt) tutma.
 
@@ -41,7 +41,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 - ~~`Link` başlığı~~ yapıldı; ~~dile göre `llms.txt`/`ai-sitemap.json`/`llms-full.txt`~~ yapıldı.
 - ~~RSS / Atom~~ yapıldı; ~~kategori/etiket bazlı beslemeler~~ yapıldı (`/feed.xml?category=ad`, `?tag=ad`, `/atom.xml` için de); kalan: tam içerik (`content:encoded`), Google Haberler/Discover görsel şartları.
-- ~~Şema doğrulayıcı~~ yapıldı (editörde canlı); kalan: kayıtta engelleme/uyarı eşiği, `Speakable`, `Person` yazar varlıkları, `sameAs`.
+- ~~Şema doğrulayıcı, `Speakable`, `Person` yazar varlıkları ve `sameAs`~~ yapıldı (`schema-rules.ts`, `/admin/seo/schemas` Şema & Varlık Grafı Stüdyosu, `/yazar/[slug]` `ProfilePage` + `Person`, göç `0024`); kalan: kayıtta engelleme/uyarı eşiği.
 - ~~İç bağlantı önerisi: vektörsüz ilk sürüm (başlık / varlık eşleşmesi)~~ **Yapıldı (2026-11-09).** `suggestInternalLinks` (`packages/core/src/internal-links.ts`, birim testli) ve `/admin/seo/audit` ekranında otomatik iç bağlantı fırsatları kartı devrede.
 - 404 ve yönlendirme zincirleri raporu; ~~kırık iç bağlantı denetimi~~ yapıldı (iç bağlantılar); ~~dış bağlantı denetimi~~ yapıldı (2026-11-04, SSRF kapılı, yönetici isteği, en çok 30 adres). Kalan: 404 günlüğü ayrı bir rapor olarak iç denetimle birleşmedi (yönlendirme sayfasındaki kayıt duruyor).
 - ~~Core Web Vitals alan verisi (CrUX)~~ yapıldı (`docs/11` §7a; Perfornext, sunucu tarafı, anahtar gerekir). Kalan: sayfa/URL düzeyinde CrUX sorgusu, geçmiş eğilim (28 gün anlık görüntüleri saklayıp grafik), otomatik günlük yenileme (cron), CrUX History API; kendi `web-vitals` toplayıcısı (yalnızca onaylı izleme, düşük trafikli siteler için) bilinçli olarak yapılmadı: 0-KB kuralı.
@@ -56,7 +56,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## Yayın öncesi kalanlar (2026-11-02)
 
-- Bellek içi hız sınırları ve ön yüz önbelleği tek sunucu içindir; çok sunucu için Redis katmanı yok.
+- ~~Çok sunucu için Redis hız sınırı ve önbellek dönemi~~ yapıldı (`REDIS_URL`, `shared-state.ts`); `unstable_cache` verisi süreç başınadır.
 - ~~Zamanlanmış yedek~~ yapıldı (`/api/cron/backup`). ~~Komut satırı yedeği~~ yapıldı (`pnpm db:export` / `pnpm db:import`). ~~Sunucu dışı kopya~~ isteğe bağlı (`BACKUP_COPY=s3`, 2026-11-14); kapalıysa yedek yalnızca sunucuda kalır. Kalan: belge/video/ses ve veritabanının sunucu düzeyinde yedeği (`docs/19`).
 - ~~CSP başlığı~~ yapıldı (üretimde, `'unsafe-inline'` ile). Kalan: nonce'lu sıkı CSP (Next.js satır içi betikleri nedeniyle ayrı iş).
 - Dockerfile yok: bu ortamda Docker çalışmadığı için doğrulanamadı, denenmemiş dosya eklenmedi.
@@ -83,9 +83,7 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 - Şema kartları dört tür (yazılım, kampanya, soru-cevap, teknik künye); Product/LocalBusiness/Event gibi türler ve kartların çoklu varyantı yok.
 - Canvas üzerinde alan içi (inline) metin düzenleme yalnızca paragraf/başlıkta; diğer bloklar denetçiden düzenlenir.
 
-- **Editör zenginleştirme (docs/20):** Faz 1 (stil motoru) tamam. Sırada Faz 2 (simge/sayaç/referans/marquee blokları, düğme hover-simge, sütun sırası, şekil ayırıcılar), Faz 3 (sorgu döngüsü + süzgeçler), Faz 4 (üst bilgi oluşturucu, tür başına yerleşim, görüntüleme koşulları, karanlık mod), Faz 5 (stil ön ayarları, kayan blok araç çubuğu).
-
-- **Faz 4b tamam** (karanlık mod, palet değişkenleri, şeffaf header, içerik genişliği). **Üst bilgi öğe dizisi ve mobil düzen yapıldı (2026-11-04):** sol/orta/sağ bölgeler ve ayrı mobil diziler ön yüzde ve header editöründe çözülür. Yazılmayan ana şerit logo solda, kalan öğeler sağda türetilir. Hazır header kütüphanesinin her kaydında tasarlanmış mobil dizi vardır; forma alınmadan düzenlenir. Üst ve alt şerit mobil dizisi yazılırsa küçük ekran onu basar. Kalan: ziyaretçi için elle tema anahtarı (JS gerektirir; bilerek yok), kullanıcı CSS'inde ve eklenti bloklarında sabit renkler için uyum denetimi.
+- **Editör zenginleştirme (`docs/20`):** Faz 1 (stil motoru), Faz 2 (simge/sayaç/marquee/şekil ayırıcı/gelişmiş tablo), Faz 3 (dinamik liste süzgeç/sıralama/sayfalama), Faz 4 (görüntüleme koşulları, karanlık mod, palet değişkenleri, üst bilgi öğe dizisi ve mobil düzen) ve Faz 5 (stil ön ayarları, kayan blok araç çubuğu + AI kısayolu) **tamamlandı**. Kalan: ziyaretçi için elle tema anahtarı (JS gerektirir; bilerek yok), A/B ve açılır pencere Pro eklentisi.
 
 ## Özel içerik türleri — kalanlar (2026-11-12)
 
@@ -94,8 +92,8 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## Footer — kalanlar (2026-11-12)
 
-- Yapıldı: satır stilleri (zemin, boşluk, ayraç, genişlik), alt çubuk düzeni, `{year}`/`{site}`, "Başa dön".
-- Kalan: alt çubukta sosyal simge ve menü yuvası; üst satır için ayrı sütun düzeni (şimdi yalnızca çağrı bandı); satır başına arka plan görseli/degrade; mobilde sütun sırası seçimi; yönetim önizlemesinde yer tutucuların açılmış hali.
+- Yapıldı: satır stilleri (zemin, boşluk, ayraç, genişlik), alt çubuk düzeni, sosyal simge ve menü yuvası, `{year}`/`{site}`, "Başa dön".
+- Kalan: üst satır için ayrı sütun düzeni (şimdi yalnızca çağrı bandı); satır başına arka plan görseli/degrade; mobilde sütun sırası seçimi; yönetim önizlemesinde yer tutucuların açılmış hali.
 
 ## Önbellek (2026-11-12) — kalanlar
 
@@ -104,13 +102,13 @@ Her faz: testler, uçtan uca doğrulama, ilgili dokümanlar ve `06-PROGRESS-LOG.
 
 ## Veri eklentileri (2026-11-12) — kalanlar
 
-- Yapıldı: `.nxplugin` (tür, taslak sayfa, imzalı webhook; `docs/27`). Kod eklentisi yükleme bilerek yok.
-- Kalan: eklenti ayar alanları ve çeviri paketi; `form.submitted` olayı (kişisel veri: ayrı onay ve alan seçimi gerekir); yeniden deneme kuyruğu ve teslimat günlüğü (şimdi yalnızca son sonuç); eklenti güncelleme akışında izin farkını gösterme; imzayı sunucuya `PLUGIN_TRUSTED_KEYS` yerine panelden yönetilen anahtar listesi; ziyaretçi CSS katkısı (kapsamlı, bütçe denetimli).
+- Yapıldı: `.nxplugin` (tür, taslak sayfa, imzalı webhook, 6 denemeli yeniden deneme kuyruğu ve `plugin_deliveries` teslimat günlüğü; `docs/27-DATA-PLUGIN-AUTHORING.md`). Kod eklentisi yükleme bilerek yok.
+- Kalan: eklenti ayar alanları ve çeviri paketi; `form.submitted` olayı (kişisel veri: ayrı onay ve alan seçimi gerekir); eklenti güncelleme akışında izin farkını gösterme; imzayı sunucuya `PLUGIN_TRUSTED_KEYS` yerine panelden yönetilen anahtar listesi; ziyaretçi CSS katkısı (kapsamlı, bütçe denetimli).
 
 
 ## Ziyaretçi üyeliği (2026-11-12) — kalanlar
 
-- Yapıldı: parolasız üyelik (`docs/11` §7b). Kalan: üye başına içerik/rol ayrımı (şimdi tek düzey "üye"), ücretli/kademeli üyelik, üye profil alanları, "tüm cihazlardan çıkış", hız sınırının Redis'e taşınması, sosyal giriş, üye e-posta değiştirme, üyelere bülten/bildirim tercihleri ve üye girişi için header bağlantısı (şimdi gate ve `/uye/giris` adresi).
+- Yapıldı: parolasız üyelik, üyelik kademeleri (`members.tier`), üye profil düzenleme, "tüm cihazlardan çıkış", Redis paylaşımlı hız sınırı (`docs/11` §7b). Kalan: ücretli üyelik ve ödeme, sosyal giriş, üye e-posta değiştirme, üyelere bülten/bildirim tercihleri ve üye girişi için header bağlantısı (şimdi gate ve `/uye/giris` adresi).
 
 ## Küçük borçlar — durum (2026-11-12)
 

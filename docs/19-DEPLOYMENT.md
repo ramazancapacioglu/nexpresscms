@@ -4,7 +4,7 @@ Bu rehber, uygulamanın üretimde nasıl çalıştırılacağını ve yayından 
 
 ## 1. Gereksinimler
 
-- Node.js 20, pnpm 10 (`corepack enable`).
+- Node.js 20+, pnpm 9 (`packageManager: pnpm@9.15.0`, `corepack enable`).
 - Veritabanı: **SQLite/LibSQL** (tek sunucu, dosya) ya da **PostgreSQL 16 + pgvector** (kurumsal; `docker-compose.yml`).
 - Kalıcı disk: `MEDIA_DIR` (varsayılan `apps/cms/data/media`) — yüklenen görsel/PDF/video/ses ve türevleri burada durur. **Yedeğe alın.**
 - Tersine vekil (nginx/Caddy) ile HTTPS. Uygulama kendi TLS'ini sonlandırmaz; `Strict-Transport-Security` başlığı üretimde gönderilir.
@@ -21,7 +21,7 @@ Bu rehber, uygulamanın üretimde nasıl çalıştırılacağını ve yayından 
 | `SECRETS_KEY` (önerilir) | SMTP parolası, 2FA anahtarı gibi sırları şifreleyen anahtar; yoksa `AUTH_SECRET` kullanılır. **Sonradan değiştirmeyin** (kayıtlı sırlar okunamaz olur) |
 | `CRON_SECRET` | Zamanlanmış yayın için kesin tetikleyici (bkz. §5) |
 
-İsteğe bağlı: `REQUIRE_ADMIN_2FA=1`, `SMTP_URL`, `OPENAI_API_KEY`, `MCP_AGENT_KEY`, `MEDIA_DIR`, `REDIS_URL` (bugün yalnızca bildirilmiş altyapı; giriş sınırları süreç belleğindedir).
+İsteğe bağlı: `REQUIRE_ADMIN_2FA=1`, `SMTP_URL`, `OPENAI_API_KEY`, `MCP_AGENT_KEY`, `MEDIA_DIR`, `REDIS_URL` (çoklu örnekte hız sınırları ve önbellek dönemini paylaşır; tanımsızsa süreç belleğine düşer).
 
 ## 3. İlk kurulum (Otomatik & Doğrudan Host Dağıtımı)
 
@@ -130,8 +130,7 @@ Yedek dosyasını sunucu dışına almak için `BACKUP_COPY=s3` (aynı `S3_*` ay
 - [ ] SMTP tanımlı ve **Formlar → E-posta → Test e-postası** başarılı (davet ve parola sıfırlama buna bağlı).
 - [ ] `robots.txt`, `/sitemap.xml`, `/llms.txt` beklenen adrese işaret ediyor; Search Console / Bing'e site haritası eklendi.
 - [ ] Veritabanı ve `MEDIA_DIR` yedeği ayrı bir yere alınıyor; geri yükleme bir kez denendi.
-- [ ] Kanonik adres `www` ise sunucudaki `.env` içinde `NEXT_PUBLIC_APP_URL=https://www.…` olmalı; yeniden derleme bu değeri koda gömer. Çıplak adres kalırsa Plesk (çıplak→www) ile uygulama (www→çıplak) birbirini yönlendirip döngüye girer.
-- [ ] `www` alan adı apeks adrese 308 ile gider (`scripts/nginx-nexpress.conf` ve uygulama ara katmanı). `NEXT_PUBLIC_APP_URL` kanonik adrestir.
+- [ ] Kanonik alan adı yönlendirmesi `NEXT_PUBLIC_APP_URL` değerine göre çift yönlü çalışır (`canonicalHostRedirect`: kanonik adres çıplaksa `www` → apeks, `www` ise apeks → `www` 308 ile gider). Ters vekil yönlendirmesinin `NEXT_PUBLIC_APP_URL` ile aynı yönde olduğundan emin olun; aksi halde yönlendirme döngüsü oluşur.
 - [ ] `/.well-known/security.txt` iletişim adresi döner (`SECURITY_CONTACT` veya Ayarlar › iletişim e-postası).
 - [ ] İndeks açılacaksa `INDEXNOW_API_KEY` tanımlı ve `/indexnow-key.txt` 200.
 - [ ] Çoklu sunucu (yük dengeli): `REDIS_URL` hız sınırı ve önbellek dönemini paylaşır. Medya için `MEDIA_DRIVER=s3`. CDN temizleme isteğe bağlıdır (`CDN_PURGE_PROVIDER`). Veri önbelleğinin kendisi (`unstable_cache`) hâlâ örnek başınadır.

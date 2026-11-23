@@ -21,7 +21,7 @@
 - **Çekinceler:** 1.0 öncesi (API oynak); bileşenin metinleri `ReactNode` olarak alması gerekir (satır içi düzenleme için) → ~70 blok oluşturucusunun hepsini yeniden yazmak; bizim cihaz bazlı stil modelimiz, şablonlar, yapay zekâ yazımı, şema kartları ve sürükle-bırak katmanımız yeniden entegre edilir.
 - **Sonuç:** Şimdilik **benimsemiyoruz**; sürükle-bırak ve gezgin zaten bizde var. Eksik olan iki şeyi (satır içi düzenleme, gerçek önizleme çerçevesi) kendi yığınımızda çözmek daha ucuz ve riski düşük.
 
-## 3. Kadence benzeri hissi veren şey gerçekte ne? (canlı ölçüm)
+## 3. Modern görsel blok editörü hissi veren şey gerçekte ne? (canlı ölçüm)
 Referans editörde sayfa **sitenin kendisi gibi** görünür; her metne doğrudan tıklayıp yazılır, bloklar ince çerçeveyle seçilir, bloklar arasında "+" vardır, mobil/tablet görünümü gerçek medya sorgularıyla çalışır. Bizim editörde:
 1. Her blok kart + etiketli başlık çubuğu içinde (gürültülü); sayfa başlığı ayrı alanda.
 2. Vitrin, fiyat tablosu, SSS gibi **zengin blokların metni yalnızca sağ panelden** düzenlenir; tuvalde tıklanamaz (`pointer-events: none`).

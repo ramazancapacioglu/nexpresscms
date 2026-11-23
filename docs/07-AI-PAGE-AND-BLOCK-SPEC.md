@@ -37,7 +37,7 @@ Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST format�
 ### B. BLOK DÜĞÜMÜ ŞEMASI (BlockNode)
 {
   "id": "blk_benzersiz_id",
-  "type": "hero | tldr_box | stats_strip | bento_features | pricing_table | product_embed | howto_steps | faq_accordion | callout | cta_banner | heading | paragraph | code_block",
+  "type": "hero | tldr_box | stats_strip | bento_features | pricing_table | howto_steps | faq_accordion | callout | cta_banner | heading | paragraph | code_block",
   "gridSpan": { "desktop": 12, "tablet": 12, "mobile": 12 },
   "props": { ... }
 }
@@ -144,7 +144,8 @@ Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST format�
 }
 ```
 
-### 3.6. `product_embed` (`@id` Bağlantılı Ürün / Yazılım Kartı)
+### 3.6. `product_embed` (Yalnızca Manuel Editör — AI Kataloğu Dışı)
+> Not: `product_embed` `AI_BLOCK_CATALOG` içinde yer almaz (`lintDesign` tarafından reddedilir); yalnızca görsel editörde elle eklenir.
 ```json
 {
   "id": "blk_prod_01",
@@ -196,7 +197,7 @@ Kullanıcının istediği sayfa veya bölümü AŞAĞIDAKİ saf JSON AST format�
 
 ## Güncelleme (2026-10-30): sözleşmenin makine karşılığı
 
-Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekten uyması gereken sözleşme `@nexpress/core/ai-design` kataloğudur (`AI_BLOCK_CATALOG`) ve komut metni oradan üretilir. Panel (`/admin/design-library`) ve editörün "JSON aktar" sekmesi sitenize özel komutu (sayfalarınız, medyanız, formlarınız, SEO ve kontrast sınırlarıyla) üretir ve yapıştırılan JSON'u aynı doğrulayıcıdan geçirir. Katalog dışı bloklar (slider, geri sayım, harita, kullanıcı kartı, galeri…) AI'a bilinçli olarak kapalıdır; elle eklenmeye devam eder. Bkz. `docs/18` ve `docs/05` "AI Tasarım Pro".
+Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekten uyması gereken sözleşme `@nexpress/core/ai-design` kataloğudur (`AI_BLOCK_CATALOG`, 27 blok) ve komut metni oradan üretilir. Panel (`/admin/studio`) ve editörün "JSON aktar" sekmesi sitenize özel komutu (sayfalarınız, medyanız, formlarınız, SEO ve kontrast sınırlarıyla) üretir ve yapıştırılan JSON'u aynı doğrulayıcıdan geçirir. Katalog dışı bloklar (slider, geri sayım, harita, kullanıcı kartı, galeri, `product_embed`…) AI'a bilinçli olarak kapalıdır; elle eklenmeye devam eder. Bkz. `docs/23-THEME-AND-DESIGN-AUTHORING.md`, `docs/18` ve `docs/05` "AI Tasarım Pro".
 
 ## Ek (2026-11-02): `media_file` bloğu
 
@@ -209,10 +210,10 @@ Bu dokümandaki elle yazılmış blok listesi **referanstır**; AI'ın gerçekte
 ## Ek (2026-11-03): `schema_card` ve `tpl_*` blokları
 
 - `schema_card`: `props = { schema: "software"|"offer"|"qa"|"tech" }`; veri `schemaAttributes.richSchema`'dan gelir. **AI tasarım kataloğunda yoktur.**
-- `tpl_post_title`, `tpl_post_content`, `tpl_featured_image`, `tpl_post_meta`, `tpl_breadcrumb`, `tpl_archive_title`, `tpl_archive_list`, `tpl_site_logo`, `tpl_menu`, `tpl_copyright`: yalnızca şablonlarda anlamlıdır (yuva blokları); sayfa içeriğinde kullanılmaz ve AI kataloğunda yoktur.
+- `tpl_post_title`, `tpl_post_content`, `tpl_featured_image`, `tpl_post_meta`, `tpl_breadcrumb`, `tpl_archive_title`, `tpl_archive_list`, `tpl_site_logo`, `tpl_menu`, `tpl_copyright`, `tpl_cart_link`, `tpl_product_buy`: yalnızca şablonlarda anlamlıdır (yuva blokları); sayfa içeriğinde kullanılmaz ve AI kataloğunda yoktur.
 
 ## Ek (2026-11-03): hareket ve süs blokları
-`single_icon` (`icon`: yerleşik 24 simgeden biri, `size`, `color`, `background`, `href`, `label`, `align`), `countup` (`value`, `prefix`, `suffix`, `label`, `duration` sn), `marquee` (`items: string[]`, `speed` sn, `direction`), `shape_divider` (`shape`: wave|tilt|curve|triangle|slant, `color`, `height`, `flip`). `button_element` artık `icon` + `iconSide`; `columns` artık `stackAt` (`mobile`|`tablet`) ve `mobileReverse` alır. Sözleşme `AI_BLOCK_CATALOG` içindedir.
+`single_icon` (`icon`: yerleşik 121 SVG simgeden biri, `size`, `color`, `background`, `href`, `label`, `align`), `countup` (`value`, `prefix`, `suffix`, `label`, `duration` sn), `marquee` (`items: string[]`, `speed` sn, `direction`), `shape_divider` (`shape`: wave|tilt|curve|triangle|slant, `color`, `height`, `flip`). `button_element` artık `icon` + `iconSide`; `columns` artık `stackAt` (`mobile`|`tablet`) ve `mobileReverse` alır. Sözleşme `AI_BLOCK_CATALOG` içindedir.
 
 ## Ek (2026-11-03): `dynamic_list` ziyaretçi denetimleri
 Yeni boolean özellikler (varsayılan `false`): `showSearch`, `showSort`, `showFilters`, `paginate`. Açıkken blok `id="nx-dl-{anahtar}"` taşır; parametreler `{anahtar}_q`, `_cat`, `_sort` (`newest|oldest|title`), `_page`. Anahtar = `q` + blok kimliğinin son 6 güvenli karakteri (`dynamicParamKey`). Sonuç her istekte güncel veriden üretilir, Markdown önbelleğine girmez.

@@ -22,15 +22,15 @@ Bu modül **açık kaynaklı çekirdeğin (Free Core)** bir parçasıdır ve her
 
 ---
 
-## 2. Çok Boyutlu GEO & Hreflang Motoru
+## 2. Çok Dilli URL & Hreflang Motoru
 
 1. **Esnek URL Yönlendirme:**
-   - Tek dilli sitelerde kök dizin (`/hakkimizda`), çok dilli/bölgeli sitelerde ise `/{locale}-{region}/{slug}` (`/tr-tr/hakkimizda`, `/en-us/about`, `/de-de/uber-uns`).
+   - Sitede **tek dil** varken herkese açık adresler ön eksizdir (`/hakkimizda`, ana sayfa `/`). İkinci dil eklendiğinde tüm adresler `/{locale}/{slug}` (`/tr/hakkimizda`, `/en/about`) olur (bölge eki yoktur; ayrıntı `docs/14-MULTILINGUAL-PLAN.md`).
 2. **Otomatik Karşılıklı `Hreflang` Matrisi:**
-   - `contentTranslations` tablosundaki aynı `contentId`'ye bağlı tüm dil/bölge varyantları `<head>` içinde karşılıklı (`self-referencing` + `x-default`) olarak basılır.
-3. **Bot-Dostu Edge Konum Algılama:**
+   - `contentTranslations` tablosundaki aynı `contentId`'ye bağlı tüm yayındaki dil varyantları `<head>` içinde karşılıklı (`self-referencing` + `x-default`) olarak basılır.
+3. **Bot-Dostu Dil Politikası:**
    - Arama motoru botları (Googlebot, Bingbot, GPTBot) **asla** IP adresine göre zorla yönlendirilmez.
-   - Yalnızca gerçek insan ziyaretçilere kendi dil/ülke versiyonuna geçiş öneren hafif bir üst bar gösterilir.
+   - Ziyaretçi dil seçimi CDN HTML önbelleğini bozmamak için JS'siz dil değiştiriciyle yapılır (kişiselleştirilmiş dil öneri üst barı bilerek eklenmemiştir).
 
 ---
 
@@ -50,7 +50,7 @@ Bu modül **açık kaynaklı çekirdeğin (Free Core)** bir parçasıdır ve her
 ## 4. Çekirdek Otomatik SEO Motoru (`packages/seo-core/src/engine.ts`)
 
 SEO bir eklenti veya harici araç değil, her `saveContent` / `patchContent` kaydında ve her RSC sayfa render'ında otomatik çalışan çekirdek motordur:
-1. **`analyzeSeo(input)`:** Başlık, meta açıklama, URL, Answer-First TL;DR, odak anahtar kelime yoğunluğu/dağılımı, kelime sayısı, H2/H3 hiyerarşisi, görsel `alt` metinleri ve Schema.org uyumluluğunu 17 ağırlıklı kriter üzerinden denetler (`0-100` skor + `A/B/C/D` harf notu).
+1. **`analyzeSeo(input)`:** Başlık, meta açıklama, URL, Answer-First TL;DR, odak anahtar kelime yoğunluğu/dağılımı, kelime sayısı, H2/H3 hiyerarşisi, görsel `alt` metinleri ve Schema.org uyumluluğunu **21'e kadar** ağırlıklı denetimle değerlendirir (`0-100` skor + `A/B/C/D` harf notu).
 2. **`resolveSeoMeta(input)`:** Global şablon kurallarına (`%title% | %site%`) ve otomatik açıklama geri dönüşlerine (`TL;DR` -> `ilk paragraf`) göre Next.js `Metadata` nesnesini üretir.
 3. **Otomatik 301 Yönlendirme (`slugHistory` & `resolveContentBySlug`):** Bir sayfa veya blog yazısının `slug` adresi değiştirildiğinde eski slug `schemaAttributes.slugHistory` içine kaydedilir; eski adrese gelen istekler `permanentRedirect` ile otomatik olarak yeni adrese yönlendirilir.
 
@@ -98,10 +98,10 @@ Hangi botların neyi ne sıklıkla çektiğini ölçer; GEO'nun temel geri bildi
 - **Algılama:** `@nexpress/core` `ai-bots.ts` (`KNOWN_BOTS`: GPTBot, ClaudeBot, PerplexityBot, Googlebot, Bingbot, Applebot, YandexBot, Meta-ExternalAgent, Amazonbot, CCBot, Bytespider; kategori: AI eğitim / AI arama / arama motoru). Tek düzenli ifadeyle ön süzgeç; insan trafiğine ek maliyet bu kadardır.
 - **Kayıt noktaları (`apps/cms/src/lib/bot-log.ts`, `trackBotVisit(kind)`):** ana sayfa, içerik sayfası, `?format=md` (markdown), `llms.txt` / `llms-full.txt`, `ai-sitemap.json`, sitemap indeksi ve parçaları, `robots.txt`, `/api/mcp`. Kayıt `after()` ile yanıttan sonra yapılır; yanıt süresini etkilemez.
 - **Dile göre keşif (2026-10-31):** `/{locale}/llms.txt`, `/{locale}/llms-full.txt`, `/{locale}/ai-sitemap.json`; kök adresler varsayılan/`Accept-Language` diline düşer. `ai-sitemap.json` içindeki `localeEndpoints` her dilin üç adresini verir; etkin olmayan dil varsayılana düşer (404 değil).
-- **Doğrulama (`lib/bot-verify.ts`):** yalnızca ters DNS sunan sağlayıcılar (Google, Bing, Apple, Yandex) için ileri-doğrulamalı ters DNS (IP → ad → aynı IP). Sonuç `verified`. OpenAI, Anthropic, Perplexity vb. ters DNS sunmaz; onların istekleri dürüstçe `claimed` (yalnızca User-Agent iddiası) kalır ve panelde "UA iddiası" diye görünür. Sahte `Googlebot` UA'sı `claimed` olarak sayılır. IP başına 24 saat önbellek.
+- **Doğrulama (`lib/bot-verify.ts`):** ters DNS sunan sağlayıcılar (Google, Bing, Apple, Yandex) için ileri-doğrulamalı ters DNS (IP → ad → aynı IP) ve **OpenAI (`gptbot`) ile Perplexity (`perplexitybot`)** için yayımlanan IP aralıkları (`ipRangeUrls`) doğrulanır (`verified`). IP aralığı veya ters DNS yayımlamayan sağlayıcılar (Anthropic, Meta, Amazon vb.) dürüstçe `claimed` (yalnızca User-Agent iddiası) kalır ve panelde "UA iddiası" diye görünür. Sahte `Googlebot` UA'sı `claimed` olarak sayılır. 24 saat önbellek.
 - **Veri (`bot_daily_stats`, `siteId` kapsamlı):** gün (UTC) × bot × tür × güven düzeyi başına sayaç ve son görülme. **IP ve User-Agent saklanmaz.** Artış atomik `ON CONFLICT DO UPDATE hits = hits + 1` ile yapılır.
 - **Sınırlar:** CDN önbelleğinden dönen HTML uygulamaya ulaşmaz ve sayılmaz (`PUBLIC_CACHE_SECONDS` > 0 iken sayfa istekleri eksik sayılır; llms/sitemap/mcp yanıtları da `s-maxage` ile CDN'e takılabilir). Ters proxy arkasında `X-Forwarded-For` doğru iletilmelidir.
-- Pro `agentic-seo` yalnızca bu veriyi kartta gösterir (`dashboard.overview.cards`).
+- Pro `agentic-seo` yalnızca bu veriyi kartta gösterir (`seo.reports.visibility` yuvası, `/admin/seo/reports?group=visibility`).
 
 ---
 
@@ -129,9 +129,9 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **Gömme sağlayıcıları (`providers.ts`):** vektörler **model kimliğiyle** (`openai:text-embedding-3-small:1536`, `local:hash-v1:1536`) saklanır ve arama yalnızca aynı modeli kullanır; modeller karışmaz. Boyut şemada 1536'ya sabittir.
   - `local` (varsayılan, anahtarsız): öznitelik karma (sözcük + Türkçe kök + ikili) ile **sözcüksel** benzerlik; eş anlamlıları yakalamaz. Arayüzde "Sözcüksel (yerel)" diye etiketlenir.
   - `openai`: `OPENAI_API_KEY` varsa otomatik; `OPENAI_BASE_URL` ile OpenAI uyumlu başka sunucu, `EMBEDDING_MODEL` ile model. 64'lük gruplar, 429/5xx'te üstel geri çekilme, yanlış boyut reddi. `EMBEDDING_PROVIDER=local|openai` ile zorlanır.
-- **Depolama (`content_chunks`, `ChunkRepository`):** PostgreSQL'de `vector(1536)` + **HNSW** (`vector_cosine_ops`), arama `<=>`; SQLite'ta vektör `f32:<base64>` olarak saklanır, arama süreç içi iç çarpımdır (yaklaşık 20 bin parçaya dek makul; üstünde PostgreSQL önerilir). Yeni sütunlar: `chunk_hash`, `embedding_model`, `word_count` (eski veritabanlarında `db:push` idempotent ekler).
+- **Depolama (`content_chunks`, `ChunkRepository`):** PostgreSQL'de `vector(1536)` + **HNSW** (`vector_cosine_ops`), arama `<=>`; SQLite'ta vektör `f32:<base64>` olarak saklanır, arama süreç içi iç çarpımdır (yaklaşık 20 bin parçaya dek makul; üstünde PostgreSQL önerilir). Sütunlar (`chunk_hash`, `embedding_model`, `word_count`) Drizzle göçleriyle (`pnpm db:migrate`) yönetilir.
 - **Görünürlük:** yalnızca `published`, `noindex` olmayan ve görünürlüğü `public` içeriğin parçaları döner (kural: taslak/gizli içerik asla bir ajana sızmaz).
-- **Dizinleme:** `content:afterPublish` kancası (`registerRagIndexing`) içeriği **yanıttan sonra** (`after()`) dizinler; parça özetleri ve model değişmediyse gömme çağrısı yapılmaz. `/admin/seo` içindeki "Dizini yeniden oluştur" tüm içeriği tarar (değişmeyenler atlanır; model değiştiyse hepsi yeniden gömülür). Başarısızlık yayını bozmaz.
+- **Dizinleme:** `content:afterPublish` kancası (`registerRagIndexing`) içeriği **yanıttan sonra** (`after()`) dizinler; parça özetleri ve model değişmediyse gömme çağrısı yapılmaz. `/admin/seo/schemas#arama-dizini` içindeki "Dizini yeniden oluştur" tüm içeriği tarar (değişmeyenler atlanır; model değiştiyse hepsi yeniden gömülür). Başarısızlık yayını bozmaz.
 - **Tüketiciler:** MCP `nexpress_search_corpus` (parça düzeyinde alıntı + başlık yolu + skor; dizin yoksa veya aktif model için boşsa **anahtar kelime aramasına düşer** ve bunu `retrieval` alanında bildirir); editör yan çekmecesindeki Co-Pilot (kayıtlı vektörlerden benzer içerik / kanibalizasyon / iç bağlantı önerisi; eşik modele bağlıdır: anlamsal 0,82, sözcüksel 0,50).
 - **Sınırlar:** yerel model anlamsal değildir (sıralama kaba olabilir); ayrıca sorgu gömmesi için dış sağlayıcıda her aramada bir çağrı yapılır (200 girdilik bellek önbelleği vardır); parça güncellemesi içerik başına tam yenilemedir (kısmi yeniden kullanım yok).
 
@@ -144,8 +144,8 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
 - **JSON-LD doğrulayıcı:** `validateSchemaGraph` (`seo-core/src/schema-validate.ts`, testli) Article/BlogPosting, FAQPage, HowTo, Product(+Offer), Review, BreadcrumbList, VideoObject, Organization, WebSite için gerekli (hata) ve önerilen (uyarı) alanları denetler. Editörün SEO sekmesinde otomatik düğümlerin altında canlı gösterilir. Tam Schema.org doğrulayıcısı değildir.
 - **Hibrit arama:** `searchCorpus` (`packages/rag`) vektör sonuçlarını BM25 (`packages/core/src/search.ts`, Türkçe aksan katlamalı, başlık ×3) ile **RRF** (k=60) kullanarak birleştirir; `hybrid:false` yalnızca vektör. MCP `nexpress_search_corpus` bunu kullanır (`ranking: "hybrid"`). Anahtar kelime tarafı her sorguda yayındaki içerikleri okur (önbellek yok: yayından kaldırma/noindex anında yansımalı).
 - **Site içi arama:** `/{locale}/ara?q=` — sunucuda BM25, düz GET formu, istemci JS'i yok, `noindex`. Ücretli gömme çağrısı yapmaz. `OPENAI_API_KEY` varsa bulunan sayfalardan kısa bir yanıt kurulur (4 sn, kaynak numarası doğrulanır, site başına saatte 20 çağrı, olmazsa özet). Anahtar yoksa yalnızca özet birleştirilir. Menüye eklemek için bağlantı `/{locale}/ara` olarak verilir.
-- **İç bağlantı denetimi:** `auditLinks` (`core/src/link-audit.ts`, testli) yayındaki içeriklerin Markdown'ındaki iç bağlantıları çözer; kırık ve `slugHistory` ile taşınmış (301) olanları `/admin/seo` kartında listeler. Benzersiz dış adresler (en çok 40) sonuçta durur ama sayfa açılışında yoklanmaz.
-- **Dış bağlantı denetimi:** yönetici `/admin/seo` içinde "Dış bağlantıları denetle" der. `probeExternalLinks` en çok 30 adresi, dört eşzamanlı, 4 saniyelik zaman aşımıyla yoklar. Yalnızca 80/443 kapılı http(s); kimlik bilgili adres, localhost, `.local`, meta veri adı ve genel olmayan IP (DNS sonucu dahil) istek almaz. Her yönlendirme aynı kapıdan geçer. 401/403 erişim engeli sayılır, kırık sayılmaz.
+- **İç bağlantı denetimi:** `auditLinks` (`core/src/link-audit.ts`, testli) yayındaki içeriklerin Markdown'ındaki iç bağlantıları çözer; kırık ve `slugHistory` ile taşınmış (301) olanları `/admin/seo/audit` kartında listeler. Benzersiz dış adresler (en çok 40) sonuçta durur ama sayfa açılışında yoklanmaz.
+- **Dış bağlantı denetimi:** yönetici `/admin/seo/audit` içinde "Dış bağlantıları denetle" der. `probeExternalLinks` en çok 30 adresi, dört eşzamanlı, 4 saniyelik zaman aşımıyla yoklar. Yalnızca 80/443 kapılı http(s); kimlik bilgili adres, localhost, `.local`, meta veri adı ve genel olmayan IP (DNS sonucu dahil) istek almaz. Her yönlendirme aynı kapıdan geçer. 401/403 erişim engeli sayılır, kırık sayılmaz.
 - **`Link` başlığı:** içerik sayfaları `Link: <…?format=md>; rel="alternate"; type="text/markdown"` ile Markdown karşılığını bildirir (middleware).
 
 
@@ -167,7 +167,7 @@ Yapay zeka ajanlarının (MCP) ve editör araçlarının içeriği **anlam/sözc
   - **Search Console & Arama Performansı Paneli (2026-11-03):**
   - `@nexpress/seo-core` içine `search-console.ts` analiz motoru eklendi: `parseSearchConsoleCsv`, `parseSearchConsoleJson` ve `analyzeSearchPerformance`.
   - Google Search Console (`Top queries.csv`), Bing Webmaster Tools ve Yandex Webmaster sorgu/tıklama/gösterim/TO (CTR)/ortalama pozisyon verilerini çözümler.
-  - `/admin/seo` sayfasına `SearchConsolePanel` entegre edildi: 4'lü metrik özeti (Toplam Tık, Gösterim, Ortalama TO, Ortalama Sıralama), ilk sayfaya yükselme fırsatları (Striking Distance: Pozisyon 4-15) ve düşük tıklama oranına sahip başlık optimizasyon fırsatları (Pozisyon 1-5, CTR < %3).
+  - `/admin/seo/integrations` sayfasına Webmaster & Search Console raporlama merkezi entegre edildi: 4'lü metrik özeti (Toplam Tık, Gösterim, Ortalama TO, Ortalama Sıralama), ilk sayfaya yükselme fırsatları (Striking Distance: Pozisyon 4-15) ve düşük tıklama oranına sahip başlık optimizasyon fırsatları (Pozisyon 1-5, CTR < %3).
   - `@nexpress/seo-basic` manifestosundaki `search-console` modülü `status: "ready"` durumuna getirildi.
 
 ## 11b. Kuruluş şeması ve yerel işletme (2026-11-16)
@@ -231,7 +231,7 @@ Google belgelerine göre (görsel lisans meta verisi, SoftwareApplication, Artic
 5. **Elle (arayüz):** Search Console → Kaldırmalar (önek bazlı) ve Bing → URL engelle; spam bağlantı alan adları çoksa Google reddetme (disavow) listesi.
 6. **İkinci dalga (GSC "bağlantı verilen sayfalar" dışa aktarımı, 39.866 bağlantı):** yeni kalıplar `/category/<rakam>/…`, `/contents/<kelime>/`, `/info/…html`, `/information/…html`, `/hg/`, `/jukyuban/` ve `/?kelime/<rakam>` sorgularıdır (siteden hiç yayınlanmamış, yabancı bir sitenin yol yapısı). Kurallar: `goneRules` + nginx `location ~*` (eğik çizgi yönlendirmesi 308'den önce 410 versin diye nginx'te de var) ve `goneParams` için **joker** desteği: `*` + `/` + `*` biçimi, adında eğik çizgi geçen her sorgu parametresini yakalar (`/?kelime/41271068011`); nginx tarafında `$args` düzenli ifadesi. Meşru parametreler (`sayfa`, `utm_*`, `q`…) etkilenmez. Dışa aktarım yalnızca hedef sayfaları verdiği için bağlantı veren alan adları (reddetme listesi) ayrı "bağlantı veren siteler" dışa aktarımından çıkarılır.
 
-## 10. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
+## 12. Webmaster & Analitik API Entegrasyonları (GSC, GA4, Bing, Yandex)
 
 `agentic-content-ops/packages/question-intel` motorundan NexPress CMS `@nexpress/seo-core` paketine uyarlanan tam teşekküllü arama motoru ve analitik API istemcileri:
 
@@ -274,7 +274,7 @@ DNS kaydını panel yazmaz; kök ad ve `www` üzerinde TXT veya CNAME sorgular. 
 
 ---
 
-## 12. Topluluk Tartışması, Çok Seviyeli Yorum Ağacı ve 5 Yıldızlı İnceleme Motoru (0-KB RSC)
+## 13. Topluluk Tartışması, Çok Seviyeli Yorum Ağacı ve 5 Yıldızlı İnceleme Motoru (0-KB RSC)
 
 Ziyaretçi sayfalarının altındaki tartışma ve değerlendirme bölümü (`PostDiscussion` ve `PostReviewsSection`), **0 KB İstemci JS** kuralını bozmadan zengin etkileşim ve Schema.org `AggregateRating` / `Review` sinyali üretir:
 
@@ -295,6 +295,6 @@ Ziyaretçi sayfalarının altındaki tartışma ve değerlendirme bölümü (`Po
    - Durum sekmeleri (`Tümü`, `Beklemede`, `Onaylı`, `Spam`), içerik/etiket/metin arama süzgeci ve toplu işlem çubuğu (`Seçilenleri Onayla`, `Beklemeye Al`, `Spam İşaretle`, `Kalıcı Sil`).
    - Kart üzerinde tek tıkla **Sabitle (`_pinned`)**, **Ekip Rozeti (`_official`)**, **Doğrulanmış (`isVerified`)**, **Hemen Onayla**, **Sil** ve doğrudan kartın altında açılan **Resmi Ekip Yanıtı** çekmecesi.
 
-## 11i. Soru-cevap sayfası şeması (QAPage) (2026-11-21)
+## 14. Soru-cevap sayfası şeması (QAPage) (2026-11-21)
 
 `schemaType = QAPage` iken `buildPageSchemaGraph` tek bir QAPage varlığı üretir: `mainEntity` = `Question` (gerçek soru `richSchema.qa.question`, boşsa başlık), `acceptedAnswer.text` = kısa cevap + ayrıntı (düz metin), `upvoteCount` (`richSchema.qa.upvotes` ya da `_qa.upvotes`), `author` (Person), tarihler; künye: `about` (Thing + Service/`serviceType`/`areaServed`), `audience`, `spatialCoverage`. Aynı sayfada FAQPage ya da ikinci `Question` düğümü yazılmaz (tek soru-cevap varlığı); Pro `faq-qa` modülü aynı `@id` varsa QAPage'i ikinci kez eklemez. Cevap yoksa `mainEntity` uydurulmaz. Tek kaynak alanlardır (WordPress "AI Prompt Detayları" kutusu gibi): Soru, Cevap (kabul edilen cevap), Açıklama, Hakkında, Oy sayısı (manuel), Hizmet bölgesi, Hizmet tipi, Hedef kitle, Referans URL (`significantLink`). Editör: SEO › Gelişmiş şema (ya da sayfadaki `schema_card` qa bloğu) alanları doldurur; kart sayfada, şema JSON-LD'de, derleyici (`compileBlocksToMarkdown` → `qaToMarkdown`) `?format=md`/llms çıktısında aynı alanları kullanır; gövdeye ayrıca düz metin yazılmaz.
