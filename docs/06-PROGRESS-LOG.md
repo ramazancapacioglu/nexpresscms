@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-23] — akinsoftizmir.com.tr Faz 5 İçerik, Kampanya, Tasarım & RAG Zenginleştirme
+- **10 Ürün Sayfası + 7 Uzun Blog Yazısı:** `/akinsoft-installer-indir` (`HowTo` + sistem gereksinimleri tablosu + SSS), `/fiyatmatik`, `/e-ofis`, `/stok-depo-yonetimi`, `/wolvox-uretim-yontemi`, `/qr-menu`, `/hotel-smart`, `/prokuafor`, `/octoplus`, `/wolvox-webconnect` ile 7 uzun teknik/bilgilendirici yazıya `tldr_box`, `bento_features`, `howto_steps`, `faq_accordion` (`FAQPage` / `HowTo` JSON-LD) ve dönüşüm `cta_banner` blokları eklendi.
+- **14 Yayındaki Kampanya:** 3 yazım hatası (`Wolwox` → `Wolvox`, `%35 İndirim`, `kapsamındaki`) giderildi; tümüne 3'lü avantaj `bento_features` + 3'er soruluk `faq_accordion` eklendi.
+- **Ana Sayfa & Gerçek Medya Logosu:** `ana-sayfa` hero altına `stats_strip` güven şeridi (`BA35022`, `30+ Yıl`, `150.000+`, `Aynı Gün`) eklendi; `/demo/yazilim-bayi/logo*.webp` yolları gerçek medya varlıklarıyla (`/media/med_AHHCYZDc6zEt`, `/media/med_z93Atf9oZ1WQ`) değiştirildi.
+- **RAG Yeniden Dizinleme:** `openai:text-embedding-3-small:1536` (`semantic: true`) ile yayındaki **132/132 içerik** yeniden dizinlendi (**481 → 534 parça**, 0 hata); `docs/akinsoftizmir-com-tr-aktarim/SEO-GEO-TASARIM-DENETIM-RAPORU.md` güncellendi.
+
 ### [2026-11-21] — Gelişmiş Şema & Entity Graph Stüdyosu ve "Bot & AI Gözüyle Gör" Canlı Doğrulayıcı
 - **Çekirdek Kural Motoru (`packages/core/src/schema-rules.ts`, `test/schema-rules.test.ts`):** 19 Schema.org türü (`SCHEMA_TYPE_CATALOG`), dahil/hariç hedefleme (`all`, `page`, `post`, `category`, `tag`, `content`, `custom_type` + `excludeCategories` / `excludeContentIds`), öncelik sırası, iki mod (`primary` ve `@graph`'a `@id` ile bağlanan `additional`), 11 dinamik değişken (`%title%`, `%tldr%`, `%author%`, `%site%`, `%category%`, `%keywords%`…), `SpeakableSpecification` (AI alıntı işaretlemesi) ve Wikipedia/Wikidata `sameAs` destekli Entity Graph (`about` / `mentions`). Eski 6 alanlı kayıtlarla %100 geriye dönük uyumlu (veritabanı göçü yok).
 - **Görsel Stüdyo & Canlı Doğrulayıcı (`/admin/seo/schemas`, `schema-studio/*`, `preview-action.ts`):** Hazır şema şablonları, canlı etki sayacı (*"X içeriğe uygulanır"*), aranabilir çoklu kategori/etiket/içerik seçici ve **"Bot & AI Gözüyle Gör"** 3 sekmeli canlı önizleyici (`JSON-LD @graph` + `validateSchemaGraph`, `AI Markdown`, `RAG Parçaları` — `ChunkRepository.listForContent`).
