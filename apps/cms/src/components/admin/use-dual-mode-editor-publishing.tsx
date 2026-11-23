@@ -64,7 +64,11 @@ export function useDualModeEditorPublishing(p: ReturnType<typeof useDualModeEdit
     initialDoc?.metaDescription && initialDoc.metaDescription !== initialDoc.tldr ? initialDoc.metaDescription : ""
   );
   // Pro eklentinin zengin şema türleri (QAPage, Offer, TechArticle, SoftwareApplication)
-  const [richSchema, setRichSchema] = useState<RichSchemaFields>(((initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as RichSchemaFields | undefined) ?? {});
+  const [richSchema, setRichSchema] = useState<RichSchemaFields>(() => {
+    const raw = (initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, unknown> | undefined;
+    if (!raw || typeof raw !== "object") return {};
+    return ((raw.rich && typeof raw.rich === "object" ? raw.rich : raw) as RichSchemaFields) ?? {};
+  });
   // Görünüm şablonu ataması ("" = türün varsayılanı, "none" = yerleşik görünüm, aksi hâlde şablon kimliği)
   const [templateId, setTemplateId] = useState<string>(String(((initialDoc?.schemaAttributes as Record<string, unknown> | undefined)?._template as string | undefined) ?? ""));
   const [canonicalUrl, setCanonicalUrl] = useState<string>(

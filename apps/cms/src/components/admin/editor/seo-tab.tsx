@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SCHEMA_TYPE_CATALOG } from "@nexpress/core";
 import { AiSuggestPanel } from "./ai-suggest-panel";
 import { LinkSuggestPanel } from "./link-suggest-panel";
 import { RichSchemaPanel } from "./rich-schema-panel";
@@ -130,15 +131,13 @@ export function SeoTab() {
                         <select aria-label="Birincil Schema.org"
                           value={schemaType}
                           onChange={(e) => setSchemaType(e.target.value)}
-                          className="h-8 w-full rounded border border-border bg-background px-2"
+                          className="h-8 w-full rounded border border-border bg-background px-2 text-[11px]"
                         >
-                          <option value="WebPage">WebPage</option>
-                          <option value="BlogPosting">BlogPosting</option>
-                          <option value="TechArticle">TechArticle</option>
-                          <option value="FAQPage">FAQPage</option>
-                          <option value="QAPage">QAPage</option>
-                          <option value="SoftwareApplication">SoftwareApplication</option>
-                          <option value="AboutPage">AboutPage</option>
+                          <option value="WebPage">WebPage (Genel Sayfa)</option>
+                          {SCHEMA_TYPE_CATALOG.map((spec) => (
+                            <option key={spec.id} value={spec.id}>{spec.label}</option>
+                          ))}
+                          <option value="Offer">Offer (Kampanya / Teklif)</option>
                         </select>
                       </div>
                       <div>
@@ -158,9 +157,9 @@ export function SeoTab() {
                       </div>
                     </div>
           </div>
-          <RichSchemaPanel value={richSchema} onChange={setRichSchema} />
+          <RichSchemaPanel value={richSchema} onChange={setRichSchema} schemaType={schemaType} />
                   {/* Otomatik Algılanan Zengin Schema Düğümleri */}
-                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-2.5 space-y-1">
+                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-2.5 space-y-1.5">
                     <div className="text-[10px] font-bold uppercase text-blue-600">
                       Otomatik @graph Schema Düğümleri ({autoSchemaNodes.length + 2})
                     </div>
@@ -181,6 +180,16 @@ export function SeoTab() {
                       ))}
                     </div>
                     <SchemaIssues nodes={autoSchemaNodes} />
+                    {Object.keys(richSchema).length > 0 && (
+                      <details className="pt-1">
+                        <summary className="cursor-pointer text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+                          Bu sayfadan şemaya aktarılan veriler (JSON)
+                        </summary>
+                        <pre className="mt-1 max-h-44 overflow-auto rounded bg-[#0F1117] p-2 font-mono text-[10px] text-[#A6ACCD]">
+                          {JSON.stringify({ schemaType, ...richSchema }, null, 2)}
+                        </pre>
+                      </details>
+                    )}
                   </div>
 
         </div>

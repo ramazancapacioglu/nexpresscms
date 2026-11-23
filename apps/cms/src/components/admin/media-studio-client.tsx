@@ -3,13 +3,13 @@
 import React, { useMemo, useState, useTransition } from "react";
 import type { MediaAssetDto, MediaFolderDto } from "@nexpress/database";
 import { buildFolderTree, folderSubtreeIds, type FolderNode } from "@nexpress/core";
-import { createMediaFolderAction, deleteMediaFolderAction, moveMediaAction, updateMediaFolderAction } from "@/app/admin/media/actions";
-import { Check, FolderPlus, Image as ImageIcon, Pencil, Trash2, X } from "lucide-react";
+import { bulkDeleteUnusedMediaAction, createMediaFolderAction, deleteMediaFolderAction, moveMediaAction, updateMediaFolderAction } from "@/app/admin/media/actions";
+import { Check, FolderPlus, Image as ImageIcon, ImageOff, Pencil, Trash2, X } from "lucide-react";
 import { MediaBulkUpload } from "./media-bulk-upload";
 import { MediaDelete } from "./media-delete";
 import { MediaGrid } from "./media-grid";
 import { MediaDetailForm } from "./media/media-detail-form";
-import { DEFAULT_QUERY, queryMedia, type MediaQuery } from "./media/media-filter";
+import { DEFAULT_QUERY, formatBytes, queryMedia, type MediaQuery } from "./media/media-filter";
 import { MediaToolbar } from "./media/media-toolbar";
 
 export type FolderFilter = "all" | "none" | "unused" | string;
@@ -66,7 +66,34 @@ export function MediaStudioClient({ initialMedia, initialFolders, initialUnusedI
 
   const currentFolder = scope ? folders.find((f) => f.id === filter) : undefined;
   const missingAlt = assets.filter((a) => a.kind === "image" && !a.altText.trim()).length;
-  const unusedCount = assets.filter((a) => unused.has(a.id)).length;
+  const unusedAssets = useMemo(() => assets.filter((a) => unused.has(a.id)), [assets, unused]);
+  const unusedCount = unusedAssets.length;
+  const unusedTotalBytes = useMemo(() => unusedAssets.reduce((sum, a) => sum + (a.sizeBytes || 0), 0), [unusedAssets]);
+
+  const deleteUnusedBatch = (ids: string[]) => {
+    if (ids.length === 0) return;
+    if (!window.confirm(`${ids.length} kullanılmayan medya dosyası ve türevleri kalıcı olarak silinsin mi?`)) return;
+    startTransition(async () => {
+      const res = await bulkDeleteUnusedMediaAction({ ids });
+      if (!res.ok) return setBanner(res.error);
+      const removed = new Set(res.deletedIds);
+      setAssets((prev) => prev.filter((a) => !removed.has(a.id)));
+      setUnused((prev) => {
+        const next = new Set(prev);
+        for (const id of removed) next.delete(id);
+        return next;
+      });
+      setChecked((prev) => {
+        const next = new Set(prev);
+        for (const id of removed) next.delete(id);
+        return next;
+      });
+      if (selectedId && removed.has(selectedId)) setSelectedId("");
+      setBanner(
+        `${res.deletedIds.length} kullanılmayan dosya kalıcı olarak silindi.${res.skippedInUse ? ` (${res.skippedInUse} dosya kullanımda olduğu için korundu.)` : ""}`
+      );
+    });
+  };
 
   const toggle = (id: string, range: boolean) => {
     setChecked((cur) => {
@@ -162,11 +189,25 @@ export function MediaStudioClient({ initialMedia, initialFolders, initialUnusedI
         <h1 className="flex items-center gap-2 text-[15px] font-bold tracking-tight">
           <ImageIcon className="h-4 w-4 text-[#1D5ED8] dark:text-[#7AA7FF]" /> Medya Kitaplığı
         </h1>
-        <div className="flex items-center gap-2 font-mono text-[11px]">
-          <span className={`rounded border ${border} bg-white px-2 py-0.5 dark:bg-[#15171C]`}>Toplam: {assets.length}</span>
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
           <button
             type="button"
-            onClick={() => setQuery({ ...DEFAULT_QUERY, problem: "noalt" })}
+            onClick={() => { setFilter("all"); setChecked(new Set()); }}
+            className={`rounded border px-2 py-0.5 ${filter === "all" ? "border-[#266DF0]/50 bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]" : `${border} bg-white dark:bg-[#15171C]`}`}
+          >
+            Toplam: {assets.length}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setFilter(filter === "unused" ? "all" : "unused"); setChecked(new Set()); }}
+            className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 ${filter === "unused" ? "border-rose-500/60 bg-rose-500/15 font-semibold text-rose-700 dark:text-rose-300" : unusedCount ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"}`}
+          >
+            <ImageOff className="h-3 w-3" aria-hidden="true" />
+            Kullanılmayan: {unusedCount}{unusedCount > 0 ? ` (${formatBytes(unusedTotalBytes)})` : ""}
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuery({ ...DEFAULT_QUERY, problem: query.problem === "noalt" ? "all" : "noalt" })}
             className={`rounded border px-2 py-0.5 ${missingAlt ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"}`}
           >
             Alt metni eksik: {missingAlt}
@@ -258,6 +299,37 @@ export function MediaStudioClient({ initialMedia, initialFolders, initialUnusedI
       {/* Arama + Klasör / Tür / Sorun / Sırala filtreleri */}
       <MediaToolbar query={query} onQuery={setQuery} view={view} onView={setView} folderSelect={folderSelect} />
 
+      {filter === "unused" && (
+        <div role="region" aria-label="Kullanılmayan medya raporu" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-500/35 bg-rose-500/5 px-3 py-2 text-[12px]">
+          <div className="flex flex-wrap items-center gap-2">
+            <ImageOff className="h-4 w-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+            <span>
+              <strong>{unusedCount} kullanılmayan dosya</strong> ({formatBytes(unusedTotalBytes)}) — hiçbir içerik, taksonomi, menü veya ayarda kullanılmıyor.
+            </span>
+          </div>
+          {unusedCount > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setChecked(new Set(visible.map((a) => a.id)))}
+                className={`h-7 rounded border ${border} bg-white px-2.5 text-[11px] font-medium hover:bg-[#F4F5F7] dark:bg-[#15171C] dark:hover:bg-[#1C1E24]`}
+              >
+                Görünenleri Seç ({visible.length})
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => deleteUnusedBatch(unusedAssets.map((a) => a.id))}
+                className="inline-flex h-7 items-center gap-1 rounded bg-red-600 px-2.5 text-[11px] font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Tüm Kullanılmayanları Sil ({unusedCount})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {checked.size > 0 && (
         <div role="region" aria-label="Toplu işlem" className="flex flex-wrap items-center gap-2 rounded-lg border border-[#266DF0]/40 bg-[#266DF0]/5 px-2.5 py-1.5 text-[12px]">
           <strong>{checked.size} seçili</strong>
@@ -267,6 +339,17 @@ export function MediaStudioClient({ initialMedia, initialFolders, initialUnusedI
             {folders.map((f) => <option key={f.id} value={f.id}>{"— ".repeat(folderPath(folders, f.id).length - 1)}{f.name}</option>)}
           </select>
           <button type="button" disabled={!moveTarget || isPending} onClick={() => moveChecked(moveTarget === "__root" ? null : moveTarget)} className="h-7 rounded bg-[#266DF0] px-2.5 font-medium text-white disabled:opacity-50">Taşı</button>
+          {filter === "unused" && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => deleteUnusedBatch([...checked])}
+              className="inline-flex h-7 items-center gap-1 rounded bg-red-600 px-2.5 font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              Seçilenleri Sil ({checked.size})
+            </button>
+          )}
           <button type="button" onClick={() => setChecked(new Set(visible.map((a) => a.id)))} className="text-[#1D5ED8] underline dark:text-[#7AA7FF]">Tümünü seç</button>
           <button type="button" onClick={() => setChecked(new Set())} className="text-[#5C5F66] underline">Temizle</button>
         </div>

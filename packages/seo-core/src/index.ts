@@ -303,6 +303,9 @@ export async function buildPageSchemaGraph(
         ...(sw.requirements ? { memoryRequirements: sw.requirements } : {}),
         ...(sw.ratingValue ? { aggregateRating: { "@type": "AggregateRating", ratingValue: sw.ratingValue, reviewCount: sw.ratingCount || 1, bestRating: 5, worstRating: 1 } } : {}),
         ...(sw.price ? { offers: { "@type": "Offer", price: String(sw.price).replace(",", "."), priceCurrency: sw.currency || "TRY", url: input.pageUrl, availability: "https://schema.org/InStock", seller: { "@id": orgId } } } : {}),
+        ...(typeof sw.features === "string" && sw.features.trim()
+          ? { featureList: sw.features.split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean).slice(0, 20) }
+          : {}),
       };
       // Sayfanın ana varlığı zaten SoftwareApplication ise ikinci bir düğüm eklenmez: alanlar ana varlığa işlenir (yinelenen varlık yok)
       if (c.schemaType === "SoftwareApplication") {
@@ -310,6 +313,72 @@ export async function buildPageSchemaGraph(
         Object.assign(entity, fields);
       } else {
         baseNodes.push(softwareNode);
+      }
+    }
+    if (rich.service && typeof rich.service === "object") {
+      const sv = rich.service;
+      const serviceNode: SchemaGraphNode = {
+        "@type": "Service",
+        "@id": `${input.pageUrl}#service`,
+        name: c.title,
+        provider: { "@id": orgId },
+        ...(sv.serviceType ? { serviceType: String(sv.serviceType).trim() } : {}),
+        ...(sv.areaServed ? { areaServed: String(sv.areaServed).trim() } : {}),
+        ...(sv.audience ? { audience: { "@type": "Audience", audienceType: String(sv.audience).trim() } } : {}),
+        ...(sv.priceRange ? { priceRange: String(sv.priceRange).trim() } : {}),
+      };
+      if (c.schemaType === "Service") {
+        const { "@id": _id, "@type": _type, name: _name, ...fields } = serviceNode;
+        Object.assign(entity, fields);
+      } else {
+        baseNodes.push(serviceNode);
+      }
+    }
+    if (rich.product && typeof rich.product === "object") {
+      const pr = rich.product;
+      const prodNode: SchemaGraphNode = {
+        "@type": "Product",
+        "@id": `${input.pageUrl}#product`,
+        name: c.title,
+        ...(pr.brand ? { brand: { "@type": "Brand", name: String(pr.brand).trim() } } : {}),
+        ...(pr.sku ? { sku: String(pr.sku).trim() } : {}),
+        ...(pr.gtin ? { gtin: String(pr.gtin).trim() } : {}),
+        ...(pr.price
+          ? {
+              offers: {
+                "@type": "Offer",
+                price: String(pr.price).replace(",", "."),
+                priceCurrency: pr.currency || "TRY",
+                availability: `https://schema.org/${pr.availability || "InStock"}`,
+                url: input.pageUrl,
+                seller: { "@id": orgId },
+              },
+            }
+          : {}),
+      };
+      if (c.schemaType === "Product") {
+        const { "@id": _id, "@type": _type, name: _name, ...fields } = prodNode;
+        Object.assign(entity, fields);
+      } else {
+        baseNodes.push(prodNode);
+      }
+    }
+    if (rich.article && typeof rich.article === "object") {
+      if (rich.article.articleSection) entity.articleSection = String(rich.article.articleSection).trim();
+      if (rich.article.keywords) entity.keywords = String(rich.article.keywords).trim();
+    }
+    if (rich.tech && typeof rich.tech === "object") {
+      if (rich.tech.level) entity.proficiencyLevel = String(rich.tech.level).trim();
+      if (rich.tech.dependencies) entity.dependencies = String(rich.tech.dependencies).trim();
+    }
+    if (rich.speakable && !entity.speakable) {
+      entity.speakable = { "@type": "SpeakableSpecification", cssSelector: ["h1", ".nx-tldr", "h2"] };
+    }
+    if (typeof rich.about === "string" && rich.about.trim()) {
+      const names = rich.about.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 8);
+      if (names.length > 0) {
+        const existing = Array.isArray(entity.about) ? (entity.about as SchemaGraphNode[]) : entity.about ? [entity.about as SchemaGraphNode] : [];
+        entity.about = [...existing, ...names.map((n: string) => ({ "@type": "Thing", name: n }))];
       }
     }
     if (rich.offer) {
