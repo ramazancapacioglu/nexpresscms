@@ -149,7 +149,7 @@ export const YB_FOOTER: FooterConfig = {
   },
   showNewsletter: false,
   showLocalBusinessCard: false,
-  copyrightText: `© 2026 ${YB_BRAND} tüm Hakları Saklıdır`,
+  copyrightText: `© 2026 ${YB_BRAND} — Tüm Hakları Saklıdır`,
   bottomLinks: [
     { label: "Gizlilik Politikası", href: "/tr/gizlilik-politikasi" },
     { label: "Akınsoft Ücretsiz İndir", href: "/tr/akinsoft-installer-indir" },
@@ -232,11 +232,14 @@ ${S} .nx-utility-links .bg-white a:hover { background:#eef5f8; color:#0c644e; }
 ${S} .nx-public-header nav a { font-size:14px; font-weight:600; color:#042646; }
 ${S} .nx-public-header nav a:hover { color:#0c644e; }
 ${S} .nx-public-header a[href^="tel:"] { color:#0c644e; font-weight:700; font-size:16px; }
-/* İçerik yazısı: koyu lacivert başlıklar, okunur satır aralığı, tek tip bağlantı rengi (tema paleti dışında renk yok) */
-${S} article h1, ${S} .nx-block:not(.yf-dark):not(.yf-navy) > h2, ${S} .nx-rich h2, ${S} .nx-rich h3 { color:#042646; letter-spacing:-.01em; }
-${S} .nx-rich { line-height:1.75; }
+/* İçerik yazısı: koyu lacivert başlıklar, rahat 74ch okuma ölçüsü, okunur satır aralığı, tek tip bağlantı rengi */
+${S} article h1, ${S} .nx-block:not(.yf-dark):not(.yf-navy) > h2, ${S} .nx-rich h2, ${S} .nx-rich h3 { color:#042646; letter-spacing:-.015em; }
+${S} .nx-rich { line-height:1.78; font-size:15.5px; }
+${S} .nx-rich > p, ${S} .nx-rich > ul, ${S} .nx-rich > ol { max-width:74ch; }
 ${S} .nx-rich a:not([class]) { color:#0b4f8a; text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
 ${S} .nx-rich a:not([class]):hover { color:#0c644e; }
+/* Answer-First TL;DR kutusu: okunaklı sol vurgu ve yumuşak zemin */
+${S} .nx-tldr { background:#f0f7f5; border:1px solid #cce3dc; border-left:4px solid #0c644e; border-radius:10px; padding:16px 20px; color:#102a43; line-height:1.7; }
 /* Yapışkan çapa menüsü, yapışkan başlığın (üst şerit + ana şerit) altında kalır */
 ${S} .nx-block.sticky { top:102px !important; }
 @media (max-width:767px){ ${S} .nx-block.sticky { top:128px !important; } }
@@ -276,9 +279,10 @@ ${S} .yf-band :is(h2,h3):not(.yf-card *) { color:#042646; }
 ${S} .yf-dark :is(h2,h3), ${S} .yf-navy :is(h2,h3) { color:#fff !important; }
 ${S} div:has(> .nx-block.yf-card) { display:flex; }
 ${S} .nx-block.yf-card { flex:1; min-width:0; }
-${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #d6e6ee; border-radius:14px; padding:20px; overflow:hidden; height:100%; transition:box-shadow .2s, border-color .2s; }
-${S} .yf-card:hover, ${S} .yb-card:hover { border-color:#0c644e; box-shadow:0 10px 28px rgba(4,38,70,.1); }
-${S} .yf-card h3, ${S} .yb-card h3 { font-size:1.05rem; font-weight:700; color:#042646; }
+${S} .yf-card, ${S} .yb-card { background:#fff; border:1px solid #d6e6ee; border-radius:14px; padding:22px 24px; overflow:hidden; height:100%; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+${S} .yf-card:hover, ${S} .yb-card:hover { transform:translateY(-2px); border-color:#0c644e; box-shadow:0 12px 30px rgba(4,38,70,.1); }
+@media (prefers-reduced-motion: reduce) { ${S} .yf-card:hover, ${S} .yb-card:hover { transform:none; } }
+${S} .yf-card h3, ${S} .yb-card h3 { font-size:1.06rem; font-weight:700; color:#042646; line-height:1.35; }
 ${S} .yf-card img { border-radius:8px; }
 ${S} .yf-tag { display:inline-block; background:#0c644e; color:#fff; border-radius:4px; padding:2px 10px; font-size:11px; font-weight:700; }
 ${S} .yf-link a { color:#0c644e; font-size:14px; font-weight:600; }
@@ -326,10 +330,10 @@ ${S} .nx-footer { margin-top:2rem; }
   ${S} .nx-fbody { padding-bottom:14px; }
 }
 /* Düz metin sayfalarındaki başlık + metin kartları */
-${S} .nx-text-card { padding:22px 24px; }
+${S} .nx-text-card { padding:24px 26px; border-top:3px solid #0c644e; }
 ${S} .nx-text-card > section > div > :is(h2,h3):first-child { margin-top:0; color:#042646; border-left:4px solid #0c644e; padding-left:12px; }
 ${S} .nx-text-card > section > div { gap:0; }
-@media (max-width: 640px) { ${S} .nx-text-card { padding:16px; } }
+@media (max-width: 640px) { ${S} .nx-text-card { padding:18px; } }
 /* Mobil başlık: tek ince satır (logo · ara · arama · menü simgeleri); üst şerit mobilde gizlenir, sabit alan daralır */
 @media (max-width: 767px) {
   ${S} .nx-header-top { display:none; }
