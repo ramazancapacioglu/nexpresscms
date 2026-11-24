@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — Editör Denetçisi, Özelleştir, Ayarlar Hizalama, Performans SaaS Paneli & Toplu Liste İşlemleri
+- **Editör (`engage-tab.tsx`, `publish-tab.tsx`, `block-inspector.tsx`, `studio-view-bar.tsx`):** Medya sekmesindeki **Üst sayfa & sütun** ve **Yorum, İnceleme & Sosyal Paylaşım** kartları **Yayın** sekmesine taşındı. Sağ denetçi varsayılan `368px` genişliğe çıkarıldı ve sol kenar sürükleme tutamacıyla (`300–620px`, `localStorage` kalıcı, çift tıkla sıfırla) yeniden boyutlandırılabilir hale getirildi. Görsel / Önizleme / JSON / Markdown geçişi tek `<select>` seçicisine alındı (varsayılan `Görsel`).
+- **Özelleştir & Ayarlar (`themes/customize/page.tsx`, `pages/page.tsx`, `settings-tabs-shell.tsx`):** **Öne çıkan sayfa ve blog** (`ReadingCard`) Sayfalar listesinden Özelleştir sayfası altına taşındı; Genel Ayarlar sekmeleri ve içerik alanı tek tip yükseklik/genişlik ve ikonlu ızgarada hizalandı.
+- **Performans (`/admin/perfornext`):** 4'lü KPI şeridi, 180° Performans Sağlık Göstergesi, 4 yatay sağlık çubuğu, Veritabanı Tablo Yoğunluğu sütun grafiği, hızlı bakım aksiyonları ve temiz CWV risk tablosuyla yenilendi.
+- **Listeleme Filtreleri & Toplu İşlemler (`campaigns-client.tsx`, `forms-list-client.tsx`):** Kampanyalar ve Formlar listelerine sıralama, arama, durum sekmeleri ve çoklu seçimle toplu yayınla/duraklat/sil çubuğu eklendi.
+
 ### [2026-11-24] — Form Gönderimi & Google Yorumlar Düzeltmesi, Kampanya `?format=md`, Tekil Sayfa Raporu & Gelişmiş SEO Raporları
 - **Form Gönderimi & Gelen Kutusu (`api/forms/submit/route.ts`, `rsc-form.tsx`, `admin/forms/inbox/page.tsx`):** `RscForm` içine gizli `_form` alanı eklendi; `/api/forms/submit` artık `contact_campaign` bloklarını, 2 segmentli yolları (`/kampanya/...`), `x-forwarded-host` başlığını ve büyük/küçük harf+tire içeren form kimliklerini destekler. Gelen kutusuna `Tümü` sekmesi ve form bazlı hızlı filtre rozetleri eklendi.
 - **Google Yorumlar Places API (`register-ops.ts`):** `reviews.pull` aksiyonu ters girilmiş `googlePlaceId` / `googlePlacesApiKey` (`AIza...` vs `ChIJ...`) durumunu otomatik düzeltip kaydeder, `languageCode=tr` ile çeker ve gerçek Google hata mesajını gösterir; `akinsoftizmir.com.tr` üretim veritabanındaki ters girilmiş alanlar düzeltildi.

@@ -1,14 +1,14 @@
 "use client";
 
 import type { DeviceKey } from "@nexpress/core";
-import { Code2, Eye, FileCode, LayoutTemplate, Monitor, Smartphone, Tablet } from "lucide-react";
+import { Monitor, Smartphone, Tablet } from "lucide-react";
 import { useStudioInspector } from "./studio-inspector-context";
 
 const MODES = [
-  { id: "visual", label: "Görsel", icon: LayoutTemplate },
-  { id: "preview", label: "Önizleme", icon: Eye },
-  { id: "code", label: "JSON", icon: Code2 },
-  { id: "markdown", label: "Markdown", icon: FileCode },
+  { id: "visual", label: "Görsel" },
+  { id: "preview", label: "Önizleme" },
+  { id: "code", label: "JSON" },
+  { id: "markdown", label: "Markdown" },
 ] as const;
 
 const DEVICES: Array<{ id: DeviceKey; icon: typeof Monitor; title: string }> = [
@@ -22,27 +22,18 @@ export function StudioViewBar() {
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5">
-        {MODES.map((mode) => {
-          const Icon = mode.icon;
-          const active = editorMode === mode.id;
-          return (
-            <button
-              key={mode.id}
-              type="button"
-              onClick={() => setEditorMode(mode.id)}
-              aria-label={mode.label}
-              aria-pressed={active}
-              className={`inline-flex h-7 items-center gap-1 rounded px-2 text-[11px] font-medium ${
-                active ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Icon className="h-3 w-3 shrink-0" />
-              <span className="hidden lg:inline">{mode.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <select
+        aria-label="Görünüm modu"
+        value={editorMode}
+        onChange={(e) => setEditorMode(e.target.value as (typeof MODES)[number]["id"])}
+        className="h-8 rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground focus:border-blue-500 focus:outline-none"
+      >
+        {MODES.map((mode) => (
+          <option key={mode.id} value={mode.id}>
+            {mode.label}
+          </option>
+        ))}
+      </select>
       <div className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
         {DEVICES.map((device) => {
           const Icon = device.icon;

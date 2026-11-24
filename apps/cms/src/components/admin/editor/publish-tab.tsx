@@ -36,6 +36,17 @@ export function PublishTab() {
     templateId,
     setTemplateId,
     contentType,
+    parentId,
+    setParentId,
+    pillar,
+    setPillar,
+    pageChoices,
+    allowComments,
+    setAllowComments,
+    allowReviews,
+    setAllowReviews,
+    showShareButtons,
+    setShowShareButtons,
   } = useStudioInspector();
   const tplKind = contentType === "product" ? "product" : contentType === "page" || contentType === "campaign" ? "page" : "post";
 
@@ -246,6 +257,65 @@ export function PublishTab() {
                       </button>
                     </div>
                   </div>
+                  <div className="rounded-lg border border-border p-3 space-y-2.5">
+                    <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Üst Sayfa ve Sütun
+                    </div>
+                    <label className="block text-[11px]">
+                      Üst sayfa
+                      <select
+                        value={parentId}
+                        onChange={(e) => setParentId(e.target.value)}
+                        className="mt-1 h-8 w-full rounded border border-border bg-background px-2 text-[11px]"
+                      >
+                        <option value="">Yok</option>
+                        {pageChoices.map((page) => (
+                          <option key={page.id} value={page.id}>
+                            {page.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer text-xs">
+                      <span>Sütun içerik (alt sayfalar listelenir)</span>
+                      <input
+                        type="checkbox"
+                        checked={pillar}
+                        onChange={(e) => setPillar(e.target.checked)}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="rounded-lg border border-border p-3 space-y-2.5">
+                    <div className="font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Yorum, İnceleme & Sosyal Paylaşım
+                    </div>
+                    <label className="flex items-center justify-between cursor-pointer text-xs">
+                      <span>Ziyaretçi Yorumlarına İzin Ver</span>
+                      <input
+                        type="checkbox"
+                        checked={allowComments}
+                        onChange={(e) => setAllowComments(e.target.checked)}
+                      />
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer text-xs">
+                      <span>Yıldızlı Değerlendirme & Pros/Cons</span>
+                      <input
+                        type="checkbox"
+                        checked={allowReviews}
+                        onChange={(e) => setAllowReviews(e.target.checked)}
+                      />
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer text-xs">
+                      <span>Sosyal & AI Paylaşım Çubuğu</span>
+                      <input
+                        type="checkbox"
+                        checked={showShareButtons}
+                        onChange={(e) => setShowShareButtons(e.target.checked)}
+                      />
+                    </label>
+                  </div>
+
                   <LanguageStrip />
                   <RevisionsPanel />
                 </div>

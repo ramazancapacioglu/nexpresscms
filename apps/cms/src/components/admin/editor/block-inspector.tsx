@@ -59,6 +59,37 @@ export function BlockInspector() {
   const isTemplateMode = Boolean(templateKind);
   const isBlockMode = rightTab === "block";
 
+  const [panelWidth, setPanelWidth] = React.useState<number>(() => {
+    if (typeof window === "undefined") return 368;
+    const saved = Number(window.localStorage.getItem("nexpress.inspector.width"));
+    return Number.isFinite(saved) && saved >= 300 && saved <= 620 ? saved : 368;
+  });
+  const [dragging, setDragging] = React.useState(false);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = panelWidth;
+    setDragging(true);
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.max(300, Math.min(620, Math.round(startW + (startX - ev.clientX))));
+      setPanelWidth(next);
+    };
+    const onUp = () => {
+      setDragging(false);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      setPanelWidth((curr) => {
+        try {
+          window.localStorage.setItem("nexpress.inspector.width", String(curr));
+        } catch {}
+        return curr;
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
   const ancestors = React.useMemo(
     () => (selectedBlock ? getBlockAncestors(blocks, selectedBlock.id) : []),
     [blocks, selectedBlock]
@@ -77,8 +108,26 @@ export function BlockInspector() {
   return (
     <aside
       aria-label="Sağ blok ve sayfa denetçisi"
-      className="flex w-80 shrink-0 flex-col border-l bg-card text-card-foreground select-none"
+      style={{ width: panelWidth }}
+      className="relative flex shrink-0 flex-col border-l bg-card text-card-foreground select-none"
     >
+      {/* Sol kenar sürükleme tutamacı (genişlet / daralt) */}
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Denetçi genişliğini ayarla"
+        title="Sürükleyerek genişlet/daralt (çift tık: sıfırla)"
+        onMouseDown={startResize}
+        onDoubleClick={() => {
+          setPanelWidth(368);
+          try {
+            window.localStorage.setItem("nexpress.inspector.width", "368");
+          } catch {}
+        }}
+        className={`absolute inset-y-0 -left-1 z-20 w-2 cursor-col-resize transition-colors ${
+          dragging ? "bg-blue-500/60" : "hover:bg-blue-500/35"
+        }`}
+      />
       {/* Üst 2 Modlu Ana Seçici: Blok | Sayfa Ayarları */}
       <div className="flex items-center justify-between gap-1 border-b px-2.5 py-2">
         <div className="grid flex-1 grid-cols-2 gap-1 rounded-lg bg-muted p-0.5 text-xs">

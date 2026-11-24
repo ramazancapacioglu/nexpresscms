@@ -34,6 +34,8 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
   const [campaigns, setCampaigns] = useState<ResolvedCampaign[]>(initialCampaigns);
   const [filter, setFilter] = useState<"all" | "active" | "expired" | "draft">("all");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"default" | "title" | "ending" | "status">("default");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
   // Metrikler
@@ -42,22 +44,65 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
   const expiredCount = campaigns.filter((c) => c.status === "published" && c.isExpired).length;
   const draftCount = campaigns.filter((c) => c.status === "draft").length;
 
-  const filtered = campaigns.filter((c) => {
-    if (filter === "active" && (c.status !== "published" || c.isExpired)) return false;
-    if (filter === "expired" && (c.status !== "published" || !c.isExpired)) return false;
-    if (filter === "draft" && c.status !== "draft") return false;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const match =
-        c.title.toLowerCase().includes(q) ||
-        c.slug.toLowerCase().includes(q) ||
-        (c.productName && c.productName.toLowerCase().includes(q)) ||
-        (c.discount && c.discount.toLowerCase().includes(q)) ||
-        (c.gift && c.gift.toLowerCase().includes(q));
-      if (!match) return false;
-    }
-    return true;
-  });
+  const filtered = campaigns
+    .filter((c) => {
+      if (filter === "active" && (c.status !== "published" || c.isExpired)) return false;
+      if (filter === "expired" && (c.status !== "published" || !c.isExpired)) return false;
+      if (filter === "draft" && c.status !== "draft") return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const match =
+          c.title.toLowerCase().includes(q) ||
+          c.slug.toLowerCase().includes(q) ||
+          (c.productName && c.productName.toLowerCase().includes(q)) ||
+          (c.discount && c.discount.toLowerCase().includes(q)) ||
+          (c.gift && c.gift.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "title") return a.title.localeCompare(b.title, "tr");
+      if (sortBy === "ending") return (a.daysRemaining ?? 9999) - (b.daysRemaining ?? 9999);
+      if (sortBy === "status") return a.status.localeCompare(b.status);
+      return 0;
+    });
+
+  const allSelected =
+    filtered.length > 0 && filtered.every((c) => selectedIds.includes(c.contentId));
+
+  const toggleAll = () => {
+    setSelectedIds(allSelected ? [] : filtered.map((c) => c.contentId));
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkStatus = (nextStatus: "published" | "draft") => {
+    if (selectedIds.length === 0) return;
+    startTransition(async () => {
+      for (const id of selectedIds) {
+        await toggleCampaignStatusAction(id, nextStatus);
+      }
+      setCampaigns((prev) =>
+        prev.map((c) => (selectedIds.includes(c.contentId) ? { ...c, status: nextStatus } : c))
+      );
+      setSelectedIds([]);
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Seçilen ${selectedIds.length} kampanyayı silmek istediğinize emin misiniz?`)) return;
+    startTransition(async () => {
+      for (const id of selectedIds) {
+        await deleteCampaignAction(id);
+      }
+      setCampaigns((prev) => prev.filter((c) => !selectedIds.includes(c.contentId)));
+      setSelectedIds([]);
+    });
+  };
 
   const handleDelete = (contentId: string, title: string) => {
     if (!confirm(`"${title}" kampanyasını silmek istediğinize emin misiniz?`)) return;
@@ -215,17 +260,72 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
           </button>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Kampanya, ürün veya indirim ara..."
-            className="h-8 w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] pl-8 pr-3 text-xs text-[#14151A] dark:text-[#F3F4F6] placeholder-[#8C9099] focus:border-blue-600 focus:outline-hidden"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Kampanya, ürün veya indirim ara..."
+              className="h-8 w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] pl-8 pr-3 text-xs text-[#14151A] dark:text-[#F3F4F6] placeholder-[#8C9099] focus:border-blue-600 focus:outline-hidden"
+            />
+          </div>
+          <select
+            aria-label="Kampanya sıralama"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as "default" | "title" | "ending" | "status")}
+            className="h-8 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 text-xs text-[#14151A] dark:text-[#F3F4F6] focus:border-blue-600 focus:outline-hidden"
+          >
+            <option value="default">Sırala: Varsayılan</option>
+            <option value="ending">Bitiş Tarihi (Yaklaşan)</option>
+            <option value="title">Başlık (A–Z)</option>
+            <option value="status">Durum</option>
+          </select>
         </div>
       </div>
+
+      {/* Toplu İşlem Çubuğu */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs">
+          <span className="font-semibold text-blue-700 dark:text-blue-300">
+            {selectedIds.length} kampanya seçildi
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleBulkStatus("published")}
+              className="rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              Yayınla
+            </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleBulkStatus("draft")}
+              className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50"
+            >
+              Taslağa Al
+            </button>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={handleBulkDelete}
+              className="rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+            >
+              Seçilenleri Sil
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Vazgeç
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tablo Görünümü */}
       <div className="rounded-xl border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] overflow-hidden shadow-xs">
@@ -233,6 +333,15 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FAFAFA] dark:bg-[#181A20] text-[#5F6570] dark:text-[#8C9099] font-medium">
               <tr>
+                <th className="px-3 py-3 w-9">
+                  <input
+                    type="checkbox"
+                    aria-label="Tüm kampanyaları seç"
+                    checked={allSelected}
+                    onChange={toggleAll}
+                    className="rounded border-border"
+                  />
+                </th>
                 <th className="px-4 py-3 w-14">Afiş</th>
                 <th className="px-4 py-3 min-w-[220px]">Kampanya Adı & Hedef</th>
                 <th className="px-4 py-3 min-w-[150px]">Fırsat & Avantaj</th>
@@ -244,7 +353,7 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
             <tbody className="divide-y divide-[#E6E7EA] dark:divide-[#23262E]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
                     <Megaphone className="mx-auto h-8 w-8 opacity-30 mb-2" />
                     <p className="text-sm font-medium">Kayıtlı kampanya bulunamadı.</p>
                     <p className="text-xs text-[#5F6570] dark:text-[#8C9099] mt-1">
@@ -256,12 +365,22 @@ export function CampaignsClient({ campaigns: initialCampaigns }: CampaignsClient
                 filtered.map((item) => {
                   const isPublished = item.status === "published";
                   const isExp = isPublished && item.isExpired;
+                  const checked = selectedIds.includes(item.contentId);
 
                   return (
                     <tr
                       key={item.contentId}
-                      className="hover:bg-[#F9FAFB] dark:hover:bg-[#181A20]/60 transition"
+                      className={`transition ${checked ? "bg-blue-500/5" : "hover:bg-[#F9FAFB] dark:hover:bg-[#181A20]/60"}`}
                     >
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          aria-label={`${item.title} seç`}
+                          checked={checked}
+                          onChange={() => toggleOne(item.contentId)}
+                          className="rounded border-border"
+                        />
+                      </td>
                       {/* Afiş */}
                       <td className="px-4 py-3 align-middle">
                         {item.featuredImageUrl ? (

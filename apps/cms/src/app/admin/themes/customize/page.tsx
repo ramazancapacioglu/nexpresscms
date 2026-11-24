@@ -1,10 +1,11 @@
 import React from "react";
-import { readTemplateMeta } from "@nexpress/core";
+import { readTemplateMeta, resolveSiteSettings } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { OFFICIAL_THEME_STORE, getThemeManifest } from "@nexpress/themes";
 import { ThemeStoreClient } from "@/components/admin/theme-store-client";
 import type { CustomizerTabId } from "@/components/admin/use-theme-store";
 import { AppearanceNav } from "@/components/admin/section-tabs";
+import { ReadingCard } from "@/components/admin/reading-card";
 import { requireAdminPage } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,11 @@ export default async function AdminThemeCustomizerPage({
   const activeThemeId = site?.activeThemeId ?? "corporate-aurora";
   const activeManifest = getThemeManifest(activeThemeId);
 
-  const rawTemplates = await repo.listContents({ locale, type: "template" });
+  const [rawTemplates, publishedPages] = await Promise.all([
+    repo.listContents({ locale, type: "template" }),
+    repo.listContents({ locale, type: "page", status: "published" }),
+  ]);
+
   const initialTemplates = rawTemplates.flatMap((c) => {
     const meta = readTemplateMeta(c.schemaAttributes);
     return meta
@@ -39,6 +44,9 @@ export default async function AdminThemeCustomizerPage({
         ]
       : [];
   });
+
+  const general = resolveSiteSettings(site?.settings).general;
+  const readingPages = publishedPages.map((p) => ({ slug: p.slug, title: p.title }));
 
   const initialTab: CustomizerTabId =
     sp.tab && ALLOWED_TABS.includes(sp.tab as CustomizerTabId)
@@ -55,6 +63,11 @@ export default async function AdminThemeCustomizerPage({
         currentSettings={site?.settings}
         initialTemplates={initialTemplates}
         initialTab={initialTab}
+      />
+      <ReadingCard
+        pages={readingPages}
+        frontPageSlug={general.frontPageSlug ?? ""}
+        postsPageSlug={general.postsPageSlug ?? ""}
       />
     </div>
   );
