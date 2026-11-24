@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — akinsoftizmir.com.tr Faz 6 E-E-A-T, Yazım/Sürüm Temizliği, 12 Otorite Q&A Rehberi & IndexNow
+- **Faktüel & E-E-A-T Düzeltmeleri (53 içerik):** Ana sayfadaki `1989` → `1995`, `/iletisim` + `LocalBusiness` çalışma saatleri birliği (`Mo-Fr 08:30-18:00`, `Sa 09:00-16:00`), `Wolwox` / `E-Aşiv` / `Akınsofttarafından` / `entagre` / `Rezarvasyon` / `Wolvox ERP 9` → `26` ve Yetkili Ana Bayi (`BA35022`) dil birliği tamamlandı.
+- **12 Yayındaki `ai_prompt` Otorite Dönüşümü:** Tamamı `tldr_box` + teknik `data_table` + `faq_accordion` (`FAQPage`) + dönüşüm `cta_banner` ile zenginleştirildi; 3 yeni 301 kuralı (`/akinsoft-wolvox-9a-gecis-kampanyasi`, `/contact-us`, `/rss`) eklendi; RAG dizini **557 parçaya** güncellendi.
+
 ### [2026-11-24] — Google PageSpeed Insights (Lighthouse) Takibi, Ana Panel Okunmamış Form Bildirimi & Editör SEO Raporu Kısayolu
 - **Perfornext Google PageSpeed Insights (`lib/perfornext/pagespeed.ts`, `pagespeed-section.tsx`, `perfornext/actions.ts`):** Mobil ve Masaüstü Lighthouse API v5 ölçümü (Performans, Erişilebilirlik, En İyi Uygulamalar, SEO 0–100 + `LCP`, `CLS`, `FCP`, `TBT`, `TTFB`) ve son 10 ölçüm geçmişi eklendi.
 - **Ana Gösterge Paneli Okunmamış Form Bildirimi (`/admin/page.tsx`):** Yalnızca `status = 'new'` okunmamış gönderim olduğunda üstte bildirim şeridi, son 3 gönderim özeti ve `/admin/forms/inbox?status=new` kısayolu gösterilir.

@@ -1,8 +1,8 @@
 # akinsoftizmir.com.tr — SEO, GEO/LLMO, RAG & Web Tasarım Denetim Raporu
 
-> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-23 (Faz 1–5 tamamlandı, canlıda doğrulandı)  
+> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–6 tamamlandı, canlıda doğrulandı)  
 > **Kapsam:** Canlı site (`https://www.akinsoftizmir.com.tr`), PostgreSQL üretim veritabanı (`nexpress_akin`), Webmaster verileri (GSC & Bing), RAG vektör dizini (`content_chunks`), bot telemetrisi, medya kitaplığı ve `yazilim-bayi` tema mimarisi.  
-> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB)
+> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB)
 
 ---
 
@@ -75,3 +75,16 @@
 - [x] **Gerçek Medya Logosu:** `/demo/yazilim-bayi/logo.webp` ve `logo-kare.webp` yolları gerçek medya kitaplığı varlıklarıyla (`/media/med_AHHCYZDc6zEt?w=304&h=70&a=1`, `/media/med_z93Atf9oZ1WQ?w=512&h=512&a=1`) değiştirildi ve canlıda doğrulandı.
 - [x] **Ana Sayfa Güven Şeridi (`stats_strip`):** Hero hemen altına `BA35022` (Akınsoft İzmir Ana Bayi), `30+ Yıl`, `150.000+` ve `Aynı Gün` şeridi eklendi ve canlıda doğrulandı.
 - [ ] **Başlık Tipografisi (`Plus Jakarta Sans`):** İstenirse `/admin/themes/customize` → Yazı Tipi sekmesinden yerel WOFF2 olarak seçilebilir.
+
+
+---
+
+## 7. Faz 6 — E-E-A-T, Faktüel Düzeltmeler, 301 & Otorite Soru-Cevap (2026-11-24 ✅)
+
+- [x] **Kuruluş Yılı (`1989` → `1995`):** Ana sayfadaki tüm `1989` ifadeleri Akınsoft'un gerçek kuruluş yılı olan **`1995`** ile düzeltildi.
+- [x] **Çalışma Saatleri Birliği (`/iletisim` + `LocalBusiness` JSON-LD + `llms.txt`):** Tüm yüzeyler **`Pazartesi – Cuma 08:30 – 18:00 · Cumartesi 09:00 – 16:00` (Pazar ve resmi tatillerde kapalı)** olarak eşitlendi.
+- [x] **53 İçerikte Global Yazım, Sürüm & Bayi Dili Temizliği:** `Wolwox` → `Wolvox`, `E-Aşiv` → `E-Arşiv`, `Akınsofttarafından` → `Akınsoft tarafından`, `AKINSOFTolarak` / `Biz de AKINSOFT olarak` → `Akınsoft İzmir Ana Bayi (BA35022) olarak`, `entagre`, `Entegryonlar`, `Rezarvasyon`, `parogramı`, `amlık enterasyonular`, `İndirim İndirim`, `E-Dönüşümün`, `Wolvox ERP 9` → `Wolvox ERP 26` temizlendi.
+- [x] **12 Yayındaki `ai_prompt` Sayfası → Otorite Karar Rehberleri:** Her birine `tldr_box`, teknik karşılaştırma `data_table` (ÖKC/TSM cihazları, GİB kodları, ERP vs Ön Muhasebe, offline saha matrisi), 3 soruluk `faq_accordion` (`FAQPage`) ve BA35022 dönüşüm `cta_banner` eklendi.
+- [x] **3 Yeni 301 Yönlendirme:** `/akinsoft-wolvox-9a-gecis-kampanyasi` → `/kampanya/wolvox-26-gecis-kampanyasi`, `/contact-us` → `/iletisim`, `/rss` → `/feed.xml`.
+- [x] **RAG Yeniden Dizinleme:** `openai:text-embedding-3-small:1536` ile güncellenen 22 içerik yeniden gömüldü (**534 → 557 parça**, 0 hata).
+- [ ] **Dış Kaynak (Off-Page) NAP Temizliği (Manuel):** Yandex Maps'teki 2 eski/başka bayiye ait (`İsmet Kaptan Mah.` ve `AS Bilişim`) kayıtlardan `akinsoftizmir.com.tr` bağlantısı kaldırtılacak; Google İşletme Profili, LinkedIn ve Akınsoft resmi bayi dizini tek NAP (`Muciburrahman Sk. No:3/522 Konak/İzmir`, `0 232 425 19 88`, `BA35022`) ile eşitlenecek.
