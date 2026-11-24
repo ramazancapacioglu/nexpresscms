@@ -587,6 +587,128 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
       );
     }
 
+    case "google_reviews": {
+      const rating = typeof p.rating === "number" ? p.rating : Number(p.rating ?? 0);
+      const reviewCount = typeof p.reviewCount === "number" ? p.reviewCount : Number(p.reviewCount ?? 0);
+      const businessName = typeof p.businessName === "string" && p.businessName.trim() ? p.businessName.trim() : "Google İşletme Profili";
+      const mapsUrl = typeof p.mapsUrl === "string" && p.mapsUrl.startsWith("https://") ? p.mapsUrl : "";
+      const reviewUrl = typeof p.reviewUrl === "string" && p.reviewUrl.startsWith("https://") ? p.reviewUrl : mapsUrl;
+      const subtitle = typeof p.subtitle === "string" ? p.subtitle : "";
+      const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+      const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
+      return (
+        <section
+          style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+          className="border bg-nx-card p-6 md:p-8 shadow-xs space-y-6"
+        >
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-white shadow-2xs">
+                <svg viewBox="0 0 24 24" width={26} height={26} aria-hidden="true">
+                  <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.56-5.15 3.56-8.65z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.87-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.29v3.1A12 12 0 0 0 12 24z" />
+                  <path fill="#FBBC05" d="M5.29 14.29A7.2 7.2 0 0 1 4.91 12c0-.79.14-1.56.38-2.29v-3.1H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.39l4-3.1z" />
+                  <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.61l4 3.1C6.23 6.88 8.88 4.77 12 4.77z" />
+                </svg>
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    ✓ Google Doğrulanmış Profil
+                  </span>
+                  <span className="text-xs text-nx-muted">{businessName}</span>
+                </div>
+                {typeof p.title === "string" && p.title ? (
+                  <h2 style={{ fontFamily: tokens.typography.headingFont }} className="text-xl md:text-2xl font-bold text-nx-fg">
+                    {p.title}
+                  </h2>
+                ) : null}
+                {subtitle ? <p className="text-sm text-nx-soft max-w-2xl">{subtitle}</p> : null}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-5 md:justify-end">
+              {rating > 0 ? (
+                <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-nx-subtle px-4 py-3">
+                  <div className="text-3xl font-extrabold tracking-tight text-nx-fg leading-none">
+                    {rating.toFixed(1)}
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-0.5 text-amber-500 text-base leading-none" aria-label={`${rating.toFixed(1)} / 5`}>
+                      {"★".repeat(filledStars)}
+                      <span className="opacity-30">{"★".repeat(5 - filledStars)}</span>
+                    </div>
+                    <div className="text-xs font-medium text-nx-muted">
+                      {reviewCount > 0 ? `${reviewCount} Google değerlendirmesi` : "Google puanı"}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {mapsUrl ? (
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold shadow-2xs hover:opacity-95"
+                  >
+                    Google&apos;da Yorumları Gör ↗
+                  </a>
+                  {reviewUrl ? (
+                    <a
+                      href={reviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+                      className="inline-flex items-center gap-1.5 border bg-nx-card px-4 py-2.5 text-xs font-semibold text-nx-fg hover:bg-nx-subtle"
+                    >
+                      Değerlendirme Yaz
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 pt-2">
+              {reviews.map((rev: any, idx: number) => {
+                const stars = Math.max(1, Math.min(5, Number(rev?.rating ?? 5)));
+                return (
+                  <article
+                    key={idx}
+                    style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+                    className="flex flex-col justify-between gap-3 border bg-nx-subtle/40 p-5"
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-amber-500 tracking-tight" aria-label={`${stars} / 5`}>
+                          {"★".repeat(stars)}
+                        </span>
+                        {rev?.date ? <span className="text-[11px] text-nx-muted">{String(rev.date)}</span> : null}
+                      </div>
+                      <p className="text-sm text-nx-soft leading-relaxed">“{String(rev?.text ?? "")}”</p>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t border-black/5">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
+                        {String(rev?.author ?? "M").slice(0, 1).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-semibold text-nx-fg">{String(rev?.author ?? "Google Kullanıcısı")}</div>
+                        <div className="text-[10px] text-nx-muted">Google Yorumu</div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </section>
+      );
+    }
+
     default:
       return undefined;
   }

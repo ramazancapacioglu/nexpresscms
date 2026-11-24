@@ -4,6 +4,7 @@ import { INK_GRID_ID } from "./ink-grid";
 import { renderInkFaq } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
 import { AccordionView, FaqAnswer } from "./blocks-disclosure";
+import { KdvCalculatorBlock } from "./kdv-calculator-block";
 
 /** Bilgi blokları: adımlar, SSS, kutular, kod, alıntı, liste, video, tablo, inceleme. Tanımsız dönerse sıradaki grup denenir. */
 export function renderContentBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -427,6 +428,19 @@ export function renderContentBlock({ block, themeId, tokens, isEditorial, isComm
             </div>
           </div>
         </section>
+      );
+    }
+
+    case "kdv_calculator": {
+      return (
+        <KdvCalculatorBlock
+          id={block.id}
+          title={typeof p.title === "string" && p.title ? p.title : undefined}
+          subtitle={typeof p.subtitle === "string" ? p.subtitle : undefined}
+          defaultRate={typeof p.defaultRate === "number" ? p.defaultRate : undefined}
+          tevkifatLimit={typeof p.tevkifatLimit === "number" ? p.tevkifatLimit : undefined}
+          tokens={tokens}
+        />
       );
     }
 

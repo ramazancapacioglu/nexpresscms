@@ -145,7 +145,22 @@ export function DesktopNav({ menu, tokens, ink, align }: { menu: NavigationMenuI
                   {item.badge}
                 </span>
               ) : null}
-              {hasPanel ? <span aria-hidden="true" className="text-[9px] opacity-60">▼</span> : null}
+              {hasPanel ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  width={13}
+                  height={13}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="shrink-0 opacity-75 transition-transform duration-150 group-hover:rotate-180 group-hover:opacity-100 group-focus-within:rotate-180"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              ) : null}
             </a>
             {item.megaMenu?.enabled ? (
               <MegaPanel item={item} tokens={tokens} />

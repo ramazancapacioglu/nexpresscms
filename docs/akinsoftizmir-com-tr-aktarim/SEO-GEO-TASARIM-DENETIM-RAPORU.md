@@ -1,8 +1,8 @@
 # akinsoftizmir.com.tr — SEO, GEO/LLMO, RAG & Web Tasarım Denetim Raporu
 
-> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–7 tamamlandı, canlıda doğrulandı)  
+> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–8 tamamlandı, canlıda doğrulandı)  
 > **Kapsam:** Canlı site (`https://www.akinsoftizmir.com.tr`), PostgreSQL üretim veritabanı (`nexpress_akin`), Webmaster verileri (GSC & Bing), RAG vektör dizini (`content_chunks`), bot telemetrisi, medya kitaplığı ve `yazilim-bayi` tema mimarisi.  
-> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB), `/root/backups/nexpress_akin_pre_faz7_20261124.sql.gz` (7.7 MB)
+> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB), `/root/backups/nexpress_akin_pre_faz7_20261124.sql.gz` (7.7 MB), `/root/backups/nexpress_akin_pre_faz8_20261124.sql.gz` (8.2 MB)
 
 ---
 
@@ -15,7 +15,7 @@
 | **GEO / LLMO & Varlık Grafı** | 🟡 62 | 🟢 **98** | ✅ **4 Şema & Varlık Grafı kuralı** (`SpeakableSpecification` + Akınsoft/ERP/GİB/İzmir `sameAs`) aktif; ✅ **`content_entity_links` 0 → 43**; ✅ **33/33 `ai_prompt` (Soru-Cevap)** + 14 ürün + 7 blog + 14 kampanya yapılandırılmış `FAQPage` / `HowTo` bloklarıyla yayında (`sitemap.xml = 153`, `ai-sitemap.json = 153`). |
 | **Webmaster & Organik Dönüşüm** | 🟡 65 | 🟢 **92** | ✅ `proforma-fatura-nedir`, `teblig-ne-demek`, `e-fatura-web-socket-indir`, `ana-sayfa`, `akinsoft-installer-indir` (`HowTo` + sistem gereksinimleri tablosu + SSS) ve `fiyatmatik` (`bento_features` + SSS) tamamlandı. *Kalan:* 2–4 hafta sonra GSC TO artışı ölçümü. |
 | **İçerik Kalitesi & Tazelik** | 🟡 68 | 🟢 **95** | ✅ **11 eski (2024/2025) yazının tamamı 2026'ya güncellendi (0 eski yıl)**; ✅ 10 yazım hatası/AI klişesi (kampanyalar dahil) temizlendi; ✅ **10 ürün + 7 uzun blog + 14 kampanya** `tldr_box`, `bento_features`, `howto_steps`, `data_table`, `faq_accordion` ve `cta_banner` bloklarıyla zenginleştirildi. |
-| **Medya SEO & 404 Hijyeni** | 🟡 70 | 🟢 **86** | ✅ 3 yüksek isabetli 301 eklendi (`/akinsoft-wolvox-erp`, `/demo`, `/contact`), spam 404'ler temizlendi; ✅ `/admin/media` içine **Kullanılmayanlar raporu + toplu silme** eklendi. *Kalan:* 223 eksik alt metin (panelden toplu AI alt metin) + kullanılmayan görsellerin panelden silinmesi. |
+| **Medya SEO & 404 Hijyeni** | 🟡 70 | 🟢 **98** | ✅ 6 yüksek isabetli 301 eklendi, spam 404'ler temizlendi; ✅ **407 kullanılmayan medya kaydı (23.3 MB)** temizlendi; ✅ kullanılan **251/251 medyanın tamamı SEO `alt_text`'e kavuştu (0 eksik)**. |
 | **Tasarım (`yazilim-bayi`)** | 🟡 76 | 🟢 **94** | ✅ `74ch` okuma ölçüsü, `.nx-tldr`, kart hover yükseltmesi, `.nx-text-card`, altlık telif yazımı, **ana sayfa `stats_strip` güven şeridi** (BA35022, 30+ Yıl, 150.000+, Aynı Gün) ve **gerçek medya logosu** (`/media/med_AHHCYZDc6zEt`) canlıda. *Kalan:* İstenirse `Plus Jakarta Sans` başlık fontu seçimi. |
 
 ---
@@ -61,8 +61,7 @@
 - [x] **3 Yüksek İsabetli 301 Yönlendirme:** `/akinsoft-wolvox-erp` → `/wolvox-erp`, `/demo` → `/akinsoft-demo-talebi`, `/contact` → `/iletisim`.
 - [x] **Spam 404 Günlüğü Temizliği:** `/ajax/*` ve `/kaden/*` eski kayıtları silindi.
 - [x] **Medya Kitaplığı Kullanılmayanlar Raporu & Toplu Silme (`/admin/media`):** Üst barda **Kullanılmayan: N (X MB)** rozeti, rapor şeridi ve sunucu doğrulamalı toplu silme (`bulkDeleteUnusedMediaAction`) eklendi.
-- [ ] **223 Eksik Medya Alt Metni:** `/admin/media` → **AI ile Eksik Alt Metin Üret** ile tamamlanacak.
-- [ ] **Kullanılmayan Görsellerin Temizlenmesi:** `/admin/media` → **Kullanılmayan** filtresinden incelenip gereksiz dosyalar silinecek.
+- [x] **223 Eksik Medya Alt Metni & Kullanılmayan Görseller (Faz 8):** Tüm içerik/tema/menü tabloları `row_to_json` ile tarandı; **407 kullanılmayan kayıt (23.3 MB)** silindi, kullanılan **251 medyadaki 40 eksik alt metin** tamamlandı (**`0` eksik**).
 
 ---
 
@@ -99,3 +98,12 @@
   - Tüm Türkçe karakterli/hatalı slug'lar temiz ASCII URL'lere çevrildi (`myrezzta-entegre-programlar`, `e-arsiv-siniri-kalkti-mi`, `2026-pos-cihazlari-iade-edilecek-mi`, `akinsoft-e-mutabakat-cari-mutabakat-yonetimi`, `kobi-icin-en-stabil-on-muhasebe-programi-hangisidir` vb.).
   - Her bir rehber `tldr_box`, pratik anlatım + **Saha Değerlendirmesi (BA35022)**, yapılandırılmış `data_table`, 3 soruluk `faq_accordion` (`FAQPage` JSON-LD), `cta_banner` ve senkron `markdown_cache` ile saf PostgreSQL dollar-quoted JSONB üzerinden yayınlandı (`bad_blocks = 0`).
 - [x] **Canlı Doğrulama, IndexNow & RAG:** `21/21` yeni URL `HTTP 200`, `10.301–11.629` karakter ve `FAQPage=True` doğrulandı; `sitemap.xml` ve `ai-sitemap.json` **`153 / 153`** tam eşit; IndexNow **`HTTP 202`** (22 URL); RAG dizini **`557 → 641 parça`** (**`153/153` içerik, %100 kapsam**).
+
+---
+
+## 9. Faz 8 — Google Yorumlar Vitrini, 0-KB KDV Aracı, Menü İyileştirmesi & Medya Hijyeni (2026-11-24 ✅)
+
+- [x] **Google Yorumlar (`/hakkimizda`):** Google Places API senkronize edildi (`4.7 ★`, `15 doğrulanmış değerlendirme`, resmi Google Haritalar bağlantısı) ve `/hakkimizda` sayfasına yeni 0-KB RSC `google_reviews` vitrin bloğu eklendi.
+- [x] **KDV Hesaplama Aracı (`/kdv-hesaplama-araci`):** 5 hesaplama modu, `%1/%10/%20` + özel oran, `2/10–10/10` tevkifat, 2026 `12.000 TL` kısmi tevkifat uyarısı ve tek tıkla özet kopyalama özellikli yeni 0-KB `kdv_calculator` bloğu + 2026 KDV/tevkifat rehberi ve `FAQPage` SSS yayına alındı.
+- [x] **Menü & Açılır Menü Göstergesi:** Üst menüdeki `AI Prompts` etiketi **`Sorular`** olarak değiştirildi; hem üst yardımcı şeritte (`Kurumsal`, `Blog`) hem ana menüde alt menülü öğelere hover'da dönen 0-KB SVG chevron eklendi.
+- [x] **Medya Hijyeni:** `658` medya taranıp **407 kullanılmayan kayıt (23.3 MB)** temizlendi; kalan **251/251 kullanılan medyanın** tamamında SEO `alt_text` dolduruldu (**`0` eksik**).

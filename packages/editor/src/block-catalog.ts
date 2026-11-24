@@ -152,6 +152,8 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
   item("bento", "Özellik ızgarası", "marketing", "Bento kartlar", node("bento_features", { title: "Özellikler", items: [{ title: "Özellik 1", description: "Açıklama." }, { title: "Özellik 2", description: "Açıklama." }, { title: "Özellik 3", description: "Açıklama." }] })),
   item("pricing", "Fiyatlandırma", "marketing", "Planlar tablosu", node("pricing_table", { title: "Planlar", plans: [{ name: "Başlangıç", price: "Ücretsiz", description: "Temel özellikler.", ctaLabel: "Başla", featured: false }, { name: "Pro", price: "499 TL / ay", description: "Tüm özellikler.", ctaLabel: "Seç", featured: true }] })),
   item("testimonials", "Referanslar", "marketing", "Müşteri yorumları", node("testimonial_grid", { title: "Müşterilerimiz", items: [{ quote: "Harika bir deneyim.", name: "Ad Soyad", role: "Şirket" }] })),
+  item("google_reviews", "Google Yorumları", "marketing", "Doğrulanmış Google puan & yorum vitrini", node("google_reviews", { title: "Google Müşteri Değerlendirmeleri", businessName: "İşletme Adı", rating: 4.7, reviewCount: 15, mapsUrl: "https://maps.google.com", reviews: [] })),
+  item("kdv_calculator", "KDV Hesaplayıcı", "interactive", "0-KB canlı KDV ve Tevkifat hesaplama aracı", node("kdv_calculator", { title: "KDV ve Tevkifat Hesaplama Aracı", defaultRate: 20, tevkifatLimit: 12000 })),
   item("comparison", "Karşılaştırma", "marketing", "Yan yana tablo", node("comparison_table", { title: "Karşılaştırma", headers: ["Kriter", "Biz", "Diğer"], rows: [["Hız", "Çok hızlı", "Ortalama"]] })),
 
   item("single_icon", "Simge", "media", "24 yerleşik simge", node("single_icon", { icon: "star", size: 40, color: "#2563eb", background: "", href: "", label: "", align: "left" })),

@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — Açılır Menü Göstergeleri, 0-KB KDV Hesaplayıcı, Google Yorumlar Vitrini & akinsoftizmir.com.tr Faz 8
+- **Açılır Menü Göstergeleri (`site-chrome.tsx`, `site-nav.tsx`):** Üst yardımcı şeritteki (`bottomLinks`) ve ana menüdeki (`DesktopNav`) alt menülü öğelere hover/odakta dönen 0-KB SVG chevron eklendi.
+- **Yeni 0-KB RSC Blokları (`types.ts`, `block-catalog.ts`, `kdv-calculator-block.tsx`, `blocks-content.tsx`, `blocks-marketing.tsx`, `docs/23`):**
+  - `kdv_calculator`: 5 hesaplama modu (KDV Hariç, KDV Dahil, KDV Tutarı, Tevkifat, Genel Toplam), `%1 / %10 / %20` + özel oran, `2/10–10/10` tevkifat, 2026 `12.000 TL` kısmi tevkifat eşiği uyarısı ve tek tıkla özet kopyalama.
+  - `google_reviews`: Doğrulanmış Google İşletme Profili rozeti, 5 yıldızlı puan özeti, Google Haritalar bağlantıları ve varsa yazılı yorum kartları.
+- **akinsoftizmir.com.tr Faz 8:** Menüdeki `AI Prompts` → **`Sorular`** olarak değiştirildi; Google Places API senkronize edildi (`4.7 ★`, `15 değerlendirme`) ve `/hakkimizda` sayfasına `google_reviews` vitrini eklendi; `/kdv-hesaplama-araci` yeni `kdv_calculator` + 2026 KDV/tevkifat rehberi ve `FAQPage` SSS ile yeniden kuruldu; **407 kullanılmayan medya kaydı (23.3 MB)** temizlendi ve kullanılan **251 medyanın 40 eksik `alt_text` alanı** dolduruldu (**`0` eksik alt metin**).
+
 ### [2026-11-24] — akinsoftizmir.com.tr Faz 7 Ana Sayfa Kurtarma & 21 Taslak Soru-Cevap Otorite Rehberi Yayını
 - **Boş Blok Kurtarma (32 Sayfa):** `postgres.js` JSONB çift-kodlama kaynaklı boşalan `ana-sayfa` dahil 32 yayınlanmış sayfa `pre_faz5` yedeğinden kayıpsız geri yüklendi (`ana-sayfa` canlıda `HTTP 200`, `46.958` karakter, `1995` ve `BA35022` doğrulandı).
 - **21 Taslak `ai_prompt` Yayına Alındı (`33/33` Yayında):** 2026 güncel GİB mevzuatı (1 Ocak 2026 e-Arşiv sınırının kalkması, 12.000 TL fatura/tevkifat eşiği, VUK 565 Ba-Bs iptali, 2026 POS/YN ÖKC kuralı, 3M/500K e-Fatura hadleri, WOLVOX 26) ve rakip kıyaslamalarıyla doğal Türkçe, saha değerlendirmeli, `tldr_box` + `data_table` + `faq_accordion` (`FAQPage`) + `cta_banner` yapısında 21 rehber temiz ASCII slug'larla yayınlandı (`bad_blocks = 0`).

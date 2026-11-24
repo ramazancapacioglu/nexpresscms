@@ -147,6 +147,8 @@ export const BLOCK_TYPES = [
   "list_element",
   "video_embed",
   "testimonial_grid",
+  "google_reviews",
+  "kdv_calculator",
   "tldr_box",
   "grid_section",
   "bento_features",

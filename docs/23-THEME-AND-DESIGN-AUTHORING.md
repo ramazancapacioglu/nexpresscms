@@ -447,7 +447,7 @@ Simge (`icon`) yalnızca şu adlardan biri. Başka ad yazılırsa alan düşer:
 
 Bunlar editörde elle eklenebilir ve tema paketinin `pages/*.json` şeması tür adını kabul eder. **Kütüphane doğrulaması reddeder.** Model, kullanıcı özellikle “şablon” istemedikçe bunları yazmaz. Sebep: sahte yorum/puan, istemci davranışı veya uydurma sorgu.
 
-`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `custom_fields`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`, `contact_campaign`.
+`heading_element`, `paragraph_element`, `text_div`, `button_element`, `media_file`, `dynamic_list`, `custom_fields`, `schema_card`, `tpl_*`, `divider_spacer`, `review_box`, `section`, `columns`, `column`, `quote`, `list_element`, `video_embed`, `testimonial_grid`, `google_reviews`, `kdv_calculator`, `grid_section`, `product_embed`, `accordion`, `show_more`, `gallery`, `image_overlay`, `video_popup`, `slider`, `countdown`, `progress_bar`, `map_embed`, `search_box`, `post_grid`, `modal_panel`, `portfolio_grid`, `product_row`, `user_card`, `repeater`, `vector_mark`, `synced_pattern`, `campaign_showcase`, `contact_campaign`.
 
 Şablonda kullanılanların alanı §6’dadır. Aşağıdakiler sayfa içeriği içindir, AI kataloğunda yoktur:
 

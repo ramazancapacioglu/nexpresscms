@@ -185,20 +185,45 @@ export function SiteHeader({ siteName, tagline, locale, lb, menu, tokens, ink, h
     if (id === "links" && bottomLinks.length > 0) {
       return (
         <span className="nx-utility-links flex flex-wrap items-center gap-x-5 gap-y-1">
-          {bottomLinks.map((link) => (
-            <span key={link.id} className="group relative">
-              <a href={link.href} className="nx-utility-link whitespace-nowrap text-sm">{link.label}</a>
-              {link.children?.length ? (
-                <span className="invisible absolute left-0 top-full z-50 min-w-52 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                  <span className="block rounded-lg border border-black/10 bg-white p-2 text-sm shadow-lg">
-                    {link.children.map((child) => (
-                      <a key={child.id} href={child.href} className="block rounded px-2 py-1.5 hover:bg-black/5">{child.label}</a>
-                    ))}
+          {bottomLinks.map((link) => {
+            const hasChildren = Boolean(link.children?.length);
+            return (
+              <span key={link.id} className="group relative">
+                <a
+                  href={link.href}
+                  aria-haspopup={hasChildren ? "true" : undefined}
+                  className="nx-utility-link inline-flex items-center gap-1 whitespace-nowrap text-sm"
+                >
+                  <span>{link.label}</span>
+                  {hasChildren ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      width={13}
+                      height={13}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className="shrink-0 opacity-80 transition-transform duration-150 group-hover:rotate-180 group-hover:opacity-100 group-focus-within:rotate-180"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  ) : null}
+                </a>
+                {hasChildren ? (
+                  <span className="invisible absolute left-0 top-full z-50 min-w-52 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <span className="block rounded-lg border border-black/10 bg-white p-2 text-sm text-slate-900 shadow-lg">
+                      {link.children!.map((child) => (
+                        <a key={child.id} href={child.href} className="block rounded px-2 py-1.5 hover:bg-black/5">{child.label}</a>
+                      ))}
+                    </span>
                   </span>
-                </span>
-              ) : null}
-            </span>
-          ))}
+                ) : null}
+              </span>
+            );
+          })}
         </span>
       );
     }
