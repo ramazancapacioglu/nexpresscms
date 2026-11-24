@@ -15,6 +15,7 @@ import {
   Sparkles,
   Globe,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import { StudioViewBar } from "./editor/studio-view-bar";
 import { SearchSnippetBar } from "./editor/search-snippet-bar";
@@ -246,6 +247,17 @@ export function DualModeEditorTopbar({ s, canPublish = true }: { s: DualModeEdit
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </Link>
+            {s.contentId ? (
+              <Link
+                href={`/admin/seo/page-report?id=${encodeURIComponent(s.contentId)}`}
+                target="_blank"
+                aria-label="Tekil sayfa SEO ve GEO raporunu aç"
+                title="Tekil Sayfa SEO Raporu"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition-colors hover:bg-accent hover:text-blue-600"
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+              </Link>
+            ) : null}
             <button
               type="button"
               onClick={() => {

@@ -6,6 +6,7 @@ import {
   getBotStatsRepository,
   getChunkRepository,
   getDbDialect,
+  getFormSubmissionRepository,
   getIntelRepository,
   getRedirectRepository,
   getScopedRepository,
@@ -30,6 +31,7 @@ import {
   Bot,
   FileText,
   Globe,
+  Inbox,
   Layers,
   Palette,
   Plus,
@@ -48,7 +50,7 @@ export default async function AdminOverviewPage() {
   const locale = site?.defaultLocale ?? "tr";
   const base = localeBase(site, locale);
 
-  const [contents, entityLinks, ragStats, botSummary, signals, notFoundCount] =
+  const [contents, entityLinks, ragStats, botSummary, signals, notFoundCount, formCounts, unreadForms] =
     await Promise.all([
       repo.listContents({ locale }),
       repo.listEntityLinks(),
@@ -56,6 +58,8 @@ export default async function AdminOverviewPage() {
       getBotStatsRepository(siteId).summary(30).catch(() => []),
       getIntelRepository(siteId).listSignals(500).catch(() => []),
       getRedirectRepository(siteId).countNotFound().catch(() => 0),
+      getFormSubmissionRepository(siteId).counts().catch(() => ({ new: 0, read: 0, spam: 0, archived: 0 })),
+      getFormSubmissionRepository(siteId).list({ status: "new", limit: 3 }).catch(() => []),
     ]);
 
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
@@ -172,6 +176,47 @@ export default async function AdminOverviewPage() {
           </Link>
         </div>
       </div>
+
+      {/* Okunmamış Yeni Form Bildirimi (yalnızca okunmamış gönderim varsa görünür) */}
+      {formCounts.new > 0 && (
+        <div
+          role="status"
+          className="flex flex-col justify-between gap-3 rounded-xl border border-blue-500/35 bg-blue-500/10 px-4 py-3 sm:flex-row sm:items-center"
+        >
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-600 text-white shadow-xs">
+              <Inbox className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[13px] font-semibold text-foreground">
+                  {formCounts.new} okunmamış yeni form gönderimi var
+                </span>
+                <span className="rounded-full bg-blue-600 px-2 py-0.5 font-mono text-[10px] font-semibold text-white">
+                  YENİ
+                </span>
+              </div>
+              {unreadForms.length > 0 && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                  {unreadForms.map((f) => (
+                    <span key={f.id} className="truncate">
+                      <strong className="font-medium text-foreground">{f.formTitle || "Form"}</strong>{" "}
+                      <span className="font-mono">({f.pagePath})</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <Link
+            href="/admin/forms/inbox?status=new"
+            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-[12px] font-semibold text-white hover:bg-blue-700 transition"
+          >
+            <span>Gelen Kutusunu Aç</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* 4'lü SaaS KPI Şeridi */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">

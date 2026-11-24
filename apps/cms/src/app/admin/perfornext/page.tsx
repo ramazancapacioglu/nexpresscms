@@ -8,7 +8,9 @@ import { cacheSnapshot } from "@/lib/cache";
 import { pluginEnabled } from "@/lib/plugin-gate";
 import { hydratePerfornextCache } from "@/lib/perfornext/hydrate";
 import { loadCruxState } from "@/lib/perfornext/crux";
+import { loadPageSpeedState } from "@/lib/perfornext/pagespeed";
 import { CruxSection } from "./crux-section";
+import { PageSpeedSection } from "./pagespeed-section";
 import {
   budgetPerformanceReport,
   contentReport,
@@ -125,6 +127,7 @@ export default async function PerfornextPage({
     media,
     budget,
     crux,
+    psi,
   ] = await Promise.all([
     isPluginModuleEnabled(siteId, PERFORNEXT_PLUGIN_ID, "budget"),
     isPluginModuleEnabled(siteId, PERFORNEXT_PLUGIN_ID, "cache"),
@@ -137,13 +140,14 @@ export default async function PerfornextPage({
     mediaPerformanceReport(siteId),
     budgetPerformanceReport(siteId),
     loadCruxState(siteId),
+    loadPageSpeedState(siteId),
   ]);
 
   const lastAnalyze = String(settings.lastAnalyzeAt ?? "");
   const lastWarmAt = String(settings.lastWarmAt ?? "");
   const lastWarmMs = settings.lastWarmMs != null ? `${Number(settings.lastWarmMs)} ms` : "—";
   const keepRevisions = Number(settings.keepRevisionsCount ?? 10) || 10;
-  const notice = done === "crux" ? String(sp.m ?? "").slice(0, 200) : resolveNotice(done, settings);
+  const notice = done === "crux" || done === "psi" ? String(sp.m ?? "").slice(0, 220) : resolveNotice(done, settings);
 
   // Gerçek verilerden bileşik sağlık göstergesi
   const lightPages = Math.max(0, content.published - content.heavy - content.critical);
@@ -427,6 +431,9 @@ export default async function PerfornextPage({
           </div>
         </section>
       </div>
+
+      {/* Google PageSpeed Insights (Lighthouse) Mobil & Masaüstü Takibi */}
+      <PageSpeedSection state={psi} />
 
       {/* Gerçek Chrome UX Report (CrUX) Bölümü */}
       <CruxSection state={crux} />

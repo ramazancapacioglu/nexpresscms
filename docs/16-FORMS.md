@@ -42,3 +42,11 @@ Dosya yükleme alanı, CAPTCHA (bal küpü + zaman belirteci + hız sınırı ku
 
 ## Açık rıza ve gizlilik penceresi (2026-11-16)
 Onay kutusunun etiketi gizlilik/rıza/KVKK içeriyorsa "Gizlilik politikası" bağlantısı gizlilik sayfasını (`gizlilik-politikasi`, gömülü görünüm) pencerede açar; sayfa yoksa metin düz kalır. Pencere betiksizdir (`:target`), içerik iframe ile tembel yüklenir. Hızlı iletişim penceresindeki form da aynı bağlantıyı taşır.
+
+
+---
+
+## 2026-11-24 Güncellemesi (Gönderim Yolu, Gelen Kutusu & Ana Panel Bildirimi)
+- **`RscForm` & `/api/forms/submit`:** `RscForm` gizli `_form` kimliğini gönderir; uç nokta `form_block`, `contact_campaign` (`${id}_form`), 2 segmentli yollar (`/kampanya/<slug>`) ve ters vekil `x-forwarded-host` başlığını destekler.
+- **Gelen Kutusu (`/admin/forms/inbox`) & Formlar (`/admin/forms`):** Gelen kutusunda `Tümü / Yeni / Okundu / Spam / Arşiv` sekmeleri ve form bazlı hızlı filtre rozetleri; Formlar listesinde durum sekmeleri, arama, sıralama ve toplu seçim işlemleri bulunur.
+- **Ana Gösterge Paneli (`/admin`):** Yalnızca okunmamış (`status = 'new'`) gönderim bulunduğunda üstte yeni form bildirim şeridi ve doğrudan `/admin/forms/inbox?status=new` kısayolu görünür.

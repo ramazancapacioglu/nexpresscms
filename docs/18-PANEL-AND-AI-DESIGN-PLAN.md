@@ -61,3 +61,12 @@ Sıfır veri kaybı ilkesiyle (`akinsoftizmir.com.tr` ve `ileriseo.com` veritaba
 2. **Faz 2 — Tasarım (5 Net Durak):** `Temalar` · `Özelleştirici` · `Site İskeleti` (`Header | Footer | Menüler | Kenar çubuğu`) · `Şablonlar & Modeller` · `Kütüphane & AI`. Özelleştirici'deki mükerrer tema çekmecesi kaldırıldı; **Özel CSS / Header-Footer Kodları** (`theme-store-tab-code.tsx`) Özelleştirici'nin 5. sekmesine (`/admin/themes/customize?tab=code`) alındı. `studio-client.tsx` 945 satırdan 253 satıra indirildi.
 3. **Faz 3 — SEO Merkezi:** 8 sekmeli tek tip üst çubuk (`Genel Bakış`, `Denetim`, `Site Haritası`, `Şemalar & Dizin`, `Yönlendirmeler`, `Webmaster`, `Raporlar`, `Ayarlar`). `SEO Ayarları` (`settings-shell.tsx`) çift yatay sekme yerine **sol dikey alt menü + sağ form** yapısına geçti. Tek kartlık `/admin/seo/engine` sayfası `/admin/seo/schemas#arama-dizini` altına birleştirildi (eski adres yönlenir).
 4. **Faz 4 — Sol Menü, Üst Bar & Kural Uyumu:** `Tasarım` sol menüsü 5 öğeye indirildi; üst bar `?format=md` ve sol alt vitrin bağlantıları sitenin gerçek dil kipine (`publicBase`) bağlandı; `QUICK_COMMANDS` içindeki eski üçüncü parti ürün adları temizlendi.
+
+
+---
+
+## 2026-11-24 Panel & Performans Güncellemesi
+- **SaaS Grafik & Gösterge Kiti (`components/admin/ui/saas-charts.tsx`):** `KpiStatCard`, `SemiCircleGauge` (180° sağlık göstergesi), `VerticalBarChart`, `HealthBarRow`, `StackedDistributionBar` sıfır dış grafik kütüphanesiyle Ana Panel (`/admin`), SEO Komuta Merkezi (`/admin/seo`), SEO Raporları (`/admin/seo/reports`), Tekil Sayfa Raporu (`/admin/seo/page-report`) ve Perfornext (`/admin/perfornext`) ekranlarında standartlaştırıldı.
+- **Perfornext + Google PageSpeed Insights (`lib/perfornext/pagespeed.ts`):** CrUX saha verisinin yanında Mobil & Masaüstü Lighthouse API v5 ölçümü (4 kategori puanı + `LCP/CLS/FCP/TBT/TTFB` + son 10 ölçüm geçmişi) eklendi.
+- **Editör & Özelleştir & Ayarlar:** Editör sağ denetçisi sürüklenebilir (`300–620px`, varsayılan `368px`), görünüm modu `<select>` (varsayılan `Görsel`), Üst sayfa/Yorum ayarları Yayın sekmesinde ve üst barda Tekil Sayfa SEO Raporu kısayolu bulunur. Öne çıkan sayfa ve blog seçimi (`ReadingCard`) `/admin/themes/customize` altına taşındı; `/admin/settings` sekmeleri tek tip ızgara ve genişlikte hizalandı.
+- **Toplu İşlemler & Filtreler:** Sayfalar, Blog, Soru-Cevap, Medya (Kullanılmayanlar raporu dahil), Kampanyalar, Formlar, Eklentiler ve Temalar ekranlarının tamamında arama, filtreleme ve sıralama (içerik, kampanya, form ve medyada toplu seçim + toplu işlemler) bulunur.

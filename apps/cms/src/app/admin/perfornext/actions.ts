@@ -15,6 +15,7 @@ import {
   listSitemapEntries,
 } from "@/lib/public-data";
 import { refreshCrux, saveCruxSettings } from "@/lib/perfornext/crux";
+import { runPageSpeedAudit, type PsiStrategy } from "@/lib/perfornext/pagespeed";
 import { PERFORNEXT_PLUGIN_ID } from "@/plugins/perfornext";
 import "@/plugins/register";
 
@@ -110,6 +111,19 @@ export async function recompileMarkdownAction() {
   });
   await invalidateSite(admin.siteId);
   redirect("/admin/perfornext?done=markdown");
+}
+
+/** Google PageSpeed Insights (Lighthouse API v5) ölçümü çalıştırır. */
+export async function runPageSpeedAction(formData: FormData) {
+  const admin = await guard("perfornext.pagespeed");
+  const url = String(formData.get("url") ?? "").trim();
+  const rawStrategy = String(formData.get("strategy") ?? "mobile");
+  const strategy: PsiStrategy = rawStrategy === "desktop" ? "desktop" : "mobile";
+  const result = await runPageSpeedAudit(admin.siteId, url, strategy);
+  const msg = result.ok
+    ? `PageSpeed (${strategy === "mobile" ? "Mobil" : "Masaüstü"}) ölçüldü: Performans ${result.snapshot.scores.performance}, SEO ${result.snapshot.scores.seo}.`
+    : result.error;
+  redirect(`/admin/perfornext?done=psi&m=${encodeURIComponent(msg)}`);
 }
 
 /** Önbellek süresini kaydeder ve çalışan sürece uygular. */

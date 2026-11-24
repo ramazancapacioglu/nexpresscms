@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — Google PageSpeed Insights (Lighthouse) Takibi, Ana Panel Okunmamış Form Bildirimi & Editör SEO Raporu Kısayolu
+- **Perfornext Google PageSpeed Insights (`lib/perfornext/pagespeed.ts`, `pagespeed-section.tsx`, `perfornext/actions.ts`):** Mobil ve Masaüstü Lighthouse API v5 ölçümü (Performans, Erişilebilirlik, En İyi Uygulamalar, SEO 0–100 + `LCP`, `CLS`, `FCP`, `TBT`, `TTFB`) ve son 10 ölçüm geçmişi eklendi.
+- **Ana Gösterge Paneli Okunmamış Form Bildirimi (`/admin/page.tsx`):** Yalnızca `status = 'new'` okunmamış gönderim olduğunda üstte bildirim şeridi, son 3 gönderim özeti ve `/admin/forms/inbox?status=new` kısayolu gösterilir.
+- **Editör Tekil Sayfa Raporu Kısayolu (`dual-mode-editor-topbar.tsx`):** Kayıtlı içerikler düzenlenirken üst bardan tek tıkla `/admin/seo/page-report?id=...` açılabilir.
+- **Dokümantasyon:** `docs/16-FORMS.md`, `docs/18-PANEL-AND-AI-DESIGN-PLAN.md` ve `docs/06-PROGRESS-LOG.md` güncellendi.
+
 ### [2026-11-24] — Editör Denetçisi, Özelleştir, Ayarlar Hizalama, Performans SaaS Paneli & Toplu Liste İşlemleri
 - **Editör (`engage-tab.tsx`, `publish-tab.tsx`, `block-inspector.tsx`, `studio-view-bar.tsx`):** Medya sekmesindeki **Üst sayfa & sütun** ve **Yorum, İnceleme & Sosyal Paylaşım** kartları **Yayın** sekmesine taşındı. Sağ denetçi varsayılan `368px` genişliğe çıkarıldı ve sol kenar sürükleme tutamacıyla (`300–620px`, `localStorage` kalıcı, çift tıkla sıfırla) yeniden boyutlandırılabilir hale getirildi. Görsel / Önizleme / JSON / Markdown geçişi tek `<select>` seçicisine alındı (varsayılan `Görsel`).
 - **Özelleştir & Ayarlar (`themes/customize/page.tsx`, `pages/page.tsx`, `settings-tabs-shell.tsx`):** **Öne çıkan sayfa ve blog** (`ReadingCard`) Sayfalar listesinden Özelleştir sayfası altına taşındı; Genel Ayarlar sekmeleri ve içerik alanı tek tip yükseklik/genişlik ve ikonlu ızgarada hizalandı.
