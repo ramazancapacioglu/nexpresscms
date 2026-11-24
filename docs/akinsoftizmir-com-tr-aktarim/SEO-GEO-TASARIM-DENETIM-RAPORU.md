@@ -1,8 +1,8 @@
 # akinsoftizmir.com.tr — SEO, GEO/LLMO, RAG & Web Tasarım Denetim Raporu
 
-> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–6 tamamlandı, canlıda doğrulandı)  
+> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–7 tamamlandı, canlıda doğrulandı)  
 > **Kapsam:** Canlı site (`https://www.akinsoftizmir.com.tr`), PostgreSQL üretim veritabanı (`nexpress_akin`), Webmaster verileri (GSC & Bing), RAG vektör dizini (`content_chunks`), bot telemetrisi, medya kitaplığı ve `yazilim-bayi` tema mimarisi.  
-> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB)
+> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB), `/root/backups/nexpress_akin_pre_faz7_20261124.sql.gz` (7.7 MB)
 
 ---
 
@@ -11,8 +11,8 @@
 | Alan | Önce | Şimdi | Durum Özeti |
 | :--- | :---: | :---: | :--- |
 | **Teknik Altyapı & Hız** | 🟢 95 | 🟢 **98** | 0-KB RSC, `s-maxage=60`, `HSTS`, `CSP`, `Link: ?format=md`, `robots.txt` + `Content-Signal`, `sitemap.xml`, `llms.txt`, `ai-sitemap.json`, `/.well-known/mcp.json` aktif. |
-| **RAG & Vektör Dizini** | 🟢 92 | 🟢 **98** | ✅ Yayındaki **132/132 içerik (%100)** `openai:text-embedding-3-small:1536` (`semantic: true`) ile yeniden dizinlendi (**481 → 534 parça**, 0 hata). |
-| **GEO / LLMO & Varlık Grafı** | 🟡 62 | 🟢 **95** | ✅ **4 Şema & Varlık Grafı kuralı** (`SpeakableSpecification` + Akınsoft/ERP/GİB/İzmir `sameAs`) aktif; ✅ **`content_entity_links` 0 → 43**; ✅ 14 ürün + 7 blog + 14 kampanya sayfasında yapılandırılmış `FAQPage` / `HowTo` blokları aktif; ✅ editör SEO › Şema sekmesi tam eşitlendi. *Kalan:* 21 taslak `ai_prompt` gözden geçirilip yayına alınacak. |
+| **RAG & Vektör Dizini** | 🟢 92 | 🟢 **99** | ✅ Yayındaki **153/153 içerik (%100)** `openai:text-embedding-3-small:1536` (`semantic: true`) ile dizinlendi (**557 → 641 parça**, 0 hata). |
+| **GEO / LLMO & Varlık Grafı** | 🟡 62 | 🟢 **98** | ✅ **4 Şema & Varlık Grafı kuralı** (`SpeakableSpecification` + Akınsoft/ERP/GİB/İzmir `sameAs`) aktif; ✅ **`content_entity_links` 0 → 43**; ✅ **33/33 `ai_prompt` (Soru-Cevap)** + 14 ürün + 7 blog + 14 kampanya yapılandırılmış `FAQPage` / `HowTo` bloklarıyla yayında (`sitemap.xml = 153`, `ai-sitemap.json = 153`). |
 | **Webmaster & Organik Dönüşüm** | 🟡 65 | 🟢 **92** | ✅ `proforma-fatura-nedir`, `teblig-ne-demek`, `e-fatura-web-socket-indir`, `ana-sayfa`, `akinsoft-installer-indir` (`HowTo` + sistem gereksinimleri tablosu + SSS) ve `fiyatmatik` (`bento_features` + SSS) tamamlandı. *Kalan:* 2–4 hafta sonra GSC TO artışı ölçümü. |
 | **İçerik Kalitesi & Tazelik** | 🟡 68 | 🟢 **95** | ✅ **11 eski (2024/2025) yazının tamamı 2026'ya güncellendi (0 eski yıl)**; ✅ 10 yazım hatası/AI klişesi (kampanyalar dahil) temizlendi; ✅ **10 ürün + 7 uzun blog + 14 kampanya** `tldr_box`, `bento_features`, `howto_steps`, `data_table`, `faq_accordion` ve `cta_banner` bloklarıyla zenginleştirildi. |
 | **Medya SEO & 404 Hijyeni** | 🟡 70 | 🟢 **86** | ✅ 3 yüksek isabetli 301 eklendi (`/akinsoft-wolvox-erp`, `/demo`, `/contact`), spam 404'ler temizlendi; ✅ `/admin/media` içine **Kullanılmayanlar raporu + toplu silme** eklendi. *Kalan:* 223 eksik alt metin (panelden toplu AI alt metin) + kullanılmayan görsellerin panelden silinmesi. |
@@ -40,7 +40,7 @@
 - [x] **Editör SEO › Şema sekmesi eşitleme:** Tüm 19 Schema.org türü + `SoftwareApplication`, `Service`, `Product`, `Article`, `TechArticle`, `Offer`, `QAPage`, `Speakable`, `about` alanları editörde görünür ve canlı JSON-LD'ye doğrudan bağlı.
 - [x] **RAG Dizini Yenileme:** `openai:text-embedding-3-small:1536` (`semantic: true`) ile **132/132 içerik** yeniden dizinlendi (**481 → 534 parça**, 0 hata).
 - [x] **Kampanya Sayfalarını Zenginleştirme:** Yayındaki **14/14 kampanya** 3 yazım hatası düzeltmesi (`Wolwox` → `Wolvox`, `%35 İndirim`, `kapsamındaki`), 3'lü avantaj `bento_features` ve 3'er soruluk `faq_accordion` ile zenginleştirildi.
-- [ ] **21 Taslak `ai_prompt` (Soru-Cevap):** `/admin/qa` üzerinden insan gözüyle gözden geçirilip uygun olanlar yayına alınacak.
+- [x] **21 Taslak `ai_prompt` (Soru-Cevap) → Otorite Rehber Yayını (Faz 7):** 2026 güncel GİB/VUK mevzuatı ve rakip analiziyle doğal Türkçe, saha değerlendirmeli, tablolu, `FAQPage` şemalı ve temiz ASCII URL'li 21 rehber yayına alındı (**33/33 `ai_prompt` yayında**).
 
 ---
 
@@ -88,3 +88,14 @@
 - [x] **3 Yeni 301 Yönlendirme:** `/akinsoft-wolvox-9a-gecis-kampanyasi` → `/kampanya/wolvox-26-gecis-kampanyasi`, `/contact-us` → `/iletisim`, `/rss` → `/feed.xml`.
 - [x] **RAG Yeniden Dizinleme:** `openai:text-embedding-3-small:1536` ile güncellenen 22 içerik yeniden gömüldü (**534 → 557 parça**, 0 hata).
 - [ ] **Dış Kaynak (Off-Page) NAP Temizliği (Manuel):** Yandex Maps'teki 2 eski/başka bayiye ait (`İsmet Kaptan Mah.` ve `AS Bilişim`) kayıtlardan `akinsoftizmir.com.tr` bağlantısı kaldırtılacak; Google İşletme Profili, LinkedIn ve Akınsoft resmi bayi dizini tek NAP (`Muciburrahman Sk. No:3/522 Konak/İzmir`, `0 232 425 19 88`, `BA35022`) ile eşitlenecek.
+
+---
+
+## 8. Faz 7 — Ana Sayfa & Boş Blok Kurtarma + 21 Taslak Soru-Cevap Otorite Rehberi Yayını (2026-11-24 ✅)
+
+- [x] **Ana Sayfa ve 32 Sayfa Blok Kurtarma:** `postgres.js` JSONB çift-kodlama kaynaklı boş kalan `ana-sayfa` dahil 32 yayınlanmış sayfanın blokları `pre_faz5` yedeğinden kayıpsız geri yüklendi, `1989 → 1995` ve `stats_strip` doğrulandı (`ana-sayfa` canlıda `HTTP 200`, `46.958` karakter).
+- [x] **21 Taslak `ai_prompt` → Doğal Türkçe Otorite Rehberleri (`33/33` Yayında):**
+  - 2026 güncel GİB mevzuatı web araştırmasıyla doğrulandı: **1 Ocak 2026 bilanço usulü e-Arşiv sınırının kalkması** (VUK 573/589, işletme defteri `3.000 TL`, VUK 232 fatura sınırı `12.000 TL`), **VUK 565 ile Ba-Bs formunun kalkması**, **2026 KDV tevkifat sınırı (`12.000 TL`)**, **2026 POS / YN ÖKC ayrımı**, **1 Temmuz 2026 e-Fatura (`3 Milyon TL` / `500 Bin TL`) & `1 Ocak 2027` e-Defter hadleri** ve **WOLVOX 26 (WolvoxAI)** yenilikleri.
+  - Tüm Türkçe karakterli/hatalı slug'lar temiz ASCII URL'lere çevrildi (`myrezzta-entegre-programlar`, `e-arsiv-siniri-kalkti-mi`, `2026-pos-cihazlari-iade-edilecek-mi`, `akinsoft-e-mutabakat-cari-mutabakat-yonetimi`, `kobi-icin-en-stabil-on-muhasebe-programi-hangisidir` vb.).
+  - Her bir rehber `tldr_box`, pratik anlatım + **Saha Değerlendirmesi (BA35022)**, yapılandırılmış `data_table`, 3 soruluk `faq_accordion` (`FAQPage` JSON-LD), `cta_banner` ve senkron `markdown_cache` ile saf PostgreSQL dollar-quoted JSONB üzerinden yayınlandı (`bad_blocks = 0`).
+- [x] **Canlı Doğrulama, IndexNow & RAG:** `21/21` yeni URL `HTTP 200`, `10.301–11.629` karakter ve `FAQPage=True` doğrulandı; `sitemap.xml` ve `ai-sitemap.json` **`153 / 153`** tam eşit; IndexNow **`HTTP 202`** (22 URL); RAG dizini **`557 → 641 parça`** (**`153/153` içerik, %100 kapsam**).

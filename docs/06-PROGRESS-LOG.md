@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — akinsoftizmir.com.tr Faz 7 Ana Sayfa Kurtarma & 21 Taslak Soru-Cevap Otorite Rehberi Yayını
+- **Boş Blok Kurtarma (32 Sayfa):** `postgres.js` JSONB çift-kodlama kaynaklı boşalan `ana-sayfa` dahil 32 yayınlanmış sayfa `pre_faz5` yedeğinden kayıpsız geri yüklendi (`ana-sayfa` canlıda `HTTP 200`, `46.958` karakter, `1995` ve `BA35022` doğrulandı).
+- **21 Taslak `ai_prompt` Yayına Alındı (`33/33` Yayında):** 2026 güncel GİB mevzuatı (1 Ocak 2026 e-Arşiv sınırının kalkması, 12.000 TL fatura/tevkifat eşiği, VUK 565 Ba-Bs iptali, 2026 POS/YN ÖKC kuralı, 3M/500K e-Fatura hadleri, WOLVOX 26) ve rakip kıyaslamalarıyla doğal Türkçe, saha değerlendirmeli, `tldr_box` + `data_table` + `faq_accordion` (`FAQPage`) + `cta_banner` yapısında 21 rehber temiz ASCII slug'larla yayınlandı (`bad_blocks = 0`).
+- **Canlı Doğrulama, IndexNow & RAG:** `21/21` yeni rehber `HTTP 200` + `FAQPage=True`; `sitemap.xml = 153`, `ai-sitemap.json = 153` tam eşit; IndexNow **`HTTP 202`** (22 URL); OpenAI RAG dizini **`557 → 641 parça`** (**`153/153` içerik, %100 kapsam**). `docs/akinsoftizmir-com-tr-aktarim/SEO-GEO-TASARIM-DENETIM-RAPORU.md` güncellendi.
+
 ### [2026-11-24] — akinsoftizmir.com.tr Faz 6 E-E-A-T, Yazım/Sürüm Temizliği, 12 Otorite Q&A Rehberi & IndexNow
 - **Faktüel & E-E-A-T Düzeltmeleri (53 içerik):** Ana sayfadaki `1989` → `1995`, `/iletisim` + `LocalBusiness` çalışma saatleri birliği (`Mo-Fr 08:30-18:00`, `Sa 09:00-16:00`), `Wolwox` / `E-Aşiv` / `Akınsofttarafından` / `entagre` / `Rezarvasyon` / `Wolvox ERP 9` → `26` ve Yetkili Ana Bayi (`BA35022`) dil birliği tamamlandı.
 - **12 Yayındaki `ai_prompt` Otorite Dönüşümü:** Tamamı `tldr_box` + teknik `data_table` + `faq_accordion` (`FAQPage`) + dönüşüm `cta_banner` ile zenginleştirildi; 3 yeni 301 kuralı (`/akinsoft-wolvox-9a-gecis-kampanyasi`, `/contact-us`, `/rss`) eklendi; RAG dizini **557 parçaya** güncellendi.
