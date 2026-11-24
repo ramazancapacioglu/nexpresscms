@@ -2,8 +2,17 @@ import React from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { PluginSlot, slotRegistry } from "@nexpress/core";
+import {
+  getBotStatsRepository,
+  getChunkRepository,
+  getIntelRepository,
+  getRedirectRepository,
+  getScopedRepository,
+} from "@nexpress/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
+import { KpiStatCard } from "@/components/admin/ui/saas-charts";
+import { Activity, Bot, Database, Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +39,6 @@ const GROUPS = [
 
 type GroupId = (typeof GROUPS)[number]["id"];
 
-/**
- * SEO & GEO Raporları:
- * Tüm kartları alt alta yığmak yerine kategori sekmeleriyle (?group=...) yalnız seçili grubu
- * 2 sütunlu ızgarada yükler (hem daha okunaklı hem daha hızlı).
- */
 export default async function AdminSeoReportsPage({
   searchParams,
 }: {
@@ -48,12 +52,32 @@ export default async function AdminSeoReportsPage({
       : "visibility";
   const active = GROUPS.find((g) => g.id === activeId) ?? GROUPS[0];
 
+  const repo = getScopedRepository(siteId);
+  const site = await repo.getSite();
+  const locale = site?.defaultLocale ?? "tr";
+
+  const [contents, signals, botSummary, ragStats, notFoundCount] = await Promise.all([
+    repo.listContents({ locale, status: "published" }),
+    getIntelRepository(siteId).listSignals(500).catch(() => []),
+    getBotStatsRepository(siteId).summary(30).catch(() => []),
+    getChunkRepository(siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
+    getRedirectRepository(siteId).countNotFound().catch(() => 0),
+  ]);
+
+  const avgSeo =
+    contents.length > 0
+      ? Math.round(contents.reduce((acc, c) => acc + c.seoScore, 0) / contents.length)
+      : 0;
+  const totalImpressions = signals.reduce((acc, s) => acc + s.impressions, 0);
+  const totalClicks = signals.reduce((acc, s) => acc + s.clicks, 0);
+  const totalBotHits = botSummary.reduce((acc, b) => acc + b.total, 0);
+
   const counts = Object.fromEntries(
     GROUPS.map((g) => [g.id, slotRegistry.getEntries(g.slot).length])
   ) as Record<GroupId, number>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SeoTabs />
       <AdminPageHeader
         title="SEO & GEO Raporları"
@@ -61,7 +85,7 @@ export default async function AdminSeoReportsPage({
         actions={
           <nav
             aria-label="Rapor kategorileri"
-            className="inline-flex flex-wrap items-center gap-0.5 rounded-lg border border-[#E6E7EA] bg-[#F4F5F7] p-0.5 dark:border-[#23262E] dark:bg-[#1C1E24]"
+            className="inline-flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5"
           >
             {GROUPS.map((g) => {
               const isCurrent = g.id === active.id;
@@ -73,12 +97,12 @@ export default async function AdminSeoReportsPage({
                   aria-current={isCurrent ? "page" : undefined}
                   className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-[12px] font-medium transition ${
                     isCurrent
-                      ? "bg-white text-[#14151A] shadow-2xs dark:bg-[#2A2D35] dark:text-[#F3F4F6]"
-                      : "text-[#5C5F66] hover:text-[#14151A] dark:text-[#9CA3AF] dark:hover:text-[#F3F4F6]"
+                      ? "bg-background text-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <span>{g.title}</span>
-                  <span className="rounded bg-[#E6E7EA]/70 px-1.5 py-0.2 font-mono text-[10px] text-[#5F6570] dark:bg-[#2E333D] dark:text-[#9CA3AF]">
+                  <span className="rounded bg-muted px-1.5 py-px font-mono text-[10px]">
                     {counts[g.id]}
                   </span>
                 </Link>
@@ -88,12 +112,60 @@ export default async function AdminSeoReportsPage({
         }
       />
 
+      {/* Yönetici Özet KPI Şeridi */}
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiStatCard
+          label="Ortalama SEO Skoru"
+          value={avgSeo}
+          suffix="/100"
+          badge={`${contents.length} yayında`}
+          badgeTone={avgSeo >= 85 ? "emerald" : avgSeo >= 70 ? "blue" : "amber"}
+          hint={`${notFoundCount} açık 404`}
+          icon={<Activity className="h-4 w-4" />}
+          iconTone="emerald"
+          progressPct={avgSeo}
+          href="/admin/seo/audit"
+        />
+        <KpiStatCard
+          label="Webmaster Performansı"
+          value={totalImpressions > 0 ? totalImpressions.toLocaleString("tr-TR") : "—"}
+          suffix={totalImpressions > 0 ? "gösterim" : undefined}
+          badge={`${totalClicks.toLocaleString("tr-TR")} tıklama`}
+          badgeTone="blue"
+          hint={`${signals.length} kayıtlı sorgu`}
+          icon={<Search className="h-4 w-4" />}
+          iconTone="blue"
+          href="/admin/seo"
+        />
+        <KpiStatCard
+          label="AI & Arama Botları"
+          value={totalBotHits.toLocaleString("tr-TR")}
+          suffix="hit (30g)"
+          badge={`${botSummary.length} aktif bot`}
+          badgeTone="amber"
+          hint="Doğrulanmış + bildirilen"
+          icon={<Bot className="h-4 w-4" />}
+          iconTone="amber"
+        />
+        <KpiStatCard
+          label="RAG Vektör Dizini"
+          value={ragStats.chunks.toLocaleString("tr-TR")}
+          suffix="parça"
+          badge={`${ragStats.contents} içerik`}
+          badgeTone="violet"
+          hint={ragStats.models[0]?.model ?? "Henüz dizinlenmedi"}
+          icon={<Database className="h-4 w-4" />}
+          iconTone="violet"
+          href="/admin/seo/schemas"
+        />
+      </div>
+
       <PluginSlot
         name={active.slot}
         siteId={siteId}
         className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2 [&>*]:min-w-0"
         fallback={
-          <div className="rounded-lg border border-[#E6E7EA] bg-white px-6 py-12 text-center text-[13px] text-[#5F6570] dark:border-[#23262E] dark:bg-[#15171C] dark:text-[#8C9099]">
+          <div className="rounded-xl border border-border bg-card px-6 py-12 text-center text-[13px] text-muted-foreground">
             Bu kategoride etkin rapor kartı yok. İlgili modülleri Eklentiler sayfasından açabilirsiniz.
           </div>
         }

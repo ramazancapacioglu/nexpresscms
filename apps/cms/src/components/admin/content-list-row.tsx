@@ -150,25 +150,33 @@ export function ContentListRow({ s, item }: { s: ContentListState; item: Content
 
         {/* SEO Motoru Skoru */}
         <td className="px-3.5 py-3 align-top">
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-bold ${
-                score >= 85
-                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"
-                  : score >= 70
-                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
-                    : "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30"
-              }`}
-            >
-              {grade}
-            </span>
-            <div>
-              <div className="text-xs font-mono font-bold text-foreground">
+          <div className="min-w-[110px] space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <span
+                className={`inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold ${
+                  score >= 85
+                    ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30"
+                    : score >= 70
+                      ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30"
+                      : "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30"
+                }`}
+              >
+                {grade}
+              </span>
+              <span className="font-mono text-xs font-bold tabular-nums text-foreground">
                 {score}/100
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {item.noIndex ? "NoIndex" : `${item.schemaType}`}
-              </div>
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${
+                  score >= 85 ? "bg-emerald-500" : score >= 70 ? "bg-blue-500" : "bg-amber-500"
+                }`}
+                style={{ width: `${Math.max(4, Math.min(100, score))}%` }}
+              />
+            </div>
+            <div className="truncate text-[10px] text-muted-foreground">
+              {item.noIndex ? "NoIndex" : `${item.schemaType}`}
             </div>
           </div>
         </td>

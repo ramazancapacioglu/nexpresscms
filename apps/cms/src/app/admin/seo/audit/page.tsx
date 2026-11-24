@@ -1,19 +1,30 @@
 import React from "react";
 import Link from "next/link";
-import { auditSeo, countImagesMissingAlt, resolvePublishing, SEO_ISSUE_LABELS, suggestInternalLinks, type SeoIssueId } from "@nexpress/core";
+import {
+  auditSeo,
+  countImagesMissingAlt,
+  resolvePublishing,
+  SEO_ISSUE_LABELS,
+  suggestInternalLinks,
+  type SeoIssueId,
+} from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { requireUser } from "@/lib/auth/session";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { ExternalLinkAudit } from "@/components/admin/seo/external-link-audit";
+import { KpiStatCard } from "@/components/admin/ui/saas-charts";
+import { SeoAuditTableClient } from "@/components/admin/seo/seo-audit-table-client";
+import { AlertCircle, AlertTriangle, CheckCircle2, Gauge } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const border = "border-[#E6E7EA] dark:border-[#23262E]";
-const LEVEL = { error: "bg-red-500/10 text-red-700 dark:text-red-300", warning: "bg-amber-500/15 text-amber-800 dark:text-amber-300", info: "bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]" } as const;
-
-export default async function SeoAuditPage({ searchParams }: { searchParams: Promise<{ issue?: string; locale?: string }> }) {
+export default async function SeoAuditPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ issue?: string; locale?: string }>;
+}) {
   const me = await requireUser();
   const sp = await searchParams;
   const repo = getScopedRepository(me.siteId);
@@ -23,12 +34,27 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
   const contents = await repo.listContents({ locale, status: "published" });
   const report = auditSeo(
     contents.map((c) => ({
-      id: c.id, locale, slug: c.slug, title: c.title, type: c.type, status: c.status, metaTitle: c.metaTitle ?? null, metaDescription: c.metaDescription ?? null, tldr: c.tldr ?? null, noIndex: c.noIndex,
-      seoScore: c.seoScore, words: (c.markdownCache ?? "").split(/\s+/).filter(Boolean).length, focusKeyword: resolvePublishing(c.schemaAttributes).focusKeyword ?? "", imagesMissingAlt: countImagesMissingAlt(c.blocks as never),
+      id: c.id,
+      locale,
+      slug: c.slug,
+      title: c.title,
+      type: c.type,
+      status: c.status,
+      metaTitle: c.metaTitle ?? null,
+      metaDescription: c.metaDescription ?? null,
+      tldr: c.tldr ?? null,
+      noIndex: c.noIndex,
+      seoScore: c.seoScore,
+      words: (c.markdownCache ?? "").split(/\s+/).filter(Boolean).length,
+      focusKeyword: resolvePublishing(c.schemaAttributes).focusKeyword ?? "",
+      imagesMissingAlt: countImagesMissingAlt(c.blocks as never),
     }))
   );
   const issue = sp.issue && sp.issue in SEO_ISSUE_LABELS ? (sp.issue as SeoIssueId) : null;
-  const rows = report.rows.filter((r) => (issue ? r.issues.some((i) => i.id === issue) : r.issues.some((i) => i.level !== "info")));
+  const rows = issue
+    ? report.rows.filter((r) => r.issues.some((i) => i.id === issue))
+    : report.rows;
+
   const linkSuggestions = suggestInternalLinks(
     contents.map((c) => ({
       id: c.id,
@@ -51,9 +77,15 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
         description={`Yayındaki ${s.pages} içeriğin başlık, açıklama, TL;DR, içerik derinliği, alt metin, iç bağlantı fırsatı ve kırık bağlantı kontrolü.`}
         actions={
           locales.length > 1 ? (
-            <div role="tablist" aria-label="Dil" className="inline-flex rounded-md bg-[#F4F5F7] p-0.5 text-[12px] font-medium dark:bg-[#1C1E24]">
+            <div role="tablist" aria-label="Dil" className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 text-[12px] font-medium">
               {locales.map((l) => (
-                <Link key={l} role="tab" aria-selected={l === locale} href={`/admin/seo/audit?locale=${l}`} className={`rounded px-3 py-1 ${l === locale ? "bg-white shadow-sm dark:bg-[#2A2D35]" : "text-[#5C5F66] dark:text-[#9CA3AF]"}`}>
+                <Link
+                  key={l}
+                  role="tab"
+                  aria-selected={l === locale}
+                  href={`/admin/seo/audit?locale=${l}`}
+                  className={`rounded-md px-3 py-1 ${l === locale ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground"}`}
+                >
                   {l.toUpperCase()}
                 </Link>
               ))}
@@ -62,61 +94,101 @@ export default async function SeoAuditPage({ searchParams }: { searchParams: Pro
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[["Ortalama puan", s.avgScore], ["Hatalı sayfa", s.withErrors], ["Uyarılı sayfa", s.withWarnings], ["Sorunsuz", s.clean]].map(([label, v]) => (
-          <div key={label as string} className={`rounded-lg border ${border} bg-white p-4 dark:bg-[#15171C]`}><p className="text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099]">{label}</p><p className="mt-1 text-[22px] font-semibold">{v}</p></div>
-        ))}
+      <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <KpiStatCard
+          label="Ortalama Puan"
+          value={s.avgScore}
+          suffix="/100"
+          badgeTone={s.avgScore >= 85 ? "emerald" : "blue"}
+          progressPct={s.avgScore}
+          icon={<Gauge className="h-4 w-4" />}
+          iconTone="blue"
+        />
+        <KpiStatCard
+          label="Hatalı Sayfa"
+          value={s.withErrors}
+          badge={s.withErrors === 0 ? "Temiz" : "Öncelikli"}
+          badgeTone={s.withErrors === 0 ? "emerald" : "rose"}
+          icon={<AlertCircle className="h-4 w-4" />}
+          iconTone="rose"
+        />
+        <KpiStatCard
+          label="Uyarılı Sayfa"
+          value={s.withWarnings}
+          badge="İyileştirilebilir"
+          badgeTone="amber"
+          icon={<AlertTriangle className="h-4 w-4" />}
+          iconTone="amber"
+        />
+        <KpiStatCard
+          label="Sorunsuz Sayfa"
+          value={s.clean}
+          suffix={`/ ${s.pages}`}
+          badgeTone="emerald"
+          progressPct={s.pages > 0 ? (s.clean / s.pages) * 100 : 0}
+          icon={<CheckCircle2 className="h-4 w-4" />}
+          iconTone="emerald"
+        />
       </div>
 
+      {/* Sorun Türü Hızlı Filtre Rozetleri */}
       <div className="flex flex-wrap gap-1.5 text-[12px]">
-        <Link href={q("")} aria-current={!issue} className={`rounded-full border px-3 py-1 ${!issue ? "border-[#266DF0] bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]" : border}`}>Sorunlular</Link>
-        {(Object.entries(s.byIssue) as Array<[SeoIssueId, number]>).sort((a, b) => b[1] - a[1]).map(([id, n]) => (
-          <Link key={id} href={q(`&issue=${id}`)} aria-current={issue === id} className={`rounded-full border px-3 py-1 ${issue === id ? "border-[#266DF0] bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]" : border}`}>{SEO_ISSUE_LABELS[id]} ({n})</Link>
-        ))}
+        <Link
+          href={q("")}
+          aria-current={!issue ? "page" : undefined}
+          className={`rounded-full border px-3 py-1 font-medium transition ${
+            !issue
+              ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+              : "border-border bg-card text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Tümü ({s.pages})
+        </Link>
+        {(Object.entries(s.byIssue) as Array<[SeoIssueId, number]>)
+          .sort((a, b) => b[1] - a[1])
+          .map(([id, n]) => (
+            <Link
+              key={id}
+              href={q(`&issue=${id}`)}
+              aria-current={issue === id ? "page" : undefined}
+              className={`rounded-full border px-3 py-1 font-medium transition ${
+                issue === id
+                  ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {SEO_ISSUE_LABELS[id]} ({n})
+            </Link>
+          ))}
       </div>
 
-      {rows.length === 0 ? (
-        <div className={`rounded-lg border ${border} bg-white px-6 py-14 text-center text-[13px] dark:bg-[#15171C]`}>{s.pages === 0 ? "Bu dilde yayında içerik yok." : "Bu süzgeçte sorun yok. 🎯"}</div>
-      ) : (
-        <ul className={`divide-y rounded-lg border ${border} ${border.replace("border-", "divide-")} bg-white dark:bg-[#15171C]`}>
-          {rows.map((r) => (
-            <li key={r.id} className="flex flex-wrap items-start gap-x-4 gap-y-1.5 px-4 py-3 text-[12px]">
-              <div className="min-w-0 flex-1 basis-64">
-                <Link href={`/admin/contents?id=${encodeURIComponent(r.id)}&locale=${locale}`} className="block truncate text-[13px] font-medium hover:underline">{r.title}</Link>
-                <p className="text-[#5F6570] dark:text-[#8C9099]">{r.type} · /{locale}/{r.slug} · {r.words} sözcük</p>
-              </div>
-              <span className="w-16 shrink-0 text-right font-mono text-[#5F6570] dark:text-[#8C9099]">{r.seoScore}/100</span>
-              <div className="flex min-w-0 flex-[2] basis-72 flex-wrap gap-1">
-                {r.issues.map((i) => <span key={i.id} className={`rounded px-1.5 py-0.5 text-[11px] ${LEVEL[i.level]}`}>{i.label}</span>)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <SeoAuditTableClient rows={rows} locale={locale} />
 
       {linkSuggestions.length > 0 && (
-        <section className="space-y-2 pt-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#5F6570]">İç Bağlantı Fırsatları (Topic Cluster)</h2>
-          <ul className={`divide-y rounded-lg border ${border} bg-white dark:bg-[#15171C]`}>
+        <section className="space-y-2.5 pt-2">
+          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
+            İç Bağlantı Fırsatları (Topic Cluster)
+          </h2>
+          <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/80 bg-card shadow-2xs">
             {linkSuggestions.map((item) => (
               <li key={`${item.fromId}:${item.toId}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[12px]">
                 <div>
-                  <Link href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`} className="font-medium hover:underline">
+                  <Link href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`} className="font-semibold text-foreground hover:underline">
                     {item.fromTitle}
                   </Link>
-                  <span className="text-[#5F6570]"> içinde </span>
-                  <span className="rounded bg-[#266DF0]/10 px-1.5 py-0.5 font-mono text-[11px] text-[#1D5ED8] dark:text-[#7AA7FF]">
+                  <span className="text-muted-foreground"> içinde </span>
+                  <span className="rounded bg-blue-500/10 px-1.5 py-0.5 font-mono text-[11px] text-blue-700 dark:text-blue-300">
                     “{item.matchedPhrase}”
                   </span>
-                  <span className="text-[#5F6570]"> geçiyor ancak </span>
-                  <Link href={`/admin/contents?id=${encodeURIComponent(item.toId)}&locale=${locale}`} className="font-medium hover:underline">
+                  <span className="text-muted-foreground"> geçiyor ancak </span>
+                  <Link href={`/admin/contents?id=${encodeURIComponent(item.toId)}&locale=${locale}`} className="font-semibold text-foreground hover:underline">
                     /{item.toSlug}
                   </Link>
-                  <span className="text-[#5F6570]"> sayfasına bağlantı verilmemiş.</span>
+                  <span className="text-muted-foreground"> sayfasına bağlantı verilmemiş.</span>
                 </div>
                 <Link
                   href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`}
-                  className={`rounded border ${border} px-2.5 py-1 text-[11px] hover:bg-black/5 dark:hover:bg-white/5`}
+                  className="rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition"
                 >
                   Stüdyoda Bağla →
                 </Link>

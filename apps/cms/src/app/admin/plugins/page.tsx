@@ -4,6 +4,8 @@ import Link from "next/link";
 import { pluginRegistry, pluginSummary, verifyPluginLicenseKey } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { KpiStatCard } from "@/components/admin/ui/saas-charts";
+import { Blocks, CheckCircle2, Clock, Sparkles } from "lucide-react";
 import { requireAdminPage } from "@/lib/auth/session";
 import { getPluginState } from "@/lib/plugin-state";
 import "@/plugins/register";
@@ -71,13 +73,6 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
     { ready: 0, planned: 0, active: 0 }
   );
 
-  const stats = [
-    { label: "Kurulu eklenti", value: manifests.length },
-    { label: "Açık modül", value: totals.active },
-    { label: "Hazır modül", value: totals.ready },
-    { label: "Yolda (yakında)", value: totals.planned },
-  ];
-
   return (
     <div className="space-y-5">
       <AdminPageHeader
@@ -106,14 +101,39 @@ export default async function AdminPluginsPage({ searchParams }: { searchParams?
 
       {tab === "installed" ? (
         <>
-          <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {stats.map((s) => (
-              <div key={s.label} className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-3.5 py-2.5">
-                <dt className="text-[11px] text-[#5F6570] dark:text-[#8C9099]">{s.label}</dt>
-                <dd className="text-[20px] font-semibold tabular-nums text-[#14151A] dark:text-[#F3F4F6]">{s.value}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
+            <KpiStatCard
+              label="Kurulu Eklenti"
+              value={manifests.length}
+              badge={`${cards.filter((c) => c.enabled).length} aktif`}
+              badgeTone="emerald"
+              icon={<Blocks className="h-4 w-4" />}
+              iconTone="blue"
+            />
+            <KpiStatCard
+              label="Açık Modül"
+              value={totals.active}
+              suffix={`/ ${totals.ready}`}
+              badgeTone="emerald"
+              progressPct={totals.ready > 0 ? (totals.active / totals.ready) * 100 : 0}
+              icon={<CheckCircle2 className="h-4 w-4" />}
+              iconTone="emerald"
+            />
+            <KpiStatCard
+              label="Hazır Modül"
+              value={totals.ready}
+              hint="Anında etkinleştirilebilir"
+              icon={<Sparkles className="h-4 w-4" />}
+              iconTone="violet"
+            />
+            <KpiStatCard
+              label="Yolda (Yakında)"
+              value={totals.planned}
+              hint="Planlanan modüller"
+              icon={<Clock className="h-4 w-4" />}
+              iconTone="amber"
+            />
+          </div>
           <PluginsManager plugins={cards} siteDna={siteDna} initialId={sp.plugin && cards.some((c) => c.id === sp.plugin) ? sp.plugin : cards[0]?.id ?? ""} />
         </>
       ) : (

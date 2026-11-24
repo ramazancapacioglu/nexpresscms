@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — Yönetim Paneli SaaS Görsel Yenilemesi, SVG Grafik Kiti ve Gelişmiş Liste Filtreleri
+- **Ortak SaaS Grafik & Gösterge Kiti (`apps/cms/src/components/admin/ui/saas-charts.tsx`):** `KpiStatCard` (ikon rozeti, değer, durum rozeti, mini sparkline/ilerleme çubuğu), `SemiCircleGauge` (180° SEO/GEO sağlık göstergesi), `VerticalBarChart`, `HealthBarRow` ve `StackedDistributionBar` bileşenleri sıfır dış grafik kütüphanesiyle saf SVG + Tailwind v4 olarak eklendi.
+- **Ana Panel (`/admin`, `overview-table-client.tsx`):** 4'lü gerçek veri KPI şeridi (yayındaki içerikler, ortalama SEO/GEO, GSC/Bing görünürlüğü, AI/RAG parça & bot ziyareti), SEO puan dağılımı sütun grafiği, anahtar kelime pozisyon dağılımı, 180° sağlık göstergesi ve sekmeli/filtreli/CSV dışa aktarmalı içerik özet tablosu eklendi.
+- **SEO Komuta Merkezi, Raporlar & Denetim (`/admin/seo`, `/admin/seo/reports`, `/admin/seo/audit`):** Webmaster (GSC/Bing/Yandex) anahtar kelime & fırsat tablosu (`seo-signals-table-client.tsx`: `Tümü / İlk 10 / Fırsat 4–20 / Yükselenler / Düşenler`, kaynak filtresi, sıralama, CSV), 30 günlük AI & arama bot grafiği, rapor sayfası üst KPI şeridi ve denetim tablosu (`seo-audit-table-client.tsx`: arama, tür, önem seviyesi, sıralama, CSV) eklendi.
+- **Sayfa, Blog, Eklenti & Tema Listeleri:** `ContentListFilters` / `useContentList` içine **SEO Puanı filtresi** (`<70`, `70–84`, `85+`), **sıralama** (`SEO ↑/↓`, `Başlık A–Z`, `Blok Sayısı`), sıfırlama ve **CSV dışa aktarma**, `ContentListRow` içine yatay SEO sağlık çubuğu; `/admin/plugins` içine eklenti arama + `Tümü / Açık / Kapalı / Pro` filtreleri + KPI kartları; `/admin/themes` içine `Demo İçerikli` filtresi eklendi.
+
 ### [2026-11-23] — akinsoftizmir.com.tr Faz 5 İçerik, Kampanya, Tasarım & RAG Zenginleştirme
 - **10 Ürün Sayfası + 7 Uzun Blog Yazısı:** `/akinsoft-installer-indir` (`HowTo` + sistem gereksinimleri tablosu + SSS), `/fiyatmatik`, `/e-ofis`, `/stok-depo-yonetimi`, `/wolvox-uretim-yontemi`, `/qr-menu`, `/hotel-smart`, `/prokuafor`, `/octoplus`, `/wolvox-webconnect` ile 7 uzun teknik/bilgilendirici yazıya `tldr_box`, `bento_features`, `howto_steps`, `faq_accordion` (`FAQPage` / `HowTo` JSON-LD) ve dönüşüm `cta_banner` blokları eklendi.
 - **14 Yayındaki Kampanya:** 3 yazım hatası (`Wolwox` → `Wolvox`, `%35 İndirim`, `kapsamındaki`) giderildi; tümüne 3'lü avantaj `bento_features` + 3'er soruluk `faq_accordion` eklendi.

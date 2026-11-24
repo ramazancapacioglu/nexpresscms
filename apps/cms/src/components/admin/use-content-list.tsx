@@ -23,6 +23,8 @@ export function useContentList({
   const [statusFilter, setStatusFilter] = useState<"all" | ContentStatus>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [tagFilter, setTagFilter] = useState<string>("all");
+  const [seoFilter, setSeoFilter] = useState<"all" | "low" | "mid" | "high">("all");
+  const [sortBy, setSortBy] = useState<"default" | "seo_asc" | "seo_desc" | "title" | "blocks">("default");
 
   // Çoklu seçim (Bulk Edit)
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -70,7 +72,7 @@ export function useContentList({
   );
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    const list = items.filter((item) => {
       if (statusFilter !== "all" && item.status !== statusFilter) return false;
       const pub = resolvePublishing(item.schemaAttributes);
       if (categoryFilter !== "all" && !pub.categories.includes(categoryFilter)) {
@@ -79,6 +81,10 @@ export function useContentList({
       if (tagFilter !== "all" && !pub.tags.includes(tagFilter)) {
         return false;
       }
+      const sc = item.seoScore ?? 0;
+      if (seoFilter === "low" && sc >= 70) return false;
+      if (seoFilter === "mid" && (sc < 70 || sc >= 85)) return false;
+      if (seoFilter === "high" && sc < 85) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const inTitle = item.title.toLowerCase().includes(q);
@@ -88,7 +94,52 @@ export function useContentList({
       }
       return true;
     });
-  }, [items, statusFilter, categoryFilter, tagFilter, searchQuery]);
+    if (sortBy === "seo_asc") return [...list].sort((a, b) => (a.seoScore ?? 0) - (b.seoScore ?? 0));
+    if (sortBy === "seo_desc") return [...list].sort((a, b) => (b.seoScore ?? 0) - (a.seoScore ?? 0));
+    if (sortBy === "title") return [...list].sort((a, b) => a.title.localeCompare(b.title, "tr"));
+    if (sortBy === "blocks") return [...list].sort((a, b) => b.blocks.length - a.blocks.length);
+    return list;
+  }, [items, statusFilter, categoryFilter, tagFilter, seoFilter, sortBy, searchQuery]);
+
+  const hasActiveFilters =
+    statusFilter !== "all" ||
+    categoryFilter !== "all" ||
+    tagFilter !== "all" ||
+    seoFilter !== "all" ||
+    sortBy !== "default" ||
+    searchQuery.trim().length > 0;
+
+  const resetFilters = () => {
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setTagFilter("all");
+    setSeoFilter("all");
+    setSortBy("default");
+    setSearchQuery("");
+  };
+
+  const exportCsv = () => {
+    const lines = [
+      "Baslik,Slug,Durum,SEO,BlokSayisi,Sema",
+      ...filteredItems.map((it) =>
+        [
+          `"${it.title.replace(/"/g, '""')}"`,
+          `"/${it.slug}"`,
+          it.status,
+          it.seoScore ?? 0,
+          it.blocks.length,
+          it.schemaType,
+        ].join(",")
+      ),
+    ];
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nexpress-${mode}-listesi.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const avgSeoScore = useMemo(() => {
     if (filteredItems.length === 0) return 0;
@@ -241,7 +292,7 @@ export function useContentList({
   const labelSingular = isPage ? "Sayfa" : isQa ? "Soru" : "Blog Yazısı";
   const labelPlural = isPage ? "Sayfalar" : isQa ? "Soru-Cevap Sayfaları" : "Blog Yazıları";
 
-  return { mode, isQa, initialItems, taxonomies, isPending, startTransition, items, setItems, searchQuery, setSearchQuery, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter, tagFilter, setTagFilter, selectedIds, setSelectedIds, bulkCategorySlug, setBulkCategorySlug, bulkTagSlug, setBulkTagSlug, quickEditId, setQuickEditId, qeTitle, setQeTitle, qeSlug, setQeSlug, qeStatus, setQeStatus, qeVisibility, setQeVisibility, qeImportance, setQeImportance, qeNoIndex, setQeNoIndex, qeTldr, setQeTldr, qeCategories, setQeCategories, qeTags, setQeTags, toastMsg, setToastMsg, router, showToast, categories, tags, flatCategoryTree, filteredItems, avgSeoScore, allSelected, toggleSelectAll, toggleSelectRow, openQuickEdit, handleSaveQuickEdit, handleBulkAction, handleDuplicate, handleSingleDelete, isPage, labelSingular, labelPlural };
+  return { mode, isQa, initialItems, taxonomies, isPending, startTransition, items, setItems, searchQuery, setSearchQuery, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter, tagFilter, setTagFilter, seoFilter, setSeoFilter, sortBy, setSortBy, hasActiveFilters, resetFilters, exportCsv, selectedIds, setSelectedIds, bulkCategorySlug, setBulkCategorySlug, bulkTagSlug, setBulkTagSlug, quickEditId, setQuickEditId, qeTitle, setQeTitle, qeSlug, setQeSlug, qeStatus, setQeStatus, qeVisibility, setQeVisibility, qeImportance, setQeImportance, qeNoIndex, setQeNoIndex, qeTldr, setQeTldr, qeCategories, setQeCategories, qeTags, setQeTags, toastMsg, setToastMsg, router, showToast, categories, tags, flatCategoryTree, filteredItems, avgSeoScore, allSelected, toggleSelectAll, toggleSelectRow, openQuickEdit, handleSaveQuickEdit, handleBulkAction, handleDuplicate, handleSingleDelete, isPage, labelSingular, labelPlural };
 }
 
 export type ContentListState = ReturnType<typeof useContentList>;

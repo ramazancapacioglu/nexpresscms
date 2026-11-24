@@ -1,73 +1,171 @@
 import React from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { cmsHooks, getCmsMode, PluginSlot } from "@nexpress/core";
-import { getDbDialect, getScopedRepository } from "@nexpress/database";
+import { cmsHooks, getCmsMode, localeBase, PluginSlot } from "@nexpress/core";
+import {
+  getBotStatsRepository,
+  getChunkRepository,
+  getDbDialect,
+  getIntelRepository,
+  getRedirectRepository,
+  getScopedRepository,
+} from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
 import { getSession } from "@/lib/auth/session";
 import { SetupChecklist } from "@/components/admin/setup-checklist";
 import {
-  Plus,
+  HealthBarRow,
+  KpiStatCard,
+  SemiCircleGauge,
+  StackedDistributionBar,
+  VerticalBarChart,
+} from "@/components/admin/ui/saas-charts";
+import {
+  OverviewTableClient,
+  type OverviewContentRow,
+} from "@/components/admin/dashboard/overview-table-client";
+import {
+  Activity,
   ArrowUpRight,
-  SlidersHorizontal,
-  ArrowUpDown,
+  Bot,
+  FileText,
+  Globe,
   Layers,
-  Hash,
-  FileCode,
-  Link2,
+  Palette,
+  Plus,
+  Search,
+  Sparkles,
 } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminOverviewPage() {
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
 
-  const site = await repo.getSite();
-  const session = await getSession();
-  const contents = await repo.listContents({ locale: site?.defaultLocale ?? "tr" });
-  const entityLinks = await repo.listEntityLinks();
-  const activeTheme = getThemeManifest(
-    site?.activeThemeId ?? "corporate-aurora"
-  );
+  const [site, session] = await Promise.all([repo.getSite(), getSession()]);
+  const locale = site?.defaultLocale ?? "tr";
+  const base = localeBase(site, locale);
+
+  const [contents, entityLinks, ragStats, botSummary, signals, notFoundCount] =
+    await Promise.all([
+      repo.listContents({ locale }),
+      repo.listEntityLinks(),
+      getChunkRepository(siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
+      getBotStatsRepository(siteId).summary(30).catch(() => []),
+      getIntelRepository(siteId).listSignals(500).catch(() => []),
+      getRedirectRepository(siteId).countNotFound().catch(() => 0),
+    ]);
+
+  const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");
   const registeredHooks = cmsHooks.getRegisteredHooksSummary();
 
+  const published = contents.filter((c) => c.status === "published");
+  const drafts = contents.filter((c) => c.status === "draft");
   const avgSeoScore =
-    contents.length > 0
-      ? Math.round(
-          contents.reduce((acc, c) => acc + c.seoScore, 0) / contents.length
-        )
+    published.length > 0
+      ? Math.round(published.reduce((acc, c) => acc + c.seoScore, 0) / published.length)
+      : contents.length > 0
+        ? Math.round(contents.reduce((acc, c) => acc + c.seoScore, 0) / contents.length)
+        : 0;
+
+  const highSeoCount = published.filter((c) => c.seoScore >= 85).length;
+  const withTldrCount = published.filter((c) => (c.tldr ?? "").trim().length >= 40).length;
+  const ragCoveragePct =
+    published.length > 0 ? Math.min(100, Math.round((ragStats.contents / published.length) * 100)) : 0;
+
+  // Webmaster gerçek verileri (GSC + Bing)
+  const totalClicks = signals.reduce((acc, s) => acc + s.clicks, 0);
+  const totalImpressions = signals.reduce((acc, s) => acc + s.impressions, 0);
+  const posSignals = signals.filter((s) => s.position10 > 0);
+  const avgPosition =
+    posSignals.length > 0
+      ? (posSignals.reduce((acc, s) => acc + s.position10 / 10, 0) / posSignals.length).toFixed(1)
       : null;
+
+  const posTop3 = posSignals.filter((s) => s.position10 <= 30).length;
+  const pos4to10 = posSignals.filter((s) => s.position10 > 30 && s.position10 <= 100).length;
+  const pos11to20 = posSignals.filter((s) => s.position10 > 100 && s.position10 <= 200).length;
+  const pos21plus = posSignals.filter((s) => s.position10 > 200).length;
+
+  const totalBotHits = botSummary.reduce((acc, b) => acc + b.total, 0);
+
+  // SEO puan kovaları (dikey sütun grafiği)
+  const scoreBuckets = [
+    { label: "90–100", value: published.filter((c) => c.seoScore >= 90).length, highlight: true },
+    { label: "80–89", value: published.filter((c) => c.seoScore >= 80 && c.seoScore < 90).length, tone: "blue" as const },
+    { label: "70–79", value: published.filter((c) => c.seoScore >= 70 && c.seoScore < 80).length, tone: "violet" as const },
+    { label: "60–69", value: published.filter((c) => c.seoScore >= 60 && c.seoScore < 70).length, tone: "amber" as const },
+    { label: "< 60", value: published.filter((c) => c.seoScore < 60).length, tone: "rose" as const },
+  ];
+
+  // En yüksek fırsatlı 4 webmaster sorgusu
+  const topOpportunities = [...signals]
+    .filter((s) => s.impressions >= 10)
+    .sort((a, b) => b.impressions - a.impressions)
+    .slice(0, 4);
+
+  const tableRows: OverviewContentRow[] = contents.map((item) => {
+    const publicPath =
+      item.slug === "ana-sayfa" ? base || "/" : `${base}/${item.slug}`.replace(/\/+/g, "/");
+    return {
+      id: item.id,
+      contentId: item.contentId,
+      title: item.title,
+      slug: item.slug,
+      type: item.type,
+      status: item.status,
+      schemaType: item.schemaType,
+      seoScore: item.seoScore,
+      importanceScore: item.importanceScore,
+      words: (item.markdownCache ?? "").split(/\s+/).filter(Boolean).length,
+      publicPath,
+    };
+  });
 
   return (
     <div className="space-y-5">
       {session?.role === "admin" && <SetupChecklist siteId={siteId} />}
-      {/* ATTIO CRM TARZI KOMPAKT SAYFA BAŞLIĞI VE GÖRÜNÜM ÇUBUĞU */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6E7EA] dark:border-[#23262E] pb-4">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <h1 className="text-[18px] font-semibold tracking-tight text-[#14151A] dark:text-[#F3F4F6]">
+
+      {/* Üst Başlık & Hızlı Aksiyonlar */}
+      <div className="flex flex-col justify-between gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-[20px] font-semibold tracking-tight text-foreground">
               {site?.name ?? "NexPress CMS"}
             </h1>
-            <span className="inline-flex items-center gap-1 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 py-0.5 font-mono text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-medium text-emerald-700 dark:text-emerald-300">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {siteId} ({getCmsMode()})
+              {siteId} · {getDbDialect()} · 0 KB JS
+            </span>
+            <span className="hidden rounded-full border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
+              {getCmsMode()}
             </span>
           </div>
-          <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">
-            İçerik, SEO ve yapay zeka görünürlüğünün özeti.
+          <p className="text-[12px] text-muted-foreground">
+            İçerik performansı, arama görünürlüğü, SEO/GEO sağlığı ve yapay zeka dizini özeti.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/admin/themes"
-            className="h-7 inline-flex items-center gap-1.5 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2.5 text-[12px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24] transition"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-[12px] font-medium text-foreground hover:bg-muted transition"
           >
-            <span>Tema: {activeTheme.name}</span>
+            <Palette className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>{activeTheme.name}</span>
+          </Link>
+          <Link
+            href="/admin/seo"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-[12px] font-medium text-foreground hover:bg-muted transition"
+          >
+            <Activity className="h-3.5 w-3.5 text-emerald-600" />
+            <span>SEO Merkezi</span>
           </Link>
           <Link
             href="/admin/contents"
-            className="h-7 inline-flex items-center gap-1.5 rounded-md bg-[#14151A] dark:bg-[#F3F4F6] px-3 text-[12px] font-medium text-white dark:text-[#14151A] hover:opacity-90 transition"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground px-3.5 text-[12px] font-medium text-background hover:opacity-90 transition"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Yeni Kayıt</span>
@@ -75,191 +173,222 @@ export default async function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* ATTIO TARZI İNCE KENARLIKLI BÖLÜNMÜŞ METRİK ŞERİDİ (1px Hairline Strip) */}
-      <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[#E6E7EA] dark:divide-[#23262E]">
-        <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-            <span>Toplam Kayıt (Objects)</span>
-            <Layers className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-xl font-semibold tabular-nums tracking-tight">
-              {contents.length}
-            </span>
-            <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
-              100% MarkdownCache
-            </span>
-          </div>
-        </div>
+      {/* 4'lü SaaS KPI Şeridi */}
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiStatCard
+          label="Yayınlanan İçerikler"
+          value={published.length.toLocaleString("tr-TR")}
+          suffix={`/ ${contents.length}`}
+          badge={`${drafts.length} taslak`}
+          badgeTone="blue"
+          hint="%100 MarkdownCache"
+          icon={<Layers className="h-4 w-4" />}
+          iconTone="blue"
+          progressPct={contents.length > 0 ? (published.length / contents.length) * 100 : 0}
+          href="/admin/pages"
+        />
 
-        <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-            <span>@id Entity İlişkileri</span>
-            <Link2 className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-xl font-semibold tabular-nums tracking-tight">
-              {entityLinks.length}
-            </span>
-            <span className="font-mono text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
-              about • offer_for
-            </span>
-          </div>
-        </div>
+        <KpiStatCard
+          label="Ortalama SEO & GEO"
+          value={avgSeoScore}
+          suffix="/100"
+          badge={`${highSeoCount} sayfa 85+`}
+          badgeTone={avgSeoScore >= 85 ? "emerald" : avgSeoScore >= 70 ? "blue" : "amber"}
+          hint="TL;DR + @graph"
+          icon={<Sparkles className="h-4 w-4" />}
+          iconTone="emerald"
+          progressPct={avgSeoScore}
+          href="/admin/seo"
+        />
 
-        <Link href="/admin/seo" className="p-4 space-y-1 hover:bg-[#F4F5F7] dark:hover:bg-[#1C1E24]">
-          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-            <span>Ortalama SEO & GEO</span>
-            <Hash className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-xl font-semibold tabular-nums tracking-tight">
-              {avgSeoScore ?? "—"}
-              {avgSeoScore !== null && <span className="text-xs font-normal text-[#5F6570] dark:text-[#8C9099]">/100</span>}
-            </span>
-            <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400">
-              TL;DR + @graph
-            </span>
-          </div>
-        </Link>
+        <KpiStatCard
+          label="Arama Görünürlüğü"
+          value={totalImpressions > 0 ? totalImpressions.toLocaleString("tr-TR") : "—"}
+          suffix={totalImpressions > 0 ? "gösterim" : undefined}
+          badge={
+            totalClicks > 0
+              ? `${totalClicks.toLocaleString("tr-TR")} tıklama`
+              : "Webmaster bağla"
+          }
+          badgeTone={totalImpressions > 0 ? "violet" : "slate"}
+          hint={avgPosition ? `Ort. sıra ${avgPosition}` : "GSC & Bing"}
+          icon={<Search className="h-4 w-4" />}
+          iconTone="violet"
+          href={totalImpressions > 0 ? "/admin/seo" : "/admin/seo/integrations"}
+        />
 
-        <div className="p-4 space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#5F6570] dark:text-[#8C9099]">
-            <span>Ön Yüz İstemci JS Yükü</span>
-            <FileCode className="h-3.5 w-3.5 text-[#5F6570] dark:text-[#8C9099]" strokeWidth={1.75} />
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-xl font-semibold tabular-nums tracking-tight">
-              0 KB
-            </span>
-            <span className="font-mono text-[11px] text-[#1D5ED8] dark:text-[#3B82F6]">
-              {getDbDialect()} • RSC
-            </span>
-          </div>
-        </div>
+        <KpiStatCard
+          label="AI & RAG Hazırlığı"
+          value={ragStats.chunks.toLocaleString("tr-TR")}
+          suffix="parça"
+          badge={`${entityLinks.length} @id bağı`}
+          badgeTone="emerald"
+          hint={`${totalBotHits.toLocaleString("tr-TR")} bot ziyareti (30g)`}
+          icon={<Bot className="h-4 w-4" />}
+          iconTone="amber"
+          progressPct={ragCoveragePct}
+          href="/admin/seo/schemas"
+        />
       </div>
 
-      {/* ATTIO CRM SPREADSHEET / RECORD GRID TABLOSU */}
-      <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] overflow-hidden">
-        {/* Tablo Üst Filtre & Görünüm Çubuğu */}
-        <div className="px-4 py-2 border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#EAECED] dark:bg-[#22252D] px-2 py-1 text-[11px] font-medium text-[#14151A] dark:text-[#F3F4F6]">
-              Tüm Kayıtlar ({contents.length})
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 py-1 text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
-              <SlidersHorizontal className="h-3 w-3" />
-              <span>siteId = {siteId}</span>
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 py-1 text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
-              <ArrowUpDown className="h-3 w-3" />
-              <span>Önem Skoru (Azalan)</span>
-            </span>
+      {/* 2 Sütunlu Görsel Analiz Alanı */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        {/* Sol: SEO Puan Dağılımı + Webmaster Pozisyon Özeti */}
+        <section className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card p-5 shadow-2xs xl:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-[14px] font-semibold text-foreground">
+                İçerik SEO Puan Dağılımı
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Yayındaki {published.length} içeriğin puan aralıklarına göre dağılımı
+              </p>
+            </div>
+            <Link
+              href="/admin/seo/audit"
+              className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted transition"
+            >
+              <span>Detaylı Denetim</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </Link>
           </div>
 
-          <Link
-            href="/admin/contents"
-            className="text-[11px] font-medium text-[#5C5F66] dark:text-[#9CA3AF] hover:text-[#14151A] dark:hover:text-white flex items-center gap-1"
-          >
-            <span>Stüdyoda Aç</span>
-            <ArrowUpRight className="h-3 w-3" />
-          </Link>
-        </div>
+          <VerticalBarChart items={scoreBuckets} height={156} />
 
-        {/* Hücre Çizgili (divide-x & divide-y) Attio Tablosu */}
-        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Kaydırılabilir alan">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] text-[11px] font-medium text-[#5F6570] dark:text-[#8C9099] divide-x divide-[#E6E7EA] dark:divide-[#23262E]">
-                <th className="py-2 px-3.5 font-medium">Aa Kayıt Başlığı</th>
-                <th className="py-2 px-3 font-medium">🔗 URL Yolu</th>
-                <th className="py-2 px-3 font-medium">◎ Nesne Türü</th>
-                <th className="py-2 px-3 font-medium">@ Schema.org</th>
-                <th className="py-2 px-3 font-medium text-right"># Önem</th>
-                <th className="py-2 px-3 font-medium text-right"># SEO</th>
-                <th className="py-2 px-3.5 font-medium text-right">Eylemler</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E6E7EA] dark:divide-[#23262E] text-[12px]">
-              {contents.map((item) => {
-                const publicPath =
-                  item.slug === "ana-sayfa" ? "/tr" : `/tr/${item.slug}`;
-                return (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-[#F4F5F7]/70 dark:hover:bg-[#1C1E24]/70 transition divide-x divide-[#E6E7EA] dark:divide-[#23262E]"
+          {/* Webmaster Pozisyon Dağılımı veya Hızlı Fırsatlar */}
+          <div className="space-y-3 border-t border-border/60 pt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] font-semibold text-foreground">
+                Anahtar Kelime Pozisyon Dağılımı (GSC & Bing)
+              </span>
+              <Link href="/admin/seo" className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Tüm sorgular ({signals.length}) →
+              </Link>
+            </div>
+            <StackedDistributionBar
+              segments={[
+                { label: "İlk 3", value: posTop3, tone: "emerald" },
+                { label: "4–10", value: pos4to10, tone: "blue" },
+                { label: "11–20", value: pos11to20, tone: "amber" },
+                { label: "21+", value: pos21plus, tone: "slate" },
+              ]}
+            />
+            {topOpportunities.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
+                {topOpportunities.map((sig) => (
+                  <div
+                    key={sig.id}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-[11px]"
                   >
-                    <td className="py-2.5 px-3.5 font-medium text-[#14151A] dark:text-[#F3F4F6] max-w-xs truncate">
-                      <Link
-                        href="/admin/contents"
-                        className="hover:underline block truncate"
-                      >
-                        {item.title}
-                      </Link>
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
-                      {publicPath}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <span className="inline-flex items-center gap-1.5 rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2 py-0.5 font-mono text-[11px] text-[#14151A] dark:text-[#F3F4F6]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#266DF0]" />
-                        {item.type}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#5C5F66] dark:text-[#9CA3AF]">
-                      {item.schemaType}
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] tabular-nums">
-                      {item.importanceScore}/10
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-[11px] tabular-nums font-medium text-emerald-800 dark:text-emerald-400">
-                      {item.seoScore}
-                    </td>
-                    <td className="py-2.5 px-3.5 text-right space-x-1.5 whitespace-nowrap">
-                      <Link
-                        href={publicPath}
-                        target="_blank"
-                        className="inline-flex items-center rounded border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-2 py-0.5 text-[11px] font-medium text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#F4F5F7] transition"
-                      >
-                        RSC
-                      </Link>
-                      <Link
-                        href={`${publicPath}?format=md`}
-                        target="_blank"
-                        className="inline-flex items-center rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2 py-0.5 font-mono text-[11px] text-[#5C5F66] dark:text-[#9CA3AF] hover:text-[#14151A] transition"
-                      >
-                        .md
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-foreground">{sig.keyword}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {sig.source.toUpperCase()} · {sig.impressions.toLocaleString("tr-TR")} gösterim
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-md bg-background px-1.5 py-0.5 font-mono text-[10px] font-semibold text-foreground border border-border">
+                      #{(sig.position10 / 10).toFixed(1)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        {/* Sağ: Yarı Daire Sağlık Göstergesi + Sağlık Çubukları */}
+        <section className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card p-5 shadow-2xs xl:col-span-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-[14px] font-semibold text-foreground">
+                Site SEO & GEO Sağlığı
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Canlı veritabanı, RAG ve teknik durum özeti
+              </p>
+            </div>
+            <Link
+              href="/admin/seo/reports"
+              className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Raporlar →
+            </Link>
+          </div>
+
+          <div className="py-1">
+            <SemiCircleGauge
+              score={avgSeoScore}
+              label="Genel SEO & GEO Puanı"
+              subtitle={`${published.length} yayında · ${entityLinks.length} varlık bağı`}
+            />
+          </div>
+
+          <div className="space-y-3 border-t border-border/60 pt-4">
+            <HealthBarRow
+              label="Yüksek SEO Puanı (85+)"
+              valueText={`${highSeoCount}/${published.length}`}
+              pct={published.length > 0 ? (highSeoCount / published.length) * 100 : 0}
+              tone="emerald"
+              href="/admin/seo/audit"
+            />
+            <HealthBarRow
+              label="RAG Vektör Dizini Kapsamı"
+              valueText={`%${ragCoveragePct} (${ragStats.chunks} parça)`}
+              pct={ragCoveragePct}
+              tone="blue"
+              href="/admin/seo/schemas"
+            />
+            <HealthBarRow
+              label="Answer-First TL;DR Doluluğu"
+              valueText={`${withTldrCount}/${published.length}`}
+              pct={published.length > 0 ? (withTldrCount / published.length) * 100 : 0}
+              tone="violet"
+              href="/admin/seo/audit"
+            />
+            <HealthBarRow
+              label="404 / Yönlendirme Hijyeni"
+              valueText={notFoundCount === 0 ? "Temiz (0)" : `${notFoundCount} kayıt`}
+              pct={notFoundCount === 0 ? 100 : Math.max(20, 100 - Math.min(80, notFoundCount))}
+              tone={notFoundCount === 0 ? "emerald" : notFoundCount < 15 ? "amber" : "rose"}
+              href="/admin/redirects"
+            />
+          </div>
+        </section>
       </div>
 
-      {/* KURAL 4: OPEN-CORE GENİŞLEME YUVASI (dashboard.overview.cards) */}
+      {/* Filtrelenebilir İçerik Özet Tablosu */}
+      <OverviewTableClient rows={tableRows} />
+
+      {/* Open-Core Genişleme Yuvası */}
       <PluginSlot
         name="dashboard.overview.cards"
         siteId={siteId}
         fallback={
-          <div className="rounded-lg border border-[#E6E7EA] dark:border-[#23262E] bg-white dark:bg-[#15171C] px-4 py-3 flex items-center justify-between text-[12px]">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/80 bg-card px-4 py-3 text-[12px]">
             <div className="flex items-center gap-2.5">
-              <span className="h-2 w-2 rounded-full bg-[#266DF0]" />
-              <span className="font-medium text-[#14151A] dark:text-[#F3F4F6]">
-                Open-Core Genişleme Yuvası (<code>dashboard.overview.cards</code>)
+              <Globe className="h-4 w-4 text-blue-600" />
+              <span className="font-medium text-foreground">
+                Open-Core Eklenti Merkezi
               </span>
-              <span className="text-[#5F6570] dark:text-[#8C9099] hidden md:inline">
-                — Eklentileri ve modüllerini yönetmek için Eklentiler sayfasını açın.
+              <span className="hidden text-muted-foreground md:inline">
+                — {registeredHooks.length} aktif kanca ile eklentileri ve SEO/GEO modüllerini yönetin.
               </span>
             </div>
-            <Link
-              href="/admin/plugins"
-              className="rounded border border-[#E6E7EA] dark:border-[#23262E] bg-[#FBFBFB] dark:bg-[#121317] px-2.5 py-1 font-mono text-[11px] text-[#14151A] dark:text-[#F3F4F6] hover:bg-[#EAECED] transition"
-            >
-              Eklentiler ({registeredHooks.length} kanca) →
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/admin/seo/reports"
+                className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted transition"
+              >
+                <FileText className="h-3 w-3" />
+                Raporlar
+              </Link>
+              <Link
+                href="/admin/plugins"
+                className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/40 px-2.5 py-1 font-mono text-[11px] text-foreground hover:bg-muted transition"
+              >
+                Eklentiler →
+              </Link>
+            </div>
           </div>
         }
       />

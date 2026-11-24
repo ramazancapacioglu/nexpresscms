@@ -50,12 +50,25 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
 export function PluginsManager({ plugins, initialId, siteDna }: { plugins: PluginCardData[]; initialId: string; siteDna: string }) {
   const [state, setState] = useState(plugins);
   const [selectedId, setSelectedId] = useState(initialId);
+  const [pluginQuery, setPluginQuery] = useState("");
+  const [pluginFilter, setPluginFilter] = useState<"all" | "enabled" | "disabled" | "pro">("all");
   const [view, setView] = useState<"modules" | "settings">("modules");
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const [, start] = useTransition();
+
+  const visiblePlugins = useMemo(() => {
+    const q = pluginQuery.trim().toLocaleLowerCase("tr-TR");
+    return state.filter((p) => {
+      if (pluginFilter === "enabled" && !p.enabled) return false;
+      if (pluginFilter === "disabled" && p.enabled) return false;
+      if (pluginFilter === "pro" && p.license !== "pro") return false;
+      if (q && !`${p.name} ${p.description} ${p.vendor}`.toLocaleLowerCase("tr-TR").includes(q)) return false;
+      return true;
+    });
+  }, [state, pluginQuery, pluginFilter]);
 
   const plugin = state.find((p) => p.id === selectedId) ?? state[0]!;
   const Icon = ICONS[plugin.icon] ?? Blocks;
@@ -125,8 +138,47 @@ export function PluginsManager({ plugins, initialId, siteDna }: { plugins: Plugi
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
       {/* Eklenti listesi */}
-      <nav aria-label="Kurulu eklentiler" className="space-y-2">
-        {state.map((p) => {
+      <nav aria-label="Kurulu eklentiler" className="space-y-2.5">
+        <div className="space-y-2 rounded-xl border border-border/80 bg-card p-2.5">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={pluginQuery}
+              onChange={(e) => setPluginQuery(e.target.value)}
+              placeholder="Eklenti ara..."
+              className="h-8 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {(
+              [
+                { id: "all", label: `Tümü (${state.length})` },
+                { id: "enabled", label: `Açık (${state.filter((p) => p.enabled).length})` },
+                { id: "disabled", label: `Kapalı (${state.filter((p) => !p.enabled).length})` },
+                { id: "pro", label: `Pro (${state.filter((p) => p.license === "pro").length})` },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setPluginFilter(f.id)}
+                className={`rounded-md px-2 py-0.5 text-[10px] font-semibold transition ${
+                  pluginFilter === f.id
+                    ? "bg-foreground text-background"
+                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {visiblePlugins.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card px-3 py-6 text-center text-[12px] text-muted-foreground">
+            Filtreye uyan eklenti yok.
+          </div>
+        ) : visiblePlugins.map((p) => {
           const PIcon = ICONS[p.icon] ?? Blocks;
           const selected = p.id === plugin.id;
           return (

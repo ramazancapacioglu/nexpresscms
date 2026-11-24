@@ -69,7 +69,7 @@ export function ThemeGalleryView({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const [filterType, setFilterType] = useState<"all" | "official" | "uploaded">("all");
+  const [filterType, setFilterType] = useState<"all" | "official" | "uploaded" | "demo">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showUpload, setShowUpload] = useState(false);
   const [notification, setNotification] = useState<{
@@ -91,6 +91,7 @@ export function ThemeGalleryView({
   const filteredThemes = themes.filter((thm) => {
     if (filterType === "official" && !thm.isOfficial) return false;
     if (filterType === "uploaded" && thm.isOfficial) return false;
+    if (filterType === "demo" && !(thm.demoCount && thm.demoCount > 0)) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
@@ -449,6 +450,17 @@ export function ThemeGalleryView({
               }`}
             >
               Yüklenen Paketler ({themes.filter((t) => !t.isOfficial).length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterType("demo")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                filterType === "demo"
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Demo İçerikli ({themes.filter((t) => (t.demoCount ?? 0) > 0).length})
             </button>
           </div>
 
