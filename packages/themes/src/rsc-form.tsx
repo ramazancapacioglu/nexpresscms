@@ -167,6 +167,7 @@ export function RscForm({ form, blockId, ctx, frame, title, t }: { form: PublicF
       {mine === "error" ? <p role="alert" className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{t("blocks.formError")}</p> : null}
       <input type="hidden" name="_path" value={ctx.path} />
       <input type="hidden" name="_block" value={blockId} />
+      <input type="hidden" name="_form" value={form.id} />
       <input type="hidden" name="_t" value={ctx.token} />
       <div style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }} aria-hidden="true">
         <label>Website <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" /></label>

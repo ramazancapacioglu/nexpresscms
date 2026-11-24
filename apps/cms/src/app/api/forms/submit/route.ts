@@ -10,13 +10,14 @@ import { publicUrl } from "@/lib/public-url";
 
 export const runtime = "nodejs";
 
-const PATH_RE = /^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/([a-z0-9][a-z0-9-]{0,120}))?$/;
+const PATH_RE = /^\/([a-z]{2,3}(?:-[a-z0-9]{2,8})?)(?:\/([a-z0-9][a-z0-9-]{0,120})(?:\/([a-z0-9][a-z0-9-]{0,120}))?)?$/;
 const RATE_WINDOW_MS = 10 * 60_000;
 const RATE_MAX = 5;
 
 function findBlock(blocks: BlockNode[], id: string): BlockNode | null {
   for (const b of blocks) {
-    if (b.id === id && b.type === "form_block") return b;
+    if (b.id === id && (b.type === "form_block" || b.type === "contact_campaign")) return b;
+    if (b.type === "contact_campaign" && `${b.id}_form` === id) return b;
     const hit = b.children ? findBlock(b.children, id) : null;
     if (hit) return hit;
   }
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     );
 
   const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host");
   if (origin && host && new URL(origin).host !== host) return new NextResponse("Çapraz kaynak isteği reddedildi.\n", { status: 403 });
   if (!form || !pathMatch) return new NextResponse("Geçersiz istek.\n", { status: 400 });
 
@@ -60,11 +61,11 @@ export async function POST(request: NextRequest) {
   const site = await repo.getSite();
   const locale = pathMatch[1]!;
   if (!site || !site.supportedLocales.includes(locale)) return back("error");
-  const slug = pathMatch[2] ?? "ana-sayfa";
+  const slug = pathMatch[3] ?? pathMatch[2] ?? "ana-sayfa";
   const content = await repo.getContentBySlug(slug, locale, { publicOnly: true });
   const block = content ? findBlock(content.blocks, blockId) : null;
   const formKey = get("_form");
-  const chromeForm = !block && /^frm_[a-z0-9_]{1,40}$/.test(formKey) ? await getFormDefinitionRepository(siteId).get(formKey) : null;
+  const chromeForm = !block && /^frm_[A-Za-z0-9_-]{1,60}$/.test(formKey) ? await getFormDefinitionRepository(siteId).get(formKey) : null;
   if ((!content || !block) && (!chromeForm || chromeForm.status !== "active")) return back("error");
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "";

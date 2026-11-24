@@ -264,34 +264,88 @@ export function registerContentOpsActions(): void {
     if (!(await enabled(siteId, "google-reviews"))) return { ok: false, error: "Google yorumları bu sitede kapalı.", code: "disabled" };
     const repo = getScopedRepository(siteId);
     const settings = (await repo.getSitePlugin(PLUGIN_ID))?.settings ?? {};
-    const placeId = text(settings.googlePlaceId, 80);
-    const apiKey = text(settings.googlePlacesApiKey, 160);
-    if (!placeId || !apiKey) return { ok: false, error: "Yer kimliği ve Places anahtarı gerekli.", code: "invalid" };
-    let body: { rating?: number; userRatingCount?: number; reviews?: Array<{ rating?: number; publishTime?: string; text?: { text?: string }; authorAttribution?: { displayName?: string } }> };
+    let placeId = text(settings.googlePlaceId, 160);
+    let apiKey = text(settings.googlePlacesApiKey, 160);
+    // Kullanıcı Place ID ile Places API anahtarını yanlışlıkla ters alana yazdıysa otomatik düzelt
+    let swapped = false;
+    if (placeId.startsWith("AIza") && !apiKey.startsWith("AIza")) {
+      [placeId, apiKey] = [apiKey, placeId];
+      swapped = true;
+    }
+    if (!placeId || !apiKey) return { ok: false, error: "Yer kimliği (Place ID) ve Places API anahtarı gerekli.", code: "invalid" };
+    let ratingVal: number | undefined;
+    let totalCount: number | undefined;
+    let reviews: Array<{ author: string; rating: number; text: string; date: string }> = [];
     try {
-      const response = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
+      const response = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=tr`, {
         headers: { "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "rating,userRatingCount,reviews" },
         signal: AbortSignal.timeout(8000),
       });
-      if (!response.ok) return { ok: false, error: "Places yanıt vermedi.", code: "invalid" };
-      body = (await response.json()) as typeof body;
+      const body = (await response.json().catch(() => ({}))) as {
+        rating?: number;
+        userRatingCount?: number;
+        reviews?: Array<{ rating?: number; publishTime?: string; text?: { text?: string }; authorAttribution?: { displayName?: string } }>;
+        error?: { message?: string; status?: string };
+      };
+      if (response.ok) {
+        ratingVal = typeof body.rating === "number" ? body.rating : undefined;
+        totalCount = typeof body.userRatingCount === "number" ? body.userRatingCount : undefined;
+        reviews = (body.reviews ?? []).slice(0, 5).flatMap((row) => {
+          const author = text(row.authorAttribution?.displayName, 80);
+          const reviewText = text(row.text?.text, 500);
+          const rating = whole(row.rating);
+          if (!author || !reviewText || rating < 1) return [];
+          return [{ author, rating, text: reviewText, date: text(row.publishTime, 40).slice(0, 10) }];
+        });
+      } else {
+        // Places API (New) kapalıysa eski Places Details API ile dene
+        const legacyRes = await fetch(
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=rating,user_ratings_total,reviews&language=tr&key=${encodeURIComponent(apiKey)}`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        const legacy = (await legacyRes.json().catch(() => ({}))) as {
+          status?: string;
+          error_message?: string;
+          result?: {
+            rating?: number;
+            user_ratings_total?: number;
+            reviews?: Array<{ author_name?: string; rating?: number; text?: string; time?: number }>;
+          };
+        };
+        if (legacyRes.ok && legacy.status === "OK" && legacy.result) {
+          ratingVal = typeof legacy.result.rating === "number" ? legacy.result.rating : undefined;
+          totalCount = typeof legacy.result.user_ratings_total === "number" ? legacy.result.user_ratings_total : undefined;
+          reviews = (legacy.result.reviews ?? []).slice(0, 5).flatMap((row) => {
+            const author = text(row.author_name, 80);
+            const reviewText = text(row.text, 500);
+            const rating = whole(row.rating);
+            if (!author || !reviewText || rating < 1) return [];
+            const d = typeof row.time === "number" ? new Date(row.time * 1000).toISOString().slice(0, 10) : "";
+            return [{ author, rating, text: reviewText, date: d }];
+          });
+        } else {
+          const msg =
+            legacy.error_message ||
+            body.error?.message ||
+            `Google Places yanıt vermedi (HTTP ${response.status}).`;
+          return {
+            ok: false,
+            error: `Google Places hatası: ${msg} (Google Cloud Console'da Places API (New) etkin ve anahtar kısıtsız olmalıdır.)`,
+            code: "invalid",
+          };
+        }
+      }
     } catch {
       return { ok: false, error: "Places çağrısı tamamlanamadı.", code: "invalid" };
     }
-    const reviews = (body.reviews ?? []).slice(0, 5).flatMap((row) => {
-      const author = text(row.authorAttribution?.displayName, 80);
-      const reviewText = text(row.text?.text, 500);
-      const rating = whole(row.rating);
-      if (!author || !reviewText || rating < 1) return [];
-      return [{ author, rating, text: reviewText, date: text(row.publishTime, 40).slice(0, 10) }];
-    });
     const settingsPatch: Record<string, unknown> = {
+      ...(swapped ? { googlePlaceId: placeId, googlePlacesApiKey: apiKey } : {}),
       reviews,
-      googleReviewCount: typeof body.userRatingCount === "number" ? body.userRatingCount : reviews.length,
+      googleReviewCount: typeof totalCount === "number" ? totalCount : reviews.length,
     };
-    if (typeof body.rating === "number") settingsPatch.googleRating = body.rating;
+    if (typeof ratingVal === "number") settingsPatch.googleRating = ratingVal;
     await repo.saveSitePlugin(PLUGIN_ID, { settings: settingsPatch });
-    return { ok: true, data: { rating: body.rating ?? null, count: reviews.length } };
+    return { ok: true, data: { rating: ratingVal ?? null, count: reviews.length } };
   });
 
   pluginActions.register("catalog.suggest", PLUGIN_ID, async ({ siteId, input }) => {

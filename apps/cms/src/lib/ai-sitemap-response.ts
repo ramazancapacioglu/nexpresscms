@@ -35,7 +35,9 @@ export async function aiSitemapResponse(request: NextRequest, forcedLocale?: str
       markdownNegotiation: "?format=md or Accept: text/markdown",
     },
     items: contents.map((item) => {
-      const publicUrl = contentUrl(baseUrl, locale, item.slug === "ana-sayfa" ? item.slug : contentPath(types, item).slice(1), localeBase(site, locale));
+      const lb = localeBase(site, locale);
+      const rawUrl = contentUrl(baseUrl, locale, item.slug === "ana-sayfa" ? item.slug : contentPath(types, item).slice(1), lb);
+      const publicUrl = item.slug === "ana-sayfa" && !lb ? `${rawUrl.replace(/\/$/, "")}/` : rawUrl;
       return {
         id: item.id,
         title: item.title,

@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-24] — Form Gönderimi & Google Yorumlar Düzeltmesi, Kampanya `?format=md`, Tekil Sayfa Raporu & Gelişmiş SEO Raporları
+- **Form Gönderimi & Gelen Kutusu (`api/forms/submit/route.ts`, `rsc-form.tsx`, `admin/forms/inbox/page.tsx`):** `RscForm` içine gizli `_form` alanı eklendi; `/api/forms/submit` artık `contact_campaign` bloklarını, 2 segmentli yolları (`/kampanya/...`), `x-forwarded-host` başlığını ve büyük/küçük harf+tire içeren form kimliklerini destekler. Gelen kutusuna `Tümü` sekmesi ve form bazlı hızlı filtre rozetleri eklendi.
+- **Google Yorumlar Places API (`register-ops.ts`):** `reviews.pull` aksiyonu ters girilmiş `googlePlaceId` / `googlePlacesApiKey` (`AIza...` vs `ChIJ...`) durumunu otomatik düzeltip kaydeder, `languageCode=tr` ile çeker ve gerçek Google hata mesajını gösterir; `akinsoftizmir.com.tr` üretim veritabanındaki ters girilmiş alanlar düzeltildi.
+- **`.md`, `/llms.txt` & Harita Tutarlılığı (`markdown-negotiation/route.ts`, `ai-sitemap-response.ts`):** Yerleşik `/kampanya/<slug>?format=md` 404 hatası giderildi; `ai-sitemap.json` ana sayfa URL'i `sitemap.xml` ile (`https://.../` biçiminde) %100 eşitlendi.
+- **Tekil Sayfa Raporu & Rapor Kartları (`/admin/seo/page-report`, `ai-referrals-card.tsx`, `bot-telemetry-card.tsx`, `decay-card.tsx`, `gap-card.tsx`, `question-pool-card.tsx`):** Aranabilir Tekil Sayfa SEO & GEO Raporu, AI yönlendirme trafiği platform/açılış sayfası kırılımı, Bot Tarama Günlüğü kategori+yüzey+rDNS detayları, İçerik Erimesi/Açığı KPI çubukları ve aranabilir/filtreli Sorgu Kümeleri havuzu eklendi.
+
 ### [2026-11-24] — Yönetim Paneli SaaS Görsel Yenilemesi, SVG Grafik Kiti ve Gelişmiş Liste Filtreleri
 - **Ortak SaaS Grafik & Gösterge Kiti (`apps/cms/src/components/admin/ui/saas-charts.tsx`):** `KpiStatCard` (ikon rozeti, değer, durum rozeti, mini sparkline/ilerleme çubuğu), `SemiCircleGauge` (180° SEO/GEO sağlık göstergesi), `VerticalBarChart`, `HealthBarRow` ve `StackedDistributionBar` bileşenleri sıfır dış grafik kütüphanesiyle saf SVG + Tailwind v4 olarak eklendi.
 - **Ana Panel (`/admin`, `overview-table-client.tsx`):** 4'lü gerçek veri KPI şeridi (yayındaki içerikler, ortalama SEO/GEO, GSC/Bing görünürlüğü, AI/RAG parça & bot ziyareti), SEO puan dağılımı sütun grafiği, anahtar kelime pozisyon dağılımı, 180° sağlık göstergesi ve sekmeli/filtreli/CSV dışa aktarmalı içerik özet tablosu eklendi.

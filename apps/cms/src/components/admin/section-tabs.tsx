@@ -84,6 +84,7 @@ export function SubSectionTabs({ tabs, label }: { tabs: SectionTab[]; label: str
 
 export const SEO_TABS: SectionTab[] = [
   { href: "/admin/seo", label: "Genel Bakış" },
+  { href: "/admin/seo/page-report", label: "Sayfa Raporu" },
   { href: "/admin/seo/audit", label: "Denetim" },
   { href: "/admin/seo/sitemap", label: "Site Haritası" },
   { href: "/admin/seo/schemas", label: "Şemalar & Dizin", match: ["/admin/seo/engine"] },

@@ -29,11 +29,12 @@ export async function GET(request: NextRequest) {
     "/tr";
   const segments = targetPath.split("/").filter(Boolean);
   const locale = segments[0] ?? "tr";
-  // `/{dil}/{slug}` ya da önekli `/{dil}/{önek}/{slug}` (önek, kayıtları önekli açık bir türün arşiv adresidir)
+  // `/{dil}/{slug}` ya da önekli `/{dil}/{önek}/{slug}` (önek, kayıtları önekli açık bir türün arşiv adresidir veya yerleşik `kampanya`)
   const prefix = segments.length >= 3 ? segments[1] : undefined;
   const slug = segments[prefix ? 2 : 1] ?? "ana-sayfa";
-  const prefixType = prefix ? findTypeByArchiveSlug(resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes, prefix) : undefined;
-  const content = prefix && !prefixType?.prefixed ? null : await getPublicContentBySlug(siteId, slug, locale, prefixType?.id ?? "");
+  const isCampaign = prefix === "kampanya";
+  const prefixType = prefix && !isCampaign ? findTypeByArchiveSlug(resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes, prefix) : undefined;
+  const content = prefix && !isCampaign && !prefixType?.prefixed ? null : await getPublicContentBySlug(siteId, slug, locale, isCampaign ? "campaign" : (prefixType?.id ?? ""));
 
   if (!content) {
     return new NextResponse(`# 404 — İçerik Bulunamadı (${slug})\n`, {
