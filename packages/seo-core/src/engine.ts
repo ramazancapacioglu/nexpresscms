@@ -686,13 +686,33 @@ export function deriveAutoSchemaNodes(
       const priceNum = typeof p.price === "number" ? p.price : Number(String(p.price ?? "").replace(/[^\d.]/g, ""));
       const hasVisiblePrice = (pricingMode === "fixed" || pricingMode === "starting") && Number.isFinite(priceNum) && priceNum > 0;
       const currency = typeof p.currency === "string" && p.currency.trim() ? p.currency.trim() : "TRY";
-      const offer: Record<string, unknown> = {
-        "@type": "Offer",
-        url: typeof p.demoUrl === "string" && p.demoUrl.startsWith("http") ? p.demoUrl : pageUrl,
-        availability: "https://schema.org/InStock",
-        ...(hasVisiblePrice ? { price: priceNum, priceCurrency: currency } : { priceCurrency: currency }),
-        ...(typeof p.seller === "string" && p.seller.trim() ? { seller: { "@type": "Organization", name: p.seller.trim() } } : {}),
-      };
+      const priceRows = Array.isArray(p.priceList)
+        ? p.priceList
+            .filter((r): r is { campaignPrice?: unknown; listPrice?: unknown } => Boolean(r && typeof r === "object"))
+            .map((r) => Number(r.campaignPrice || r.listPrice || 0))
+            .filter((n) => Number.isFinite(n) && n > 0)
+        : [];
+      const offerUrl = typeof p.demoUrl === "string" && p.demoUrl.startsWith("http") ? p.demoUrl : pageUrl;
+      const sellerObj = typeof p.seller === "string" && p.seller.trim() ? { seller: { "@type": "Organization", name: p.seller.trim() } } : {};
+      const offer: Record<string, unknown> =
+        priceRows.length >= 2
+          ? {
+              "@type": "AggregateOffer",
+              url: offerUrl,
+              availability: "https://schema.org/InStock",
+              priceCurrency: currency,
+              lowPrice: Math.min(...priceRows),
+              highPrice: Math.max(...priceRows),
+              offerCount: priceRows.length,
+              ...sellerObj,
+            }
+          : {
+              "@type": "Offer",
+              url: offerUrl,
+              availability: "https://schema.org/InStock",
+              ...(hasVisiblePrice ? { price: priceNum, priceCurrency: currency } : { priceCurrency: currency }),
+              ...sellerObj,
+            };
       const node: SchemaGraphNode = {
         "@type": sType,
         "@id": `${pageUrl}#product-${b.id}`,

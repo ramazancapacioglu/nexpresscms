@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — 6 Sekmeli Ürün & Fiyat Listesi Kartı (`software_product_card`), `AggregateOffer` Şeması & `/wolvox-erp` İnsan Dili Yenilemesi
+- **6 Sekmeli 0-KB CSS Ürün Kartı (`software-product-card-block.tsx`, `engine.ts`):** `software_product_card` bloğu saf CSS radio-input sekmelerine (`Fiyat Listesi`, `Paketler`, `Özellikler`, `Modüller`, `Sistem Gereksinimleri`, `Uyumlu Entegrasyonlar`) kavuştu; üst bilgi kutusunda başlangıç/kampanya fiyatı ve üstü çizili liste fiyatı görünür hale geldi; `deriveAutoSchemaNodes` çoklu fiyat tablosundan otomatik `AggregateOffer` (`lowPrice`, `highPrice`, `offerCount`) üretir.
+- **`/wolvox-erp` Yenilemesi (Faz 10):** Açılış paragrafı + görsel (`wp_7`) en üstte tutuldu, 6 sekmeli ürün kartı hemen altına yerleştirildi ve `abakus.akinsoft.net` (`WOL9`) resmî 2026 liste + `%35` kampanya fiyatları (`17.290 TL – 383.630 TL + KDV`, 18 satır) işlendi; sayfadaki robotik ifadeler ve yazım hataları doğal Türkçe ile yenilendi.
+
 ### [2026-11-25] — Ürün & Şema Kartı (`software_product_card`), Kompakt Çerez Kartı, Kampanya LLM/MD Tutarlılığı & Faz 9
 - **Yeni 0-KB Ürün & Şema Bloğu (`software_product_card` — `software-product-card-block.tsx`, `engine.ts`, `block-catalog.ts`, `docs/23`):** `emitSchema` anahtarıyla görünür ürün özellikleri, modüller, paket/fiyat modu (`quote`/`fixed`/`starting`), indirme/demo linki, sistem gereksinimleri ve entegrasyonlardan otomatik `SoftwareApplication` / `Product` JSON-LD üretir (HTML ↔ Şema tek kaynak; teklif usulünde sabit `Offer.price` basmaz).
 - **Kompakt & Kalıcı Çerez Kartı (`cookie-consent.tsx`):** Sol alt köşede küçük yüzer karta indirildi (`max-w-[340px]`); kabul/ret sonrası hem `nx_consent` çerezi hem `localStorage` yazılarak önbellekli sayfalarda dahi tekrar görünmesi engellendi ve kalıcı "Çerez tercihleri" yüzer düğmesi kaldırıldı.
