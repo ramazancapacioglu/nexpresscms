@@ -107,7 +107,13 @@ export async function GET(request: NextRequest) {
     "",
     ...(camp
       ? [
-          `> **Kampanya Durumu:** ${camp.isExpired ? "Süresi Doldu" : "Aktif"} · **Geçerlilik:** ${camp.formattedValidity}${camp.discount ? ` · **İndirim:** ${camp.discount}` : ""}${camp.targetAudience ? ` · **Kimler Yararlanabilir:** ${camp.targetAudience}` : ""}`,
+          `> **Kampanya Durumu:** ${camp.isExpired ? "Süresi Doldu (Arşiv)" : "Aktif"} · **Geçerlilik:** ${camp.formattedValidity}${camp.discount ? ` · **İndirim:** ${camp.discount}` : ""}${camp.targetAudience ? ` · **Kimler Yararlanabilir:** ${camp.targetAudience}` : ""}`,
+          ...(camp.isExpired
+            ? [
+                "",
+                `> **Not:** Bu kampanya ${camp.endDate || camp.formattedValidity} tarihinde sona ermiştir. Aşağıdaki içerik yalnızca tarihsel arşiv amaçlıdır; güncel kampanyalar için \`/kampanyalar\` sayfasını inceleyin.`,
+              ]
+            : []),
           "",
         ]
       : []),

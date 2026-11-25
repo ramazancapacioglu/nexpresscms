@@ -194,6 +194,39 @@ test("ürün göndermesi: fiyat + yazılım bilgisi varsa geçerli SoftwareAppli
   assert.equal(fromCard.applicationCategory, "BusinessApplication");
 });
 
+test("software_product_card AggregateOffer: ana lisans fiyatı ek modülden aşağı düşmez ve tek SoftwareApplication üretilir", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    pageUrl: "https://ornek.test/wolvox-erp",
+    content: {
+      ...input.content,
+      schemaType: "SoftwareApplication",
+      blocks: [
+        {
+          id: "card1",
+          type: "software_product_card",
+          props: {
+            name: "Wolvox ERP 26",
+            pricingMode: "starting",
+            price: 17290,
+            currency: "TRY",
+            priceList: [
+              { name: "WolvoxAI Ek Modül", campaignPrice: 5330 },
+              { name: "Wolvox ERP Temel", campaignPrice: 17290 },
+              { name: "Kurumsal Set", campaignPrice: 383630 },
+            ],
+          },
+        },
+      ],
+    },
+  } as never);
+  const swNodes = (graph["@graph"] as Array<Record<string, any>>).filter((n) => n["@type"] === "SoftwareApplication");
+  assert.equal(swNodes.length, 1);
+  assert.equal(swNodes[0].offers["@type"], "AggregateOffer");
+  assert.equal(swNodes[0].offers.lowPrice, 17290);
+  assert.equal(swNodes[0].offers.highPrice, 383630);
+});
+
 test("yazar profili: Person ünvan, biyografi, uzmanlık, sameAs, avatar ve kuruluşa bağ taşır; profil yoksa yalın kalır", async () => {
   const { buildAuthorPerson } = await import("../src/index");
   const graph = await buildPageSchemaGraph({

@@ -701,8 +701,9 @@ export function deriveAutoSchemaNodes(
               url: offerUrl,
               availability: "https://schema.org/InStock",
               priceCurrency: currency,
-              lowPrice: Math.min(...priceRows),
-              highPrice: Math.max(...priceRows),
+              // Ürünün kendi başlangıç lisans fiyatı (priceNum) varsa ek modül fiyatları lowPrice'ı aşağı çekmez
+              lowPrice: hasVisiblePrice ? priceNum : Math.min(...priceRows),
+              highPrice: hasVisiblePrice ? Math.max(priceNum, ...priceRows) : Math.max(...priceRows),
               offerCount: priceRows.length,
               ...sellerObj,
             }

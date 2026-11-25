@@ -328,6 +328,150 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
       return p.schema === "qa" && activeQa ? qaToMarkdown(activeQa) : "";
     }
 
+    case "software_product_card": {
+      const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+      const num = (v: unknown) => {
+        if (typeof v === "number" && Number.isFinite(v)) return v;
+        if (typeof v === "string") {
+          const n = Number(v.replace(/[^\d.]/g, ""));
+          return Number.isFinite(n) ? n : 0;
+        }
+        return 0;
+      };
+      const curSym = (s(p.currency) || "TRY") === "TRY" ? "TL" : s(p.currency);
+      const fmtMoney = (n: number) => `${n.toLocaleString("tr-TR")} ${curSym}`;
+      const lines: string[] = [];
+      const name = s(p.name) || "Yazılım Ürünü";
+      lines.push(`## ${name}`);
+      if (s(p.tagline)) lines.push(`*${s(p.tagline)}*`);
+      if (s(p.shortDescription)) lines.push("", s(p.shortDescription));
+
+      const priceNum = num(p.price);
+      const listPriceNum = num(p.listPrice);
+      const pricingMode = s(p.pricingMode) || "quote";
+      const meta: string[] = [];
+      if (s(p.version)) meta.push(`- **Güncel Sürüm:** ${s(p.version)}`);
+      if (s(p.sku)) meta.push(`- **Ürün Kodu:** ${s(p.sku)}`);
+      if (s(p.vendor)) meta.push(`- **Yazılım Üreticisi:** ${s(p.vendor)}`);
+      if (s(p.seller)) meta.push(`- **Yetkili Satış & Destek:** ${s(p.seller)}`);
+      if ((pricingMode === "fixed" || pricingMode === "starting") && priceNum > 0) {
+        const listPart = listPriceNum > priceNum ? ` (Liste Fiyatı: ${fmtMoney(listPriceNum)})` : "";
+        const vatPart = s(p.vatNote) ? ` ${s(p.vatNote)}` : "";
+        meta.push(`- **${pricingMode === "starting" ? "Başlangıç Kampanya Fiyatı" : "Lisans Fiyatı"}:** ${fmtMoney(priceNum)}${vatPart}${listPart}`);
+      } else if (s(p.priceLabel)) {
+        meta.push(`- **Fiyatlandırma:** ${s(p.priceLabel)}`);
+      }
+      if (s(p.operatingSystem)) meta.push(`- **Platform / İşletim Sistemi:** ${s(p.operatingSystem)}`);
+      if (s(p.database)) meta.push(`- **Veritabanı:** ${s(p.database)}`);
+      if (s(p.deployment)) meta.push(`- **Kurulum Modeli:** ${s(p.deployment)}`);
+      if (s(p.licenseModel)) meta.push(`- **Lisanslama Modeli:** ${s(p.licenseModel)}`);
+      if (s(p.supportSla)) meta.push(`- **Destek & Kurulum:** ${s(p.supportSla)}`);
+      if (s(p.downloadUrl)) meta.push(`- **İndirme / Demo Bağlantısı:** ${s(p.downloadUrl)}`);
+      if (s(p.brochureUrl)) meta.push(`- **Resmî Fiyat Kaynağı:** ${s(p.brochureUrl)}`);
+      if (s(p.lastVerified)) meta.push(`- **Son Doğrulama Tarihi:** ${s(p.lastVerified)}`);
+      if (meta.length > 0) lines.push("", ...meta);
+
+      const priceList = Array.isArray(p.priceList) ? p.priceList : [];
+      if (priceList.length > 0) {
+        lines.push("", "### Güncel Liste ve Kampanya Fiyatları", "", "| Paket / Modül | Kategori | Liste Fiyatı | Kampanya Fiyatı |", "| --- | --- | --- | --- |");
+        for (const row of priceList) {
+          if (!row || typeof row !== "object") continue;
+          const r = row as Record<string, unknown>;
+          const rName = s(r.name);
+          if (!rName) continue;
+          const rGroup = s(r.group) || (s(r.code) ? `Kod: ${s(r.code)}` : "Modül");
+          const lp = num(r.listPrice);
+          const cp = num(r.campaignPrice);
+          const pct = lp > 0 && cp > 0 && cp < lp ? ` (%${Math.round(((lp - cp) / lp) * 100)} indirim)` : "";
+          lines.push(`| ${rName} | ${rGroup} | ${lp > 0 ? fmtMoney(lp) : "Dahil"} | ${cp > 0 ? `${fmtMoney(cp)}${pct}` : "Ücretsiz / Dahil"} |`);
+        }
+        if (s(p.priceFootNote)) lines.push("", `*${s(p.priceFootNote)}*`);
+      }
+
+      const packages = Array.isArray(p.packages) ? p.packages : [];
+      if (packages.length > 0) {
+        lines.push("", "### Hazır Paket ve Lisans Seçenekleri");
+        for (const pk of packages) {
+          if (!pk || typeof pk !== "object") continue;
+          const r = pk as Record<string, unknown>;
+          const pkName = s(r.name);
+          if (!pkName) continue;
+          const pkPrice = s(r.price) ? ` — **${s(r.price)}**${s(r.period) ? ` (${s(r.period)})` : ""}` : "";
+          const pkList = s(r.listPrice) ? ` (Liste: ${s(r.listPrice)})` : "";
+          lines.push("", `#### ${pkName}${pkPrice}${pkList}`);
+          if (s(r.description)) lines.push(s(r.description));
+          if (Array.isArray(r.highlights)) {
+            for (const h of r.highlights) if (s(h)) lines.push(`- ${s(h)}`);
+          }
+        }
+      }
+
+      const highlights = Array.isArray(p.highlights) ? p.highlights.map(s).filter(Boolean) : [];
+      if (highlights.length > 0) {
+        lines.push("", "### Öne Çıkan Özellikler", ...highlights.map((h) => `- ${h}`));
+      }
+
+      const modules = Array.isArray(p.modules) ? p.modules.map(s).filter(Boolean) : [];
+      if (modules.length > 0) {
+        lines.push("", "### Modüller", ...modules.map((m) => `- ${m}`));
+      }
+
+      const reqs = Array.isArray(p.requirements) ? p.requirements : [];
+      if (reqs.length > 0) {
+        const reqLines = reqs
+          .filter((r): r is Record<string, unknown> => Boolean(r && typeof r === "object"))
+          .map((r) => (s(r.label) && s(r.value) ? `- **${s(r.label)}:** ${s(r.value)}` : ""))
+          .filter(Boolean);
+        if (reqLines.length > 0) lines.push("", "### Sistem Gereksinimleri", ...reqLines);
+      }
+
+      const integrations = Array.isArray(p.integrations) ? p.integrations.map(s).filter(Boolean) : [];
+      if (integrations.length > 0) {
+        lines.push("", "### Uyumlu Entegrasyonlar", ...integrations.map((i) => `- ${i}`));
+      }
+
+      return lines.join("\n").trim();
+    }
+
+    case "sectors_grid": {
+      const title = typeof p.title === "string" && p.title.trim() ? p.title.trim() : "Hangi Sektörler İçin Uygundur?";
+      const subtitle = typeof p.subtitle === "string" && p.subtitle.trim() ? `\n${p.subtitle.trim()}` : "";
+      const items = Array.isArray(p.items) ? p.items : [];
+      const rows = items
+        .filter((x): x is Record<string, unknown> => Boolean(x && typeof x === "object"))
+        .map((x) => {
+          const name = typeof x.name === "string" ? x.name.trim() : "";
+          const summary = typeof x.summary === "string" ? x.summary.trim() : "";
+          if (!name) return "";
+          const badge = typeof x.badge === "string" && x.badge.trim() ? ` (${x.badge.trim()})` : "";
+          const uses = Array.isArray(x.useCases)
+            ? x.useCases.map((u) => (typeof u === "string" ? u.trim() : "")).filter(Boolean)
+            : [];
+          const usePart = uses.length > 0 ? ` — Kullanım: ${uses.join(", ")}` : "";
+          return `- **${name}${badge}:** ${summary}${usePart}`;
+        })
+        .filter(Boolean);
+      return rows.length > 0 ? `## ${title}${subtitle}\n\n${rows.join("\n")}` : "";
+    }
+
+    case "comparison_table":
+    case "data_table": {
+      const title = typeof p.title === "string" && p.title.trim() ? `## ${p.title.trim()}\n\n` : "";
+      const cols = Array.isArray(p.columns) ? p.columns.map((c) => String(c ?? "").trim()) : [];
+      const rows = Array.isArray(p.rows) ? p.rows : [];
+      if (cols.length === 0 && rows.length === 0) return "";
+      const out: string[] = [];
+      if (cols.length > 0) {
+        out.push(`| ${cols.join(" | ")} |`, `| ${cols.map(() => "---").join(" | ")} |`);
+      }
+      for (const r of rows) {
+        if (Array.isArray(r)) {
+          out.push(`| ${r.map((cell) => String(cell ?? "").replace(/\r?\n/g, " ").trim()).join(" | ")} |`);
+        }
+      }
+      return `${title}${out.join("\n")}`.trim();
+    }
+
     case "section":
     case "columns":
     case "column":

@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — HTML ↔ Markdown Tam Fiyat/Sektör/Tablo Senkronizasyonu & `AggregateOffer.lowPrice` Düzeltmesi
+- **Sıfır Kayıplı Markdown Derleyicisi (`packages/core/src/markdown-compiler.ts`):** `software_product_card` (başlangıç/liste fiyatı, sürüm, teknik özet, Markdown fiyat tablosu, paketler, özellikler, modüller, sistem gereksinimleri, entegrasyonlar, doğrulama tarihi), `sectors_grid` ve `comparison_table` / `data_table` blokları için tam Markdown derleyicileri eklendi.
+- **`AggregateOffer.lowPrice` (`packages/seo-core/src/engine.ts`):** `software_product_card` üzerinde ürünün kendi başlangıç lisans fiyatı (`price`) tanımlıysa, ek modül fiyatları artık `lowPrice` değerini aşağı çekmez (`lowPrice = priceNum`, `highPrice = max(priceNum, ...priceRows)`).
+- **Süresi Dolan Kampanya Markdown Uyarısı (`apps/cms/src/app/api/markdown-negotiation/route.ts`):** `isExpired` kampanyalarda Markdown çıktısının başına otomatik arşiv notu eklenir.
+
 ### [2026-11-25] — Çekirdek SEO/GEO/A11y/Responsive İyileştirme Paketi
 - **Tekil `SoftwareApplication` JSON-LD (`packages/seo-core/src/index.ts`):** `software_product_card` bloğundan türeyen `SoftwareApplication` alanları, sayfanın ana varlığı zaten `SoftwareApplication` ise ikinci düğüm açmak yerine ana düğümde birleştirilir.
 - **`robots.txt` WebMCP İzni (`packages/core/src/robots.ts`):** `Disallow: /api` üstüne `Allow: /api/mcp` ve `Allow: /api/site-icon` eklendi; birim test güncellendi.
