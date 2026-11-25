@@ -402,8 +402,8 @@ export default async function PublicDynamicContentPage({
           [...(await scoped.listContents({ locale, type: "page", status: "published" })), ...(content.type === "post" ? [] : await scoped.listContents({ locale, type: "post", status: "published" }))]
             .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public" && row.slug !== "ana-sayfa")
             .map(asCandidate),
-          4,
-        ).map((c) => ({ slug: c.row.slug, title: c.row.title }))
+          6,
+        ).map((c) => ({ slug: c.row.slug, title: c.row.title, image: c.row.featuredImage ?? null, tldr: c.row.tldr ?? null }))
       : [];
 
   const schemaMedia = await schemaImagesFor(siteId, content.blocks, featuredImageUrl);

@@ -11,6 +11,7 @@ import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
 import { SoftwareProductCardBlock } from "./software-product-card-block";
+import { SectorsGridBlock } from "./sectors-grid-block";
 
 /** Vitrin ve dönüşüm blokları: hero, istatistik, bento, fiyat, CTA, yorum ızgarası. Tanımsız dönerse sıradaki grup denenir. */
 export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild, locale }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -712,6 +713,10 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
 
     case "software_product_card": {
       return <SoftwareProductCardBlock id={block.id} tokens={tokens} props={p} />;
+    }
+
+    case "sectors_grid": {
+      return <SectorsGridBlock tokens={tokens} props={p} />;
     }
 
     default:

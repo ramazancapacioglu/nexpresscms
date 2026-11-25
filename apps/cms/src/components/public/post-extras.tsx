@@ -186,16 +186,52 @@ export function PostFooter({
   );
 }
 
-/** Sayfa altında ilgili sayfa ve yazı bağlantıları (iç bağlantı kümesi). Betik yok, düz bağlantı listesi. */
-export function RelatedLinks({ heading, lb, items }: { heading: string; lb: string; items: Array<{ slug: string; title: string }> }) {
+/** Sayfa altında ilgili sayfa ve yazı kartları (0-KB CSS kaydırmalı küçük karosel, öne çıkan görselli). */
+export function RelatedLinks({
+  heading,
+  lb,
+  items,
+}: {
+  heading: string;
+  lb: string;
+  items: Array<{ slug: string; title: string; image?: string | null; tldr?: string | null }>;
+}) {
+  if (items.length === 0) return null;
   return (
-    <nav aria-labelledby="related-links-title" className="mt-10 space-y-3 border-t pt-6">
-      <h2 id="related-links-title" className="text-lg font-bold text-nx-fg">{heading}</h2>
-      <ul className="grid gap-2 sm:grid-cols-2">
+    <nav aria-labelledby="related-links-title" className="mt-10 space-y-4 border-t border-nx-line pt-6">
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="related-links-title" className="text-lg font-bold text-nx-fg">{heading}</h2>
+        <span className="text-[11px] text-nx-muted">Kaydırarak inceleyin →</span>
+      </div>
+      <ul className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 [-ms-overflow-style:none] [scrollbar-width:thin]">
         {items.map((item) => (
-          <li key={item.slug}>
-            <a href={`${lb}/${item.slug}`} className="block rounded-lg border border-nx-line bg-nx-card px-4 py-3 text-sm font-semibold text-nx-fg transition hover:border-nx-link hover:text-nx-link">
-              {item.title}
+          <li key={item.slug} className="w-[235px] sm:w-[255px] shrink-0 snap-start">
+            <a
+              href={`${lb}/${item.slug}`}
+              className="group flex h-full flex-col overflow-hidden rounded-xl border border-nx-line bg-nx-card transition hover:-translate-y-0.5 hover:border-nx-link/50 hover:shadow-sm"
+            >
+              {item.image ? (
+                <div className="aspect-[16/10] w-full overflow-hidden bg-nx-subtle">
+                  <ResponsiveImage
+                    src={item.image}
+                    alt={item.title}
+                    sizes="255px"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-[16/10] w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 flex items-end">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-sky-300/90">İlgili İçerik</span>
+                </div>
+              )}
+              <div className="flex flex-1 flex-col justify-between gap-2 p-3.5">
+                <h3 className="line-clamp-2 text-sm font-bold leading-snug text-nx-fg group-hover:text-nx-link">
+                  {item.title}
+                </h3>
+                {item.tldr ? (
+                  <p className="line-clamp-2 text-xs text-nx-muted leading-relaxed">{item.tldr}</p>
+                ) : null}
+              </div>
             </a>
           </li>
         ))}

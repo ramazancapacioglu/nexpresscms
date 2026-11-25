@@ -158,62 +158,56 @@ export function ContentAccessGate({
 }
 
 /**
- * 0-KB RSC Sosyal Paylaşım ve Markdown Çubuğu.
+ * 0-KB RSC Sade Sosyal Paylaşım ve Markdown Çubuğu.
  */
 export function ContentShareBar({
   title,
   pageUrl,
   markdownHref,
-  borderRadius,
   shareHeading,
 }: {
   title: string;
   pageUrl: string;
   markdownHref: string;
-  borderRadius: string;
+  borderRadius?: string;
   shareHeading: string;
 }) {
   return (
     <section
-      style={{ borderRadius }}
-      className="border border-nx-line bg-nx-subtle p-5 flex flex-wrap items-center justify-between gap-4"
+      aria-label={shareHeading}
+      className="flex flex-wrap items-center justify-between gap-3 border-y border-nx-line/80 py-3.5 text-xs"
     >
-      <div className="space-y-0.5">
-        <div className="text-xs font-bold uppercase tracking-wider text-nx-muted">
-          {shareHeading}
-        </div>
-        <div className="text-sm font-semibold text-nx-fg">{title}</div>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+      <span className="font-medium text-nx-muted">{shareHeading}</span>
+      <div className="flex flex-wrap items-center gap-1.5 font-medium">
         <a
-          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(pageUrl)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(title + " " + pageUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
+          className="rounded-full border border-nx-line bg-nx-card px-3 py-1.5 text-nx-fg transition hover:border-nx-link hover:text-nx-link"
         >
-          𝕏 (Twitter)
+          WhatsApp
         </a>
         <a
           href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
+          className="rounded-full border border-nx-line bg-nx-card px-3 py-1.5 text-nx-fg transition hover:border-nx-link hover:text-nx-link"
         >
           LinkedIn
         </a>
         <a
-          href={`https://wa.me/?text=${encodeURIComponent(title + " " + pageUrl)}`}
+          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(pageUrl)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-nx-line bg-nx-card px-3.5 py-2 text-nx-fg hover:bg-nx-subtle"
+          className="rounded-full border border-nx-line bg-nx-card px-3 py-1.5 text-nx-fg transition hover:border-nx-link hover:text-nx-link"
         >
-          WhatsApp
+          𝕏
         </a>
         <Link
           href={markdownHref}
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-white hover:bg-slate-800 font-mono"
+          className="rounded-full border border-slate-900/15 bg-slate-900 px-3 py-1.5 font-mono text-[11px] text-white transition hover:bg-slate-800"
         >
-          Markdown (.md)
+          .md
         </Link>
       </div>
     </section>

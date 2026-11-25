@@ -178,6 +178,15 @@ export const BLOCK_CATALOG: BlockCatalogItem[] = [
     requirements: [{ label: "İşletim Sistemi", value: "Windows 10/11 veya Windows Server" }],
     integrations: ["GİB e-Fatura", "e-Arşiv", "Pazaryerleri"],
   })),
+  item("sectors_grid", "Sektörler", "marketing", "Ürünün hangi sektörlere uygun olduğunu gösteren ızgara", node("sectors_grid", {
+    title: "Hangi Sektörler İçin Uygundur?",
+    subtitle: "Yazılımın sahada en yüksek verimi sağladığı başlıca sektörler.",
+    items: [
+      { name: "Toptan & Perakende", badge: "Stok & Hızlı Satış", summary: "Çoklu depo, barkod ve hızlı faturalandırma.", useCases: ["Anlık stok takibi", "e-Fatura / e-Arşiv"] },
+      { name: "Üretim & Sanayi", badge: "MRP II", summary: "Reçete, iş emri ve gerçek birim maliyet kontrolü.", useCases: ["Hammadde planlama", "Fire & lot takibi"] },
+      { name: "Hizmet & Kurumsal", badge: "CRM & Finans", summary: "Teklif, sözleşme ve dönemsel faturalandırma.", useCases: ["Cari vade takibi", "Otomatik e-Mutabakat"] },
+    ],
+  })),
   item("comparison", "Karşılaştırma", "marketing", "Yan yana tablo", node("comparison_table", { title: "Karşılaştırma", headers: ["Kriter", "Biz", "Diğer"], rows: [["Hız", "Çok hızlı", "Ortalama"]] })),
 
   item("single_icon", "Simge", "media", "24 yerleşik simge", node("single_icon", { icon: "star", size: 40, color: "#2563eb", background: "", href: "", label: "", align: "left" })),
