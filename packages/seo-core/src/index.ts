@@ -1,6 +1,6 @@
-import { cmsHooks, friendlyImagePath, normalizeAppCategory, softwareReference, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
+import { cmsHooks, friendlyImagePath, normalizeAppCategory, softwareFactsOf, softwareReference, type BlockNode, type SchemaGraphNode } from "@nexpress/core";
 
-export { softwareReference };
+export { softwareFactsOf, softwareReference };
 import { buildBreadcrumbNode, deriveAutoSchemaNodes, plainFaqText } from "./engine";
 
 export * from "./engine";

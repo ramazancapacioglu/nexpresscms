@@ -1,30 +1,35 @@
 /**
- * Katalog/teklif içindeki yazılım göndermesi. Google `SoftwareApplication` için kategori, işletim sistemi, teklif ve puandan en az ikisini ister:
- * bilgi varsa tam tür, yoksa türsüz (`@id` + ad + adres) yazılır; eksik özellikli tür kritik hata üretir.
+ * Katalog/teklif içindeki yazılım göndermesi. Google `SoftwareApplication` zengin sonucu için `offers` (fiyat + para birimi)
+ * zorunludur: fiyat + (kategori veya işletim sistemi) varsa geçerli `SoftwareApplication`, yoksa geçerli `Thing` göndermesi yazılır.
  */
 export function softwareReference(item: { name: string; url: string; description?: string; applicationCategory?: string; operatingSystem?: string; price?: string; currency?: string }): Record<string, unknown> {
   const offers = item.price ? { "@type": "Offer", price: String(item.price).replace(",", "."), priceCurrency: item.currency || "TRY" } : undefined;
-  const known = [item.applicationCategory, item.operatingSystem, offers].filter(Boolean).length;
+  const validSoftware = Boolean(offers) && Boolean(item.applicationCategory || item.operatingSystem);
   return {
-    ...(known >= 2 ? { "@type": "SoftwareApplication" } : {}),
-    "@id": `${item.url}#softwareapplication`,
+    "@type": validSoftware ? "SoftwareApplication" : "Thing",
+    "@id": `${item.url}#${validSoftware ? "softwareapplication" : "entity"}`,
     name: item.name,
     url: item.url,
     ...(item.description ? { description: item.description } : {}),
-    ...(known >= 2 ? { ...(item.applicationCategory ? { applicationCategory: normalizeAppCategory(item.applicationCategory) } : {}), ...(item.operatingSystem ? { operatingSystem: item.operatingSystem } : {}), ...(offers ? { offers } : {}) } : {}),
+    ...(validSoftware ? { ...(item.applicationCategory ? { applicationCategory: normalizeAppCategory(item.applicationCategory) } : {}), ...(item.operatingSystem ? { operatingSystem: item.operatingSystem } : {}), offers } : {}),
   };
 }
 
 
-/** İçeriğin kayıtlı yazılım bilgisi (zengin şema `software` kartı ya da düz şema alanları): kategori, işletim sistemi, fiyat. */
-export function softwareFactsOf(attrs: Record<string, unknown> | null | undefined): { applicationCategory?: string; operatingSystem?: string; price?: string; currency?: string } {
+/** İçeriğin kayıtlı yazılım bilgisi (zengin şema `software` kartı, `software_product_card` bloğu ya da düz şema alanları). */
+export function softwareFactsOf(
+  attrs: Record<string, unknown> | null | undefined,
+  blocks?: Array<{ type?: string; props?: Record<string, unknown> }> | null
+): { applicationCategory?: string; operatingSystem?: string; price?: string; currency?: string } {
   const a = attrs ?? {};
   const rich = ((a.richSchema as Record<string, unknown> | undefined)?.software ?? (a.richSchema as Record<string, Record<string, unknown>> | undefined)?.rich?.software ?? {}) as Record<string, unknown>;
-  const str = (value: unknown): string | undefined => (typeof value === "string" && value.trim() ? value.trim() : typeof value === "number" ? String(value) : undefined);
-  const applicationCategory = normalizeAppCategory(str(rich.category) ?? str(a.applicationCategory));
-  const operatingSystem = str(rich.os) ?? str(a.operatingSystem);
-  const price = str(rich.price);
-  const currency = str(rich.currency);
+  const card = Array.isArray(blocks) ? blocks.find((b) => b?.type === "software_product_card")?.props ?? {} : {};
+  const str = (value: unknown): string | undefined => (typeof value === "string" && value.trim() ? value.trim() : typeof value === "number" && value > 0 ? String(value) : undefined);
+  const applicationCategory = normalizeAppCategory(str(card.category) ?? str(rich.category) ?? str(a.applicationCategory));
+  const operatingSystem = str(card.operatingSystem) ?? str(rich.os) ?? str(a.operatingSystem);
+  const cardPrice = (card.pricingMode === "fixed" || card.pricingMode === "starting") ? str(card.price) : undefined;
+  const price = cardPrice ?? str(rich.price);
+  const currency = str(card.currency) ?? str(rich.currency);
   return { ...(applicationCategory ? { applicationCategory } : {}), ...(operatingSystem ? { operatingSystem } : {}), ...(price ? { price, ...(currency ? { currency } : {}) } : {}) };
 }
 

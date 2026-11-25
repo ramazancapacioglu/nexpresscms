@@ -147,7 +147,7 @@ export default async function PublicCampaignDetailPage({
     siteUrl: baseUrl,
     pageUrl,
     siteName,
-    product: productRow ? softwareFactsOf(productRow.schemaAttributes) : undefined,
+    product: productRow ? softwareFactsOf(productRow.schemaAttributes, productRow.blocks) : undefined,
   });
 
   // Tek bağlantılı grafik: kuruluş, site, sayfa (görselli), kırıntı ve teklif; yalnızca Offer düğümü değil

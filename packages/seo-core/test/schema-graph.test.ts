@@ -180,13 +180,18 @@ test("görsel hakları: yaratıcı, kredi, telif, lisans ve lisans edinme sayfas
   assert.equal((bare["@graph"].find((n) => n["@type"] === "BlogPosting") as any).image.creator, undefined, "ayar yoksa hak alanı yazılmaz");
 });
 
-test("ürün göndermesi: en az iki bilgi varsa SoftwareApplication, yoksa türsüz", async () => {
-  const { softwareReference } = await import("../src/index");
-  assert.equal((softwareReference({ name: "A", url: "https://o.test/a" }) as any)["@type"], undefined);
-  assert.equal((softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication" }) as any)["@type"], undefined);
-  const full = softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication", operatingSystem: "Windows 11" }) as any;
+test("ürün göndermesi: fiyat + yazılım bilgisi varsa geçerli SoftwareApplication, yoksa Thing", async () => {
+  const { softwareReference, softwareFactsOf } = await import("../src/index");
+  assert.equal((softwareReference({ name: "A", url: "https://o.test/a" }) as any)["@type"], "Thing");
+  assert.equal((softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication", operatingSystem: "Windows 11" }) as any)["@type"], "Thing");
+  const full = softwareReference({ name: "A", url: "https://o.test/a", applicationCategory: "BusinessApplication", operatingSystem: "Windows 11", price: "9900", currency: "TRY" }) as any;
   assert.equal(full["@type"], "SoftwareApplication");
   assert.equal(full.operatingSystem, "Windows 11");
+  assert.equal(full.offers.price, "9900");
+  assert.equal(full.offers.priceCurrency, "TRY");
+  const fromCard = softwareFactsOf({}, [{ type: "software_product_card", props: { category: "BusinessApplication", operatingSystem: "Windows", pricingMode: "starting", price: "24900", currency: "TRY" } }]);
+  assert.equal(fromCard.price, "24900");
+  assert.equal(fromCard.applicationCategory, "BusinessApplication");
 });
 
 test("yazar profili: Person ünvan, biyografi, uzmanlık, sameAs, avatar ve kuruluşa bağ taşır; profil yoksa yalın kalır", async () => {

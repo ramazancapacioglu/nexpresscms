@@ -66,23 +66,27 @@ async function appendRichSchema(payload: HookPayloads["seo:buildSchemaGraph"], n
 
 async function appendEntityGraph(payload: HookPayloads["seo:buildSchemaGraph"], nodes: SchemaGraphNode[]): Promise<SchemaGraphNode[]> {
   const repo = getScopedRepository(payload.siteId);
-  const links = await repo.listEntityLinks();
-  const contents = await repo.listContents({ locale: payload.locale });
+  const [site, links, contents] = await Promise.all([
+    repo.getSite(),
+    repo.listEntityLinks(),
+    repo.listContents({ locale: payload.locale }),
+  ]);
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const supported = Array.isArray(site?.supportedLocales) ? site.supportedLocales : [];
+  const lb = supported.length <= 1 ? "" : `/${payload.locale}`;
   const enriched = [...nodes];
   if (payload.contentId) {
     for (const rel of links.filter((l) => l.sourceContentId === payload.contentId)) {
       const target = contents.find((c) => c.id === rel.targetContentId);
       if (!target) continue;
-      const targetUrl = `${baseUrl}/${payload.locale}/${target.slug}`;
+      const targetUrl = `${baseUrl}${lb}/${target.slug}`;
+      // Bağlı varlık göndermesi: ham schemaAttributes (wpId, _page, _publishing vb.) ve zorunlu alanı eksik SoftwareApplication/Product basılmaz
       enriched.push({
-        "@type": target.schemaType,
-        "@id": `${targetUrl}#${target.schemaType.toLowerCase()}`,
+        "@type": "Thing",
+        "@id": `${targetUrl}#entity`,
         name: target.title,
         description: target.tldr ?? target.title,
         url: targetUrl,
-        relationship: rel.relationType,
-        ...(target.schemaAttributes ?? {}),
       });
     }
   }

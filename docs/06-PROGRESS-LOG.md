@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Kampanya & Varlık Grafiği Google Zengin Sonuç Şema Düzeltmesi (`agentic-seo-pro`, `software-reference.ts`)
+- **`appendEntityGraph` (`plugins-pro/agentic-seo-pro/src/index.tsx`):** Bağlı içerikler için ham `schemaAttributes` (`wpId`, `_page`, `_publishing`, `migratedFrom`, `relationship`) ve eksik alanlı `SoftwareApplication` düğümü basılması kaldırıldı; tek dilli kip uyumlu (`localeBase`) temiz `@type: "Thing"` göndermesi üretilir.
+- **`softwareReference` & `softwareFactsOf` (`packages/core/src/software-reference.ts`, `kampanya/[slug]/page.tsx`):** `SoftwareApplication` düğümü artık yalnızca Google'ın zorunlu tuttuğu `offers` (`price` + `priceCurrency`) alanı mevcutken basılır (yoksa geçerli `@type: "Thing"` döner); `softwareFactsOf` artık `software_product_card` bloğundaki görünür başlangıç/sabit fiyatı da okur.
+
 ### [2026-11-25] — akinsoftizmir.com.tr Faz 12 Temizliği & Bağımsız Operasyon El Kitabı Devri
 - **Üst Sayfa Tablo Konumlandırma & Tekil Temizlik:** 5 üst kategori sayfasındaki (`kurumsal-kaynak-planlama`, `muhasebe-programlari`, `sektorel-cozumler`, `akinsoft-e-donusum`, `bulut-yazilim-cozumleri`) fiyat/karşılaştırma tabloları sayfa sonuna (SSS bloğunun hemen üstüne) taşındı; `/octoplus` eski özellik tablosu kaldırıldı; tüm 153 yayındaki sayfada tespit edilen **22 çift `faq_accordion`** bloğu benzersiz sorular korunarak tek SSS + sağlam `FAQPage` şemasına indirildi.
 - **Bağımsız Operasyon El Kitabı:** `akinsoftizmir.com.tr` SEO/GEO/dijital pazarlama çalışmalarını ayrı bir ajana devretmek için [AKINSOFTIZMIR-SEO-GEO-OPERASYON-EL-KITABI.md](akinsoftizmir-com-tr-aktarim/AKINSOFTIZMIR-SEO-GEO-OPERASYON-EL-KITABI.md) oluşturuldu.
