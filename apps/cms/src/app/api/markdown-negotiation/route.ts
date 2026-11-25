@@ -5,7 +5,7 @@ import {
   findTypeByArchiveSlug,
   memberMeetsTier,
   readPageOptions,
-  resolveCampaign,
+  resolveCampaignData,
   resolveSiteSettings,
   resolvePublishing,
   verifyContentAccessToken,
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const camp = content.type === "campaign" ? resolveCampaign(content) : null;
+  const camp = content.type === "campaign" ? resolveCampaignData(content) : null;
   const headerMeta = [
     "---",
     `title: "${content.title.replace(/"/g, '\\"')}"`,

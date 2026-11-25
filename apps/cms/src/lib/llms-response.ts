@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { contentPath, resolveCampaign, resolveSiteSettings, localeBase } from "@nexpress/core";
+import { contentPath, resolveCampaignData, resolveSiteSettings, localeBase } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
@@ -26,7 +26,7 @@ export async function llmsTxtResponse(request: NextRequest, forcedLocale?: strin
     baseUrl,
     locale,
     items: contents.map((c) => {
-      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      const camp = c.type === "campaign" ? resolveCampaignData(c) : null;
       return {
         title: c.title,
         url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),

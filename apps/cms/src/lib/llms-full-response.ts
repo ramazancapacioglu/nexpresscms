@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { contentPath, isPluginModuleEnabled, localeBase, resolveCampaign, resolveSiteSettings } from "@nexpress/core";
+import { contentPath, isPluginModuleEnabled, localeBase, resolveCampaignData, resolveSiteSettings } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
@@ -29,7 +29,7 @@ export async function llmsFullResponse(request: NextRequest, forcedLocale?: stri
     baseUrl,
     locale,
     items: contents.map((c) => {
-      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      const camp = c.type === "campaign" ? resolveCampaignData(c) : null;
       return {
         title: c.title,
         url: `${baseUrl}${lb}${c.slug === "ana-sayfa" ? "" : contentPath(settings.general.contentTypes, c)}`.replace(/\/$/, ""),
@@ -44,7 +44,7 @@ export async function llmsFullResponse(request: NextRequest, forcedLocale?: stri
 
   const fullCorpusAppendix = contents
     .map((c) => {
-      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      const camp = c.type === "campaign" ? resolveCampaignData(c) : null;
       const itemUrl = `${baseUrl}${lb}${c.slug === "ana-sayfa" ? "" : contentPath(settings.general.contentTypes, c)}`.replace(/\/$/, "");
       const campLine = camp
         ? `\nKampanya Durumu: ${camp.isExpired ? "Süresi Doldu" : "Aktif"} (${camp.formattedValidity})${camp.discount ? ` · İndirim: ${camp.discount}` : ""}${camp.targetAudience ? ` · Kimler Yararlanabilir: ${camp.targetAudience}` : ""}`
