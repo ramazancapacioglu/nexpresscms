@@ -23,7 +23,7 @@
 
 ### [2026-11-25] — `TechArticle` Zengin Teknik Rehber Altyapısı & Bilgi Bankası Yükseltmesi
 - **Zengin `TechArticle` + `WebPage` Şeması (`packages/seo-core/src/index.ts`, `schema-graph.test.ts`):** `rich.tech` altına `teaches`, `aboutSoftwareName/Url` (`#softwareapplication` `@id` bağı), `citations` ve bağlı `WebPage` düğümüne `reviewedBy` + `lastReviewed` alanları eklendi.
-- **0-KB Teknik Künye & Markdown Senkronizasyonu (`tech-article-bar.tsx`, `[slug]/page.tsx`, `rich-schema-panel.tsx`, `markdown-compiler.ts`):** Editördeki Teknik Rehber paneli yeni alanlarla genişletildi; `TechArticle` sayfalarında 0-KB RSC teknik künye bandı ve tam Markdown (`techToMarkdown`) çıktısı eklendi.
+- **0-KB Teknik Künye & Markdown Senkronizasyonu (`tech-article-bar.tsx`, `[slug]/page.tsx`, `rich-schema-panel.tsx`, `markdown-compiler.ts`):** Editördeki Teknik Rehber paneli yeni alanlarla genişletildi; `TechArticle` sayfalarında 0-KB RSC teknik künye bandı (makale sonunda, yazar kutusunun üstünde) ve tam Markdown (`techToMarkdown`) çıktısı eklendi.
 
 ### [2026-11-25] — SEO Raporları: Tarih Aralığı, Sayfa Bazlı AI Bot Taramaları & Geniş Alt Sekmeli Rapor Ekranı
 - **Sayfa Bazlı Bot Günlüğü (`bot_page_daily`, göç `0025`):** `packages/database/src/schema/pg.ts` ve `sqlite.ts` içine `bot_page_daily` tablosu (kiracı kapsamlı `siteId` + indeks) eklendi; `BotStatsRepository` tarih aralığı (`summaryInRange`, `dailySeriesInRange`, `pageHitsInRange`) ve `trackBotVisit` sayfa yolu kaydı eklendi; birim testler (`bot-stats-range.test.ts`) yazıldı.

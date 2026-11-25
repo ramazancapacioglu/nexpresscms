@@ -646,13 +646,6 @@ export default async function PublicDynamicContentPage({
                 category={categories[0] ? { name: termName("category", categories[0]), href: `${lb}/kategori/${categories[0]}` } : null}
               />
             ) : null}
-            {(placement?.schemaType ?? content.schemaType) === "TechArticle" ? (
-              <TechArticleBar
-                tech={((content.schemaAttributes as Record<string, any> | null)?.richSchema?.tech ?? (content.schemaAttributes as Record<string, any> | null)?.richSchema?.rich?.tech) as Record<string, string> | undefined}
-                lb={lb}
-                tokens={tokens}
-              />
-            ) : null}
             {content.type === "page" && content.tldr && !readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? (
               <p className="max-w-2xl text-base leading-relaxed text-nx-soft">{content.tldr}</p>
             ) : null}
@@ -702,6 +695,14 @@ export default async function PublicDynamicContentPage({
         form={formCtx}
         tpl={cover}
       />
+
+      {(placement?.schemaType ?? content.schemaType) === "TechArticle" ? (
+        <TechArticleBar
+          tech={((content.schemaAttributes as Record<string, any> | null)?.richSchema?.tech ?? (content.schemaAttributes as Record<string, any> | null)?.richSchema?.rich?.tech) as Record<string, string> | undefined}
+          lb={lb}
+          tokens={tokens}
+        />
+      ) : null}
 
       {/* Sosyal Paylaşım Çubuğu (0-KB RSC) */}
       {showShareBar && content.type !== "post" && (
