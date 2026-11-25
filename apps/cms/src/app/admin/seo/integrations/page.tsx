@@ -48,7 +48,14 @@ export default async function AdminSeoIntegrationsPage({ searchParams }: { searc
           gsc: { clientId: integrations?.gsc?.clientId ?? "", clientSecret: "", refreshToken: "", siteUrl: integrations?.gsc?.siteUrl || (origin ? `${origin}/` : ""), enabled: integrations?.gsc?.enabled ?? false },
           ga4: { propertyId: integrations?.ga4?.propertyId ?? "", measurementId: integrations?.ga4?.measurementId ?? "", placement: integrations?.ga4?.placement === "body" ? "body" : "head", enabled: integrations?.ga4?.enabled ?? false },
           bing: { apiKey: "", siteUrl: integrations?.bing?.siteUrl || (origin ? `${origin}/` : ""), enabled: integrations?.bing?.enabled ?? false },
-          yandex: { token: "", counterId: integrations?.yandex?.counterId ?? "", placement: integrations?.yandex?.placement === "body" ? "body" : "head", enabled: integrations?.yandex?.enabled ?? false },
+          yandex: {
+            token: "",
+            counterId: integrations?.yandex?.counterId ?? "",
+            counterHtml: integrations?.yandex?.counterHtml ?? "",
+            loadBeforeConsent: integrations?.yandex?.loadBeforeConsent ?? false,
+            placement: integrations?.yandex?.placement === "body" ? "body" : "head",
+            enabled: integrations?.yandex?.enabled ?? false,
+          },
         }}
         initialVerification={seo.verification ?? {}}
         secrets={{

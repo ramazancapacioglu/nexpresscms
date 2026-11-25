@@ -51,7 +51,7 @@ const NOTES: Record<Service, { title: string; use: string; steps: string[] }> = 
     use: "Webmaster sahipliği meta veya DNS TXT ile doğrulanır. Metrika sayaç numarası ölçüm betiğini basar; OAuth jetonu organik giriş raporunu çeker.",
     steps: [
       "Webmaster’da site ekleyin. Meta etiketinin content değerini ya da DNS TXT satırındaki kodu alın.",
-      "Metrika’da sayaç açın. Ayarlardaki sayaç numarasını (yalnızca rakam) yazın. Sayaç kodunun tamamını yapıştırmayın.",
+      "Metrika’da sayaç açın. Sayaç numarasını yazabilir ya da Metrika panelinin verdiği tam sayaç/doğrulama HTML kodunu ilgili alana yapıştırabilirsiniz. Çerez onayı açıksa doğrulama için 'Çerez onayını beklemeden yükle' seçeneğini işaretleyin.",
       "Jeton: oauth.yandex.com üzerinde Metrika okuma yetkili bir jeton alın ve parola alanına yapıştırın. Bu jeton, DNS kaydının yerine geçmez.",
     ],
   },

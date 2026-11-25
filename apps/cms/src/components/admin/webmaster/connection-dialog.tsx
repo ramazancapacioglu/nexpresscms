@@ -264,7 +264,22 @@ export function ConnectionDialog({
                 <input className={`${fieldClass} font-mono`} value={config.yandex?.counterId ?? ""} onChange={(e) => patchYandex({ counterId: e.target.value })} placeholder="98684133" />
               </div>
               <div className="md:col-span-2">
+                <label className={label}>Metrika sayaç / doğrulama HTML kodu (isteğe bağlı)</label>
+                <textarea
+                  rows={5}
+                  spellCheck={false}
+                  className={`${fieldClass} font-mono text-[11px] leading-relaxed`}
+                  value={config.yandex?.counterHtml ?? ""}
+                  onChange={(e) => patchYandex({ counterHtml: e.target.value })}
+                  placeholder={`<!-- Yandex.Metrika counter -->\n<script type="text/javascript">...</script>\n<noscript><div><img src="https://mc.yandex.ru/watch/98684133" ... /></div></noscript>`}
+                />
+                <p className="mt-1 text-[11px] text-nx-soft">
+                  Yandex Metrika panelinden kopyaladığınız tam HTML kodunu buraya yapıştırabilirsiniz. Doluysa otomatik kod yerine bu HTML basılır; sayaç numarası boşsa koddan otomatik alınır.
+                </p>
+              </div>
+              <div className="space-y-2 md:col-span-2">
                 <Check checked={config.yandex?.enabled ?? false} onChange={(enabled) => patchYandex({ enabled })}>Metrika sayacını ziyaretçi sayfalarına ekle ve giriş sayfalarını aktar</Check>
+                <Check checked={config.yandex?.loadBeforeConsent ?? false} onChange={(loadBeforeConsent) => patchYandex({ loadBeforeConsent })}>Çerez onayını beklemeden yükle (Metrika sayaç doğrulaması için önerilir)</Check>
               </div>
             </div>
           ) : null}

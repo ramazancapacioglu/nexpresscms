@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Webmaster Yandex Metrika Sayaç / Doğrulama HTML Kodu & Çerez Onayı Seçeneği
+- **Çekirdek Doğrulama (`packages/core/src/webmaster-connect.ts`, `site-settings.ts`):** `integrations.yandex` altına `counterHtml` (Yandex Metrika panelinden alınan tam HTML sayaç/doğrulama kodu) ve `loadBeforeConsent` (çerez onayını beklemeden yükleme — Metrika bot doğrulaması için) alanları eklendi; `validateMetrikaHtml` ve `extractMetrikaCounterId` yardımcıları + birim testler eklendi.
+- **Panel & Vitrin (`connection-dialog.tsx`, `actions.ts`, `measure-tags.tsx`, `[locale]/layout.tsx`):** Webmaster → Yandex Metrika sekmesine tam HTML kodu alanı ve çerez onayı öncesi yükleme seçeneği eklendi; sayaç numarası boşsa HTML kodundan otomatik ayıklanır; ziyaretçi sayfalarında (0-KB RSC) özel HTML kodu varsa doğrudan o, yoksa güncel `tag.js?id=<counterId>` betiği basılır.
+
 ### [2026-11-25] — Kampanya & Varlık Grafiği Google Zengin Sonuç Şema Düzeltmesi (`agentic-seo-pro`, `software-reference.ts`)
 - **`appendEntityGraph` (`plugins-pro/agentic-seo-pro/src/index.tsx`):** Bağlı içerikler için ham `schemaAttributes` (`wpId`, `_page`, `_publishing`, `migratedFrom`, `relationship`) ve eksik alanlı `SoftwareApplication` düğümü basılması kaldırıldı; tek dilli kip uyumlu (`localeBase`) temiz `@type: "Thing"` göndermesi üretilir.
 - **`softwareReference` & `softwareFactsOf` (`packages/core/src/software-reference.ts`, `kampanya/[slug]/page.tsx`):** `SoftwareApplication` düğümü artık yalnızca Google'ın zorunlu tuttuğu `offers` (`price` + `priceCurrency`) alanı mevcutken basılır (yoksa geçerli `@type: "Thing"` döner); `softwareFactsOf` artık `software_product_card` bloğundaki görünür başlangıç/sabit fiyatı da okur.

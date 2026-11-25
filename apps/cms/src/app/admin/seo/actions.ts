@@ -6,10 +6,12 @@ import { recordAudit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth/session";
 import { clearWebmasterCaches } from "@/lib/webmaster/connection";
 import {
+  extractMetrikaCounterId,
   measurementIdOk,
   metrikaCounterOk,
   normalizeWebmasterVerification,
   scriptPlacement,
+  validateMetrikaHtml,
   type WebmasterVerification,
   resolveSiteSettings,
 } from "@nexpress/core";
@@ -39,6 +41,8 @@ export interface SaveIntegrationsInput {
   yandex?: {
     token?: string;
     counterId?: string;
+    counterHtml?: string;
+    loadBeforeConsent?: boolean;
     placement?: "head" | "body";
     enabled?: boolean;
     lastSync?: string;
@@ -66,7 +70,9 @@ export async function saveSeoIntegrationsAction(
   if (measurementId && !measurementIdOk(measurementId)) {
     return { ok: false, error: "Ölçüm kimliği G- ile başlayan Analytics kimliği olmalı. Sayısal mülk numarası ayrı alandır." };
   }
-  const counterId = input.yandex?.counterId?.trim() || "";
+  const metrikaHtml = validateMetrikaHtml(input.yandex?.counterHtml);
+  if (metrikaHtml.error) return { ok: false, error: metrikaHtml.error };
+  const counterId = input.yandex?.counterId?.trim() || extractMetrikaCounterId(metrikaHtml.value) || "";
   if (counterId && !metrikaCounterOk(counterId)) {
     return { ok: false, error: "Metrika sayaç numarası 5–12 haneli olmalıdır." };
   }
@@ -105,6 +111,8 @@ export async function saveSeoIntegrationsAction(
       yandex: {
         token: input.yandex?.token?.trim() || (input.keep?.yandexToken ? currentSeo.integrations?.yandex?.token ?? "" : ""),
         counterId,
+        counterHtml: metrikaHtml.value,
+        loadBeforeConsent: Boolean(input.yandex?.loadBeforeConsent),
         placement: scriptPlacement(input.yandex?.placement),
         enabled: Boolean(input.yandex?.enabled),
         lastSync: input.yandex?.lastSync || currentSeo.integrations?.yandex?.lastSync,

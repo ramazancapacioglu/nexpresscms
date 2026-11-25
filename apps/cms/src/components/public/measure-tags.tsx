@@ -1,9 +1,17 @@
 /**
- * Analytics ve Metrika etiketleri. Kimlik sunucuda doğrulanmış gelir; ham yapıştırma yoktur.
+ * Analytics ve Metrika etiketleri. Kimlik ve yönetici HTML kodu sunucuda doğrulanmış gelir.
  * Ziyaretçi bileşeni değildir: betik etiketini sunucu basar.
  */
-export function MeasureTags({ gaId, metrikaId }: { gaId: string | null; metrikaId: string | null }) {
-  if (!gaId && !metrikaId) return null;
+export function MeasureTags({
+  gaId,
+  metrikaId,
+  metrikaHtml,
+}: {
+  gaId: string | null;
+  metrikaId: string | null;
+  metrikaHtml?: string | null;
+}) {
+  if (!gaId && !metrikaId && !metrikaHtml) return null;
   return (
     <>
       {gaId ? (
@@ -16,11 +24,13 @@ export function MeasureTags({ gaId, metrikaId }: { gaId: string | null; metrikaI
           />
         </>
       ) : null}
-      {metrikaId ? (
+      {metrikaHtml ? (
+        <div id="nx-yandex-metrika" dangerouslySetInnerHTML={{ __html: metrikaHtml }} />
+      ) : metrikaId ? (
         <>
           <script
             dangerouslySetInnerHTML={{
-              __html: `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");ym(${metrikaId},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true});`,
+              __html: `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js?id=${metrikaId}","ym");ym(${metrikaId},"init",{ssr:true,clickmap:true,trackLinks:true,accurateTrackBounce:true});`,
             }}
           />
           <noscript>

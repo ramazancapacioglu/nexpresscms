@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import {
   acceptVerifyCode,
   cnameHit,
+  extractMetrikaCounterId,
   googleTxtValue,
   normalizeWebmasterVerification,
   txtHit,
+  validateMetrikaHtml,
   verificationHosts,
   yandexTxtValue,
 } from "../src/webmaster-connect";
@@ -49,4 +51,14 @@ test("kayıt: bozuk kod kaydı düşürür, boş alan silinir", () => {
     bingCname: "bing-auth1",
   });
   assert.match(normalizeWebmasterVerification({ google: "<script>" }).error ?? "", /Google meta/);
+});
+
+test("metrika HTML kodu: doğrulama ve sayaç numarası ayıklama", () => {
+  const sample = `<!-- Yandex.Metrika counter -->\n<script>(function(m,e,t,r,i,k,a){})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=98684133','ym');ym(98684133,'init',{webvisor:true});</script>`;
+  assert.equal(extractMetrikaCounterId(sample), "98684133");
+  assert.equal(extractMetrikaCounterId('<img src="https://mc.yandex.ru/watch/104556789" />'), "104556789");
+  assert.equal(extractMetrikaCounterId("geçersiz metin"), "");
+  assert.equal(validateMetrikaHtml("").error, undefined);
+  assert.equal(validateMetrikaHtml(sample).error, undefined);
+  assert.match(validateMetrikaHtml("<script>alert(1)</script>").error ?? "", /Yandex Metrika/);
 });

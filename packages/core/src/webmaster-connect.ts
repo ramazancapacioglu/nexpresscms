@@ -56,6 +56,37 @@ export function metrikaCounterOk(id: string | undefined): boolean {
   return /^\d{5,12}$/.test((id ?? "").trim());
 }
 
+/** Yapıştırılan Yandex Metrika HTML kodundan 5–12 haneli sayaç numarasını çıkarır. */
+export function extractMetrikaCounterId(raw: string | undefined): string {
+  const text = (raw ?? "").trim();
+  if (!text) return "";
+  const hit =
+    text.match(/\bym\s*\(\s*(\d{5,12})\s*,/i) ??
+    text.match(/mc\.yandex\.ru\/metrika\/tag\.js\?id=(\d{5,12})/i) ??
+    text.match(/mc\.yandex\.ru\/watch\/(\d{5,12})/i) ??
+    text.match(/yaCounter(\d{5,12})/i);
+  return hit?.[1] ?? "";
+}
+
+/** Yandex Metrika sayaç/doğrulama HTML kodunu doğrular. Boşsa temiz döner. */
+export function validateMetrikaHtml(raw: string | undefined): { value: string; error?: string } {
+  const text = (raw ?? "").trim();
+  if (!text) return { value: "" };
+  if (text.length > 8000) {
+    return { value: "", error: "Yandex Metrika HTML kodu çok uzun (en fazla 8.000 karakter)." };
+  }
+  const looksLikeMetrika =
+    /mc\.yandex\.ru\/(?:metrika\/tag\.js|watch\/\d{5,12})/i.test(text) ||
+    /\bym\s*\(\s*\d{5,12}\s*,/i.test(text);
+  if (!looksLikeMetrika) {
+    return {
+      value: "",
+      error: "Geçerli bir Yandex Metrika sayaç HTML kodu algılanamadı (mc.yandex.ru veya ym(...) beklenir).",
+    };
+  }
+  return { value: text };
+}
+
 export function scriptPlacement(value: unknown): "head" | "body" {
   return value === "body" ? "body" : "head";
 }

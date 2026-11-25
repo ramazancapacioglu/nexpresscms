@@ -81,6 +81,10 @@ export interface SeoEngineSettings {
     yandex?: {
       token?: string;
       counterId?: string;
+      /** Yandex Metrika panelinden alınan tam sayaç/doğrulama HTML kodu (doluysa otomatik kod yerine basılır). */
+      counterHtml?: string;
+      /** Çerez onayını beklemeden yükle (Metrika sayaç doğrulama botunun kodu görebilmesi için). */
+      loadBeforeConsent?: boolean;
       /** Sayaç betiğinin yeri. Kayıt yoksa head. */
       placement?: "head" | "body";
       enabled?: boolean;

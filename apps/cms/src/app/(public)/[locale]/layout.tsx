@@ -129,8 +129,15 @@ export default async function PublicLocaleLayout({
   const metrikaPlacement = scriptPlacement(yandexTrack?.placement);
   const gaId =
     optionalOk && ga4Settings?.enabled && measurementIdOk(ga4Settings.measurementId) ? ga4Settings.measurementId!.trim() : null;
+  const metrikaAllowed = optionalOk || Boolean(yandexTrack?.loadBeforeConsent);
+  const metrikaHtml =
+    metrikaAllowed && yandexTrack?.enabled && yandexTrack.counterHtml?.trim()
+      ? yandexTrack.counterHtml.trim()
+      : null;
   const metrikaId =
-    optionalOk && yandexTrack?.enabled && metrikaCounterOk(yandexTrack.counterId) ? yandexTrack.counterId!.trim() : null;
+    !metrikaHtml && metrikaAllowed && yandexTrack?.enabled && metrikaCounterOk(yandexTrack.counterId)
+      ? yandexTrack.counterId!.trim()
+      : null;
   const cust = resolvedCustomizer.header;
   const headerBehavior = headerTpl?.meta.behavior ?? {};
   const tplCtx = headerTpl || footerTpl || sidebarTpl ? buildTemplateContext({ lb, site: site ? { name: site.name, tagline: site.tagline, logoText: cust.logoText, logoImage: cust.logoImage } : null, locale, copyright: nav?.footerConfig.copyrightText, menu, tokens, menuLabel: t("site.menu") }) : null;
@@ -327,7 +334,11 @@ export default async function PublicLocaleLayout({
       {isCr ? <style dangerouslySetInnerHTML={{ __html: CR_CSS }} /> : null}
       {isBayi ? <style dangerouslySetInnerHTML={{ __html: YB_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
-      <MeasureTags gaId={gaPlacement === "head" ? gaId : null} metrikaId={metrikaPlacement === "head" ? metrikaId : null} />
+      <MeasureTags
+        gaId={gaPlacement === "head" ? gaId : null}
+        metrikaId={metrikaPlacement === "head" ? metrikaId : null}
+        metrikaHtml={metrikaPlacement === "head" ? metrikaHtml : null}
+      />
 
       {pageOpts.header === "hidden" ? null : headerTpl && tplCtx && !isYf ? (
         <header
@@ -417,7 +428,11 @@ export default async function PublicLocaleLayout({
       ) : (
         <SiteFooter siteName={site?.name ?? "NexPress CMS"} siteDna={site?.siteDna} locale={locale} lb={lb} tokens={vt} footer={nav?.footerConfig} fallbackText={t("site.footerDefault")} backToTopLabel={t("site.backToTop")} widgetFeed={widgetFeed} menuLibrary={menuLibrary} />
       )}
-      <MeasureTags gaId={gaPlacement === "body" ? gaId : null} metrikaId={metrikaPlacement === "body" ? metrikaId : null} />
+      <MeasureTags
+        gaId={gaPlacement === "body" ? gaId : null}
+        metrikaId={metrikaPlacement === "body" ? metrikaId : null}
+        metrikaHtml={metrikaPlacement === "body" ? metrikaHtml : null}
+      />
       {optionalOk && resolvedCustomizer.footerScripts ? (
         <div id="nx-footer-scripts" dangerouslySetInnerHTML={{ __html: resolvedCustomizer.footerScripts }} />
       ) : null}
