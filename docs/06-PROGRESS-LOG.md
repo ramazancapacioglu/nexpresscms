@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Çekirdek SEO/GEO/A11y/Responsive İyileştirme Paketi
+- **Tekil `SoftwareApplication` JSON-LD (`packages/seo-core/src/index.ts`):** `software_product_card` bloğundan türeyen `SoftwareApplication` alanları, sayfanın ana varlığı zaten `SoftwareApplication` ise ikinci düğüm açmak yerine ana düğümde birleştirilir.
+- **`robots.txt` WebMCP İzni (`packages/core/src/robots.ts`):** `Disallow: /api` üstüne `Allow: /api/mcp` ve `Allow: /api/site-icon` eklendi; birim test güncellendi.
+- **Kurumsal 0-KB Türkçe 404 (`apps/cms/src/app/not-found.tsx`):** Next.js varsayılan İngilizce 404 ekranı yerine Türkçe, site içi aramalı ve ana sayfaya yönlendiren 0-KB RSC `not-found.tsx` eklendi.
+- **Responsive, Erişilebilirlik & Fiyat Tablosu (`site-chrome.tsx`, `site-nav.tsx`, `software-product-card-block.tsx`, `tr.ts`):** Ana header kırılımı `md` → `xl` (1280px) yapılarak 900px–1024px menü çarpışması giderildi; `.nx-mobile-toggle` butonuna `aria-label` eklendi; fiyat tablosunda `%35` rozeti ile fiyat arasına DOM boşluğu konuldu; `"Tarafından {name}"` → `"Yazar: {name}"` olarak düzeltildi.
+- **Yan Çubuk & Site Haritası (`public-data.ts`, `public-widgets.tsx`, `sitemap-source.ts`):** Kategori ve etiket sayıları gerçek yayındaki içeriklerden hesaplanır; yorum yıldızı yalnızca `rating > 0` olduğunda gösterilir ve sahte demo yedekleri kaldırıldı; süresi dolmuş kampanyalar `campaign-1.xml` site haritasından çıkarılır.
+
 ### [2026-11-25] — Webmaster Yandex Metrika Sayaç / Doğrulama HTML Kodu & Çerez Onayı Seçeneği
 - **Çekirdek Doğrulama (`packages/core/src/webmaster-connect.ts`, `site-settings.ts`):** `integrations.yandex` altına `counterHtml` (Yandex Metrika panelinden alınan tam HTML sayaç/doğrulama kodu) ve `loadBeforeConsent` (çerez onayını beklemeden yükleme — Metrika bot doğrulaması için) alanları eklendi; `validateMetrikaHtml` ve `extractMetrikaCounterId` yardımcıları + birim testler eklendi.
 - **Panel & Vitrin (`connection-dialog.tsx`, `actions.ts`, `measure-tags.tsx`, `[locale]/layout.tsx`):** Webmaster → Yandex Metrika sekmesine tam HTML kodu alanı ve çerez onayı öncesi yükleme seçeneği eklendi; sayaç numarası boşsa HTML kodundan otomatik ayıklanır; ziyaretçi sayfalarında (0-KB RSC) özel HTML kodu varsa doğrudan o, yoksa güncel `tag.js?id=<counterId>` betiği basılır.

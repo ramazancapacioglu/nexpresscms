@@ -29,7 +29,7 @@ export function buildRobotsTxt(input: RobotsInput): string {
   const blockedTokens = KNOWN_BOTS.filter((b) => policy[b.id] === "block").flatMap((b) => b.robotsTokens);
   for (const token of blockedTokens) lines.push(`User-agent: ${token}`);
   if (blockedTokens.length) lines.push("Disallow: /", "");
-  lines.push("User-agent: *", "Allow: /", "Disallow: /admin", "Disallow: /api", ...(input.groupLines ?? []), "");
+  lines.push("User-agent: *", "Allow: /", "Allow: /api/mcp", "Allow: /api/site-icon", "Disallow: /admin", "Disallow: /api", ...(input.groupLines ?? []), "");
   const base = input.baseUrl.replace(/\/$/, "");
   for (const url of input.sitemapUrls ?? [`${base}/sitemap.xml`]) lines.push(`Sitemap: ${url}`);
   if (extra) lines.push("", extra);

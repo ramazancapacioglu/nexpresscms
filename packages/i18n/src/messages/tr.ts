@@ -45,7 +45,7 @@ export const tr = {
     membersOnlyCta: "Oturum aç",
     shareHeading: "Bu içeriği paylaşın ve yapay zeka ajanlarına aktarın",
     authorBy: "Yazar: {name}",
-    byAuthor: "Tarafından {name}",
+    byAuthor: "Yazar: {name}",
     shareLabel: "Paylaş :",
     updatedOn: "Güncelleme: {date}",
     commentCount: "{n} yorum",

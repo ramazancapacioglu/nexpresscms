@@ -203,29 +203,13 @@ export function RenderPublicWidget({
       )}
 
       {/* SON YORUMLAR */}
-      {widget.type === "recent_comments" && (
+      {widget.type === "recent_comments" && (feed?.recentComments.length ?? 0) > 0 && (
         <ul className="space-y-2 text-xs">
-          {(feed?.recentComments.length
-            ? feed.recentComments.slice(0, s.count ?? 4)
-            : [
-                {
-                  id: "rc1",
-                  authorName: "Ahmet Yılmaz",
-                  body: "Sayfa açılış hızı ve yeni şablon yapısı harika çalışıyor.",
-                  rating: 5,
-                },
-                {
-                  id: "rc2",
-                  authorName: "Selin Kaya",
-                  body: "Kurumsal sayfalarımızı dakikalar içinde yayına aldık.",
-                  rating: 5,
-                },
-              ].slice(0, s.count ?? 4)
-          ).map((cm) => (
+          {feed!.recentComments.slice(0, s.count ?? 4).map((cm) => (
             <li key={cm.id} className="rounded-lg border border-nx-line p-2.5">
               <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
                 <span>{cm.authorName}</span>
-                {s.showRating !== false ? (
+                {s.showRating !== false && cm.rating > 0 ? (
                   <span className="text-amber-500" aria-label={`${cm.rating} yıldız`}>
                     {"★".repeat(Math.min(5, Math.max(1, cm.rating)))}
                   </span>
@@ -267,17 +251,9 @@ export function RenderPublicWidget({
       )}
 
       {/* POPÜLER ETİKETLER */}
-      {widget.type === "popular_tags" && (
+      {widget.type === "popular_tags" && (feed?.tags.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {(feed?.tags.length
-            ? feed.tags.slice(0, s.count ?? 10)
-            : [
-                { id: "t1", name: "Performans", slug: "performans", count: 4 },
-                { id: "t2", name: "SEO", slug: "seo", count: 5 },
-                { id: "t3", name: "E-Ticaret", slug: "e-ticaret", count: 3 },
-                { id: "t4", name: "Kurumsal", slug: "kurumsal", count: 4 },
-              ]
-          ).map((tag) => (
+          {feed!.tags.slice(0, s.count ?? 10).map((tag) => (
             <a
               key={tag.id}
               href={`${root}/etiket/${encodeURIComponent(tag.slug)}`}

@@ -1,5 +1,5 @@
 import "server-only";
-import { contentPrefix, friendlyImagePath, isPrefixless, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
+import { contentPrefix, friendlyImagePath, isPrefixless, resolveCampaignData, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
@@ -27,7 +27,16 @@ export async function loadSitemap(siteId: string) {
     e.images?.length
       ? { ...e, images: e.images.map((img) => { const id = /^\/media\/(med_[A-Za-z0-9_-]+)\/1280\.webp$/.exec(img.loc)?.[1]; return id ? { ...img, loc: friendlyImagePath(id, media[id]?.filename) } : img; }) }
       : e;
-  const entries = [...contentEntries.map((e) => named(prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
+  const defaultLocale = site?.defaultLocale ?? "tr";
+  // Süresi dolmuş kampanyalar (isExpired) sitede arşiv olarak kalır ama site haritasından çıkarılır
+  const publishedCampaigns = await getScopedRepository(siteId).listContents({ locale: defaultLocale, status: "published", type: "campaign" });
+  const expiredCampaignIds = new Set(
+    publishedCampaigns
+      .filter((c) => resolveCampaignData({ id: c.id, contentId: c.contentId, title: c.title, slug: c.slug, schemaAttributes: c.schemaAttributes }).isExpired)
+      .map((c) => c.contentId)
+  );
+  const activeContentEntries = contentEntries.filter((e) => !(e.type === "campaign" && expiredCampaignIds.has(e.contentId)));
+  const entries = [...activeContentEntries.map((e) => named(prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
   return {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), ...sitemapArchiveTypes(settings.seo)]),

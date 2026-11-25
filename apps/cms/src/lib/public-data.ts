@@ -1,5 +1,5 @@
 import "server-only";
-import { authorProfileFromRow, collectFormIds, isPrefixless, resolvePublishing, stripLocaleDeep, type AuthorProfile, type BlockNode } from "@nexpress/core";
+import { authorProfileFromRow, collectFormIds, isPrefixless, resolvePublishing, stripLocaleDeep, termSlug, type AuthorProfile, type BlockNode } from "@nexpress/core";
 import { getFormDefinitionRepository, getScopedRepository, getSitemapRepository, getUserRepository } from "@nexpress/database";
 import { authorSlug } from "./author-slug";
 import { cachedRead } from "./cache";
@@ -126,15 +126,30 @@ export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: stri
     (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility !== "private"
   );
 
+  const catCounts = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+  for (const c of publicContents) {
+    const pub = resolvePublishing(c.schemaAttributes);
+    for (const cat of pub.categories ?? []) {
+      const k = termSlug(cat);
+      if (k) catCounts.set(k, (catCounts.get(k) ?? 0) + 1);
+    }
+    for (const tag of pub.tags ?? []) {
+      const k = termSlug(tag);
+      if (k) tagCounts.set(k, (tagCounts.get(k) ?? 0) + 1);
+    }
+  }
+
   const categories = taxonomies
     .filter((t) => t.taxonomyType === "category")
     .map((t) => ({
       id: t.id,
       name: t.name,
       slug: t.slug,
-      count: t.itemCount || 1,
+      count: catCounts.get(termSlug(t.slug)) ?? catCounts.get(termSlug(t.name)) ?? t.itemCount ?? 0,
       parentId: t.parentId ?? null,
-    }));
+    }))
+    .filter((t) => t.count > 0);
 
   const tags = taxonomies
     .filter((t) => t.taxonomyType === "tag")
@@ -142,8 +157,9 @@ export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: stri
       id: t.id,
       name: t.name,
       slug: t.slug,
-      count: t.itemCount || 1,
-    }));
+      count: tagCounts.get(termSlug(t.slug)) ?? tagCounts.get(termSlug(t.name)) ?? t.itemCount ?? 0,
+    }))
+    .filter((t) => t.count > 0);
 
   const recentPosts = publicContents
     .filter((c) => c.type === "post" || c.type === "kb_tech")
@@ -179,7 +195,7 @@ export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: stri
       id: c.id,
       authorName: c.authorName,
       body: c.body,
-      rating: c.rating ?? 5,
+      rating: typeof c.rating === "number" && c.rating > 0 ? c.rating : 0,
     }));
 
   return {

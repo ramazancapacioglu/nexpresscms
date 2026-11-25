@@ -493,6 +493,12 @@ export async function buildPageSchemaGraph(
           }
           faqNodeDone = true;
         }
+        // Sayfanın ana varlığı zaten SoftwareApplication ise software_product_card bloğundan gelen alanlar ikinci düğüm açmak yerine ana düğümde birleşir
+        if (node["@type"] === "SoftwareApplication" && c.schemaType === "SoftwareApplication") {
+          const { "@id": _id, "@type": _type, name: _name, url: _url, ...fields } = node;
+          Object.assign(entity, fields);
+          continue;
+        }
         baseNodes.push(node);
       }
     }

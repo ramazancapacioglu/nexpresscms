@@ -337,9 +337,11 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                               {cp > 0 ? (
                                 <div className="inline-flex items-center gap-2 justify-end">
                                   {pct > 0 ? (
-                                    <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                                      %{pct}
-                                    </span>
+                                    <>
+                                      <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                                        %{pct}
+                                      </span>{" "}
+                                    </>
                                   ) : null}
                                   <span className="font-mono font-bold text-nx-fg">{fmtTry(cp)}</span>
                                 </div>

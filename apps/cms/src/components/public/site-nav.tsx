@@ -215,8 +215,8 @@ export function MobileNav({ menu, extra, label, allLabel, cta, phone }: { menu: 
   const items: NavigationLink[] = [...menu, ...(extra ?? []).filter((item) => !seen.has(`${item.label}|${item.href}`))];
   if (items.length === 0) return null;
   return (
-    <div className="nx-mobile-nav md:hidden">
-      <button type="button" popoverTarget="nx-offcanvas" aria-haspopup="dialog" className="nx-mobile-toggle flex h-10 items-center rounded-md border border-current/20 px-3 text-sm font-medium">
+    <div className="nx-mobile-nav xl:hidden">
+      <button type="button" popoverTarget="nx-offcanvas" aria-haspopup="dialog" aria-label={label} className="nx-mobile-toggle flex h-10 items-center rounded-md border border-current/20 px-3 text-sm font-medium">
         {label}
       </button>
       <nav id="nx-offcanvas" popover="auto" aria-label={label} className="nx-offcanvas text-nx-fg">

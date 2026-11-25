@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { buildRobotsTxt, KNOWN_BOTS } from "../src";
 
-test("robots.txt: varsayılan her şeye izin verir, admin ve api kapalı", () => {
+test("robots.txt: varsayılan her şeye izin verir, admin ve api kapalı (mcp ve site-icon hariç)", () => {
   const txt = buildRobotsTxt({ baseUrl: "https://x.test/" });
-  assert.match(txt, /User-agent: \*\nAllow: \/\nDisallow: \/admin\nDisallow: \/api/);
+  assert.match(txt, /User-agent: \*\nAllow: \/\nAllow: \/api\/mcp\nAllow: \/api\/site-icon\nDisallow: \/admin\nDisallow: \/api/);
   assert.match(txt, /Sitemap: https:\/\/x\.test\/sitemap\.xml/);
   assert.doesNotMatch(txt, /Disallow: \/\n/);
 });
