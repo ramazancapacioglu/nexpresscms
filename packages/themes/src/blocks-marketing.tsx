@@ -517,18 +517,21 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           style={{
             borderRadius: tokens.geometry.borderRadius,
           }}
-          className="bg-slate-950 text-white p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+          className="relative overflow-hidden border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 sm:p-8 text-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
         >
-          <div className="space-y-1.5 max-w-2xl">
+          <div className="space-y-2 max-w-2xl">
+            <span className="inline-flex items-center rounded-full border border-emerald-400/35 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+              Yetkili Çözüm &amp; Danışmanlık
+            </span>
             <h3
               style={{ fontFamily: tokens.typography.headingFont }}
-              className="text-xl font-bold"
+              className="text-xl sm:text-2xl font-bold tracking-tight text-white"
             >
               {String(p.title ?? "")}
             </h3>
-            {typeof p.subtitle === "string" && (
-              <p className="text-sm text-slate-300">{p.subtitle}</p>
-            )}
+            {typeof p.subtitle === "string" && p.subtitle.trim() ? (
+              <p className="text-sm leading-relaxed text-slate-300">{p.subtitle}</p>
+            ) : null}
           </div>
           {typeof p.buttonLabel === "string" && (
             <a
@@ -538,9 +541,10 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
                 color: tokens.colors.primaryForeground,
                 borderRadius: tokens.geometry.borderRadius,
               }}
-              className="shrink-0 inline-flex items-center px-5 py-2.5 text-xs font-semibold"
+              className="shrink-0 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold shadow-xs transition hover:opacity-95 whitespace-nowrap"
             >
-              {p.buttonLabel}
+              <span>{p.buttonLabel}</span>
+              <span aria-hidden="true">→</span>
             </a>
           )}
         </section>

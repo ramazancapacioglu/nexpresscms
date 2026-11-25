@@ -21,6 +21,11 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Ürün Sayfaları Görsel Bütünlüğü: Kampanya+Form, CTA Bandı & Genişletilmiş Hero Başlık
+- **İlgili Kampanya + İletişim Formu (`packages/themes/src/contact-campaign.tsx`):** `software_product_card` ile aynı koyu vitrin (`slate-950 → slate-900`) + ferah teklif formu tasarım diline yükseltildi (0-KB RSC).
+- **CTA Bandı (`packages/themes/src/blocks-marketing.tsx`):** `cta_banner` bileşeni koyu degrade çerçeve, rozet ve yüksek kontrastlı eylem düğmesiyle yenilendi.
+- **Sayfa Başlığı & Öne Çıkan Görsel (`apps/cms/src/app/(public)/[locale]/[slug]/page.tsx`):** Ürün/çözüm sayfalarında öne çıkan görsel sütunu `400px` → `540px`'e genişletildi, dikey ortalandı ve ince çerçeveyle sarıldı.
+
 ### [2026-11-25] — `TechArticle` Zengin Teknik Rehber Altyapısı & Bilgi Bankası Yükseltmesi
 - **Zengin `TechArticle` + `WebPage` Şeması (`packages/seo-core/src/index.ts`, `schema-graph.test.ts`):** `rich.tech` altına `teaches`, `aboutSoftwareName/Url` (`#softwareapplication` `@id` bağı), `citations` ve bağlı `WebPage` düğümüne `reviewedBy` + `lastReviewed` alanları eklendi.
 - **0-KB Teknik Künye & Markdown Senkronizasyonu (`tech-article-bar.tsx`, `[slug]/page.tsx`, `rich-schema-panel.tsx`, `markdown-compiler.ts`):** Editördeki Teknik Rehber paneli yeni alanlarla genişletildi; `TechArticle` sayfalarında 0-KB RSC teknik künye bandı (makale sonunda, yazar kutusunun üstünde) ve tam Markdown (`techToMarkdown`) çıktısı eklendi.

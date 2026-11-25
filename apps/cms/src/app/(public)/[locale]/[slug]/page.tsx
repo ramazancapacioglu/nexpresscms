@@ -621,7 +621,7 @@ export default async function PublicDynamicContentPage({
           </div>
         </div>
 
-        <div className={headerImage && content.type !== "post" ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,400px)] md:items-start" : ""}>
+        <div className={headerImage && content.type !== "post" ? "grid gap-8 lg:gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,540px)] md:items-center" : ""}>
           <div className="space-y-4">
             {content.type === "post" && categories[0] ? (
               <a href={`${lb}/kategori/${categories[0]}`} style={{ color: tokens.colors.primary }} className="inline-block text-xs font-bold uppercase tracking-wider hover:underline">
@@ -670,7 +670,11 @@ export default async function PublicDynamicContentPage({
               </div>
             ) : null}
           </div>
-          {headerImage && featuredImageUrl && content.type !== "post" ? headerFigure : null}
+          {headerImage && featuredImageUrl && content.type !== "post" ? (
+            <div style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }} className="overflow-hidden border bg-nx-subtle/40 p-2 shadow-sm">
+              {headerFigure}
+            </div>
+          ) : null}
         </div>
         {content.type === "post" && headerImage ? <div className="pt-5">{headerFigure}</div> : null}
         {content.type === "post" && showShareBar ? <div className="pt-4"><PostShareRow t={t} title={content.title} pageUrl={pageUrl} /></div> : null}
