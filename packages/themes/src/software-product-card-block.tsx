@@ -134,11 +134,11 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
     supportSla ? { k: "Destek & Kurulum", v: supportSla } : null,
   ].filter((x): x is { k: string; v: string } => Boolean(x));
 
-  // Build available tabs dynamically so empty tabs never show
+  // Build available tabs dynamically so empty tabs never show (Özellikler varsayılan ilk sekme)
   const tabs: Array<{ key: string; label: string; count?: number }> = [];
+  if (highlights.length > 0) tabs.push({ key: "features", label: "Özellikler" });
   if (priceList.length > 0) tabs.push({ key: "pricing", label: "Fiyat Listesi", count: priceList.length });
   if (packages.length > 0) tabs.push({ key: "packages", label: "Paketler", count: packages.length });
-  if (highlights.length > 0) tabs.push({ key: "features", label: "Özellikler" });
   if (modules.length > 0) tabs.push({ key: "modules", label: "Modüller", count: modules.length });
   if (requirements.length > 0) tabs.push({ key: "requirements", label: "Sistem Gereksinimleri" });
   if (integrations.length > 0) tabs.push({ key: "integrations", label: "Uyumlu Entegrasyonlar", count: integrations.length });

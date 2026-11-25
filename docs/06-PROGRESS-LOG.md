@@ -22,7 +22,7 @@
 ## 📝 Detaylı Günlük
 
 ### [2026-11-25] — Ürün Sayfaları Görsel Bütünlüğü: Kampanya+Form, CTA Bandı & Genişletilmiş Hero Başlık
-- **İlgili Kampanya + İletişim Formu (`packages/themes/src/contact-campaign.tsx`):** `software_product_card` ile aynı koyu vitrin (`slate-950 → slate-900`) + ferah teklif formu tasarım diline yükseltildi (0-KB RSC).
+- **İlgili Kampanya + İletişim Formu (`packages/themes/src/contact-campaign.tsx`, `software-product-card-block.tsx`):** Yüksek kontrastlı beyaz zeminli form (`text-slate-900`), görsel üzeri rozetli kompakt kampanya kartı ve site genişliğine eşit `w-full` düzeni uygulandı; ürün şema kartında varsayılan ilk sekme **Özellikler** yapıldı.
 - **CTA Bandı (`packages/themes/src/blocks-marketing.tsx`):** `cta_banner` bileşeni koyu degrade çerçeve, rozet ve yüksek kontrastlı eylem düğmesiyle yenilendi.
 - **Sayfa Başlığı & Öne Çıkan Görsel (`apps/cms/src/app/(public)/[locale]/[slug]/page.tsx`):** Ürün/çözüm sayfalarında öne çıkan görsel sütunu `400px` → `540px`'e genişletildi, dikey ortalandı ve ince çerçeveyle sarıldı.
 
