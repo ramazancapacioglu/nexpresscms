@@ -11,19 +11,23 @@ const isProd = process.env.NODE_ENV === "production";
  */
 const cspMode = process.env.CSP_MODE ?? "enforce";
 const extraScript = (process.env.CSP_EXTRA_SCRIPT_SRC ?? "").replace(/[;\r\n]/g, " ").trim();
+// Yerleşik Webmaster ölçüm entegrasyonları (GA4 ve Yandex Metrika + Webvisor) için izinli kaynaklar
+const analyticsScriptSrc = "https://www.googletagmanager.com https://www.google-analytics.com https://mc.yandex.ru https://mc.yandex.com https://yastatic.net";
+const analyticsConnectSrc = "https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://mc.yandex.ru https://mc.yandex.com wss://mc.yandex.ru";
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${extraScript ? ` ${extraScript}` : ""}`,
+  `script-src 'self' 'unsafe-inline' ${analyticsScriptSrc}${extraScript ? ` ${extraScript}` : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self'${extraScript ? ` ${extraScript}` : ""}`,
-  "frame-src 'self' https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  `connect-src 'self' ${analyticsConnectSrc}${extraScript ? ` ${extraScript}` : ""}`,
+  "frame-src 'self' blob: https://mc.yandex.ru https://mc.yandex.com https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+  "child-src 'self' blob: https://mc.yandex.ru https://mc.yandex.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'self'",
+  "frame-ancestors 'self' https://metrika.yandex.ru https://metrica.yandex.com https://webvisor.com https://*.webvisor.com",
 ].join("; ");
 
 const securityHeaders = [
