@@ -44,6 +44,7 @@ export function registerContentOps(): void {
     id: "content-ops-gap-card",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.content",
+    label: "İçerik Açığı (Gap)",
     priority: 15,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="gap-analysis">
@@ -57,6 +58,7 @@ export function registerContentOps(): void {
     id: "content-ops-question-mining-card",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.queries",
+    label: "Soru Havuzu",
     priority: 20,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="question-mining">

@@ -31,9 +31,21 @@ function ago(date: Date, now = Date.now()): string {
   return `${Math.round(min / 1440)} gün önce`;
 }
 
-/** Gerçek tarama günlüğünden beslenen AI & Arama bot kartı (son 30 gün, `bot_daily_stats`). */
-export async function BotTelemetryCard({ siteId }: { siteId: string }) {
-  const summary = await getBotStatsRepository(siteId).summary(DAYS);
+/** Gerçek tarama günlüğünden beslenen AI & Arama bot kartı (`bot_daily_stats`). */
+export async function BotTelemetryCard({
+  siteId,
+  fromDay,
+  toDay,
+  days = DAYS,
+}: {
+  siteId: string;
+  fromDay?: string;
+  toDay?: string;
+  days?: number;
+}) {
+  const repo = getBotStatsRepository(siteId);
+  const summary = fromDay && toDay ? await repo.summaryInRange(fromDay, toDay) : await repo.summary(days);
+  const rangeLabel = fromDay && toDay ? `${fromDay} – ${toDay}` : `son ${days} gün`;
   const meta = new Map(KNOWN_BOTS.map((b) => [b.id, b]));
   const total = summary.reduce((n, s) => n + s.total, 0);
   const verifiedTotal = summary.reduce((n, s) => n + s.verified, 0);
@@ -62,7 +74,7 @@ export async function BotTelemetryCard({ siteId }: { siteId: string }) {
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
           <h3 className="text-[13px] font-semibold text-foreground">Bot Tarama Günlüğü</h3>
           <span className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-            son {DAYS} gün · {total.toLocaleString("tr-TR")} istek
+            {rangeLabel} · {total.toLocaleString("tr-TR")} istek
           </span>
         </div>
         <div className="flex items-center gap-1.5 font-mono text-[10px]">

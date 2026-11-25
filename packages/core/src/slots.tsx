@@ -23,6 +23,8 @@ export interface RegisteredSlotEntry {
   id: string;
   pluginId: string;
   slot: PluginSlotName;
+  /** Rapor/panel sekmesi olarak gösterildiğinde kullanılacak insan okunur başlık. */
+  label?: string;
   priority: number;
   render: (props: SlotComponentProps<any>) => React.ReactNode;
 }

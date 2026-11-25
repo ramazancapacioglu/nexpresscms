@@ -710,6 +710,21 @@ export const pgBotDailyStats = pgTable(
   (t) => [index("bot_daily_stats_site_day_idx").on(t.siteId, t.day)]
 );
 
+export const pgBotPageDaily = pgTable(
+  "bot_page_daily",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    day: text("day").notNull(),
+    botId: text("bot_id").notNull(),
+    kind: text("kind").notNull(),
+    path: text("path").notNull(),
+    hits: integer("hits").default(0).notNull(),
+    lastSeenAt: timestamp("last_seen_at").notNull(),
+  },
+  (t) => [index("bot_page_daily_site_day_idx").on(t.siteId, t.day)]
+);
+
 export const pgAuditLog = pgTable(
   "audit_log",
   {

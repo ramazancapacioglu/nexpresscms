@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — SEO Raporları: Tarih Aralığı, Sayfa Bazlı AI Bot Taramaları & Geniş Alt Sekmeli Rapor Ekranı
+- **Sayfa Bazlı Bot Günlüğü (`bot_page_daily`, göç `0025`):** `packages/database/src/schema/pg.ts` ve `sqlite.ts` içine `bot_page_daily` tablosu (kiracı kapsamlı `siteId` + indeks) eklendi; `BotStatsRepository` tarih aralığı (`summaryInRange`, `dailySeriesInRange`, `pageHitsInRange`) ve `trackBotVisit` sayfa yolu kaydı eklendi; birim testler (`bot-stats-range.test.ts`) yazıldı.
+- **Geniş Sekmeli SEO Raporları (`/admin/seo/reports`, `bot-crawl-report.tsx`):** Tarih aralığı seçici (`7g / 14g / 30g / 90g` + özel başlangıç/bitiş), yeni tam-genişlik **AI Bot Taramaları** sekmesi (günlük trend, bot & format filtresi, en çok taranan sayfalar + `?format=md` bağlantıları) ve tüm alt rapor kartlarının tek tek tam genişlikte açıldığı alt sekme çubuğu eklendi.
+
 ### [2026-11-25] — HTML ↔ Markdown Tam Fiyat/Sektör/Tablo Senkronizasyonu & `AggregateOffer.lowPrice` Düzeltmesi
 - **Sıfır Kayıplı Markdown Derleyicisi (`packages/core/src/markdown-compiler.ts`):** `software_product_card` (başlangıç/liste fiyatı, sürüm, teknik özet, Markdown fiyat tablosu, paketler, özellikler, modüller, sistem gereksinimleri, entegrasyonlar, doğrulama tarihi), `sectors_grid` ve `comparison_table` / `data_table` blokları için tam Markdown derleyicileri eklendi.
 - **`AggregateOffer.lowPrice` (`packages/seo-core/src/engine.ts`):** `software_product_card` üzerinde ürünün kendi başlangıç lisans fiyatı (`price`) tanımlıysa, ek modül fiyatları artık `lowPrice` değerini aşağı çekmez (`lowPrice = priceNum`, `highPrice = max(priceNum, ...priceRows)`).

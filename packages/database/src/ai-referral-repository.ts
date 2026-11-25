@@ -1,4 +1,4 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { getCmsContext, type DbDialect } from "@nexpress/core";
 import { getDbDialect } from "./client";
 import { backendFor } from "./dialect";
@@ -55,14 +55,19 @@ export class AiReferralRepository {
       .onConflictDoUpdate({ target: t.aiReferralDaily.id, set: { hits: sql`${t.aiReferralDaily.hits} + 1`, lastSeenAt: at } });
   }
 
-  public async summary(days = 30, now = new Date()): Promise<AiReferralSummary> {
-    const since = utcDay(new Date(now.getTime() - (days - 1) * 86_400_000));
+  public async summaryInRange(fromDay: string, toDay: string, topN = 15): Promise<AiReferralSummary> {
     const { db, t } = this.backend;
     const rows = await db
       .select({ source: t.aiReferralDaily.source, path: t.aiReferralDaily.path, hits: t.aiReferralDaily.hits })
       .from(t.aiReferralDaily)
-      .where(and(eq(t.aiReferralDaily.siteId, this.siteId), gte(t.aiReferralDaily.day, since)));
-    return summarizeReferrals(rows);
+      .where(and(eq(t.aiReferralDaily.siteId, this.siteId), gte(t.aiReferralDaily.day, fromDay), lte(t.aiReferralDaily.day, toDay)));
+    return summarizeReferrals(rows, topN);
+  }
+
+  public async summary(days = 30, now = new Date()): Promise<AiReferralSummary> {
+    const fromDay = utcDay(new Date(now.getTime() - (days - 1) * 86_400_000));
+    const toDay = utcDay(now);
+    return this.summaryInRange(fromDay, toDay);
   }
 }
 

@@ -212,6 +212,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-mcp-log-card",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.visibility",
+    label: "MCP Günlüğü",
     priority: 30,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="mcp-log">
@@ -236,10 +237,11 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-ai-referrals",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.visibility",
+    label: "AI Yönlendirmeleri",
     priority: 12,
-    render: ({ siteId }) => (
+    render: ({ siteId, context }) => (
       <ModuleGate siteId={siteId} module="ai-referrals">
-        <AiReferralsCard siteId={siteId} />
+        <AiReferralsCard siteId={siteId} fromDay={context?.fromDay as string | undefined} toDay={context?.toDay as string | undefined} days={context?.days as number | undefined} />
       </ModuleGate>
     ),
   });
@@ -247,6 +249,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-freshness",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.content",
+    label: "İçerik Tazeliği",
     priority: 15,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="content-freshness">
@@ -260,10 +263,11 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-bot-heatmap",
     pluginId: "@nexpress-pro/agentic-seo",
     slot: "seo.reports.visibility",
+    label: "Bot Özeti",
     priority: 10,
-    render: ({ siteId }) => (
+    render: ({ siteId, context }) => (
       <ModuleGate siteId={siteId} module="bot-analytics">
-        <BotTelemetryCard siteId={siteId} />
+        <BotTelemetryCard siteId={siteId} fromDay={context?.fromDay as string | undefined} toDay={context?.toDay as string | undefined} days={context?.days as number | undefined} />
       </ModuleGate>
     ),
   });
@@ -273,6 +277,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-citations",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.visibility",
+    label: "Alıntı Takibi",
     priority: 13,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="citations">
@@ -286,6 +291,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-google-reviews",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.visibility",
+    label: "Google Yorumları",
     priority: 14,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="google-reviews">
@@ -299,6 +305,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-serper",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.queries",
+    label: "SERP & PAA Madenciliği",
     priority: 16,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="serper-intel">
@@ -312,6 +319,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-decay",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.content",
+    label: "İçerik Erimesi",
     priority: 17,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="decay">
@@ -325,6 +333,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-kb-transform",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.content",
+    label: "Bilgi Bankası",
     priority: 18,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="kb-transform">
@@ -338,6 +347,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-catalog-ai",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.content",
+    label: "Katalog AI Denetçisi",
     priority: 19,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="catalog-ai">
@@ -351,6 +361,7 @@ export function registerAgenticSeoProPlugin(): void {
     id: "agentic-seo-support-hub",
     pluginId: PLUGIN_ID,
     slot: "seo.reports.visibility",
+    label: "Cevapsız Aramalar",
     priority: 20,
     render: ({ siteId }) => (
       <ModuleGate siteId={siteId} module="support-hub">

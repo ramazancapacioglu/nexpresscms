@@ -14,17 +14,24 @@ function clientIp(h: Headers): string | null {
  * İnsan trafiğinde yalnızca tek düzenli ifade çalışır; IP ve UA saklanmaz.
  * Uyarı: HTML bir CDN önbelleğinden dönüyorsa o istekler uygulamaya hiç ulaşmaz ve sayılmaz.
  */
-export async function trackBotVisit(kind: BotRequestKind): Promise<void> {
+export async function trackBotVisit(kind: BotRequestKind, explicitPath?: string): Promise<void> {
   const h = await headers();
   const bot = detectBot(h.get("user-agent"));
   if (!bot) return;
   const siteId = h.get("x-nexpress-site-id") ?? "default";
   const ip = clientIp(h);
+  const rawPath =
+    explicitPath ??
+    h.get("x-nexpress-target-path") ??
+    h.get("x-nexpress-path") ??
+    h.get("x-nexpress-pathname") ??
+    (kind === "llms" ? "/llms.txt" : kind === "sitemap" ? "/sitemap.xml" : kind === "mcp" ? "/api/mcp" : kind === "robots" ? "/robots.txt" : "/");
+  const path = normalizeReferralPath(rawPath);
 
   after(async () => {
     try {
       const trust = await verifyBotIp(bot, ip);
-      await getBotStatsRepository(siteId).recordHit({ botId: bot.id, kind, trust });
+      await getBotStatsRepository(siteId).recordHit({ botId: bot.id, kind, trust, path });
     } catch (error) {
       console.warn("[bot-log] kaydedilemedi:", error instanceof Error ? error.message : error);
     }

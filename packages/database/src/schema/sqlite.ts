@@ -704,6 +704,21 @@ export const sqliteBotDailyStats = sqliteTable(
   (t) => [index("bot_daily_stats_site_day_idx").on(t.siteId, t.day)]
 );
 
+export const sqliteBotPageDaily = sqliteTable(
+  "bot_page_daily",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    day: text("day").notNull(),
+    botId: text("bot_id").notNull(),
+    kind: text("kind").notNull(),
+    path: text("path").notNull(),
+    hits: integer("hits").default(0).notNull(),
+    lastSeenAt: integer("last_seen_at", { mode: "timestamp" }).notNull(),
+  },
+  (t) => [index("bot_page_daily_site_day_idx").on(t.siteId, t.day)]
+);
+
 export const sqliteAuditLog = sqliteTable(
   "audit_log",
   {

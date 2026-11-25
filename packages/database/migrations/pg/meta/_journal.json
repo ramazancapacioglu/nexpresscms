@@ -176,6 +176,13 @@
       "when": 1795154797964,
       "tag": "0024_user_author_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795615352676,
+      "tag": "0025_flimsy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

@@ -5,9 +5,21 @@ import { getAiReferralRepository } from "@nexpress/database";
 const DAYS = 30;
 const nameOf = (id: string) => AI_REFERRERS.find((s) => s.id === id)?.name ?? id;
 
-/** Panel kartı: yapay zeka ürünlerinden gelen insan ziyaretleri (son 30 gün). */
-export async function AiReferralsCard({ siteId }: { siteId: string }) {
-  const s = await getAiReferralRepository(siteId).summary(DAYS);
+/** Panel kartı: yapay zeka ürünlerinden gelen insan ziyaretleri. */
+export async function AiReferralsCard({
+  siteId,
+  fromDay,
+  toDay,
+  days = DAYS,
+}: {
+  siteId: string;
+  fromDay?: string;
+  toDay?: string;
+  days?: number;
+}) {
+  const repo = getAiReferralRepository(siteId);
+  const s = fromDay && toDay ? await repo.summaryInRange(fromDay, toDay, 20) : await repo.summary(days);
+  const rangeLabel = fromDay && toDay ? `${fromDay} – ${toDay}` : `Son ${days} gün`;
   const topSource = s.bySource[0];
   const topPath = s.topPaths[0];
   const maxSourceHits = Math.max(1, ...s.bySource.map((x) => x.hits));
@@ -20,7 +32,7 @@ export async function AiReferralsCard({ siteId }: { siteId: string }) {
           <h3 className="text-[13px] font-semibold text-foreground">AI Yönlendirme Trafiği</h3>
         </div>
         <span className="rounded-md border border-border bg-background px-2 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
-          Son {DAYS} gün · {s.total.toLocaleString("tr-TR")} ziyaret
+          {rangeLabel} · {s.total.toLocaleString("tr-TR")} ziyaret
         </span>
       </div>
 
