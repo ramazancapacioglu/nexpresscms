@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Sektörler Bloğu (`sectors_grid`), Sade Paylaşım, Görselli İlgili Karosel & 36 Ürün/Kategori Sayfası (Faz 11)
+- **Yeni 0-KB Tema & Vitrin Bileşenleri (`sectors-grid-block.tsx`, `content-access-gate.tsx`, `post-extras.tsx`, `docs/23`):**
+  - `sectors_grid`: Ürünlerin hangi sektörler için uygun olduğunu rozetli, kullanım senaryolu ve ileride `/sektorler/<slug>` bağlantısına hazır 3 sütunlu kartlarla sunar.
+  - `ContentShareBar`: Tek satırlık sade paylaşım ve `.md` çubuğuna indirildi.
+  - `RelatedLinks`: Sayfa sonundaki ilgili içerikler öne çıkan görselleri çeken 0-KB CSS kaydırmalı küçük karosele (6 kart) dönüştürüldü.
+- **akinsoftizmir.com.tr Faz 11 (36 Sayfa — 30 Ürün + 6 Ana Kategori):** ERP Çözümleri, Muhasebe Programları, Sektörel Programlar, E-Dönüşüm, Bulut Yazılımlar ve Entegrasyonlar altındaki tüm 36 sayfa `abakus.akinsoft.net` 2026 resmî fiyatları, 6 sekmeli `software_product_card` (otomatik `SoftwareApplication` / `AggregateOffer`), sektöre özel `sectors_grid`, iç içe kart temizliği ve insan diliyle güncellendi; Google Zengin Sonuç JSON-LD denetimi ve 36 URL IndexNow bildirimi tamamlandı.
+
 ### [2026-11-25] — 6 Sekmeli Ürün & Fiyat Listesi Kartı (`software_product_card`), `AggregateOffer` Şeması & `/wolvox-erp` İnsan Dili Yenilemesi
 - **6 Sekmeli 0-KB CSS Ürün Kartı (`software-product-card-block.tsx`, `engine.ts`):** `software_product_card` bloğu saf CSS radio-input sekmelerine (`Fiyat Listesi`, `Paketler`, `Özellikler`, `Modüller`, `Sistem Gereksinimleri`, `Uyumlu Entegrasyonlar`) kavuştu; üst bilgi kutusunda başlangıç/kampanya fiyatı ve üstü çizili liste fiyatı görünür hale geldi; `deriveAutoSchemaNodes` çoklu fiyat tablosundan otomatik `AggregateOffer` (`lowPrice`, `highPrice`, `offerCount`) üretir.
 - **`/wolvox-erp` Yenilemesi (Faz 10):** Açılış paragrafı + görsel (`wp_7`) en üstte tutuldu, 6 sekmeli ürün kartı hemen altına yerleştirildi ve `abakus.akinsoft.net` (`WOL9`) resmî 2026 liste + `%35` kampanya fiyatları (`17.290 TL – 383.630 TL + KDV`, 18 satır) işlendi; sayfadaki robotik ifadeler ve yazım hataları doğal Türkçe ile yenilendi.
