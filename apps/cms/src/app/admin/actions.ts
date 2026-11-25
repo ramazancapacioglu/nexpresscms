@@ -323,6 +323,7 @@ export async function bulkContentAction(input: {
     | "scheduled"
     | "assign_category"
     | "assign_tag"
+    | "indexnow"
     | "delete";
   categorySlug?: string;
   tagSlug?: string;
@@ -331,6 +332,32 @@ export async function bulkContentAction(input: {
   const reqHeaders = await headers();
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const repo = getScopedRepository(siteId);
+
+  if (input.operation === "indexnow") {
+    const { submitIndexNowUrls } = await import("@/lib/indexnow");
+    const { contentPrefix, localeBase, resolveSiteSettings } = await import("@nexpress/core");
+    const site = await repo.getSite();
+    const locale = site?.defaultLocale ?? "tr";
+    const lb = localeBase(site, locale);
+    const customTypes = resolveSiteSettings(site?.settings).general.contentTypes ?? [];
+    const urls: string[] = [];
+    for (const id of input.contentIds.slice(0, 200)) {
+      const row = await repo.getContentById(id, locale);
+      if (!row || row.status !== "published" || row.type === "template") continue;
+      const prefix = contentPrefix(customTypes, row.type) ?? (row.type === "campaign" ? "kampanya" : null);
+      const path = row.slug === "ana-sayfa" ? (lb || "/") : prefix ? `${lb}/${prefix}/${row.slug}` : `${lb}/${row.slug}`;
+      urls.push(path);
+    }
+    if (urls.length === 0) {
+      return { ok: false, affected: 0, message: "Seçilenler arasında yayında olan içerik bulunamadı." };
+    }
+    const res = await submitIndexNowUrls(siteId, urls, { force: true });
+    return {
+      ok: res.ok,
+      affected: res.submitted,
+      message: res.ok ? `${res.submitted} yayındaki içerik IndexNow'a gönderildi (HTTP ${res.status ?? 200}).` : (res.error ?? "IndexNow gönderimi başarısız."),
+    };
+  }
 
   if (input.operation === "delete") {
     // Silme artık çöp kutusuna taşır (30 gün geri alınabilir); kalıcı silme Çöp Kutusu sayfasındadır.

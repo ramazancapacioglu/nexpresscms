@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Toplu IndexNow Gönderimi & Tek Dilli Kanonik URL Bildirimi
+- **Toplu IndexNow (`apps/cms/src/lib/indexnow.ts`, `actions.ts`, `content-list-bulk-bar.tsx`, `use-content-list.tsx`):** `submitIndexNowUrls` tek dilli sitede `/tr` ön ekini temizleyip toplu bildirim yapar; Sayfalar, Yazılar, Sorular ve Tüm İçerikler toplu seçim çubuğuna **IndexNow'a Gönder** düğmesi eklendi; SEO ayarlarındaki otomatik yayın/güncelleme IndexNow seçeneğinin etiketi netleştirildi.
+
 ### [2026-11-25] — Ürün Sayfaları Görsel Bütünlüğü: Kampanya+Form, CTA Bandı & Genişletilmiş Hero Başlık
 - **İlgili Kampanya + İletişim Formu (`packages/themes/src/contact-campaign.tsx`, `software-product-card-block.tsx`):** Yüksek kontrastlı beyaz zeminli form (`text-slate-900`), görsel üzeri rozetli kompakt kampanya kartı ve site genişliğine eşit `w-full` düzeni uygulandı; ürün şema kartında varsayılan ilk sekme **Özellikler** yapıldı.
 - **CTA Bandı (`packages/themes/src/blocks-marketing.tsx`):** `cta_banner` bileşeni koyu degrade çerçeve, rozet ve yüksek kontrastlı eylem düğmesiyle yenilendi.

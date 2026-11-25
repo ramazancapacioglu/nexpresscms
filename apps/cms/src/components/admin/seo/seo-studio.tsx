@@ -17,7 +17,7 @@ const TOGGLES: Array<{ key: keyof SeoEngineSettings; label: string }> = [
   { key: "autoSchema", label: "SSS, adım ve inceleme bloklarından şema üret" },
   { key: "enableLlmsTxt", label: "/llms.txt ve Markdown uçlarını açık tut" },
   { key: "noIndexTagArchives", label: "Etiket arşivlerini noindex tut (site haritasından da çıkar)" },
-  { key: "enableIndexNow", label: "IndexNow bildirimi açık (anahtar Anahtarlar sekmesinde)" },
+  { key: "enableIndexNow", label: "Yayın ve güncelleme sonrası IndexNow'a otomatik gönder (anahtar Anahtarlar sekmesinde)" },
 ];
 
 export function SeoStudio({

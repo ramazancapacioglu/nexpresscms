@@ -234,6 +234,7 @@ export function useContentList({
       | "scheduled"
       | "assign_category"
       | "assign_tag"
+      | "indexnow"
       | "delete"
   ) => {
     if (selectedIds.length === 0) return;
@@ -258,7 +259,9 @@ export function useContentList({
         setItems((prev) =>
           prev.filter((it) => !selectedIds.includes(it.contentId))
         );
-        showToast(`${res.affected} içerik kalıcı olarak silindi.`);
+        showToast(`${res.affected} içerik çöp kutusuna taşındı.`);
+      } else if (operation === "indexnow") {
+        showToast(res.message ?? `${res.affected} içerik IndexNow'a gönderildi.`);
       } else {
         showToast(`Toplu işlem tamamlandı (${res.affected} içerik güncellendi).`);
       }

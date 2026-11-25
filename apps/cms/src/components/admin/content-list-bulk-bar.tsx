@@ -1,4 +1,4 @@
-import { CheckSquare, Trash2, CheckCircle2, Clock } from "lucide-react";
+import { CheckSquare, Trash2, CheckCircle2, Clock, Send } from "lucide-react";
 import type { ContentListState } from "./use-content-list";
 
 /** TOPLU DÜZENLEME (BULK EDIT) AKILLI ÇUBUĞU */
@@ -90,6 +90,17 @@ export function ContentListBulkBar({ s }: { s: ContentListState }) {
                 Etiket Ata
               </button>
             </div>
+
+            {/* Toplu IndexNow Gönder */}
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => handleBulkAction("indexnow")}
+              className="inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-800 dark:text-sky-300 hover:bg-sky-500/20"
+            >
+              <Send className="h-3 w-3" />
+              IndexNow&apos;a Gönder
+            </button>
 
             {/* Toplu Sil */}
             <button
