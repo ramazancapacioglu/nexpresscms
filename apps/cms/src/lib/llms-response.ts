@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { contentPath, resolveSiteSettings, localeBase } from "@nexpress/core";
+import { contentPath, resolveCampaign, resolveSiteSettings, localeBase } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
@@ -25,14 +25,18 @@ export async function llmsTxtResponse(request: NextRequest, forcedLocale?: strin
     organization: resolveSiteSettings(site?.settings).seo.organizationSchema ?? null,
     baseUrl,
     locale,
-    items: contents.map((c) => ({
-      title: c.title,
-      url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),
-      type: c.type,
-      schemaType: c.schemaType,
-      tldr: c.tldr,
-      importanceScore: c.importanceScore,
-    })),
+    items: contents.map((c) => {
+      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      return {
+        title: c.title,
+        url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),
+        type: c.type,
+        schemaType: c.schemaType,
+        tldr: c.tldr,
+        importanceScore: c.importanceScore,
+        ...(camp ? { expired: camp.isExpired, validityLabel: camp.formattedValidity } : {}),
+      };
+    }),
   });
 
   // Çok dillide: diğer dillerin dizinleri

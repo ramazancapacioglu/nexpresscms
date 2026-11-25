@@ -1,8 +1,8 @@
 # akinsoftizmir.com.tr — SEO, GEO/LLMO, RAG & Web Tasarım Denetim Raporu
 
-> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-24 (Faz 1–8 tamamlandı, canlıda doğrulandı)  
+> **İlk Denetim:** 2026-11-23 · **Son Güncelleme:** 2026-11-25 (Faz 1–9 tamamlandı, canlıda doğrulandı)  
 > **Kapsam:** Canlı site (`https://www.akinsoftizmir.com.tr`), PostgreSQL üretim veritabanı (`nexpress_akin`), Webmaster verileri (GSC & Bing), RAG vektör dizini (`content_chunks`), bot telemetrisi, medya kitaplığı ve `yazilim-bayi` tema mimarisi.  
-> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB), `/root/backups/nexpress_akin_pre_faz7_20261124.sql.gz` (7.7 MB), `/root/backups/nexpress_akin_pre_faz8_20261124.sql.gz` (8.2 MB)
+> **Alınan Yedekler:** `/root/backups/nexpress_akin_pre_faz1_20261123.sql.gz` (7.1 MB), `/root/backups/nexpress_akin_pre_faz5_20261123.sql.gz` (7.2 MB), `/root/backups/nexpress_akin_pre_faz6_20261124.sql.gz` (7.5 MB), `/root/backups/nexpress_akin_pre_faz7_20261124.sql.gz` (7.7 MB), `/root/backups/nexpress_akin_pre_faz8_20261124.sql.gz` (8.2 MB), `/root/backups/nexpress_akin_pre_faz9_20261125.sql.gz`
 
 ---
 
@@ -107,3 +107,13 @@
 - [x] **KDV Hesaplama Aracı (`/kdv-hesaplama-araci`):** 5 hesaplama modu, `%1/%10/%20` + özel oran, `2/10–10/10` tevkifat, 2026 `12.000 TL` kısmi tevkifat uyarısı ve tek tıkla özet kopyalama özellikli yeni 0-KB `kdv_calculator` bloğu + 2026 KDV/tevkifat rehberi ve `FAQPage` SSS yayına alındı.
 - [x] **Menü & Açılır Menü Göstergesi:** Üst menüdeki `AI Prompts` etiketi **`Sorular`** olarak değiştirildi; hem üst yardımcı şeritte (`Kurumsal`, `Blog`) hem ana menüde alt menülü öğelere hover'da dönen 0-KB SVG chevron eklendi.
 - [x] **Medya Hijyeni:** `658` medya taranıp **407 kullanılmayan kayıt (23.3 MB)** temizlendi; kalan **251/251 kullanılan medyanın** tamamında SEO `alt_text` dolduruldu (**`0` eksik**).
+
+---
+
+## 10. Faz 9 — Ürün & Şema Kartı Pilotu, Kompakt Çerez, Kampanya LLM/MD & Tek Kaynak Tutarlılığı (2026-11-25 ✅)
+
+- [x] **Ürün & Şema Bloğu Pilotu (`/wolvox-erp`):** Yeni 0-KB `software_product_card` bloğu (`emitSchema: true`) ile sürüm (`WOLVOX 26`), 3 paket, indirme/demo bağlantıları, sistem gereksinimleri, entegrasyonlar ve tek kaynak `SoftwareApplication` şeması devreye alındı; kalan `ERP 9` görsel alt metni düzeltildi.
+- [x] **Kampanya Aktif/Süresi Dolmuş Tutarlılığı:** `llms.txt`, `llms-full.txt` ve `/kampanya/<slug>?format=md` artık `resolveCampaign` üzerinden aktif/süresi dolmuş ayrımını, başlangıç/bitiş tarihlerini ve hedef kitleyi tek kaynaktan basar.
+- [x] **Tek Kaynak Bayi Kimliği & Saatler:** `LocalBusiness` JSON-LD ve `llms.txt` çalışma saatleri (`Pzt–Cum 08:30–18:00`, `Cmt 09:00–16:00`) ve AKINSOFT (üretici) / Dijital Evre BA35022 (bayi) ayrımı tek `sites` kaydına bağlandı.
+- [x] **Gizli JSON-LD Fiyat Temizliği & Tek `FAQPage` & `Vary: Accept`:** Görünür HTML ile çelişen gizli sabit `Offer.price` değerleri temizlendi; soru sayfalarındaki çift `FAQPage` tek geçerli `FAQPage`'e indirildi; HTML/Markdown yanıtlarına `Vary: Accept` eklendi; `/category/makaleler` → `/kategori/makaleler` 301 eklendi.
+- [x] **Kompakt Çerez Kartı & 2026 Gizlilik/KVKK Politikası + 5 Mevzuat Kaynağı:** Çerez kartı küçültülüp kabul sonrası kalıcı gizlendi; Gizlilik/KVKK sayfası 2026'ya güncellendi; 5 mevzuat sayfasına resmî GİB kaynak bağlantıları ve son kontrol tarihi (`25 Kasım 2026`) eklendi.

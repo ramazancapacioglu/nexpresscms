@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { contentPath, isPluginModuleEnabled, localeBase, resolveSiteSettings } from "@nexpress/core";
+import { contentPath, isPluginModuleEnabled, localeBase, resolveCampaign, resolveSiteSettings } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
@@ -18,27 +18,39 @@ export async function llmsFullResponse(request: NextRequest, forcedLocale?: stri
   const contents = await listPublishedContents(siteId, locale);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+  const settings = resolveSiteSettings(site?.settings);
+  const lb = localeBase(site, locale);
   const baseTxt = await generateCoreLlmsTxt({
     siteId,
     siteName: `${site?.name ?? "NexPress CMS"} — 4-Katmanlı Tam Bilgi Bankosu (/llms-full.txt)`,
     tagline: site?.tagline,
     siteDna: site?.siteDna,
+    organization: settings.seo.organizationSchema ?? null,
     baseUrl,
     locale,
-    items: contents.map((c) => ({
-      title: c.title,
-      url: `${baseUrl}${localeBase(site, locale)}${c.slug === "ana-sayfa" ? "" : contentPath(resolveSiteSettings(site?.settings).general.contentTypes, c)}`.replace(/\/$/, ""),
-      type: c.type,
-      tldr: c.tldr,
-      importanceScore: c.importanceScore,
-    })),
+    items: contents.map((c) => {
+      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      return {
+        title: c.title,
+        url: `${baseUrl}${lb}${c.slug === "ana-sayfa" ? "" : contentPath(settings.general.contentTypes, c)}`.replace(/\/$/, ""),
+        type: c.type,
+        schemaType: c.schemaType,
+        tldr: c.tldr,
+        importanceScore: c.importanceScore,
+        ...(camp ? { expired: camp.isExpired, validityLabel: camp.formattedValidity } : {}),
+      };
+    }),
   });
 
   const fullCorpusAppendix = contents
-    .map(
-      (c) =>
-        `\n================================================================================\n### [${c.type.toUpperCase()} • Önem: ${c.importanceScore}/10] ${c.title}\nURL: ${baseUrl}/${locale}/${c.slug}\nSchema: @${c.schemaType}\n================================================================================\n\n${c.markdownCache}`
-    )
+    .map((c) => {
+      const camp = c.type === "campaign" ? resolveCampaign(c) : null;
+      const itemUrl = `${baseUrl}${lb}${c.slug === "ana-sayfa" ? "" : contentPath(settings.general.contentTypes, c)}`.replace(/\/$/, "");
+      const campLine = camp
+        ? `\nKampanya Durumu: ${camp.isExpired ? "Süresi Doldu" : "Aktif"} (${camp.formattedValidity})${camp.discount ? ` · İndirim: ${camp.discount}` : ""}${camp.targetAudience ? ` · Kimler Yararlanabilir: ${camp.targetAudience}` : ""}`
+        : "";
+      return `\n================================================================================\n### [${c.type.toUpperCase()} • Önem: ${c.importanceScore}/10] ${c.title}\nURL: ${itemUrl}\nSchema: @${c.schemaType}${campLine}\n================================================================================\n\n${c.markdownCache}`;
+    })
     .join("\n");
 
   return new NextResponse(baseTxt + "\n" + fullCorpusAppendix, {

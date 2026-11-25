@@ -149,6 +149,7 @@ export const BLOCK_TYPES = [
   "testimonial_grid",
   "google_reviews",
   "kdv_calculator",
+  "software_product_card",
   "tldr_box",
   "grid_section",
   "bento_features",

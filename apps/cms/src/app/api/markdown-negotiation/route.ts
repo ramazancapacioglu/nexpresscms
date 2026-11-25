@@ -5,6 +5,7 @@ import {
   findTypeByArchiveSlug,
   memberMeetsTier,
   readPageOptions,
+  resolveCampaign,
   resolveSiteSettings,
   resolvePublishing,
   verifyContentAccessToken,
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  const camp = content.type === "campaign" ? resolveCampaign(content) : null;
   const headerMeta = [
     "---",
     `title: "${content.title.replace(/"/g, '\\"')}"`,
@@ -92,14 +94,30 @@ export async function GET(request: NextRequest) {
     `importance_score: ${content.importanceScore}`,
     `seo_score: ${content.seoScore}`,
     `site_id: "${content.siteId}"`,
+    ...(camp
+      ? [
+          `campaign_status: "${camp.isExpired ? "expired" : "active"}"`,
+          ...(camp.startDate ? [`valid_from: "${camp.startDate}"`] : []),
+          ...(camp.endDate ? [`valid_through: "${camp.endDate}"`] : []),
+          ...(camp.discount ? [`discount: "${camp.discount.replace(/"/g, '\\"')}"`] : []),
+          ...(camp.targetAudience ? [`target_audience: "${camp.targetAudience.replace(/"/g, '\\"')}"`] : []),
+        ]
+      : []),
     "---",
     "",
+    ...(camp
+      ? [
+          `> **Kampanya Durumu:** ${camp.isExpired ? "Süresi Doldu" : "Aktif"} · **Geçerlilik:** ${camp.formattedValidity}${camp.discount ? ` · **İndirim:** ${camp.discount}` : ""}${camp.targetAudience ? ` · **Kimler Yararlanabilir:** ${camp.targetAudience}` : ""}`,
+          "",
+        ]
+      : []),
   ].join("\n");
 
   return new NextResponse(headerMeta + content.markdownCache, {
     status: 200,
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
+      "Vary": "Accept",
       "X-NexPress-Site-Id": siteId,
       "X-NexPress-Engine": "Zero-CPU-MarkdownCache",
       "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",

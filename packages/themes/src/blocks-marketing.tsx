@@ -10,6 +10,7 @@ import { YB_THEME_ID } from "./yazilim-bayi";
 import { INK_GRID_ID } from "./ink-grid";
 import { renderInkBento, renderInkCta, renderInkHero, renderInkNames, renderInkQuotes } from "./ink-blocks";
 import { RichBlock } from "./rich-block";
+import { SoftwareProductCardBlock } from "./software-product-card-block";
 
 /** Vitrin ve dönüşüm blokları: hero, istatistik, bento, fiyat, CTA, yorum ızgarası. Tanımsız dönerse sıradaki grup denenir. */
 export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCommerce, renderChild, locale }: BlockRenderContext): React.ReactElement | null | undefined {
@@ -707,6 +708,10 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
           ) : null}
         </section>
       );
+    }
+
+    case "software_product_card": {
+      return <SoftwareProductCardBlock tokens={tokens} props={p} />;
     }
 
     default:

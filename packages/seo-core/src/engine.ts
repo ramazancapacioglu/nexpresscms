@@ -673,6 +673,50 @@ export function deriveAutoSchemaNodes(
         description: String(p.title ?? "Video"),
       });
     }
+    if (b.type === "software_product_card" && p.emitSchema !== false && p.name) {
+      const sType = p.schemaType === "Product" ? "Product" : "SoftwareApplication";
+      const highlights = Array.isArray(p.highlights) ? p.highlights.map((x) => String(x)).filter(Boolean) : [];
+      const reqs = Array.isArray(p.requirements)
+        ? p.requirements
+            .filter((r): r is { label?: unknown; value?: unknown } => Boolean(r && typeof r === "object"))
+            .map((r) => `${String(r.label ?? "").trim()}: ${String(r.value ?? "").trim()}`)
+            .filter((s) => s.length > 3)
+        : [];
+      const pricingMode = typeof p.pricingMode === "string" ? p.pricingMode : "quote";
+      const priceNum = typeof p.price === "number" ? p.price : Number(String(p.price ?? "").replace(/[^\d.]/g, ""));
+      const hasVisiblePrice = (pricingMode === "fixed" || pricingMode === "starting") && Number.isFinite(priceNum) && priceNum > 0;
+      const currency = typeof p.currency === "string" && p.currency.trim() ? p.currency.trim() : "TRY";
+      const offer: Record<string, unknown> = {
+        "@type": "Offer",
+        url: typeof p.demoUrl === "string" && p.demoUrl.startsWith("http") ? p.demoUrl : pageUrl,
+        availability: "https://schema.org/InStock",
+        ...(hasVisiblePrice ? { price: priceNum, priceCurrency: currency } : { priceCurrency: currency }),
+        ...(typeof p.seller === "string" && p.seller.trim() ? { seller: { "@type": "Organization", name: p.seller.trim() } } : {}),
+      };
+      const node: SchemaGraphNode = {
+        "@type": sType,
+        "@id": `${pageUrl}#product-${b.id}`,
+        name: String(p.name).trim(),
+        ...(typeof p.shortDescription === "string" && p.shortDescription.trim() ? { description: p.shortDescription.trim() } : {}),
+        ...(typeof p.sku === "string" && p.sku.trim() ? { sku: p.sku.trim() } : {}),
+        ...(sType === "SoftwareApplication"
+          ? {
+              applicationCategory: typeof p.category === "string" && p.category.trim() ? p.category.trim() : "BusinessApplication",
+              ...(typeof p.operatingSystem === "string" && p.operatingSystem.trim() ? { operatingSystem: p.operatingSystem.trim() } : {}),
+              ...(typeof p.version === "string" && p.version.trim() ? { softwareVersion: p.version.trim() } : {}),
+              ...(typeof p.releaseDate === "string" && p.releaseDate.trim() ? { datePublished: p.releaseDate.trim() } : {}),
+              ...(typeof p.downloadUrl === "string" && p.downloadUrl.trim() ? { downloadUrl: p.downloadUrl.trim() } : {}),
+              ...(reqs.length > 0 ? { softwareRequirements: reqs.join("; ") } : {}),
+              ...(highlights.length > 0 ? { featureList: highlights } : {}),
+              ...(typeof p.vendor === "string" && p.vendor.trim() ? { author: { "@type": "Organization", name: p.vendor.trim() } } : {}),
+            }
+          : {
+              ...(typeof p.vendor === "string" && p.vendor.trim() ? { brand: { "@type": "Brand", name: p.vendor.trim() } } : {}),
+            }),
+        offers: offer,
+      };
+      nodes.push(node);
+    }
   }
 
   // Sorular düz metin olur (satır içi etiket/varlık temizlenir) ve aynı soru ikinci kez yazılmaz

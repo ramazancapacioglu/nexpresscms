@@ -482,7 +482,22 @@ export async function buildPageSchemaGraph(
     }
 
     if (input.autoSchema !== false && c.blocks) {
-      baseNodes.push(...deriveAutoSchemaNodes(c.blocks, input.pageUrl).filter((node) => !(faqNodeDone && node["@type"] === "FAQPage")));
+      const derived = deriveAutoSchemaNodes(c.blocks, input.pageUrl);
+      for (const node of derived) {
+        if (node["@type"] === "FAQPage") {
+          if (faqNodeDone) continue;
+          if (c.schemaType === "FAQPage" && !entity.mainEntity && Array.isArray(node.mainEntity)) {
+            entity.mainEntity = node.mainEntity;
+            faqNodeDone = true;
+            continue;
+          }
+          faqNodeDone = true;
+        }
+        baseNodes.push(node);
+      }
+    }
+    if (c.schemaType === "FAQPage" && !entity.mainEntity) {
+      entity["@type"] = "WebPage";
     }
 
     // Görseller ve sayfa düğümü: birincil görsel, gövde görselleri (associatedMedia / screenshot), WebPage ile bağlantılar
@@ -623,7 +638,12 @@ export async function generateCoreLlmsTxt(options: {
 
   const grouped: Record<string, LlmsTxtItem[]> = {};
   for (const item of [...options.items].sort((a, b) => b.importanceScore - a.importanceScore)) {
-    const key = item.type === "page" && item.schemaType === "SoftwareApplication" ? "software" : item.type;
+    const key =
+      item.type === "campaign" && (item as LlmsTxtItem & { expired?: boolean }).expired
+        ? "campaign_expired"
+        : item.type === "page" && item.schemaType === "SoftwareApplication"
+          ? "software"
+          : item.type;
     const list = grouped[key] ?? [];
     list.push(item);
     grouped[key] = list;
@@ -633,19 +653,26 @@ export async function generateCoreLlmsTxt(options: {
     software: "Ürünler & Yazılım Çözümleri (Products & Software)",
     product: "Ürünler & Yazılım Çözümleri (Products & Software)",
     campaign: "Aktif Kampanyalar & Teklifler (Offers)",
+    campaign_expired: "Süresi Dolan Kampanyalar (Arşiv)",
     kb_tech: "Teknik Bilgi Bankası (Knowledge Base)",
     ai_prompt: "Sıkça Sorulan Sorular & Karşılaştırmalar (FAQ / PAA)",
     page: "Kurumsal Sayfalar",
     post: "Makaleler",
   };
 
-  const order = ["software", "product", "campaign", "ai_prompt", "kb_tech", "page", "post"];
+  const order = ["software", "product", "campaign", "ai_prompt", "kb_tech", "page", "post", "campaign_expired"];
   const sections = Object.entries(grouped).sort(([a], [b]) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
   for (const [type, list] of sections) {
     lines.push(`## ${labels[type] ?? type}`, "");
     for (const entry of list) {
+      const ext = entry as LlmsTxtItem & { expired?: boolean; validityLabel?: string };
+      const statusTag = ext.expired
+        ? ` [Süresi Doldu${ext.validityLabel ? ` · ${ext.validityLabel}` : ""}]`
+        : ext.validityLabel
+          ? ` [${ext.validityLabel}]`
+          : "";
       const summary = entry.tldr ? `: ${entry.tldr}` : "";
-      lines.push(`- [${entry.title}](${entry.url.includes("/", 8) ? entry.url : `${entry.url}/`}?format=md)${summary}`);
+      lines.push(`- [${entry.title}](${entry.url.includes("/", 8) ? entry.url : `${entry.url}/`}?format=md)${statusTag}${summary}`);
     }
     lines.push("");
   }

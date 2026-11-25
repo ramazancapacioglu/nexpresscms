@@ -21,6 +21,15 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — Ürün & Şema Kartı (`software_product_card`), Kompakt Çerez Kartı, Kampanya LLM/MD Tutarlılığı & Faz 9
+- **Yeni 0-KB Ürün & Şema Bloğu (`software_product_card` — `software-product-card-block.tsx`, `engine.ts`, `block-catalog.ts`, `docs/23`):** `emitSchema` anahtarıyla görünür ürün özellikleri, modüller, paket/fiyat modu (`quote`/`fixed`/`starting`), indirme/demo linki, sistem gereksinimleri ve entegrasyonlardan otomatik `SoftwareApplication` / `Product` JSON-LD üretir (HTML ↔ Şema tek kaynak; teklif usulünde sabit `Offer.price` basmaz).
+- **Kompakt & Kalıcı Çerez Kartı (`cookie-consent.tsx`):** Sol alt köşede küçük yüzer karta indirildi (`max-w-[340px]`); kabul/ret sonrası hem `nx_consent` çerezi hem `localStorage` yazılarak önbellekli sayfalarda dahi tekrar görünmesi engellendi ve kalıcı "Çerez tercihleri" yüzer düğmesi kaldırıldı.
+- **GEO/LLMO & Teknik SEO Düzeltmeleri (`seo-core/src/index.ts`, `llms-response.ts`, `llms-full-response.ts`, `markdown-negotiation/route.ts`, `middleware.ts`):**
+  - `llms.txt` ve `llms-full.txt` artık aktif ve süresi dolmuş kampanyaları `resolveCampaign` ile ayırır; `/kampanya/<slug>?format=md` çıktısı durum, başlangıç/bitiş tarihi, indirim ve hedef kitleyi frontmatter + özet satırında verir.
+  - Soru sayfalarındaki çift `FAQPage` (boş sayfa düğümü + blok düğümü) tek temiz `FAQPage`'e indirildi.
+  - HTML ve Markdown sunan rotalara `Vary: Accept` başlığı eklendi.
+- **akinsoftizmir.com.tr Faz 9:** `/wolvox-erp` sayfasına `software_product_card` pilotu eklendi ve kalan `ERP 9` görsel alt metni düzeltildi; `LocalBusiness` ve `llms.txt` çalışma saatleri (`Pzt–Cum 08:30–18:00`, `Cmt 09:00–16:00`) ile üretici (AKINSOFT) / bayi (Dijital Evre BA35022) ayrımı tek kayda bağlandı; HTML'de görünmeyen gizli JSON-LD sabit fiyatları temizlendi; Gizlilik/KVKK & Çerez Politikası 2026'ya güncellendi; `/category/makaleler` → `/kategori/makaleler` 301 eklendi; 5 mevzuat Soru-Cevap sayfasına resmî GİB kaynak bağlantıları ve son kontrol tarihi eklendi.
+
 ### [2026-11-24] — Açılır Menü Göstergeleri, 0-KB KDV Hesaplayıcı, Google Yorumlar Vitrini & akinsoftizmir.com.tr Faz 8
 - **Açılır Menü Göstergeleri (`site-chrome.tsx`, `site-nav.tsx`):** Üst yardımcı şeritteki (`bottomLinks`) ve ana menüdeki (`DesktopNav`) alt menülü öğelere hover/odakta dönen 0-KB SVG chevron eklendi.
 - **Yeni 0-KB RSC Blokları (`types.ts`, `block-catalog.ts`, `kdv-calculator-block.tsx`, `blocks-content.tsx`, `blocks-marketing.tsx`, `docs/23`):**

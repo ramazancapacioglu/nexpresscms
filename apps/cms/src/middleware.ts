@@ -209,9 +209,10 @@ export async function middleware(request: NextRequest) {
     // Kapalı siteler (noindex) paylaşımlı önbelleğe girmez: kapı kararı değişince bayat kopya kalmasın
     if (cacheControl && indexing) response.headers.set("Cache-Control", cacheControl);
   }
-  // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı (tek segmentli dil yolları)
-  if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath)) {
+  // Yapay zeka istemcileri için keşif: aynı içeriğin Markdown karşılığı ve Vary: Accept ayrımı
+  if (/^\/[a-z]{2}(\/[^/]+)?$/.test(internalPath) || /^\/[a-z]{2}\/kampanya\/[^/]+$/.test(internalPath)) {
     response.headers.append("Link", `<${pathname}?format=md>; rel="alternate"; type="text/markdown"`);
+    response.headers.append("Vary", "Accept");
   }
   return response;
 }
