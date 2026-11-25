@@ -156,6 +156,10 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         const qa = (input.schemaAttributes?.richSchema as { qa?: { enabled?: boolean } } | undefined)?.qa;
         return (qa?.enabled ? qa : null) as never;
       })(),
+      tech: (() => {
+        if (input.schemaType !== "TechArticle") return null;
+        return ((input.schemaAttributes?.richSchema as { tech?: Record<string, unknown> } | undefined)?.tech ?? null) as never;
+      })(),
     });
     const existing = input.contentId
       ? await this.getContentById(input.contentId, input.locale)

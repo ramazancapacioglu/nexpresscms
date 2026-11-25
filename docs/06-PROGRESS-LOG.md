@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — `TechArticle` Zengin Teknik Rehber Altyapısı & Bilgi Bankası Yükseltmesi
+- **Zengin `TechArticle` + `WebPage` Şeması (`packages/seo-core/src/index.ts`, `schema-graph.test.ts`):** `rich.tech` altına `teaches`, `aboutSoftwareName/Url` (`#softwareapplication` `@id` bağı), `citations` ve bağlı `WebPage` düğümüne `reviewedBy` + `lastReviewed` alanları eklendi.
+- **0-KB Teknik Künye & Markdown Senkronizasyonu (`tech-article-bar.tsx`, `[slug]/page.tsx`, `rich-schema-panel.tsx`, `markdown-compiler.ts`):** Editördeki Teknik Rehber paneli yeni alanlarla genişletildi; `TechArticle` sayfalarında 0-KB RSC teknik künye bandı ve tam Markdown (`techToMarkdown`) çıktısı eklendi.
+
 ### [2026-11-25] — SEO Raporları: Tarih Aralığı, Sayfa Bazlı AI Bot Taramaları & Geniş Alt Sekmeli Rapor Ekranı
 - **Sayfa Bazlı Bot Günlüğü (`bot_page_daily`, göç `0025`):** `packages/database/src/schema/pg.ts` ve `sqlite.ts` içine `bot_page_daily` tablosu (kiracı kapsamlı `siteId` + indeks) eklendi; `BotStatsRepository` tarih aralığı (`summaryInRange`, `dailySeriesInRange`, `pageHitsInRange`) ve `trackBotVisit` sayfa yolu kaydı eklendi; birim testler (`bot-stats-range.test.ts`) yazıldı.
 - **Geniş Sekmeli SEO Raporları (`/admin/seo/reports`, `bot-crawl-report.tsx`):** Tarih aralığı seçici (`7g / 14g / 30g / 90g` + özel başlangıç/bitiş), yeni tam-genişlik **AI Bot Taramaları** sekmesi (günlük trend, bot & format filtresi, en çok taranan sayfalar + `?format=md` bağlantıları) ve tüm alt rapor kartlarının tek tek tam genişlikte açıldığı alt sekme çubuğu eklendi.

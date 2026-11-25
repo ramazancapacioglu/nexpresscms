@@ -370,6 +370,35 @@ export async function buildPageSchemaGraph(
     if (rich.tech && typeof rich.tech === "object") {
       if (rich.tech.level) entity.proficiencyLevel = String(rich.tech.level).trim();
       if (rich.tech.dependencies) entity.dependencies = String(rich.tech.dependencies).trim();
+      if (typeof rich.tech.teaches === "string" && rich.tech.teaches.trim()) {
+        const teachesList = rich.tech.teaches
+          .split(/\r?\n|;/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+          .slice(0, 12);
+        if (teachesList.length > 0) entity.teaches = teachesList;
+      }
+      if (typeof rich.tech.aboutSoftwareUrl === "string" && rich.tech.aboutSoftwareUrl.trim()) {
+        const rawSwUrl = rich.tech.aboutSoftwareUrl.trim();
+        const absSwUrl = /^https?:\/\//i.test(rawSwUrl) ? rawSwUrl : `${baseUrl}${rawSwUrl.startsWith("/") ? rawSwUrl : `/${rawSwUrl}`}`;
+        const swName = typeof rich.tech.aboutSoftwareName === "string" && rich.tech.aboutSoftwareName.trim() ? rich.tech.aboutSoftwareName.trim() : undefined;
+        const swRef: SchemaGraphNode = {
+          "@type": "Thing",
+          "@id": `${absSwUrl.replace(/\/$/, "")}#softwareapplication`,
+          url: absSwUrl,
+          ...(swName ? { name: swName } : {}),
+        };
+        const existingAbout = Array.isArray(entity.about) ? (entity.about as SchemaGraphNode[]) : entity.about ? [entity.about as SchemaGraphNode] : [];
+        entity.about = [...existingAbout, swRef];
+      }
+      if (typeof rich.tech.citations === "string" && rich.tech.citations.trim()) {
+        const cites = rich.tech.citations
+          .split(/\r?\n/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+          .slice(0, 10);
+        if (cites.length > 0) entity.citation = cites.length === 1 ? cites[0] : cites;
+      }
     }
     if (rich.speakable && !entity.speakable) {
       entity.speakable = { "@type": "SpeakableSpecification", cssSelector: ["h1", ".nx-tldr", "h2"] };
@@ -528,6 +557,8 @@ export async function buildPageSchemaGraph(
       if (primaryRef) entity.primaryImageOfPage = primaryRef;
       if (hasCrumbs) entity.breadcrumb = { "@id": `${input.pageUrl}#breadcrumb` };
     } else {
+      const techReviewedBy = typeof rich.tech?.reviewedBy === "string" && rich.tech.reviewedBy.trim() ? rich.tech.reviewedBy.trim() : undefined;
+      const techLastReviewed = typeof rich.tech?.lastReviewed === "string" && rich.tech.lastReviewed.trim() ? rich.tech.lastReviewed.trim() : undefined;
       baseNodes.push({
         "@type": "WebPage",
         "@id": webpageId,
@@ -540,6 +571,8 @@ export async function buildPageSchemaGraph(
         ...(c.tldr ? { description: c.tldr } : {}),
         ...(c.publishedAt ? { datePublished: new Date(c.publishedAt).toISOString() } : {}),
         ...(c.updatedAt ? { dateModified: new Date(c.updatedAt).toISOString() } : {}),
+        ...(techReviewedBy ? { reviewedBy: { "@type": "Person", name: techReviewedBy } } : {}),
+        ...(techLastReviewed ? { lastReviewed: techLastReviewed } : {}),
         ...(primaryRef ? { primaryImageOfPage: primaryRef } : {}),
         ...(hasCrumbs ? { breadcrumb: { "@id": `${input.pageUrl}#breadcrumb` } } : {}),
       });

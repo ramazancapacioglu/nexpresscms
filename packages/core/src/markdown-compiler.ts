@@ -75,11 +75,50 @@ export function qaToMarkdown(qa: QaMarkdownData): string {
   return parts.join("\n\n");
 }
 
+export interface TechMarkdownData {
+  level?: string;
+  dependencies?: string;
+  teaches?: string;
+  aboutSoftwareName?: string;
+  aboutSoftwareUrl?: string;
+  reviewedBy?: string;
+  lastReviewed?: string;
+  citations?: string;
+}
+
+const TECH_LEVEL_TR: Record<string, string> = {
+  Beginner: "Başlangıç",
+  Intermediate: "Orta",
+  Expert: "İleri",
+};
+
+export function techToMarkdown(tech: TechMarkdownData): string {
+  const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const lines: string[] = [];
+  if (s(tech.level)) lines.push(`- **Uzmanlık Seviyesi:** ${TECH_LEVEL_TR[s(tech.level)] ?? s(tech.level)}`);
+  if (s(tech.aboutSoftwareName) || s(tech.aboutSoftwareUrl)) {
+    const label = s(tech.aboutSoftwareName) || s(tech.aboutSoftwareUrl);
+    lines.push(s(tech.aboutSoftwareUrl) ? `- **İlgili Yazılım:** [${label}](${s(tech.aboutSoftwareUrl)})` : `- **İlgili Yazılım:** ${label}`);
+  }
+  if (s(tech.dependencies)) lines.push(`- **Ön Koşullar:** ${s(tech.dependencies)}`);
+  if (s(tech.reviewedBy)) lines.push(`- **Teknik İnceleme:** ${s(tech.reviewedBy)}${s(tech.lastReviewed) ? ` (${s(tech.lastReviewed)})` : ""}`);
+  else if (s(tech.lastReviewed)) lines.push(`- **Son Kontrol Tarihi:** ${s(tech.lastReviewed)}`);
+  if (s(tech.teaches)) {
+    const items = s(tech.teaches).split(/\r?\n|;/).map((x) => x.trim()).filter(Boolean);
+    if (items.length > 0) lines.push(`- **Bu Rehberde Öğrenecekleriniz:** ${items.join(" · ")}`);
+  }
+  if (s(tech.citations)) {
+    const cites = s(tech.citations).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+    if (cites.length > 0) lines.push(`- **Resmî Kaynaklar:** ${cites.join(", ")}`);
+  }
+  return lines.length > 0 ? `## Teknik Rehber Künyesi\n\n${lines.join("\n")}` : "";
+}
+
 let activeQa: QaMarkdownData | null = null;
 
 export function compileBlocksToMarkdown(
   blocks: BlockNode[],
-  options?: { title?: string; tldr?: string | null; /** Blokların sonuna eklenen Markdown (ör. özel alan listesi). */ appendix?: string; /** Soru-cevap alanları (schema_card qa bloğu yerinde yazılır). */ qa?: QaMarkdownData | null }
+  options?: { title?: string; tldr?: string | null; /** Blokların sonuna eklenen Markdown (ör. özel alan listesi). */ appendix?: string; /** Soru-cevap alanları (schema_card qa bloğu yerinde yazılır). */ qa?: QaMarkdownData | null; /** Teknik makale (`TechArticle`) künye bilgileri. */ tech?: TechMarkdownData | null }
 ): string {
   const sections: string[] = [];
   activeQa = options?.qa ?? null;
@@ -90,6 +129,11 @@ export function compileBlocksToMarkdown(
 
   if (options?.tldr && options.tldr.trim().length > 0) {
     sections.push(`> **TL;DR (Özet):** ${options.tldr.trim()}`);
+  }
+
+  if (options?.tech) {
+    const techMd = techToMarkdown(options.tech);
+    if (techMd) sections.push(techMd);
   }
 
   for (const block of blocks) {

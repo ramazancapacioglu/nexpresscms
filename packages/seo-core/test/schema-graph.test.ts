@@ -227,6 +227,40 @@ test("software_product_card AggregateOffer: ana lisans fiyatı ek modülden aşa
   assert.equal(swNodes[0].offers.highPrice, 383630);
 });
 
+test("TechArticle: proficiencyLevel, dependencies, teaches, about @id, citation ve WebPage reviewedBy/lastReviewed üretir", async () => {
+  const graph = await buildPageSchemaGraph({
+    ...input,
+    pageUrl: "https://ornek.test/wolvox-server-client",
+    content: {
+      ...input.content,
+      schemaType: "TechArticle",
+      schemaAttributes: {
+        richSchema: {
+          tech: {
+            level: "Intermediate",
+            dependencies: "Wolvox ERP, Windows 10/11",
+            aboutSoftwareName: "Akınsoft Wolvox ERP",
+            aboutSoftwareUrl: "/wolvox-erp",
+            teaches: "Sunucu bağlantısı\nİstemci yapılandırması",
+            reviewedBy: "Ramazan Çapacıoğlu",
+            lastReviewed: "2026-11-25",
+            citations: "https://ebelge.gib.gov.tr/",
+          },
+        },
+      },
+    },
+  } as never);
+  const tech = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "TechArticle")!;
+  const page = (graph["@graph"] as Array<Record<string, any>>).find((n) => n["@type"] === "WebPage")!;
+  assert.equal(tech.proficiencyLevel, "Intermediate");
+  assert.equal(tech.dependencies, "Wolvox ERP, Windows 10/11");
+  assert.deepEqual(tech.teaches, ["Sunucu bağlantısı", "İstemci yapılandırması"]);
+  assert.equal(tech.about[0]["@id"], "https://ornek.test/wolvox-erp#softwareapplication");
+  assert.equal(tech.citation, "https://ebelge.gib.gov.tr/");
+  assert.deepEqual(page.reviewedBy, { "@type": "Person", name: "Ramazan Çapacıoğlu" });
+  assert.equal(page.lastReviewed, "2026-11-25");
+});
+
 test("yazar profili: Person ünvan, biyografi, uzmanlık, sameAs, avatar ve kuruluşa bağ taşır; profil yoksa yalın kalır", async () => {
   const { buildAuthorPerson } = await import("../src/index");
   const graph = await buildPageSchemaGraph({

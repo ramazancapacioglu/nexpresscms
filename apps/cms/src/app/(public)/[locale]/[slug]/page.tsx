@@ -17,6 +17,7 @@ import { PostsIndex } from "@/components/public/posts-index";
 import { QaFooter } from "@/components/public/qa-footer";
 import { schemaImagesFor } from "@/lib/schema-images";
 import { AuthorBox, PostByline, PostFooter, PostShareRow, RelatedLinks } from "@/components/public/post-extras";
+import { TechArticleBar } from "@/components/public/tech-article-bar";
 import { QuestionsArchive, questionsArchiveMetadata, questionsArchiveOn } from "@/components/public/questions-archive";
 import { loadTypeArchive, TypeArchiveView, typeArchiveMetadata } from "@/components/public/type-archive";
 import { jsonLdString, buildPageSchemaGraph, resolveSeoMeta } from "@nexpress/seo-core";
@@ -643,6 +644,13 @@ export default async function PublicDynamicContentPage({
                 updatedAt={content.updatedAt ? new Date(content.updatedAt) : null}
                 commentCount={commentEntries.length}
                 category={categories[0] ? { name: termName("category", categories[0]), href: `${lb}/kategori/${categories[0]}` } : null}
+              />
+            ) : null}
+            {(placement?.schemaType ?? content.schemaType) === "TechArticle" ? (
+              <TechArticleBar
+                tech={((content.schemaAttributes as Record<string, any> | null)?.richSchema?.tech ?? (content.schemaAttributes as Record<string, any> | null)?.richSchema?.rich?.tech) as Record<string, string> | undefined}
+                lb={lb}
+                tokens={tokens}
               />
             ) : null}
             {content.type === "page" && content.tldr && !readPageOptions(content.schemaAttributes as Record<string, unknown>).hideTitle ? (

@@ -6,7 +6,7 @@ import type { Dispatch, SetStateAction } from "react";
 export interface RichSchemaFields {
   qa?: { enabled?: boolean; upvotes?: number | string; question?: string; shortAnswer?: string; detail?: string; about?: string; audience?: string; areaServed?: string; serviceType?: string; productUrl?: string };
   offer?: { price?: string; currency?: string; validThrough?: string; availability?: string; name?: string; url?: string };
-  tech?: { level?: string; dependencies?: string };
+  tech?: { level?: string; dependencies?: string; teaches?: string; aboutSoftwareName?: string; aboutSoftwareUrl?: string; reviewedBy?: string; lastReviewed?: string; citations?: string };
   software?: { name?: string; url?: string; category?: string; os?: string; version?: string; price?: string; currency?: string; features?: string; subCategory?: string; requirements?: string };
   service?: { serviceType?: string; areaServed?: string; audience?: string; priceRange?: string };
   product?: { brand?: string; sku?: string; gtin?: string; price?: string; currency?: string; availability?: string };
@@ -204,14 +204,20 @@ export function RichSchemaPanel({
     }
 
     return (
-      <Group key="tech" title="Teknik Rehber (TechArticle)" badge={badge} hint="Şema türü TechArticle iken uygulanır.">
+      <Group key="tech" title="Teknik Rehber (TechArticle)" badge={badge} hint="Şema türü TechArticle iken uygulanır; sayfa üstünde teknik künye ve WebPage inceleme bilgisi üretir.">
         <div className="grid grid-cols-2 gap-2">
           <div><label className={cap} htmlFor="rs-level">Bilgi düzeyi</label>
             <select id="rs-level" value={value.tech?.level ?? ""} onChange={(e) => set("tech", { level: e.target.value })} className={box}>
               <option value="">Belirtilmedi</option><option value="Beginner">Başlangıç</option><option value="Intermediate">Orta</option><option value="Expert">İleri</option>
             </select></div>
-          <div><label className={cap} htmlFor="rs-deps">Bağımlılıklar</label><input id="rs-deps" placeholder="Windows 11, SQL Server" value={value.tech?.dependencies ?? ""} onChange={(e) => set("tech", { dependencies: e.target.value })} className={box} /></div>
+          <div><label className={cap} htmlFor="rs-deps">Ön koşullar / Bağımlılıklar</label><input id="rs-deps" placeholder="Wolvox ERP, Windows 11" value={value.tech?.dependencies ?? ""} onChange={(e) => set("tech", { dependencies: e.target.value })} className={box} /></div>
+          <div><label className={cap} htmlFor="rs-sw-name">İlgili yazılım adı</label><input id="rs-sw-name" placeholder="Akınsoft Wolvox ERP" value={value.tech?.aboutSoftwareName ?? ""} onChange={(e) => set("tech", { aboutSoftwareName: e.target.value })} className={box} /></div>
+          <div><label className={cap} htmlFor="rs-sw-url">İlgili yazılım adresi</label><input id="rs-sw-url" placeholder="/wolvox-erp" value={value.tech?.aboutSoftwareUrl ?? ""} onChange={(e) => set("tech", { aboutSoftwareUrl: e.target.value })} className={box} /></div>
+          <div><label className={cap} htmlFor="rs-rev-by">İnceleyen uzman</label><input id="rs-rev-by" placeholder="Ramazan Çapacıoğlu" value={value.tech?.reviewedBy ?? ""} onChange={(e) => set("tech", { reviewedBy: e.target.value })} className={box} /></div>
+          <div><label className={cap} htmlFor="rs-rev-at">Son kontrol tarihi</label><input id="rs-rev-at" type="date" value={value.tech?.lastReviewed ?? ""} onChange={(e) => set("tech", { lastReviewed: e.target.value })} className={box} /></div>
         </div>
+        <div><label className={cap} htmlFor="rs-teaches">Öğrenme kazanımları (her satıra bir madde)</label><textarea id="rs-teaches" rows={2} placeholder="Sunucu bağlantısı kurma&#10;İstemci ayarları" value={value.tech?.teaches ?? ""} onChange={(e) => set("tech", { teaches: e.target.value })} className="w-full rounded border border-border bg-background p-2 text-[11px]" /></div>
+        <div><label className={cap} htmlFor="rs-cites">Resmî kaynaklar (her satıra bir URL)</label><textarea id="rs-cites" rows={2} placeholder="https://ebelge.gib.gov.tr/..." value={value.tech?.citations ?? ""} onChange={(e) => set("tech", { citations: e.target.value })} className="w-full rounded border border-border bg-background p-2 text-[11px] font-mono" /></div>
       </Group>
     );
   };
