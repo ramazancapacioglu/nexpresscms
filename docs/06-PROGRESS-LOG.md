@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-25] — akinsoftizmir.com.tr Faz 12 Temizliği & Bağımsız Operasyon El Kitabı Devri
+- **Üst Sayfa Tablo Konumlandırma & Tekil Temizlik:** 5 üst kategori sayfasındaki (`kurumsal-kaynak-planlama`, `muhasebe-programlari`, `sektorel-cozumler`, `akinsoft-e-donusum`, `bulut-yazilim-cozumleri`) fiyat/karşılaştırma tabloları sayfa sonuna (SSS bloğunun hemen üstüne) taşındı; `/octoplus` eski özellik tablosu kaldırıldı; tüm 153 yayındaki sayfada tespit edilen **22 çift `faq_accordion`** bloğu benzersiz sorular korunarak tek SSS + sağlam `FAQPage` şemasına indirildi.
+- **Bağımsız Operasyon El Kitabı:** `akinsoftizmir.com.tr` SEO/GEO/dijital pazarlama çalışmalarını ayrı bir ajana devretmek için [AKINSOFTIZMIR-SEO-GEO-OPERASYON-EL-KITABI.md](akinsoftizmir-com-tr-aktarim/AKINSOFTIZMIR-SEO-GEO-OPERASYON-EL-KITABI.md) oluşturuldu.
+
 ### [2026-11-25] — Sektörler Bloğu (`sectors_grid`), Sade Paylaşım, Görselli İlgili Karosel & 36 Ürün/Kategori Sayfası (Faz 11)
 - **Yeni 0-KB Tema & Vitrin Bileşenleri (`sectors-grid-block.tsx`, `content-access-gate.tsx`, `post-extras.tsx`, `docs/23`):**
   - `sectors_grid`: Ürünlerin hangi sektörler için uygun olduğunu rozetli, kullanım senaryolu ve ileride `/sektorler/<slug>` bağlantısına hazır 3 sütunlu kartlarla sunar.
