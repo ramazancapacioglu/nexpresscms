@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { hasAuthorProfile, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
+import { hasAuthorProfile, isAuthoredType, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
 import { buildPageSchemaGraph, jsonLdString } from "@nexpress/seo-core";
 import { getThemeManifest, ResponsiveImage } from "@nexpress/themes";
 import { createTranslator } from "@nexpress/i18n";
@@ -43,7 +43,7 @@ export default async function AuthorsIndexPage({ params }: { params: Promise<{ l
   // Her yazarın yayındaki herkese açık yazı sayısını ve son yazı başlığını hesapla
   const postsByAuthor = new Map<string, Array<{ slug: string; title: string }>>();
   for (const item of contents) {
-    if (item.type !== "post" || item.noIndex) continue;
+    if (!isAuthoredType(item.type) || item.noIndex) continue;
     const pub = resolvePublishing(item.schemaAttributes);
     const owner = (pub.authorName || item.authorName || "").trim();
     if (!owner) continue;

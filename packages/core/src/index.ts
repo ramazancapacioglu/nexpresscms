@@ -74,6 +74,7 @@ export * from "./editor-draft";
 export * from "./footer-style";
 export * from "./widgets";
 export * from "./campaigns";
+export * from "./content-changes";
 export * from "./content-weight";
 export * from "./header-layout";
 export * from "./content-access";

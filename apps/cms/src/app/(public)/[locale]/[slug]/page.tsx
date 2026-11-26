@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, isAuthoredType, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
@@ -356,10 +356,11 @@ export default async function PublicDynamicContentPage({
   const autoFields = !canvas && customFields.length > 0 && !treeHas(content.blocks, "custom_fields");
   const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
   const authorName = pub.authorName || content.authorName;
-  const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
+  const authored = isAuthoredType(content.type);
+  const authorHref = authored && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   // Yazar profili (E-E-A-T): doluysa yazı altında yazar kutusu ve şemada zenginleştirilmiş Person/Organization
-  const publicAuthors = content.type === "post" ? await getPublicAuthors(siteId) : {};
-  const authorEntry = content.type === "post" && authorName ? publicAuthors[authorSlug(authorName)] : undefined;
+  const publicAuthors = authored ? await getPublicAuthors(siteId) : {};
+  const authorEntry = authored && authorName ? publicAuthors[authorSlug(authorName)] : undefined;
   const authorProfile = authorEntry && hasAuthorProfile(authorEntry.profile) ? authorEntry.profile : null;
   const rawRichTech = ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.rich?.tech ??
     ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.tech;
@@ -642,7 +643,7 @@ export default async function PublicDynamicContentPage({
             >
               {content.title}
             </h1>
-            {content.type === "post" ? (
+            {content.type === "post" || (authored && authorName) ? (
               <PostByline
                 t={t}
                 locale={locale}
@@ -727,7 +728,7 @@ export default async function PublicDynamicContentPage({
         />
       )}
 
-      {content.type === "post" && authorProfile && authorHref && authorName ? <div className="mt-8"><AuthorBox t={t} name={authorName} href={authorHref} profile={authorProfile} /></div> : null}
+      {authored && authorProfile && authorHref && authorName ? <div className="mt-8"><AuthorBox t={t} name={authorName} href={authorHref} profile={authorProfile} /></div> : null}
 
       {content.type === "post" ? (
         <PostFooter

@@ -58,6 +58,7 @@ export function CampaignEditorClient({
   const [badge, setBadge] = useState(initialCampaign?.badge || "");
 
   const [discount, setDiscount] = useState(initialCampaign?.discount || "");
+  const [price, setPrice] = useState(initialCampaign?.price || "");
   const [gift, setGift] = useState(initialCampaign?.gift || "");
   const [productName, setProductName] = useState(initialCampaign?.productName || "");
   const [productUrl, setProductUrl] = useState(initialCampaign?.productUrl || "");
@@ -106,6 +107,7 @@ export function CampaignEditorClient({
       tldr,
       status,
       discount,
+      price,
       gift,
       productName,
       productUrl,
@@ -132,6 +134,7 @@ export function CampaignEditorClient({
     tldr,
     status,
     discount,
+    price,
     gift,
     productName,
     productUrl,
@@ -177,6 +180,7 @@ export function CampaignEditorClient({
         tldr,
         campaign: {
           discount,
+          price,
           gift,
           productName,
           productUrl,
@@ -442,6 +446,23 @@ export function CampaignEditorClient({
                   />
                   <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099] mt-1">
                     Google Offer şemasına ve kart rozetine doğrudan yansır.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#14151A] dark:text-[#F3F4F6] mb-1">
+                    Kampanya Fiyatı (TL, isteğe bağlı)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Örn: 12.500"
+                    className="h-9 w-full rounded-md border border-[#E6E7EA] dark:border-[#23262E] bg-transparent px-3 text-xs text-[#14151A] dark:text-[#F3F4F6] focus:border-blue-600 focus:outline-hidden"
+                  />
+                  <p className="text-[11px] text-[#5F6570] dark:text-[#8C9099] mt-1">
+                    Dolu ise Offer şemasına price/priceCurrency (TRY) yazılır. Yüzdelik indirimde boş bırakın; fiyat uydurulmaz.
                   </p>
                 </div>
 

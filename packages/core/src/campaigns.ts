@@ -10,6 +10,10 @@ import { softwareReference } from "./software-reference";
 export interface CampaignFields {
   /** İndirim oranı veya tutarı (örn: "%35 İndirim", "5.000 TL İndirim") */
   discount?: string;
+  /** Kampanya fiyatı (örn: "12.500", "12500,00"). Doluysa Offer şemasına `price` olarak yazılır; boşsa hiç yazılmaz (uydurma fiyat yok). */
+  price?: string;
+  /** Para birimi (ISO 4217, varsayılan `TRY`) */
+  priceCurrency?: string;
   /** Hediye ürün / bonus modül (örn: "1 Yıllık QR Menü + Kurulum Hediyesi") */
   gift?: string;
   /** Hedef ürün / yazılım adı (örn: "Wolvox ERP Restoran Programı") */
@@ -60,6 +64,40 @@ export interface ResolvedCampaign extends CampaignFields {
 }
 
 /**
+ * Serbest yazılmış fiyatı schema.org `price` biçimine (nokta ondalıklı, binlik ayracı yok) çevirir; fiyat değilse `undefined`.
+ * "12.500" → "12500", "12.500,50 TL" → "12500.50", "12,5" → "12.5", "1 250" → "1250", "%35" → undefined.
+ */
+export function normalizeOfferPrice(raw: string | undefined | null): string | undefined {
+  if (!raw) return undefined;
+  const text = raw.trim();
+  if (text.includes("%")) return undefined;
+  let digits = text.replace(/[^\d.,]/g, "");
+  if (!/\d/.test(digits)) return undefined;
+  const lastComma = digits.lastIndexOf(",");
+  const lastDot = digits.lastIndexOf(".");
+  if (lastComma >= 0 && lastDot >= 0) {
+    // Son ayraç ondalıktır: "12.500,50" (tr) ya da "12,500.50" (en)
+    const decimal = lastComma > lastDot ? "," : ".";
+    const thousands = decimal === "," ? "." : ",";
+    digits = digits.split(thousands).join("").replace(decimal, ".");
+  } else if (lastComma >= 0 || lastDot >= 0) {
+    const sep = lastComma >= 0 ? "," : ".";
+    const parts = digits.split(sep);
+    // Birden çok ayraç ya da son grup 3 hane ise binlik ayracıdır ("12.500"); aksi halde ondalık ("12,5")
+    if (parts.length > 2 || (parts[1] ?? "").length === 3) digits = parts.join("");
+    else digits = `${parts[0]}.${parts[1]}`;
+  }
+  const n = Number(digits);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return String(n);
+}
+
+function normalizeCurrency(raw: string | undefined): string | undefined {
+  const code = raw?.trim().toUpperCase();
+  return code && /^[A-Z]{3}$/.test(code) ? code : undefined;
+}
+
+/**
  * Ham içerik nesnesinden kampanya alanlarını ayıklar ve normalize eder.
  * Hem modern camelCase alanları hem de eski `camp_*` anahtarlarını şeffafça destekler.
  */
@@ -85,6 +123,8 @@ export function resolveCampaignData(input: {
   };
 
   const discount = str(camp.discount) ?? str(attrs.discount) ?? str(attrs.camp_discount) ?? str(richOffer.discount);
+  const price = normalizeOfferPrice(str(camp.price) ?? str(attrs.price) ?? str(richOffer.price));
+  const priceCurrency = normalizeCurrency(str(camp.priceCurrency) ?? str(attrs.priceCurrency) ?? str(richOffer.priceCurrency));
   const gift = str(camp.gift) ?? str(attrs.gift) ?? str(attrs.camp_gift);
   const productName = str(camp.productName) ?? str(attrs.productName) ?? str(attrs.camp_product_name);
   const productUrl = str(camp.productUrl) ?? str(attrs.productUrl) ?? str(attrs.camp_product_url);
@@ -175,6 +215,7 @@ export function resolveCampaignData(input: {
     featuredImageUrl,
     featuredImageAlt,
     isPerpetual,
+    ...(price ? { price, priceCurrency: priceCurrency ?? "TRY" } : {}),
     isExpired,
     daysRemaining,
     formattedValidity,
@@ -221,6 +262,12 @@ export function buildCampaignOfferJsonLd(
       url: siteUrl,
     },
   };
+
+  // Fiyat yalnızca editörde girildiyse yazılır; kampanya yüzdelik indirimse Offer fiyatsız kalır (Kural 9: uydurma veri yok)
+  if (campaign.price) {
+    offer.price = campaign.price;
+    offer.priceCurrency = campaign.priceCurrency ?? "TRY";
+  }
 
   if (campaign.startDate) {
     offer.validFrom = campaign.startDate;

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { hasAuthorProfile, paginate, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
+import { hasAuthorProfile, isAuthoredType, paginate, resolveLocalizedSiteIdentity, resolvePublishing } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { buildAuthorPerson, buildPageSchemaGraph, jsonLdString } from "@nexpress/seo-core";
 import { getThemeManifest, ResponsiveImage } from "@nexpress/themes";
@@ -75,7 +75,7 @@ export default async function AuthorPage({
 
   const posts = contents
     .filter((item) => {
-      if (item.type !== "post" || item.noIndex) return false;
+      if (!isAuthoredType(item.type) || item.noIndex) return false;
       const pub = resolvePublishing(item.schemaAttributes);
       return item.authorName === person.name || pub.authorName === person.name;
     })

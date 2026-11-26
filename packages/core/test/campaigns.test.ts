@@ -4,6 +4,7 @@ import {
   resolveCampaignData,
   buildCampaignOfferJsonLd,
   buildCampaignsItemListJsonLd,
+  normalizeOfferPrice,
 } from "../src";
 
 test("resolveCampaignData: hem modern hem legacy camp_* alanlarını doğru çözümler", () => {
@@ -98,3 +99,31 @@ test("buildCampaignsItemListJsonLd: ItemList şeması üretir", () => {
   assert.equal((itemList.itemListElement as unknown[]).length, 2);
 });
 
+
+test("normalizeOfferPrice: Türkçe ve İngilizce yazımı schema.org fiyatına çevirir, fiyat olmayanı reddeder", () => {
+  assert.equal(normalizeOfferPrice("12.500"), "12500");
+  assert.equal(normalizeOfferPrice("12.500,50 TL"), "12500.5");
+  assert.equal(normalizeOfferPrice("12,500.50"), "12500.5");
+  assert.equal(normalizeOfferPrice("12,5"), "12.5");
+  assert.equal(normalizeOfferPrice("1.250.000"), "1250000");
+  assert.equal(normalizeOfferPrice("₺ 3500"), "3500");
+  assert.equal(normalizeOfferPrice("%35 İndirim"), undefined);
+  assert.equal(normalizeOfferPrice("ücretsiz"), undefined);
+  assert.equal(normalizeOfferPrice(""), undefined);
+  assert.equal(normalizeOfferPrice(undefined), undefined);
+});
+
+test("Offer: fiyat yalnızca girildiyse yazılır, para birimi varsayılan TRY", () => {
+  const withoutPrice = resolveCampaignData({ title: "A", slug: "a", schemaAttributes: { campaign: { discount: "%35 İndirim" } } });
+  const offer = buildCampaignOfferJsonLd(withoutPrice, { siteUrl: "https://ornek.test", pageUrl: "https://ornek.test/kampanya/a", siteName: "Ornek" });
+  assert.equal("price" in offer, false);
+  assert.equal("priceCurrency" in offer, false);
+
+  const priced = resolveCampaignData({ title: "A", slug: "a", schemaAttributes: { campaign: { price: "12.500" } } });
+  const pricedOffer = buildCampaignOfferJsonLd(priced, { siteUrl: "https://ornek.test", pageUrl: "https://ornek.test/kampanya/a", siteName: "Ornek" });
+  assert.equal(pricedOffer.price, "12500");
+  assert.equal(pricedOffer.priceCurrency, "TRY");
+
+  const usd = resolveCampaignData({ title: "A", slug: "a", schemaAttributes: { campaign: { price: "99", priceCurrency: "usd" } } });
+  assert.equal(buildCampaignOfferJsonLd(usd, { siteUrl: "https://ornek.test", pageUrl: "https://ornek.test/kampanya/a", siteName: "Ornek" }).priceCurrency, "USD");
+});

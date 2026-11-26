@@ -142,3 +142,14 @@ export const hasAuthorProfile = (profile: AuthorProfile | null | undefined): boo
         profile.sameAs.length ||
         profile.avatarUrl)
   );
+
+/**
+ * Görünür yazarı ve yazar sayfasına bağlı şema yazarını (E-E-A-T) taşıyan içerik türleri.
+ * Makale, soru-cevap ve teknik bilgi bankası sayfaları yazar satırı, yazar kutusu ve `/yazar/...` bağlantısı alır;
+ * sayfa, ürün, kampanya gibi türlerde yazar yoktur.
+ */
+export const AUTHORED_CONTENT_TYPES: readonly string[] = ["post", "ai_prompt", "kb_tech"];
+
+export function isAuthoredType(type: string | null | undefined): boolean {
+  return Boolean(type) && AUTHORED_CONTENT_TYPES.includes(type as string);
+}

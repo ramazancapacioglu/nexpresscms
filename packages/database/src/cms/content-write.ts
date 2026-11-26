@@ -1,6 +1,6 @@
 import type { SaveContentInput } from "./types";
 import { eq, and, inArray, like } from "drizzle-orm";
-import { cmsHooks, compileBlocksToMarkdown, fieldsMarkdown, findContentType, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type BlockNode, type ContentStatus } from "@nexpress/core";
+import { cmsHooks, compileBlocksToMarkdown, editorialChanged, fieldsMarkdown, findContentType, pickLocalizedAttributes, resolvePublishing, resolveSiteSettings, uniqueSlug, type BlockNode, type ContentStatus } from "@nexpress/core";
 import { analyzeSeo, extractContentStats } from "@nexpress/seo-core";
 import { CmsRevisionRepository, type RevisionSnapshot } from "./revisions";
 
@@ -227,6 +227,41 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
     });
 
     const now = new Date();
+    // `updatedAt` (dateModified / site haritası lastmod) yalnızca içerik gerçekten değiştiğinde ilerler: toplu yeniden kayıt,
+    // içe aktarma ya da değişiklik yapmayan "Kaydet" tüm siteye aynı saniyeyi yazıp `lastmod` güvenini bozmasın.
+    const nextStatus = input.status ?? "published";
+    const nextBase = {
+      slug: input.slug,
+      title: hookResult.title,
+      excerpt: input.excerpt ?? null,
+      tldr: hookResult.tldr ?? null,
+      blocks: hookResult.blocks,
+      metaTitle: input.metaTitle ?? hookResult.title,
+      metaDescription: finalMetaDescription,
+      canonicalUrl: input.canonicalUrl ?? null,
+      noIndex: input.noIndex ?? false,
+    };
+    // İkincil dilde içerik satırı (şema, yazar, görsel) bu kayıtla değişmez: yalnızca çeviri alanları ve çeviri durumu karşılaştırılır
+    const keepStamp =
+      input.updatedAt === undefined &&
+      existing != null &&
+      existing.locale === input.locale &&
+      !editorialChanged(
+        {
+          ...existing,
+          status: secondary ? existing.translationStatus : existing.status,
+          ...(secondary ? { schemaType: null, schemaAttributes: null, featuredImage: null, authorName: null } : {}),
+        },
+        {
+          ...nextBase,
+          status: secondary ? translationStatus : nextStatus,
+          schemaType: secondary ? null : (input.schemaType ?? "WebPage"),
+          schemaAttributes: secondary ? null : schemaAttributes,
+          featuredImage: secondary ? null : (input.featuredImage ?? null),
+          authorName: secondary ? null : input.authorName ? input.authorName.slice(0, 120) : existing.authorName,
+        }
+      );
+    const stamp = keepStamp && existing ? existing.updatedAt : (input.updatedAt ?? now);
     const gapFindings: string[] = [...analysis.gapFindings];
     if (!hookResult.tldr || hookResult.tldr.trim().length < 20) {
       if (!gapFindings.includes("missing_tldr")) gapFindings.push("missing_tldr");
@@ -249,7 +284,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
         publishedAt: input.publishedAt ?? now,
         createdAt: input.publishedAt ?? now,
-        updatedAt: input.updatedAt ?? now,
+        updatedAt: stamp,
       })
       .onConflictDoUpdate({
         target: t.contents.id,
@@ -262,7 +297,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           schemaAttributes,
           featuredImage: input.featuredImage ?? null,
           ...(input.authorName ? { authorName: input.authorName.slice(0, 120) } : {}),
-          updatedAt: input.updatedAt ?? now,
+          updatedAt: stamp,
         },
       });
 
@@ -294,7 +329,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
         sourceLocale: input.sourceLocale ?? null,
         sourceHash: input.sourceHash ?? null,
         attributes: localizedAttributes,
-        updatedAt: input.updatedAt ?? now,
+        updatedAt: stamp,
       })
       .onConflictDoUpdate({
         target: t.contentTranslations.id,
@@ -315,7 +350,7 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
           translationStatus,
           attributes: localizedAttributes,
           ...(input.sourceHash ? { sourceLocale: input.sourceLocale ?? null, sourceHash: input.sourceHash } : {}),
-          updatedAt: input.updatedAt ?? now,
+          updatedAt: stamp,
         },
       });
   

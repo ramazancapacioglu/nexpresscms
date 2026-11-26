@@ -120,3 +120,21 @@
 - [x] **Faz 10 — `/wolvox-erp` 6 Sekmeli Fiyat Listesi & İnsan Dili Yenilemesi:** `software_product_card` 6 sekmeli 0-KB CSS sekme yapısına (`Fiyat Listesi`, `Paketler`, `Özellikler`, `Modüller`, `Sistem Gereksinimleri`, `Uyumlu Entegrasyonlar`) geçirildi; açılış paragraf+görsel (`wp_7`) en üstte tutulup kart hemen altına alındı; `abakus.akinsoft.net` resmî 2026 liste ve `%35` kampanya fiyatları (`17.290 TL – 383.630 TL + KDV`) + `AggregateOffer` JSON-LD eklendi; sayfa metinleri doğal Türkçe ile yenilendi.
 - [x] **Faz 11 — 36 Ürün & Kategori Sayfası, `sectors_grid`, Sade Paylaşım, Görselli İlgili Karosel & Zengin Sonuç Denetimi:** 6 ana kategori + 30 ürün sayfasının tamamı resmî 2026 Abaküs fiyatları, 6 sekmeli `software_product_card`, araştırılmış `sectors_grid`, iç içe kart temizliği ve BA35022 CTA ile yenilendi (`e-adisyon` şeması `SoftwareApplication`'a çıkarıldı); yedek: `/root/backups/nexpress_akin_pre_faz11_20261125.sql.gz`; 36/36 sayfada Google Zengin Sonuç JSON-LD denetimi ve IndexNow tamamlandı.
 - [x] **Faz 12 — Üst Sayfa Tablo Konumu, 22 Kopya SSS Temizliği, `/octoplus` Eski Tablo & Operasyon El Kitabı:** 5 üst kategori sayfasındaki fiyat tabloları SSS üstüne taşındı; `/octoplus` eski özellik tablosu silindi; 22 sayfadaki çift `faq_accordion` bloğu şema bozulmadan tek SSS'ye indirildi; bağımsız ajan devri için `AKINSOFTIZMIR-SEO-GEO-OPERASYON-EL-KITABI.md` oluşturuldu.
+
+## Canlı Denetim — 2026-11-26 (148 sitemap URL'si)
+
+**Ölçülen güçlü yönler:** 148/148 URL 200; canonical, başlık, açıklama, H1 benzersiz ve tam; 1349 görselin tamamında alt; http→https, apeks→www, sondaki `/` ve `/tr` önekleri 301/308; gerçek 404 + `noindex`; HSTS preload + CSP; `llms.txt` (176 madde), `llms-full.txt`, `?format=md`, MCP ucu; tek tek istekte TTFB 0,21–0,30 sn.
+
+| # | Bulgu | Durum |
+|---|---|---|
+| 1 | `?format=md` yanıtında kanonik başlık yok (kopya içerik riski) | ✅ Kodda düzeltildi (`Link: rel=canonical`); canlıya dağıtımla etkinleşir |
+| 2 | Tüm içerikte `dateModified` = `2026-11-25T16:10:59`, sitemap `lastmod` tek değer | ✅ `updatedAt` yalnızca gerçek değişiklikte ilerler; mevcut damgalar sonraki düzenlemede düzelir |
+| 3 | Markdown ön bilgisinde `seo_score: 96`, `importance_score`, `site_id` | ✅ Kaldırıldı |
+| 4 | `taxID: 15892550960` şemada (11 hane: TC kimlik no olabilir) | ⏳ Site sahibi doğrulamalı; gerekmedikçe Ayarlar › SEO › Kuruluş şemasından kaldırılmalı |
+| 5 | Soru-cevap sayfalarında `author` Person'ı `/yazar` sayfasına bağlı değil, görünür yazar satırı yok; boş "Yorumlar (0)" başlıkları | ✅ Yazarlı türler genişletildi; boş başlıklar sayısız |
+| 6 | Kampanya `Offer` fiyatsız, kampanya sayfasında robots meta yok | ✅ İsteğe bağlı `price`/`priceCurrency` alanı + robots meta; fiyat girilmeden şemaya yazılmaz |
+| 7 | Gövde medyanı 805 kelime; 20 sayfa <400 (`/hakkimizda` 355, `/satis-yonetimi` 371, `/erp-programi-nedir` 422 …) | ⏳ İçerik işi (editör) |
+| 8 | Taksonomi sayfaları (`/kampanyalar`, `/sorular`, `/kategori/*`, `/yazar/*`) indekslenebilir ama sitemap'te yok | ⏳ Karar bekliyor |
+| 9 | Ana sayfa OG görseli 597×386; ana sayfa HTML 420 KB ham (245 KB RSC verisi); `s-maxage=60`, paralel yükte TTFB 1,8 sn | ⏳ İçerik/altyapı (OG 1200×630, `PUBLIC_CACHE_SECONDS`, CDN) |
+
+Denetim yöntemi ve araçları: `curl` ile tüm sitemap adresleri; başlık/şema/bağlantı çözümlemesi yerel betikle. Lighthouse çalıştırılamadı (PageSpeed API kotası); Çekirdek Web Verileri ölçülmedi.

@@ -326,7 +326,7 @@ export function PostDiscussion({
               style={{ fontFamily: headingFont }}
               className="text-2xl font-bold tracking-tight text-nx-fg"
             >
-              {t("content.commentsHeading", { n: comments.length })}
+              {comments.length > 0 ? t("content.commentsHeading", { n: comments.length }) : t("content.commentsHeadingEmpty")}
             </h2>
 
             {comments.length > 1 && (

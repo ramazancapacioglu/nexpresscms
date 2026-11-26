@@ -42,7 +42,7 @@ export function PostReviewsSection({
             style={{ fontFamily: headingFont }}
             className="text-2xl font-bold tracking-tight text-nx-fg"
           >
-            {t("content.reviewsHeading", { n: reviews.length })}
+            {reviews.length > 0 ? t("content.reviewsHeading", { n: reviews.length }) : t("content.reviewsHeadingEmpty")}
           </h2>
           <p className="text-xs text-nx-muted mt-0.5">
             {t("content.reviewsSubheading")}
@@ -51,6 +51,7 @@ export function PostReviewsSection({
       </div>
 
       {/* 5 Yıldızlı Dağılım Grafiği ve Özet Kartı */}
+      {reviews.length > 0 ? (
       <div
         style={{ borderRadius: radius }}
         className="grid grid-cols-1 md:grid-cols-12 gap-6 border border-nx-line bg-nx-card p-6 shadow-xs"
@@ -100,6 +101,7 @@ export function PostReviewsSection({
           ))}
         </div>
       </div>
+      ) : null}
 
       {/* Ziyaretçi 5 Yıldızlı Değerlendirme Formu (Açılır <details> Çekmecesi - 0 KB RSC) */}
       {allowReviews && context ? (

@@ -20,6 +20,8 @@ import { MEMBER_SESSION_COOKIE, getMembership, resolveMemberCookie } from "@/lib
  */
 import { getPublicContentBySlug, getPublicSite } from "@/lib/public-data";
 import { trackBotVisit } from "@/lib/bot-log";
+import { siteLocaleBase } from "@/lib/locale-url";
+import { buildMarkdownFrontmatter, markdownCanonicalLink, markdownCanonicalUrl } from "@/lib/markdown-frontmatter";
 
 export async function GET(request: NextRequest) {
   await trackBotVisit("markdown");
@@ -84,26 +86,31 @@ export async function GET(request: NextRequest) {
   }
 
   const camp = content.type === "campaign" ? resolveCampaignData(content) : null;
+  // Kanonik: ziyaretçiye dönen HTML sayfası. Ana sayfa yalnızca dil kökünden oluşur.
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+  const lb = await siteLocaleBase(siteId, locale);
+  const canonicalUrl = markdownCanonicalUrl(origin, lb, segments.length <= 1 ? [] : prefix ? [prefix, slug] : [slug]);
   const headerMeta = [
-    "---",
-    `title: "${content.title.replace(/"/g, '\\"')}"`,
-    `slug: "${content.slug}"`,
-    `locale: "${content.locale}-${content.region}"`,
-    `type: "${content.type}"`,
-    `schema_type: "${content.schemaType}"`,
-    `importance_score: ${content.importanceScore}`,
-    `seo_score: ${content.seoScore}`,
-    `site_id: "${content.siteId}"`,
-    ...(camp
-      ? [
-          `campaign_status: "${camp.isExpired ? "expired" : "active"}"`,
-          ...(camp.startDate ? [`valid_from: "${camp.startDate}"`] : []),
-          ...(camp.endDate ? [`valid_through: "${camp.endDate}"`] : []),
-          ...(camp.discount ? [`discount: "${camp.discount.replace(/"/g, '\\"')}"`] : []),
-          ...(camp.targetAudience ? [`target_audience: "${camp.targetAudience.replace(/"/g, '\\"')}"`] : []),
-        ]
-      : []),
-    "---",
+    buildMarkdownFrontmatter({
+      title: content.title,
+      slug: content.slug,
+      locale: content.locale,
+      region: content.region,
+      type: content.type,
+      schemaType: content.schemaType,
+      url: canonicalUrl,
+      publishedAt: content.publishedAt ?? content.createdAt,
+      updatedAt: content.updatedAt,
+      extraLines: camp
+        ? [
+            `campaign_status: "${camp.isExpired ? "expired" : "active"}"`,
+            ...(camp.startDate ? [`valid_from: "${camp.startDate}"`] : []),
+            ...(camp.endDate ? [`valid_through: "${camp.endDate}"`] : []),
+            ...(camp.discount ? [`discount: ${JSON.stringify(camp.discount)}`] : []),
+            ...(camp.targetAudience ? [`target_audience: ${JSON.stringify(camp.targetAudience)}`] : []),
+          ]
+        : [],
+    }),
     "",
     ...(camp
       ? [
@@ -124,6 +131,8 @@ export async function GET(request: NextRequest) {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
       "Vary": "Accept",
+      // Arama motoru bu kopyayı ayrı sayfa olarak dizinlemesin: kanonik HTML sayfasına işaret eder
+      "Link": markdownCanonicalLink(canonicalUrl),
       "X-NexPress-Site-Id": siteId,
       "X-NexPress-Engine": "Zero-CPU-MarkdownCache",
       "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",

@@ -55,6 +55,8 @@ export async function saveCampaignAction(input: {
   const schemaAttributes = {
     campaign: {
       discount: camp.discount,
+      price: camp.price,
+      priceCurrency: camp.priceCurrency,
       gift: camp.gift,
       productName: camp.productName,
       productUrl: camp.productUrl,
