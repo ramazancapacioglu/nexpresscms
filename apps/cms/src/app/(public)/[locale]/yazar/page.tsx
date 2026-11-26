@@ -7,6 +7,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { organizationFor } from "@/lib/organization-schema";
 import { getPublicAuthors, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { robotsMeta } from "@/lib/robots-meta";
 
 const baseOf = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: `Yazarlar & Uzman Ekibimiz${localized.name ? ` — ${localized.name}` : ""}`,
     description: `${localized.name || "Sitemiz"} bünyesindeki uzman yazarlar, teknik editörler ve yayın ekibi profilleri.`,
     alternates: { canonical: `${baseOf()}${lb}/yazar` },
-    robots: Object.keys(authors).length === 0 ? { index: false, follow: true } : undefined,
+    robots: robotsMeta(Object.keys(authors).length > 0),
   };
 }
 

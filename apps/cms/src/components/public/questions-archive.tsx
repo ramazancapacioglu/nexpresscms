@@ -1,11 +1,13 @@
 import React from "react";
 import type { Metadata } from "next";
-import { isPluginModuleEnabled, sanitizeQaState } from "@nexpress/core";
+import { isPluginModuleEnabled, resolveLocalizedSiteIdentity, sanitizeQaState } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { Link } from "@/components/public/link";
 import { QA_PLUGIN_ID } from "@/plugins/qa";
+import { getPublicSite } from "@/lib/public-data";
+import { INDEXABLE_ROBOTS, titleWithSite } from "@/lib/robots-meta";
 
 export async function questionsArchiveOn(siteId: string): Promise<boolean> {
   return isPluginModuleEnabled(siteId, QA_PLUGIN_ID, "archive");
@@ -16,10 +18,13 @@ export async function questionsArchiveMetadata(siteId: string, locale: string): 
   const t = createTranslator(locale);
   const lb = await siteLocaleBase(siteId, locale);
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const site = await getPublicSite(siteId);
   return {
-    title: t("qa.archiveTitle"),
+    // "Sorular" tek başına çok kısa: site adı eklenir
+    title: titleWithSite(t("qa.archiveTitle"), resolveLocalizedSiteIdentity(site, locale).name),
     description: t("qa.archiveIntro"),
     alternates: { canonical: `${base}${lb}/sorular` },
+    robots: INDEXABLE_ROBOTS,
   };
 }
 

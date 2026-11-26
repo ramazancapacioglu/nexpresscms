@@ -137,4 +137,6 @@
 | 8 | `/kampanyalar`, `/sorular`, `/yazar/*`, `/kategori/*` indekslenebilir ama sitemap'te yok | ✅ Kural "dizine açıksa haritada": `/kampanyalar`, `/sorular`, `/yazar` + yazar sayfaları koda eklendi. ⏳ Kategoriler için Site haritası panelinde "Kategorileri ekle" kutusu açılmalı (kodda zaten var, sitede kapalı görünüyor) |
 | 9 | Ana sayfa OG görseli 597×386; ana sayfa HTML 420 KB ham (245 KB RSC verisi); `s-maxage=60`, paralel yükte TTFB 1,8 sn | ⏳ İçerik/altyapı (OG 1200×630, `PUBLIC_CACHE_SECONDS`, CDN) |
 
+**Yeniden denetim (canlıya alma sonrası, 156 URL, hepsi 200):** 1, 2 (yeni kayıtlar için), 3, 4, 5, 6 ve 8 canlıda doğrulandı (ayrıntı: `docs/06` 2026-11-26 Devam 4). Yeni bulgu: merkez sayfalarda robots meta yok, kısa başlık, uzun kategori açıklaması → ✅ kodda düzeltildi, sonraki dağıtımla canlıya çıkar. Açık: madde 7 (içerik), 9 (OG görseli kaynağı 597×386, önbellek katmanı).
+
 Denetim yöntemi ve araçları: `curl` ile tüm sitemap adresleri; başlık/şema/bağlantı çözümlemesi yerel betikle. Lighthouse çalıştırılamadı (PageSpeed API kotası); Çekirdek Web Verileri ölçülmedi.

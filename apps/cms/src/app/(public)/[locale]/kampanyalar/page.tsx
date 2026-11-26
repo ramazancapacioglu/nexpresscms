@@ -11,6 +11,7 @@ import {
   type ResolvedCampaign,
 } from "@nexpress/core";
 import { jsonLdString } from "@nexpress/seo-core";
+import { INDEXABLE_ROBOTS } from "@/lib/robots-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: url },
+    robots: INDEXABLE_ROBOTS,
     openGraph: {
       title,
       description,

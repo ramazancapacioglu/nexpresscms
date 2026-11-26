@@ -9,6 +9,7 @@ import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { organizationFor } from "@/lib/organization-schema";
 import { getPublicAuthors, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { INDEXABLE_ROBOTS, metaDescription } from "@/lib/robots-meta";
 
 const baseOf = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const PAGE_SIZE = 12;
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   if (!person) return { title: slug, robots: { index: false, follow: true } };
   const lb = await siteLocaleBase(siteId, locale);
   const description = person.profile.bio
-    ? person.profile.bio.slice(0, 160)
+    ? metaDescription(person.profile.bio)
     : person.profile.jobTitle
       ? `${person.name} — ${person.profile.jobTitle}`
       : undefined;
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: person.profile.jobTitle ? `${person.name} — ${person.profile.jobTitle}` : person.name,
     ...(description ? { description } : {}),
     alternates: { canonical: `${baseOf()}${lb}/yazar/${slug}` },
+    robots: INDEXABLE_ROBOTS,
   };
 }
 

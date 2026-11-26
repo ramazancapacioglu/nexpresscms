@@ -1537,3 +1537,9 @@ Kaynak: `akinsoftizmir.com.tr` canlı SEO/GEO/LLMO denetimi (148 sitemap URL'si 
 - **Kategori sayfaları:** kod zaten haritaya yazıyor; canlıda görünmemesinin olası nedeni `sitemapIncludeCategories` ayarının kapalı olması (doğrulanamadı: yönetici erişimi yok). Panelden açılmalı.
 - **Doğrulama:** core 389, seo-core 68, i18n 5, database 75, cms 40 test geçti; `tsc --noEmit` temiz. Şema/göç yok.
 
+### 2026-11-26 (Devam 4) — Canlıya Alma (akinsoftizmir.com.tr) ve Yeniden Denetim
+- **Dağıtım:** `/root/backups/nexpress_akin_pre_faz13_20261126.sql.gz` yedeği alındı; sunucuda `git pull --ff-only` (`1481f82` → `915072b`), `pnpm --filter @nexpress/cms build` (site kullanıcısı, `.env` yüklü), `systemctl restart nexpress-akinsoft`. Göç yok, kilit dosyası değişmedi. Sağlık: `/api/health`, `/`, `/wolvox-erp`, `/sitemap.xml` 200.
+- **Canlıda doğrulandı:** `?format=md` yanıtı `Link: rel=canonical` + `url`/`published`/`updated` taşıyor ve `seo_score`/`site_id` yok; şemada ve `llms*.txt` içinde `taxID` yok (156 sayfa tarandı); soru sayfasında yazar `Person` `@id`/`url` ile `/yazar/hatice-arslan`'a bağlı; "(0)" başlık yok; kampanya robots meta var; sitemap indeksine `kategori-1.xml`, `yazar-1.xml`, `archive-1.xml` (`/kampanyalar`, `/sorular`) eklendi (156 URL, hepsi 200).
+- **Yeniden denetimde bulunan ve kodda düzeltilen:** yeni merkez sayfalarda robots meta yoktu, "Makaleler"/"Sorular" gibi 7–13 karakterlik başlıklar ve 276–298 karakterlik kategori açıklamaları vardı → ortak `robots-meta.ts` (testli) ile giderildi.
+- **Hâlâ açık (içerik/altyapı):** gövdesi 400 kelimenin altındaki 20 sayfa; ana sayfa OG görseli kaynak dosya 597×386 (1200×630 yüklenmeli); toplu `dateModified` (veri, sonraki düzenlemede düzelir); HTML paylaşımlı önbelleği için vekil katmanı; `x-powered-by: PleskLin` başlığı (Plesk/nginx katmanında gizlenmeli).
+

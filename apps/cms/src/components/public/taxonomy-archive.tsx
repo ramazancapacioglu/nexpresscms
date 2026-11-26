@@ -13,6 +13,7 @@ import { organizationFor } from "@/lib/organization-schema";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getPublicSite } from "@/lib/public-data";
+import { INDEXABLE_ROBOTS, metaDescription, NOINDEX_ROBOTS, titleWithSite } from "@/lib/robots-meta";
 
 type Kind = "category" | "tag";
 
@@ -42,14 +43,15 @@ export async function archiveMetadata(kind: Kind, params: Promise<{ locale: stri
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const path = `${lb}/${kind === "category" ? "kategori" : "etiket"}/${slug}`;
   return {
-    title: data.term.seoTitle || `${data.term.name}${data.site?.name ? ` — ${data.site.name}` : ""}`,
-    description: data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili yayınlar.`,
+    // Kısa terim adına ("Makaleler") site adı eklenir; uzun açıklama arama sonucunda kesilmesin diye kelime sınırında 160'a indirilir
+    title: titleWithSite(data.term.seoTitle || `${data.term.name}${data.site?.name ? ` — ${data.site.name}` : ""}`, resolveLocalizedSiteIdentity(data.site, locale).name),
+    description: metaDescription(data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili yayınlar.`),
     alternates: { canonical: `${base}${path}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}` },
     // Boş arşiv ve 3'ten az yayınlı etiket ince içeriktir (dizine girmez, bağlantılar izlenir). Etiket noindex ayarı da dizini kapatır.
     robots:
       data.paged.total === 0 || (kind === "tag" && (data.paged.total < 3 || resolveSiteSettings(data.site?.settings).seo.noIndexTagArchives))
-        ? { index: false, follow: true }
-        : undefined,
+        ? NOINDEX_ROBOTS
+        : INDEXABLE_ROBOTS,
   };
 }
 

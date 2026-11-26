@@ -5,6 +5,7 @@ import { getThemeManifest, DynamicListView } from "@nexpress/themes";
 import { jsonLdString } from "@nexpress/seo-core";
 import { getDynamicCandidates } from "@/lib/dynamic-content";
 import { getPublicSite } from "@/lib/public-data";
+import { robotsMeta } from "@/lib/robots-meta";
 
 const PAGE_SIZE = 12;
 
@@ -32,7 +33,7 @@ export function typeArchiveMetadata(data: Loaded, locale: string): Metadata {
     description,
     alternates: { canonical: `${baseUrl()}${path}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}` },
     // Boş arşiv ince içeriktir: dizine alınmaz
-    robots: data.paged.total === 0 ? { index: false, follow: true } : undefined,
+    robots: robotsMeta(data.paged.total > 0),
     openGraph: { title, description, url: `${baseUrl()}${path}`, type: "website", siteName: data.site?.name },
   };
 }
