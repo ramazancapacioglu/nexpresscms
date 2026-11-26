@@ -30,6 +30,7 @@ import { privacyEmbedUrl } from "@/lib/privacy";
 import { resolveDraftPreview } from "@/lib/draft-preview";
 import { getPreviewTheme, officialPreviewId } from "@/lib/public-theme";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
+import { markdownAlternate } from "@/lib/markdown-frontmatter";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { PostDiscussion } from "@/components/public/post-discussion";
 import { ContentAccessGate, ContentShareBar, checkVisitorContentAccess } from "@/components/public/content-access-gate";
@@ -112,6 +113,8 @@ export async function generateMetadata({
     alternates: {
       canonical: seoMeta.canonical,
       languages: await hreflangAlternates(siteId, content.contentId, baseUrl, contentPrefix(types, content.type)),
+      // Yapay zeka istemcileri için Markdown karşılığı (Link başlığıyla aynı adres); taslak önizlemede yazılmaz
+      ...(seoMeta.canonical && !draftMeta ? { types: { "text/markdown": markdownAlternate(seoMeta.canonical) } } : {}),
     },
     robots: draftMeta ? { index: false, follow: false } : hasDynamicQueryParams(sp0) ? { index: false, follow: true } : seoMeta.robots,
     openGraph: {

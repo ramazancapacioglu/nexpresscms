@@ -61,3 +61,14 @@ export function markdownCanonicalUrl(origin: string, localeBase: string, segment
   const rest = segments.filter(Boolean);
   return rest.length === 0 ? `${base}${localeBase || "/"}` : `${base}${localeBase}/${rest.join("/")}`;
 }
+
+/** `<link rel="alternate" type="text/markdown">` adresi: HTML sayfasının kanonik adresine `?format=md` eklenir (`Link` başlığıyla aynı). */
+export function markdownAlternate(canonical: string): string {
+  try {
+    const url = new URL(canonical);
+    url.searchParams.set("format", "md");
+    return url.toString();
+  } catch {
+    return `${canonical}${canonical.includes("?") ? "&" : "?"}format=md`;
+  }
+}

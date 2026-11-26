@@ -2,8 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  // `robots` yazılmaz: Next 404 yanıtına kendi `noindex` etiketini ekler, ikincisi yinelenen etiket olur
   title: "Sayfa Bulunamadı (404)",
-  robots: { index: false, follow: true },
 };
 
 /** 0-KB RSC kurumsal Türkçe 404 sayfası. */

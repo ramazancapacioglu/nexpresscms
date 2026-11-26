@@ -48,12 +48,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const closed = settings.general.maintenanceEnabled || settings.seo.searchIndexing === false;
   return {
     robots: closed ? { index: false, follow: false } : undefined,
-    alternates: {
-      types: {
-        "application/rss+xml": [{ url: "/feed.xml", title: `${site?.name ?? "NexPress"} — RSS` }],
-        "application/atom+xml": [{ url: "/atom.xml", title: `${site?.name ?? "NexPress"} — Atom` }],
-      },
-    },
   };
 }
 
@@ -346,6 +340,9 @@ export default async function PublicLocaleLayout({
       {isCr ? <style dangerouslySetInnerHTML={{ __html: CR_CSS }} /> : null}
       {isBayi ? <style dangerouslySetInnerHTML={{ __html: YB_CSS }} /> : null}
       <PluginSlot name="public.head.meta" siteId={siteId} />
+      {/* Besleme keşfi: sayfa `alternates` tanımladığında düzen metaverisini ezdiği için bağlantılar burada basılır (React başlığa taşır) */}
+      <link rel="alternate" type="application/rss+xml" href="/feed.xml" title={`${site?.name ?? "NexPress"} — RSS`} />
+      <link rel="alternate" type="application/atom+xml" href="/atom.xml" title={`${site?.name ?? "NexPress"} — Atom`} />
       <MeasureTags
         gaId={gaPlacement === "head" ? gaId : null}
         metrikaId={metrikaPlacement === "head" ? metrikaId : null}

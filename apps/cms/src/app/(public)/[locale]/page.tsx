@@ -18,6 +18,7 @@ import { privacyEmbedUrl } from "@/lib/privacy";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { trackAiReferral, trackBotVisit } from "@/lib/bot-log";
 import { hreflangAlternates, localeSwitcherLinks } from "@/lib/alternates";
+import { markdownAlternate } from "@/lib/markdown-frontmatter";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
 import { resolveHomeSlug } from "@/lib/home-slug";
 
@@ -73,6 +74,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     alternates: {
       canonical: seoMeta?.canonical ?? `${baseUrl}${lb}`,
       ...(home ? { languages: await hreflangAlternates(siteId, home.contentId, baseUrl) } : {}),
+      types: { "text/markdown": markdownAlternate(seoMeta?.canonical ?? `${baseUrl}${lb || "/"}`) },
     },
   };
 }

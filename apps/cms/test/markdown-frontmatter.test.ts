@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildMarkdownFrontmatter, markdownCanonicalLink, markdownCanonicalUrl } from "../src/lib/markdown-frontmatter";
+import { buildMarkdownFrontmatter, markdownAlternate, markdownCanonicalLink, markdownCanonicalUrl } from "../src/lib/markdown-frontmatter";
 
 const base = { title: 'Wolvox "ERP"', slug: "wolvox-erp", locale: "tr", region: "TR", type: "page", schemaType: "SoftwareApplication", url: "https://ornek.test/wolvox-erp" };
 
@@ -39,4 +39,11 @@ test("kanonik adres: tek dilde önek yok, ana sayfa köke gider", () => {
 
 test("kanonik Link başlığı RFC 8288 biçimindedir", () => {
   assert.equal(markdownCanonicalLink("https://ornek.test/a"), '<https://ornek.test/a>; rel="canonical"');
+});
+
+test("Markdown alternatif adresi kanoniğe ?format=md ekler", () => {
+  assert.equal(markdownAlternate("https://ornek.test/"), "https://ornek.test/?format=md");
+  assert.equal(markdownAlternate("https://ornek.test/en"), "https://ornek.test/en?format=md");
+  assert.equal(markdownAlternate("https://ornek.test/a/b"), "https://ornek.test/a/b?format=md");
+  assert.equal(markdownAlternate("/a"), "/a?format=md", "mutlak olmayan adres bozulmaz");
 });
