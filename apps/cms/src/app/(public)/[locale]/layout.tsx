@@ -149,6 +149,7 @@ export default async function PublicLocaleLayout({
   const isSearch = segs.length >= 2 && segs[1] === "ara";
   const isCampaignDetail = segs.length >= 3 && segs[1] === "kampanya";
   const isCampaignArchive = segs.length >= 2 && segs[1] === "kampanyalar";
+  const isAuthor = segs.length >= 2 && segs[1] === "yazar";
   const isSingleContent =
     !isHome &&
     !isCategory &&
@@ -156,6 +157,7 @@ export default async function PublicLocaleLayout({
     !isSearch &&
     !isCampaignDetail &&
     !isCampaignArchive &&
+    !isAuthor &&
     segs.length >= 2;
 
   // Sayfa başına görünüm seçenekleri (`schemaAttributes._page`): içerik düzende de okunur (önbellekli, sayfayla aynı okuma)
@@ -190,6 +192,16 @@ export default async function PublicLocaleLayout({
           ? resolvedCustomizer.layout.sidebarPosition
           : "right";
       targetAreaId = resolvedCustomizer.layout.archiveSidebarId || "archive";
+    } else {
+      contentSidebarPos = "none";
+    }
+  } else if (isAuthor) {
+    if (resolvedCustomizer.layout.sidebarOnBlog !== false || resolvedCustomizer.layout.sidebarOnArchive !== false) {
+      contentSidebarPos =
+        resolvedCustomizer.layout.sidebarPosition && resolvedCustomizer.layout.sidebarPosition !== "none"
+          ? resolvedCustomizer.layout.sidebarPosition
+          : "right";
+      targetAreaId = resolvedCustomizer.layout.blogSidebarId || resolvedCustomizer.layout.archiveSidebarId || "blog";
     } else {
       contentSidebarPos = "none";
     }
