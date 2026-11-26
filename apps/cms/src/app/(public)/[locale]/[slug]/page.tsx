@@ -357,9 +357,15 @@ export default async function PublicDynamicContentPage({
   const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
   const authorName = pub.authorName || content.authorName;
   const authorHref = content.type === "post" && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
-  // Yazar profili (E-E-A-T): doluysa yazı altında yazar kutusu ve şemada zenginleştirilmiş Person
-  const authorEntry = content.type === "post" && authorName ? (await getPublicAuthors(siteId))[authorSlug(authorName)] : undefined;
+  // Yazar profili (E-E-A-T): doluysa yazı altında yazar kutusu ve şemada zenginleştirilmiş Person/Organization
+  const publicAuthors = content.type === "post" ? await getPublicAuthors(siteId) : {};
+  const authorEntry = content.type === "post" && authorName ? publicAuthors[authorSlug(authorName)] : undefined;
   const authorProfile = authorEntry && hasAuthorProfile(authorEntry.profile) ? authorEntry.profile : null;
+  const rawRichTech = ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.rich?.tech ??
+    ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.tech;
+  const reviewerName = typeof rawRichTech?.reviewedBy === "string" ? rawRichTech.reviewedBy.trim() : "";
+  const reviewerSlug = reviewerName ? authorSlug(reviewerName) : "";
+  const reviewedByUrl = reviewerSlug && publicAuthors[reviewerSlug] ? `${baseUrl}${lb}/yazar/${reviewerSlug}` : undefined;
   const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
   const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
   // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
@@ -449,6 +455,8 @@ export default async function PublicDynamicContentPage({
       authorName: pub.authorName || content.authorName,
       authorUrl: authorHref ?? undefined,
       authorProfile: authorProfile ?? undefined,
+      articleSection: content.type === "post" && categories[0] ? termName("category", categories[0]) : undefined,
+      reviewedByUrl,
       updatedAt: content.updatedAt,
       publishedAt: content.publishedAt ?? content.createdAt ?? null,
       blocks: content.blocks,

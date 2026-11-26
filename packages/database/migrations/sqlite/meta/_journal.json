@@ -183,6 +183,13 @@
       "when": 1795615352205,
       "tag": "0025_slimy_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1795675940036,
+      "tag": "0026_quiet_pride",
+      "breakpoints": true
     }
   ]
 }

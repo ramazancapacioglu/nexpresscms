@@ -12,9 +12,11 @@ import {
 } from "@/app/admin/users/actions";
 import { inviteUserAction, sendResetLinkAction, type InviteResult } from "@/app/admin/users/invite-actions";
 import { adminDisableTwoFactorAction } from "@/app/admin/users/two-factor-actions";
-import { PASSWORD_MIN_LENGTH, ROLE_LABEL, USER_ROLES, type UserRole } from "@nexpress/core";
+import { authorProfileFromRow, hasAuthorProfile, PASSWORD_MIN_LENGTH, ROLE_LABEL, USER_ROLES, type UserRole } from "@nexpress/core";
+import { authorSlug } from "@/lib/author-slug";
+import { AuthorProfileForm } from "./author-profile-form";
 import Link from "next/link";
-import { Mail, UserPlus } from "lucide-react";
+import { Mail, UserPen, UserPlus } from "lucide-react";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const field = `h-8 rounded border ${border} bg-transparent px-2 text-[12px] outline-none focus:ring-1 focus:ring-[#266DF0]`;
@@ -25,6 +27,7 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
   const [pending, start] = useTransition();
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [resetFor, setResetFor] = useState<string | null>(null);
+  const [profileFor, setProfileFor] = useState<string | null>(null);
   const [resetPw, setResetPw] = useState("");
   const [form, setForm] = useState({ email: "", name: "", role: "editor" as UserRole, password: "" });
   const [byMail, setByMail] = useState(true);
@@ -86,12 +89,23 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
           <tbody className={`divide-y divide-[#E6E7EA] dark:divide-[#23262E]`}>
             {users.map((u) => {
               const self = u.id === meId;
+              const profile = authorProfileFromRow(u);
+              const profileFilled = hasAuthorProfile(profile);
+              const slug = authorSlug(u.name || u.email);
               return (
                 <React.Fragment key={u.id}>
                   <tr className={u.status === "disabled" ? "opacity-60" : ""}>
                     <td className="px-3 py-2">
-                      <div className="font-medium">{u.name || u.email}{self && <span className="ml-1.5 text-[10px] text-[#1D5ED8] dark:text-[#7AA7FF]">(siz)</span>}</div>
-                      <div className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">{u.email}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 font-medium">
+                        <span>{u.name || u.email}</span>
+                        {self && <span className="text-[10px] text-[#1D5ED8] dark:text-[#7AA7FF]">(siz)</span>}
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${profileFilled ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/10 text-amber-700 dark:text-amber-400"}`}>
+                          {profileFilled ? (profile.authorType === "Organization" ? "Kurumsal profil" : "Profil dolu") : "Profil eksik"}
+                        </span>
+                      </div>
+                      <div className="font-mono text-[10px] text-[#5F6570] dark:text-[#8C9099]">
+                        {u.email} • <a href={`/yazar/${slug}`} target="_blank" rel="noopener noreferrer" className="hover:underline">/yazar/{slug}</a>
+                      </div>
                     </td>
                     <td className="px-3 py-2">
                       <select
@@ -115,6 +129,19 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                     <td className="px-3 py-2 text-[#5C5F66] dark:text-[#9CA3AF]">{fmt(u.lastLoginAt)}</td>
                     <td className="px-3 py-2">
                       <div className="flex flex-wrap justify-end gap-1.5">
+                        <button
+                          type="button"
+                          disabled={pending}
+                          className={`inline-flex h-7 items-center gap-1 rounded border px-2 font-medium ${
+                            profileFor === u.id
+                              ? "border-[#266DF0] bg-[#266DF0]/10 text-[#1D5ED8] dark:text-[#7AA7FF]"
+                              : `${border} hover:bg-muted/40`
+                          }`}
+                          onClick={() => setProfileFor(profileFor === u.id ? null : u.id)}
+                        >
+                          <UserPen className="h-3 w-3" />
+                          Profili düzenle
+                        </button>
                         {!self && (
                           <button type="button" disabled={pending} className={`h-7 rounded border ${border} px-2`}
                             onClick={() => {
@@ -148,6 +175,22 @@ export function UsersBoard({ initial, meId }: { initial: UserSummaryDto[]; meId:
                       </div>
                     </td>
                   </tr>
+                  {profileFor === u.id && (
+                    <tr>
+                      <td colSpan={5} className="bg-[#FBFBFB] dark:bg-[#121317] p-4">
+                        <AuthorProfileForm
+                          compact
+                          userId={u.id}
+                          userName={u.name}
+                          initial={profile}
+                          authorPath={`/yazar/${slug}`}
+                          onSaved={({ user }) => {
+                            if (user) patch(u.id, user);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  )}
                   {resetFor === u.id && (
                     <tr>
                       <td colSpan={5} className="bg-[#FBFBFB] dark:bg-[#121317] px-3 py-2">

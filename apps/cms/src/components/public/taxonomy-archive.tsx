@@ -1,13 +1,15 @@
 import React from "react";
-import { localeBase, resolveSiteSettings } from "@nexpress/core";
+import { localeBase, resolveLocalizedSiteIdentity, resolveSiteSettings } from "@nexpress/core";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { filterDynamicItems, normalizeDynamicQuery, paginate, type DynamicItem } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
+import { buildPageSchemaGraph, jsonLdString } from "@nexpress/seo-core";
 import { getThemeManifest, DynamicListView, RscBlockRenderer } from "@nexpress/themes";
 import { getDynamicCandidates } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
+import { organizationFor } from "@/lib/organization-schema";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getPublicSite } from "@/lib/public-data";
@@ -59,11 +61,53 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   const lb = localeBase(data.site, locale);
   const tokens = data.site?.designTokens ?? getThemeManifest(data.site?.activeThemeId ?? "corporate-aurora").tokens;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const prefix = kind === "category" ? "kategori" : "etiket";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const pageUrl = `${baseUrl}${lb}/${prefix}/${slug}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}`;
+  const localized = resolveLocalizedSiteIdentity(data.site, locale);
+  const schemaGraph = await buildPageSchemaGraph({
+    siteId,
+    siteName: localized.name,
+    siteUrl: baseUrl,
+    locale,
+    pageUrl,
+    breadcrumbs: [
+      { name: "Ana sayfa", url: `${baseUrl}${lb || "/"}` },
+      { name: kind === "category" ? "Kategoriler" : "Etiketler", url: `${baseUrl}${lb}/${prefix}` },
+      { name: data.term.name, url: pageUrl },
+    ],
+    organization: organizationFor(localized.seo),
+    content: {
+      id: `taxonomy:${kind}:${slug}`,
+      title: data.term.seoTitle || data.term.name,
+      tldr: data.term.seoDescription || data.term.description || `${data.term.name} ile ilgili içerikler.`,
+      schemaType: "CollectionPage",
+    },
+  });
+  const nodes = schemaGraph["@graph"] as Array<Record<string, unknown>>;
+  const collectionNode = nodes.find((n) => n["@type"] === "CollectionPage");
+  if (data.paged.items.length > 0) {
+    const listId = `${pageUrl}#itemlist`;
+    if (collectionNode) collectionNode.mainEntity = { "@id": listId };
+    nodes.push({
+      "@type": "ItemList",
+      "@id": listId,
+      name: data.term.name,
+      numberOfItems: data.paged.total,
+      itemListElement: data.paged.items.map((item, idx) => ({
+        "@type": "ListItem",
+        position: (data.paged.page - 1) * PAGE_SIZE + idx + 1,
+        url: item.url.startsWith("http") ? item.url : `${baseUrl}${item.url.startsWith("/") ? "" : "/"}${item.url}`,
+        name: item.title,
+      })),
+    });
+  }
+  const schemaScript = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(schemaGraph) }} />;
+
   // Tema oluşturucu şablonu: terimin seçtiği şablon → türün varsayılanı → yerleşik görünüm
   const tpl = await templateFor(siteId, kind, data.term.templateId, { locale, slug, ...(kind === "category" ? { categories: [slug] } : { tags: [slug] }) });
   if (tpl) {
     const menu = await getResolvedMenu(siteId, locale);
-    const prefix = kind === "category" ? "kategori" : "etiket";
     const ctx = buildTemplateContext({ lb,
       site: data.site ? { name: data.site.name, tagline: data.site.tagline } : null,
       locale,
@@ -81,11 +125,17 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
         pageHref: (n) => `${lb}/${prefix}/${slug}${n > 1 ? `?sayfa=${n}` : ""}`,
       },
     });
-    return <RscBlockRenderer blocks={tpl.blocks} themeId={data.site?.activeThemeId ?? "corporate-aurora"} tokens={tokens} locale={locale} tpl={ctx} />;
+    return (
+      <>
+        {schemaScript}
+        <RscBlockRenderer blocks={tpl.blocks} themeId={data.site?.activeThemeId ?? "corporate-aurora"} tokens={tokens} locale={locale} tpl={ctx} />
+      </>
+    );
   }
   const query = normalizeDynamicQuery({ source: "posts", layout: "cards", columns: 3, limit: 24, emptyText: "Bu başlık altında henüz yayın yok." });
   return (
     <div className="space-y-6">
+      {schemaScript}
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider opacity-60">{kind === "category" ? "Kategori" : "Etiket"}</p>
         <h1 style={{ fontFamily: tokens.typography.headingFont }} className="text-3xl font-extrabold tracking-tight">{data.term.name}</h1>

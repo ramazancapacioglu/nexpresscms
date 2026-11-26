@@ -1,12 +1,15 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import {
+  authorProfileToRow,
   isUserRole,
   PASSWORD_PROBLEM_MESSAGES,
+  sanitizeAuthorProfile,
   validatePassword,
   wouldRemoveLastAdmin,
+  type AuthorProfile,
   type UserRole,
 } from "@nexpress/core";
 import { hashPassword } from "@nexpress/core/password";
@@ -101,4 +104,47 @@ export async function revokeUserSessionsAction(input: { id: string }): Promise<U
   await recordAudit({ id: admin.sub, email: admin.email }, "user.sessionsRevoked", { target: target.email });
   if (target.id === admin.sub) redirect("/login");
   return { ok: true };
+}
+
+/** Yönetici herhangi bir kullanıcının yazar profilini (E-E-A-T / Person-Organization şeması, sosyal medya, biyografi, belgeler) günceller. */
+export async function updateUserAuthorProfileAction(input: {
+  id: string;
+  name?: string;
+  authorType?: "Person" | "Organization";
+  jobTitle: string;
+  bio: string;
+  expertise: string;
+  credentials?: string;
+  sameAs: string;
+  avatarUrl: string;
+}): Promise<UserActionResult & { profile?: AuthorProfile }> {
+  const admin = await requireAdmin("user.authorProfileUpdated");
+  const { repo, target } = await load(admin.siteId, input.id);
+  if (!target) return fail("Kullanıcı bulunamadı.");
+
+  const nextName = typeof input.name === "string" ? input.name.trim() : "";
+  if (nextName.length > 80) return fail("Ad en çok 80 karakter olabilir.");
+
+  const dropped = String(input.sameAs ?? "").split(/\n/).map((line) => line.trim()).filter(Boolean);
+  const profile = sanitizeAuthorProfile(input);
+  if (dropped.length > profile.sameAs.length) {
+    return fail("Sosyal medya ve profil bağlantıları https:// ile başlamalı ve geçerli bir adres olmalıdır (en çok 8).");
+  }
+  if (input.avatarUrl.trim() && !profile.avatarUrl) {
+    return fail("Avatar, medya kitaplığından bir görsel (/media/…) ya da https adresi olmalıdır.");
+  }
+
+  if (nextName && nextName !== target.name) {
+    await repo.setName(target.id, nextName);
+  }
+  const row = authorProfileToRow(profile);
+  await repo.setAuthorProfile(target.id, row);
+  await recordAudit({ id: admin.sub, email: admin.email }, "user.authorProfileUpdated", {
+    target: target.email,
+    detail: `tür: ${profile.authorType}, sameAs: ${profile.sameAs.length}`,
+  });
+  await revalidatePath("/");
+  await revalidatePath("/admin/users");
+  const updated = await repo.findById(target.id);
+  return { ok: true, user: updated ? toSummary(updated) : undefined, profile };
 }

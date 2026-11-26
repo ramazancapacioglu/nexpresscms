@@ -19,9 +19,11 @@ export interface UserSummaryDto {
   createdAt: Date;
   lastLoginAt: Date | null;
   /** Yazar profili alanları (herkese açık, isteğe bağlı): `authorProfileFromRow` ile çözülür */
+  authorType: string | null;
   bio: string | null;
   jobTitle: string | null;
   expertise: string | null;
+  credentials: string | null;
   sameAs: string | null;
   avatarUrl: string | null;
   /** İki adımlı doğrulama açık mı (anahtar ve kodlar arayüze verilmez) */
@@ -57,9 +59,11 @@ type Row = {
   totpEnabledAt: Date | null;
   totpLastStep: number | null;
   recoveryCodes: string | null;
+  authorType: string | null;
   bio: string | null;
   jobTitle: string | null;
   expertise: string | null;
+  credentials: string | null;
   sameAs: string | null;
   avatarUrl: string | null;
 };
@@ -126,9 +130,11 @@ export class UserRepository {
       totpEnabledAt: null,
       totpLastStep: null,
       recoveryCodes: null,
+      authorType: null,
       bio: null,
       jobTitle: null,
       expertise: null,
+      credentials: null,
       sameAs: null,
       avatarUrl: null,
     };
@@ -151,8 +157,27 @@ export class UserRepository {
     return this.patch(id, { name: name.trim() });
   }
   /** Yazar profilini yazar (alanlar `authorProfileToRow` ile temizlenmiş gelir); başka hiçbir sütuna dokunmaz. */
-  public setAuthorProfile(id: string, row: { jobTitle: string | null; bio: string | null; expertise: string | null; sameAs: string | null; avatarUrl: string | null }) {
-    return this.patch(id, { jobTitle: row.jobTitle, bio: row.bio, expertise: row.expertise, sameAs: row.sameAs, avatarUrl: row.avatarUrl });
+  public setAuthorProfile(
+    id: string,
+    row: {
+      authorType: string | null;
+      jobTitle: string | null;
+      bio: string | null;
+      expertise: string | null;
+      credentials: string | null;
+      sameAs: string | null;
+      avatarUrl: string | null;
+    }
+  ) {
+    return this.patch(id, {
+      authorType: row.authorType,
+      jobTitle: row.jobTitle,
+      bio: row.bio,
+      expertise: row.expertise,
+      credentials: row.credentials,
+      sameAs: row.sameAs,
+      avatarUrl: row.avatarUrl,
+    });
   }
   /** Rol değişince oturum sürümü de artar: eski oturumlar yeni yetkiyle devam etmez. */
   public async setRole(id: string, role: UserRole) {

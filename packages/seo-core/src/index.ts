@@ -10,22 +10,40 @@ export * from "./commerce-schema";
 export * from "./search-console";
 export * from "./analytics-integrations";
 
-/** `Person` düğümü için yazar profili alanları (hepsi isteğe bağlı). */
+/** `Person` veya `Organization` düğümü için yazar profili alanları (hepsi isteğe bağlı). */
 export interface AuthorPersonProfile {
+  authorType?: "Person" | "Organization";
   jobTitle?: string;
   bio?: string;
   expertise?: string[];
+  credentials?: string[];
   sameAs?: string[];
   avatarUrl?: string;
 }
 
 /**
- * Yazar `Person` düğümü: ad, sayfa adresi, ünvan, biyografi (`description`), uzmanlık (`knowsAbout`), `sameAs`, avatar ve kuruluşa bağ (`worksFor`).
+ * Yazar `Person` veya `Organization` düğümü: ad, sayfa adresi, ünvan, biyografi (`description`), uzmanlık (`knowsAbout`),
+ * belgeler (`hasCredential`), `sameAs`, avatar ve kuruluşa bağ (`worksFor`).
  * Yalnızca dolu alanlar yazılır; `@id` yazar sayfası adresine bağlıdır (makale ve profil sayfası aynı düğümü paylaşır).
  */
 export function buildAuthorPerson(input: { baseUrl: string; orgId: string; name: string; url?: string; profile?: AuthorPersonProfile }): SchemaGraphNode {
   const { baseUrl, orgId, name, profile } = input;
   const url = input.url ? (input.url.startsWith("/") ? `${baseUrl}${input.url}` : input.url) : undefined;
+  const isOrg = profile?.authorType === "Organization";
+  const img = profile?.avatarUrl ? imageObject(baseUrl, { url: profile.avatarUrl, alt: name, caption: name }) : undefined;
+
+  if (isOrg) {
+    return {
+      "@type": "Organization",
+      ...(url ? { "@id": `${url}#organization`, url } : { "@id": orgId }),
+      name,
+      ...(profile?.bio ? { description: profile.bio } : {}),
+      ...(profile?.expertise && profile.expertise.length > 0 ? { knowsAbout: profile.expertise } : {}),
+      ...(profile?.sameAs && profile.sameAs.length > 0 ? { sameAs: profile.sameAs } : {}),
+      ...(img ? { logo: img, image: img } : {}),
+    };
+  }
+
   return {
     "@type": "Person",
     ...(url ? { "@id": `${url}#person`, url } : {}),
@@ -33,8 +51,16 @@ export function buildAuthorPerson(input: { baseUrl: string; orgId: string; name:
     ...(profile?.jobTitle ? { jobTitle: profile.jobTitle } : {}),
     ...(profile?.bio ? { description: profile.bio } : {}),
     ...(profile?.expertise && profile.expertise.length > 0 ? { knowsAbout: profile.expertise } : {}),
+    ...(profile?.credentials && profile.credentials.length > 0
+      ? {
+          hasCredential: profile.credentials.map((cred) => ({
+            "@type": "EducationalOccupationalCredential",
+            name: cred,
+          })),
+        }
+      : {}),
     ...(profile?.sameAs && profile.sameAs.length > 0 ? { sameAs: profile.sameAs } : {}),
-    ...(profile?.avatarUrl ? { image: imageObject(baseUrl, { url: profile.avatarUrl, alt: name, caption: name }) } : {}),
+    ...(img ? { image: img } : {}),
     ...(profile && Object.keys(profile).length > 0 ? { worksFor: { "@id": orgId } } : {}),
   };
 }
@@ -78,6 +104,8 @@ export interface BuildCoreSchemaInput {
     imageMeta?: Omit<SchemaImageInput, "url"> | null;
     keywords?: string[];
     articleSection?: string;
+    /** Teknik incelemeyi yapan uzmanın profil sayfası URL'si (doluysa `WebPage.reviewedBy` doğrudan `@id` ile bağlanır) */
+    reviewedByUrl?: string;
     /** Özel alanlardan ve şema kurallarından gelen Schema.org özellikleri; temel alanları ezmez. */
     extraProps?: Record<string, unknown>;
   };
@@ -559,6 +587,11 @@ export async function buildPageSchemaGraph(
     } else {
       const techReviewedBy = typeof rich.tech?.reviewedBy === "string" && rich.tech.reviewedBy.trim() ? rich.tech.reviewedBy.trim() : undefined;
       const techLastReviewed = typeof rich.tech?.lastReviewed === "string" && rich.tech.lastReviewed.trim() ? rich.tech.lastReviewed.trim() : undefined;
+      const reviewerUrl = c.reviewedByUrl
+        ? c.reviewedByUrl.startsWith("/")
+          ? `${baseUrl}${c.reviewedByUrl}`
+          : c.reviewedByUrl
+        : undefined;
       baseNodes.push({
         "@type": "WebPage",
         "@id": webpageId,
@@ -571,7 +604,11 @@ export async function buildPageSchemaGraph(
         ...(c.tldr ? { description: c.tldr } : {}),
         ...(c.publishedAt ? { datePublished: new Date(c.publishedAt).toISOString() } : {}),
         ...(c.updatedAt ? { dateModified: new Date(c.updatedAt).toISOString() } : {}),
-        ...(techReviewedBy ? { reviewedBy: { "@type": "Person", name: techReviewedBy } } : {}),
+        ...(reviewerUrl
+          ? { reviewedBy: { "@id": `${reviewerUrl}#person` } }
+          : techReviewedBy
+            ? { reviewedBy: { "@type": "Person", name: techReviewedBy } }
+            : {}),
         ...(techLastReviewed ? { lastReviewed: techLastReviewed } : {}),
         ...(primaryRef ? { primaryImageOfPage: primaryRef } : {}),
         ...(hasCrumbs ? { breadcrumb: { "@id": `${input.pageUrl}#breadcrumb` } } : {}),

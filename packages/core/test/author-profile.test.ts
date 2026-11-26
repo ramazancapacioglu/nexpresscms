@@ -17,13 +17,29 @@ test("yazar profili: HTML temizlenir, uzunluklar kısılır, yalnızca https ba�
   assert.equal(p.avatarUrl, "/media/med_abc-1/1280.webp");
   assert.equal(sanitizeAuthorProfile({ avatarUrl: "/etc/passwd" }).avatarUrl, "");
   assert.equal(sanitizeAuthorProfile({ avatarUrl: "http://x.test/a.png" }).avatarUrl, "");
-  assert.equal(sanitizeAuthorProfile({ bio: "x".repeat(900) }).bio.length, 600);
+  assert.equal(sanitizeAuthorProfile({ bio: "x".repeat(1500) }).bio.length, 1200);
 });
 
-test("yazar profili: satır dönüşümü gidiş-dönüşte aynı; bozuk JSON ve boş satır güvenli", () => {
-  const p = sanitizeAuthorProfile({ jobTitle: "Editör", expertise: ["SEO"], sameAs: ["https://x.com/ornek"] });
+test("yazar profili: satır dönüşümü gidiş-dönüşte aynı; kurumsal yazar, belgeler ve bozuk JSON güvenli", () => {
+  const p = sanitizeAuthorProfile({
+    authorType: "Organization",
+    jobTitle: "Yetkili Çözüm Merkezi",
+    expertise: ["SEO"],
+    credentials: "Akınsoft İzmir Ana Bayi\nYetkili Eğitim Merkezi",
+    sameAs: ["https://x.com/ornek"],
+  });
+  assert.equal(p.authorType, "Organization");
+  assert.deepEqual(p.credentials, ["Akınsoft İzmir Ana Bayi", "Yetkili Eğitim Merkezi"]);
   assert.deepEqual(authorProfileFromRow(authorProfileToRow(p)), p);
-  assert.deepEqual(authorProfileToRow(sanitizeAuthorProfile({})), { jobTitle: null, bio: null, expertise: null, sameAs: null, avatarUrl: null });
+  assert.deepEqual(authorProfileToRow(sanitizeAuthorProfile({})), {
+    authorType: null,
+    jobTitle: null,
+    bio: null,
+    expertise: null,
+    credentials: null,
+    sameAs: null,
+    avatarUrl: null,
+  });
   assert.equal(authorProfileFromRow({ sameAs: "{bozuk" }).sameAs.length, 0);
   assert.equal(authorProfileFromRow({}).bio, "");
   assert.equal(hasAuthorProfile(authorProfileFromRow({})), false);

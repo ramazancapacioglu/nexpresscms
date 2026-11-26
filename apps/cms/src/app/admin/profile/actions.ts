@@ -24,7 +24,15 @@ export async function updateProfileAction(input: { name: string }): Promise<Prof
  * Yazar profili (E-E-A-T): ünvan, biyografi, uzmanlık, sameAs ve avatar. Yalnızca kendi profilini yazar; girdi temizlenir
  * (düz metin, https bağlantılar, yerel medya). Kaydedince ziyaretçi önbelleği düşer; yazı şemaları ve yazar sayfası güncellenir.
  */
-export async function updateAuthorProfileAction(input: { jobTitle: string; bio: string; expertise: string; sameAs: string; avatarUrl: string }): Promise<ProfileResult & { profile?: ReturnType<typeof sanitizeAuthorProfile> }> {
+export async function updateAuthorProfileAction(input: {
+  authorType?: "Person" | "Organization";
+  jobTitle: string;
+  bio: string;
+  expertise: string;
+  credentials?: string;
+  sameAs: string;
+  avatarUrl: string;
+}): Promise<ProfileResult & { profile?: ReturnType<typeof sanitizeAuthorProfile> }> {
   const me = await requireUser({ audit: "profile.author", allowWithout2fa: true });
   const dropped = String(input.sameAs ?? "").split(/\n/).map((line) => line.trim()).filter(Boolean);
   const profile = sanitizeAuthorProfile(input);

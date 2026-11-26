@@ -682,10 +682,12 @@ export const pgUsers = pgTable(
     totpLastStep: integer("totp_last_step"),
     /** Kurtarma kodu SHA-256 özetleri (JSON dizi) */
     recoveryCodes: text("recovery_codes"),
-    /** Yazar profili (herkese açık, hepsi isteğe bağlı): biyografi, ünvan, uzmanlık alanları (virgülle), sameAs bağlantıları (JSON dizi), avatar adresi. */
+    /** Yazar profili (herkese açık, hepsi isteğe bağlı): tür, biyografi, ünvan, uzmanlık alanları, belgeler (JSON dizi), sameAs bağlantıları (JSON dizi), avatar adresi. */
+    authorType: text("author_type"),
     bio: text("bio"),
     jobTitle: text("job_title"),
     expertise: text("expertise"),
+    credentials: text("credentials"),
     sameAs: text("same_as"),
     avatarUrl: text("avatar_url"),
   },
