@@ -130,11 +130,11 @@
 | 1 | `?format=md` yanıtında kanonik başlık yok (kopya içerik riski) | ✅ Kodda düzeltildi (`Link: rel=canonical`); canlıya dağıtımla etkinleşir |
 | 2 | Tüm içerikte `dateModified` = `2026-11-25T16:10:59`, sitemap `lastmod` tek değer | ✅ `updatedAt` yalnızca gerçek değişiklikte ilerler; mevcut damgalar sonraki düzenlemede düzelir |
 | 3 | Markdown ön bilgisinde `seo_score: 96`, `importance_score`, `site_id` | ✅ Kaldırıldı |
-| 4 | `taxID: 15892550960` şemada (11 hane: TC kimlik no olabilir) | ⏳ Site sahibi doğrulamalı; gerekmedikçe Ayarlar › SEO › Kuruluş şemasından kaldırılmalı |
+| 4 | `taxID` şemada: 11 haneli ve T.C. kimlik sağlama kuralına uyuyor (şahıs işletmesi, kişisel veri) | ✅ Çekirdek artık TCKN değerli `taxID`/`vatID`'yi şemadan ve llms çıktısından atar; dağıtımla etkinleşir |
 | 5 | Soru-cevap sayfalarında `author` Person'ı `/yazar` sayfasına bağlı değil, görünür yazar satırı yok; boş "Yorumlar (0)" başlıkları | ✅ Yazarlı türler genişletildi; boş başlıklar sayısız |
 | 6 | Kampanya `Offer` fiyatsız, kampanya sayfasında robots meta yok | ✅ İsteğe bağlı `price`/`priceCurrency` alanı + robots meta; fiyat girilmeden şemaya yazılmaz |
 | 7 | Gövde medyanı 805 kelime; 20 sayfa <400 (`/hakkimizda` 355, `/satis-yonetimi` 371, `/erp-programi-nedir` 422 …) | ⏳ İçerik işi (editör) |
-| 8 | Taksonomi sayfaları (`/kampanyalar`, `/sorular`, `/kategori/*`, `/yazar/*`) indekslenebilir ama sitemap'te yok | ⏳ Karar bekliyor |
+| 8 | `/kampanyalar`, `/sorular`, `/yazar/*`, `/kategori/*` indekslenebilir ama sitemap'te yok | ✅ Kural "dizine açıksa haritada": `/kampanyalar`, `/sorular`, `/yazar` + yazar sayfaları koda eklendi. ⏳ Kategoriler için Site haritası panelinde "Kategorileri ekle" kutusu açılmalı (kodda zaten var, sitede kapalı görünüyor) |
 | 9 | Ana sayfa OG görseli 597×386; ana sayfa HTML 420 KB ham (245 KB RSC verisi); `s-maxage=60`, paralel yükte TTFB 1,8 sn | ⏳ İçerik/altyapı (OG 1200×630, `PUBLIC_CACHE_SECONDS`, CDN) |
 
 Denetim yöntemi ve araçları: `curl` ile tüm sitemap adresleri; başlık/şema/bağlantı çözümlemesi yerel betikle. Lighthouse çalıştırılamadı (PageSpeed API kotası); Çekirdek Web Verileri ölçülmedi.

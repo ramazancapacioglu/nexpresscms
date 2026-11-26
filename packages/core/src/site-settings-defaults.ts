@@ -38,6 +38,7 @@ export const DEFAULT_SEO_SETTINGS: SeoEngineSettings = {
   imageLicenseUrl: "",
   sitemapIncludeCategories: true,
   sitemapIncludeTags: true,
+  sitemapIncludeAuthors: true,
   sitemapTypes: ["page", "post", "kb_tech", "ai_prompt", "campaign", "product"],
   minWordCount: 150,
   permalinkStructure: "postname",

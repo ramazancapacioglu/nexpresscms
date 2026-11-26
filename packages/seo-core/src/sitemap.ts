@@ -146,6 +146,7 @@ const TYPE_LABEL: Record<string, string> = {
   product: "Ürünler",
   kategori: "Kategoriler",
   etiket: "Etiketler",
+  yazar: "Yazarlar",
   archive: "Arşivler",
   ai_prompt: "Sorular",
   kb_tech: "Bilgi bankası",

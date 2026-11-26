@@ -110,6 +110,8 @@ export interface SeoEngineSettings {
   sitemapIncludeCategories?: boolean;
   /** Etiket arşivleri site haritasına girer. Kayıt yoksa girer. `noIndexTagArchives` açıksa yine girmez. */
   sitemapIncludeTags?: boolean;
+  /** Yazar sayfaları (`/yazar`, `/yazar/<ad>`) site haritasına girer. Kayıt yoksa girer; yalnızca içeriği olan yazarlar. */
+  sitemapIncludeAuthors?: boolean;
   sitemapTypes: ContentType[];
   minWordCount: number;
   /** Kalıcı bağlantı yapısı. Varsayılan `postname` (`/{slug}`). */

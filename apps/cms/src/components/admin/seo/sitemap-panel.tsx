@@ -14,12 +14,13 @@ const TYPES: Array<{ id: ContentType; label: string }> = [
   { id: "campaign", label: "Kampanya" },
 ];
 
-/** Site haritasına girecek içerik türleri ve arşivler. Kayıt yalnızca bu üç alanı yazar. */
+/** Site haritasına girecek içerik türleri ve arşivler. Kayıt yalnızca bu dört alanı yazar. */
 export function SitemapPanel({ seo }: { seo: SeoEngineSettings }) {
   const router = useRouter();
   const [types, setTypes] = useState<ContentType[]>(seo.sitemapTypes);
   const [categories, setCategories] = useState(seo.sitemapIncludeCategories !== false);
   const [tags, setTags] = useState(seo.sitemapIncludeTags !== false);
+  const [authors, setAuthors] = useState(seo.sitemapIncludeAuthors !== false);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -30,7 +31,7 @@ export function SitemapPanel({ seo }: { seo: SeoEngineSettings }) {
   const save = () => {
     start(async () => {
       await saveSeoEngineSettingsAction({
-        seo: { sitemapTypes: types, sitemapIncludeCategories: categories, sitemapIncludeTags: tags },
+        seo: { sitemapTypes: types, sitemapIncludeCategories: categories, sitemapIncludeTags: tags, sitemapIncludeAuthors: authors },
       });
       setNotice("Site haritası ayarı kaydedildi. /sitemap.xml yenilendi.");
       router.refresh();
@@ -81,6 +82,13 @@ export function SitemapPanel({ seo }: { seo: SeoEngineSettings }) {
           <span>Etiketleri site haritasına ekle</span>
           <input type="checkbox" checked={tags} onChange={(e) => setTags(e.target.checked)} disabled={tagsBlocked} />
         </label>
+        <label className="mt-3 flex items-center justify-between gap-3 text-[13px]">
+          <span>Yazar sayfalarını site haritasına ekle</span>
+          <input type="checkbox" checked={authors} onChange={(e) => setAuthors(e.target.checked)} />
+        </label>
+        <p className="mt-2 text-[12px] text-[#5F6570] dark:text-[#8C9099]">
+          Yalnızca yayında yazısı olan yazarlar girer; /yazar dizini ve /kampanyalar, /sorular liste sayfaları içerik varsa kendiliğinden eklenir.
+        </p>
         {tagsBlocked ? (
           <p className="mt-2 text-[12px] text-amber-800 dark:text-amber-300">
             Etiket arşivleri noindex. Bu yüzden site haritasına yazılmaz. Kaldırmak için Ayarlar sayfasındaki etiket noindex kutusunu kapatın.

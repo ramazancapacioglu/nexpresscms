@@ -1,9 +1,11 @@
 import "server-only";
-import { contentPrefix, friendlyImagePath, isPrefixless, resolveCampaignData, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
+import { contentPrefix, friendlyImagePath, isPluginModuleEnabled, isPrefixless, resolveCampaignData, resolveSiteSettings, sitemapArchiveTypes, termSlug } from "@nexpress/core";
 import { splitIntoFiles, type SitemapEntry } from "@nexpress/seo-core";
 import { getScopedRepository } from "@nexpress/database";
 import { getDynamicCandidates } from "./dynamic-content";
-import { getPublicMediaMeta, getPublicSite, listSitemapEntries } from "./public-data";
+import { getPublicAuthors, getPublicMediaMeta, getPublicSite, listPublishedContents, listSitemapEntries } from "./public-data";
+import { authorSitemapEntries, builtInHubEntries } from "./sitemap-hubs";
+import { QA_PLUGIN_ID } from "@/plugins/qa";
 
 export function sitemapBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -17,6 +19,7 @@ export async function loadSitemap(siteId: string) {
     return { entries: [], files: [], defaultLocale: site?.defaultLocale ?? "tr", prefixless: isPrefixless(site, site?.defaultLocale ?? "tr") };
   }
   const archives = await archiveEntries(siteId, site?.defaultLocale ?? "tr");
+  const hubs = await hubEntries(siteId, site?.defaultLocale ?? "tr", settings.seo.sitemapIncludeAuthors !== false);
   // Önekli özel türlerin kayıtları `/{önek}/{slug}` adresiyle haritaya girer (öneksiz adres yönlendirdiği için listelenmez)
   const types = settings.general.contentTypes ?? [];
   // Kampanya yerleşik türdür: adresi `/kampanya/{slug}` (öneksiz adres oraya yönlendirir)
@@ -36,7 +39,22 @@ export async function loadSitemap(siteId: string) {
       .map((c) => c.contentId)
   );
   const activeContentEntries = contentEntries.filter((e) => !(e.type === "campaign" && expiredCampaignIds.has(e.contentId)));
-  const entries = [...activeContentEntries.map((e) => named(prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...archives];
+  // Etkin kampanya ve soru sayfalarının tarihleri liste sayfalarının `lastmod` değerini belirler
+  const hubExtra = builtInHubEntries({
+    campaignDates: activeContentEntries.filter((e) => e.type === "campaign").map((e) => e.updatedAt),
+    questionDates: activeContentEntries.filter((e) => e.type === "ai_prompt").map((e) => e.updatedAt),
+    questionsArchiveOn: await isPluginModuleEnabled(siteId, QA_PLUGIN_ID, "archive"),
+    locale: defaultLocale,
+  });
+  // Aynı adres iki kaynaktan gelirse (ör. soru arşivi özel tür arşivi de olabilir) tek kez yazılır
+  const seen = new Set<string>();
+  const extra = [...archives, ...hubs, ...hubExtra].filter((e) => {
+    const key = `${e.pathPrefix ?? ""}/${e.slug}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const entries = [...activeContentEntries.map((e) => named(prefixOf(e.type) ? { ...e, pathPrefix: prefixOf(e.type) as string } : e)), ...extra];
   return {
     entries,
     files: splitIntoFiles(entries, [...settings.seo.sitemapTypes, ...(settings.general.contentTypes ?? []).filter((t) => t.inSitemap).map((t) => t.id), ...sitemapArchiveTypes(settings.seo)]),
@@ -60,7 +78,8 @@ async function archiveEntries(siteId: string, locale: string): Promise<SitemapEn
     if (t.taxonomyType === "tag" && (seo.sitemapIncludeTags === false || seo.noIndexTagArchives === true)) continue;
     const key = t.taxonomyType === "category" ? "categories" : "tags";
     const items = candidates.filter((c) => (c.kind === "posts" || c.kind === "pages") && c[key].some((x) => termSlug(x) === termSlug(t.slug) || termSlug(x) === termSlug(t.name)));
-    if (items.length === 0) continue;
+    // Sayfanın kendi dizin kuralıyla aynı: boş arşiv ve 3'ten az yayınlı etiket `noindex` olduğundan haritaya girmez
+    if (items.length === 0 || (t.taxonomyType === "tag" && items.length < 3)) continue;
     const latest = items.reduce((a, c) => (c.date && c.date > a ? c.date : a), "");
     out.push({ contentId: `archive:${t.taxonomyType}:${t.slug}`, type: t.taxonomyType === "category" ? "kategori" : "etiket", locale, region: "", slug: t.slug, pathPrefix: t.taxonomyType === "category" ? "kategori" : "etiket", updatedAt: latest ? new Date(latest) : new Date(0) });
   }
@@ -74,4 +93,11 @@ async function archiveEntries(siteId: string, locale: string): Promise<SitemapEn
     out.push({ contentId: `archive:type:${def.id}`, type: "archive", locale, region: "", slug: def.archiveSlug, updatedAt: latest ? new Date(latest) : new Date(0) });
   }
   return out;
+}
+
+/** Yazar sayfaları ve dizini (içeriği olan yazarlar). `sitemapIncludeAuthors` kapalıysa boş döner. */
+async function hubEntries(siteId: string, locale: string, includeAuthors: boolean): Promise<SitemapEntry[]> {
+  if (!includeAuthors) return [];
+  const [items, authors] = await Promise.all([listPublishedContents(siteId, locale), getPublicAuthors(siteId)]);
+  return authorSitemapEntries(items, authors, locale);
 }
