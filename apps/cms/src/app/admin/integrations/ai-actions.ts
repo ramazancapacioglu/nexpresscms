@@ -68,7 +68,7 @@ export async function testAiConnectionAction(draft?: {
     provider === "gemini"
       ? "https://generativelanguage.googleapis.com/v1beta/openai"
       : "https://api.openai.com/v1";
-  const presetModel = provider === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini";
+  const presetModel = provider === "gemini" ? "gemini-flash-latest" : "gpt-4o-mini";
 
   const apiKey = draft?.apiKey?.trim() || saved.apiKey;
   const baseUrl = (draft?.baseUrl?.trim() || (draft?.provider ? presetBase : saved.baseUrl) || presetBase).replace(/\/$/, "");

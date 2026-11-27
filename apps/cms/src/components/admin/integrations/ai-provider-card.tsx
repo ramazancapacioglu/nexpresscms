@@ -25,7 +25,7 @@ const DEFAULTS: Record<AiProviderKind, { baseUrl: string; chatModel: string; emb
   },
   gemini: {
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
-    chatModel: "gemini-2.5-flash",
+    chatModel: "gemini-flash-latest",
     embeddingModel: "gemini-embedding-001",
   },
   custom: {
