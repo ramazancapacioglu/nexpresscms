@@ -86,10 +86,12 @@ export function AiChatWorkspace({
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages.length, pending]);
 
   const openConversation = (conv: ClientConversation) => {
@@ -163,10 +165,10 @@ export function AiChatWorkspace({
   };
 
   return (
-    <div className={`grid h-[calc(100vh-145px)] min-h-[540px] grid-cols-1 overflow-hidden rounded-xl border ${border} bg-white dark:bg-[#15171C] shadow-xs lg:grid-cols-[260px_minmax(0,1fr)]`}>
+    <div className={`grid h-[calc(100vh-145px)] min-h-[540px] w-full grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden rounded-xl border ${border} bg-white dark:bg-[#15171C] shadow-xs lg:grid-cols-[240px_minmax(0,1fr)]`}>
       {/* Sol Sohbet Geçmişi (Kalıcı Hafıza) */}
-      <aside className={`hidden flex-col border-r ${border} bg-[#FAFAFB] dark:bg-[#121317] lg:flex`}>
-        <div className={`border-b ${border} p-3`}>
+      <aside className={`hidden min-h-0 flex-col overflow-hidden border-r ${border} bg-[#FAFAFB] dark:bg-[#121317] lg:flex`}>
+        <div className={`shrink-0 border-b ${border} p-3`}>
           <button
             type="button"
             onClick={startNewChat}
@@ -176,7 +178,7 @@ export function AiChatWorkspace({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 space-y-1">
           {conversations.length === 0 ? (
             <p className="px-2 py-6 text-center text-[11px] text-muted-foreground">
               Henüz kayıtlı sohbet yok. Tüm yazışmalar burada kalıcı olarak saklanır.
@@ -217,9 +219,9 @@ export function AiChatWorkspace({
       </aside>
 
       {/* Sağ Ana Sohbet Alanı */}
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         {/* Üst Rol & Sağlayıcı Çubuğu */}
-        <div className={`flex flex-wrap items-center justify-between gap-2 border-b ${border} px-4 py-2.5`}>
+        <div className={`shrink-0 flex flex-wrap items-center justify-between gap-2 border-b ${border} px-4 py-2.5`}>
           <div className="flex flex-wrap items-center gap-1.5">
             {PERSONA_OPTIONS.map((p) => (
               <button
@@ -255,9 +257,12 @@ export function AiChatWorkspace({
         </div>
 
         {/* Mesaj Listesi */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div
+          ref={listRef}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4"
+        >
           {messages.length === 0 ? (
-            <div className="mx-auto max-w-2xl py-8 space-y-5">
+            <div className="w-full py-6 space-y-5">
               <div className="text-center space-y-1.5">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600">
                   <Sparkles className="h-5 w-5" />
@@ -285,7 +290,7 @@ export function AiChatWorkspace({
             </div>
           ) : (
             messages.map((m) => (
-              <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={m.id} className={`flex w-full gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
                     <Bot className="h-4 w-4" />
@@ -293,10 +298,10 @@ export function AiChatWorkspace({
                 )}
 
                 <div
-                  className={`max-w-[85%] space-y-2 rounded-2xl px-4 py-3 text-[13px] leading-relaxed ${
+                  className={`min-w-0 space-y-2 rounded-2xl px-4 py-3 text-[13px] leading-relaxed ${
                     m.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : `border ${border} bg-[#FAFAFB] dark:bg-[#181A20] text-foreground`
+                      ? "max-w-[90%] bg-blue-600 text-white"
+                      : `w-full flex-1 border ${border} bg-[#FAFAFB] dark:bg-[#181A20] text-foreground`
                   }`}
                 >
                   {m.toolsUsed && m.toolsUsed.length > 0 && (
@@ -341,7 +346,6 @@ export function AiChatWorkspace({
               {error}
             </div>
           )}
-          <div ref={bottomRef} />
         </div>
 
         {/* Alt Mesaj Girişi */}
@@ -350,7 +354,7 @@ export function AiChatWorkspace({
             e.preventDefault();
             sendText(input);
           }}
-          className={`flex items-end gap-2 border-t ${border} bg-[#FAFAFB] dark:bg-[#121317] p-3`}
+          className={`shrink-0 flex w-full items-end gap-2 border-t ${border} bg-[#FAFAFB] dark:bg-[#121317] p-3`}
         >
           <textarea
             rows={2}
