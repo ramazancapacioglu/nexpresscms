@@ -75,7 +75,7 @@ export function AiChatWorkspace({
   initialConversations: ClientConversation[];
   initialMessages: ClientMessage[];
   initialConvId: string | null;
-  aiStatus: { configured: boolean; provider: string; model: string };
+  aiStatus: { configured: boolean; provider: string; model: string; deepModel?: string; embeddingInfo?: string };
 }) {
   const [conversations, setConversations] = useState<ClientConversation[]>(initialConversations);
   const [activeId, setActiveId] = useState<string | null>(initialConvId);
@@ -83,6 +83,7 @@ export function AiChatWorkspace({
   const [persona, setPersona] = useState<AiPersona>(
     initialConversations.find((c) => c.id === initialConvId)?.persona ?? "general"
   );
+  const [modelTier, setModelTier] = useState<"fast" | "deep">("fast");
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -150,6 +151,7 @@ export function AiChatWorkspace({
       const res = await sendAssistantMessageAction({
         conversationId: activeId ?? undefined,
         persona: usePersona,
+        modelTier,
         message: clean,
       });
       if (res.ok) {
@@ -240,11 +242,38 @@ export function AiChatWorkspace({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
             {aiStatus.configured ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-300">
-                <CheckCircle2 className="h-3 w-3" /> {aiStatus.provider} / {aiStatus.model}
-              </span>
+              <>
+                <div className={`inline-flex rounded-full border ${border} bg-muted/40 p-0.5 text-[10px] font-medium`}>
+                  <button
+                    type="button"
+                    onClick={() => setModelTier("fast")}
+                    title={`Hızlı model: ${aiStatus.model}`}
+                    className={`rounded-full px-2 py-0.5 transition ${
+                      modelTier === "fast" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Hızlı
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelTier("deep")}
+                    title={`Derin analiz/içerik modeli: ${aiStatus.deepModel || aiStatus.model}`}
+                    className={`rounded-full px-2 py-0.5 transition ${
+                      modelTier === "deep" ? "bg-blue-600 text-white shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Derin
+                  </button>
+                </div>
+                <span
+                  title={aiStatus.embeddingInfo ? `RAG Embedding: ${aiStatus.embeddingInfo}` : undefined}
+                  className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-300"
+                >
+                  <CheckCircle2 className="h-3 w-3" /> {aiStatus.provider} / {modelTier === "deep" ? aiStatus.deepModel || aiStatus.model : aiStatus.model}
+                </span>
+              </>
             ) : (
               <Link
                 href="/admin/integrations"

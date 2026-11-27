@@ -9,15 +9,18 @@ const PERSONAS: AiPersona[] = ["general", "seo", "design", "content"];
 export async function sendAssistantMessageAction(input: {
   conversationId?: string;
   persona: AiPersona;
+  modelTier?: "fast" | "deep";
   message: string;
 }) {
   const me = await requireUser({ audit: "ai.chat" });
   const persona: AiPersona = PERSONAS.includes(input.persona) ? input.persona : "general";
+  const modelTier = input.modelTier === "deep" ? "deep" : "fast";
   const res = await runAssistantTurn({
     siteId: me.siteId,
     actor: { sub: me.sub, email: me.email, role: me.role },
     conversationId: input.conversationId,
     persona,
+    modelTier,
     message: input.message,
   });
   if (!res.ok) return res;

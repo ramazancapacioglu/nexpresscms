@@ -81,7 +81,12 @@ export default async function IntegrationsPage() {
           hasEnvKey: has("OPENAI_API_KEY"),
           baseUrl: ai?.baseUrl ?? "",
           chatModel: ai?.chatModel ?? "",
+          deepChatModel: ai?.deepChatModel ?? "",
           embeddingModel: ai?.embeddingModel ?? "",
+          separateEmbedding: Boolean(ai?.separateEmbedding),
+          embeddingProvider: ai?.embeddingProvider ?? "gemini",
+          hasEmbeddingKey: Boolean(ai?.embeddingApiKey),
+          embeddingBaseUrl: ai?.embeddingBaseUrl ?? "",
         }}
       />
       {groups.map((g) => (

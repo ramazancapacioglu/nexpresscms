@@ -299,7 +299,14 @@ export interface AiSettings {
   apiKey: string;
   baseUrl: string;
   chatModel: string;
+  /** Ağır SEO/GEO analiz, tasarım ve uzun içerik üretimi için güçlü model (boşsa chatModel kullanılır). */
+  deepChatModel?: string;
   embeddingModel: string;
+  /** True ise RAG/Embedding için sohbetten bağımsız sağlayıcı ve API anahtarı kullanılır. */
+  separateEmbedding?: boolean;
+  embeddingProvider?: AiProviderKind;
+  embeddingApiKey?: string;
+  embeddingBaseUrl?: string;
 }
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {
@@ -308,7 +315,12 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   apiKey: "",
   baseUrl: "",
   chatModel: "",
+  deepChatModel: "",
   embeddingModel: "",
+  separateEmbedding: false,
+  embeddingProvider: "gemini",
+  embeddingApiKey: "",
+  embeddingBaseUrl: "",
 };
 
 export interface SiteSettings {

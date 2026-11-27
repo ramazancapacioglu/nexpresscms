@@ -48,6 +48,8 @@ export default async function AdminAiAssistantPage() {
           configured: Boolean(ai.apiKey),
           provider: ai.provider,
           model: ai.chatModel,
+          deepModel: ai.deepChatModel,
+          embeddingInfo: `${ai.embeddingProvider} / ${ai.embeddingModel}`,
         }}
       />
     </div>

@@ -36,6 +36,7 @@ export async function runAssistantTurn(input: {
   actor: ToolActor;
   conversationId?: string;
   persona: AiPersona;
+  modelTier?: "fast" | "deep";
   message: string;
 }): Promise<RunAssistantResult | RunAssistantError> {
   const userText = input.message.trim();
@@ -90,6 +91,7 @@ export async function runAssistantTurn(input: {
     ...history.map((m) => ({ role: m.role, content: m.content })),
   ];
 
+  const activeModel = input.modelTier === "deep" ? ai.deepChatModel : ai.chatModel;
   const toolsUsed: AiToolTrace[] = [];
   let finalReply = "";
 
@@ -98,7 +100,7 @@ export async function runAssistantTurn(input: {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${ai.apiKey}` },
       body: JSON.stringify({
-        model: ai.chatModel,
+        model: activeModel,
         temperature: input.persona === "content" ? 0.45 : 0.15,
         messages,
         tools: AI_TOOL_DEFINITIONS,
