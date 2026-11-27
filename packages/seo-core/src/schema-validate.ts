@@ -69,7 +69,7 @@ export function validateSchemaGraph(nodes: SchemaGraphNode[]): SchemaIssue[] {
       for (const o of offers) {
         const low = numOf(o.lowPrice ?? o.price);
         const high = numOf(o.highPrice);
-        if (low !== null && low <= 0) add("warning", `Teklif fiyatı 0 veya negatif (${low}).`);
+        if (low !== null && low < 0) add("error", `Teklif fiyatı negatif (${low}).`);
         if (low !== null && high !== null && low > high) add("error", `AggregateOffer lowPrice (${low}) > highPrice (${high}).`);
         if ((low !== null || high !== null) && !filled(o.priceCurrency)) add("error", `Teklifte "priceCurrency" eksik.`);
       }

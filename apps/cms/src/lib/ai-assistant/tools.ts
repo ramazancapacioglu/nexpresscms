@@ -235,6 +235,8 @@ export async function executeAiTool(
             tldr: c.tldr,
             schemaType: c.schemaType,
             schemaAttributes: c.schemaAttributes,
+            imageUrl: c.featuredImage ?? `${baseUrl}/og?title=${encodeURIComponent(c.title)}`,
+            articleSection: resolvePublishing(c.schemaAttributes).categories[0] ?? (c.schemaType === "TechArticle" ? "Bilgi Bankası" : undefined),
             authorName: resolvePublishing(c.schemaAttributes).authorName || c.authorName,
             updatedAt: c.updatedAt,
             publishedAt: c.publishedAt ?? c.createdAt ?? null,
