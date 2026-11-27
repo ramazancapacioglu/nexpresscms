@@ -159,6 +159,7 @@ export default async function AdminSeoPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/admin/seo/reports"
+              prefetch={false}
               className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-[12px] font-medium text-foreground hover:bg-muted transition"
             >
               <span>Raporları Aç</span>
@@ -245,7 +246,7 @@ export default async function AdminSeoPage() {
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <h2 className="text-[13px] font-semibold text-foreground">Skor Dağılımı</h2>
-                <Link href="/admin/seo/audit" className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                <Link href="/admin/seo/audit" prefetch={false} className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
                   Denetimi aç →
                 </Link>
               </div>
@@ -278,7 +279,7 @@ export default async function AdminSeoPage() {
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[13px] font-semibold text-foreground">Öncelikli SEO Sorunları</h2>
-              <Link href="/admin/seo/audit" className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+              <Link href="/admin/seo/audit" prefetch={false} className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
                 Tümünü incele →
               </Link>
             </div>
@@ -307,7 +308,7 @@ export default async function AdminSeoPage() {
               <h3 className="text-[12px] font-semibold text-foreground">
                 AI & Arama Botları (Son 30 Gün)
               </h3>
-              <Link href="/admin/seo/reports?group=visibility" className="text-[11px] text-muted-foreground hover:text-foreground">
+              <Link href="/admin/seo/reports?group=visibility" prefetch={false} className="text-[11px] text-muted-foreground hover:text-foreground">
                 Detay →
               </Link>
             </div>
@@ -341,6 +342,7 @@ export default async function AdminSeoPage() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className="group flex items-start gap-3 rounded-xl border border-border/80 bg-card p-4 shadow-2xs transition hover:border-blue-500/60"
             >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground group-hover:bg-blue-500/10 group-hover:text-blue-600 transition">

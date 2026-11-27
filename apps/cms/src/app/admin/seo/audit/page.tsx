@@ -46,83 +46,112 @@ export default async function SeoAuditPage({
   const site = await repo.getSite();
   const locales = site?.supportedLocales ?? ["tr"];
   const locale = sp.locale && locales.includes(sp.locale) ? sp.locale : site?.defaultLocale ?? "tr";
-  const [contents, users, ragStats, entityLinks, signals] = await Promise.all([
-    repo.listContents({ locale, status: "published" }),
-    getUserRepository(me.siteId).list(),
-    getChunkRepository(me.siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
-    repo.listEntityLinks().catch(() => []),
-    getIntelRepository(me.siteId).listSignals(300).catch(() => []),
-  ]);
-  const quickWins = extractSeoQuickWins(
-    signals.map((sig) => ({
-      keyword: sig.keyword,
-      source: sig.source,
-      clicks: sig.clicks,
-      impressions: sig.impressions,
-      position: sig.position10 ? sig.position10 / 10 : null,
-    })),
-    contents.map((c) => c.title)
-  );
-  const existingPairs = entityLinks.map((l) => `${l.sourceContentId}:${l.targetContentId}`);
-  const activeRagProvider = await resolveSiteEmbeddingProvider(me.siteId).catch(() => ({
-    model: "local:hash:1536",
-    semantic: false,
-  }));
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-  const localized = resolveLocalizedSiteIdentity(site, locale);
-  const org = organizationFor(localized.seo);
-  const deepInputs = await Promise.all(
-    contents.map(async (c) => {
-      const pageUrl = c.slug === "ana-sayfa" ? `${baseUrl}/` : c.type === "campaign" ? `${baseUrl}/kampanya/${c.slug}` : `${baseUrl}/${c.slug}`;
-      const graph = await buildPageSchemaGraph({
-        siteId: me.siteId,
-        siteName: localized.name,
-        siteUrl: baseUrl,
-        locale,
-        pageUrl,
-        organization: org,
-        content: {
-          id: c.id,
-          title: c.title,
-          tldr: c.tldr,
-          schemaType: c.schemaType,
-          schemaAttributes: c.schemaAttributes,
-          authorName: resolvePublishing(c.schemaAttributes).authorName || c.authorName,
-          updatedAt: c.updatedAt,
-          publishedAt: c.publishedAt ?? c.createdAt ?? null,
-          blocks: c.blocks as never,
-        },
-      }).catch(() => null);
-      return {
-        id: c.id,
-        contentId: c.contentId,
-        slug: c.slug,
-        type: c.type,
-        title: c.title,
-        tldr: c.tldr,
-        noIndex: c.noIndex,
-        schemaType: c.schemaType,
-        schemaAttributes: c.schemaAttributes,
-        blocks: c.blocks as never,
-        markdownCache: c.markdownCache ?? "",
-        authorName: c.authorName,
-        schemaNodes: graph?.["@graph"],
-      };
-    })
-  );
-  const deepReport = runDeepSiteAudit({
-    contents: deepInputs,
-    authors: users
-      .filter((u) => u.name.trim())
-      .map((u) => ({ slug: authorSlug(u.name), name: u.name.trim(), profile: authorProfileFromRow(u) })),
-    ragHealth: {
-      activeModel: activeRagProvider.model,
-      activeSemantic: activeRagProvider.semantic,
-      chunkModels: ragStats.models.map((m) => ({ model: m.model, count: m.chunks })),
-      indexedContents: ragStats.contents,
-      totalPublished: contents.length,
-    },
-  });
+  const contents = await repo.listContents({ locale, status: "published" });
+
+  // Ağır hesaplamalar yalnızca ilgili sekme açıkken çalışır (diğer sekmelerde 0 ms yük)
+  const deepReport =
+    activeTab === "deep"
+      ? await (async () => {
+          const [users, ragStats, activeRagProvider] = await Promise.all([
+            getUserRepository(me.siteId).list(),
+            getChunkRepository(me.siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
+            resolveSiteEmbeddingProvider(me.siteId).catch(() => ({ model: "local:hash:1536", semantic: false })),
+          ]);
+          const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+          const localized = resolveLocalizedSiteIdentity(site, locale);
+          const org = organizationFor(localized.seo);
+          const deepInputs = await Promise.all(
+            contents.map(async (c) => {
+              const pageUrl =
+                c.slug === "ana-sayfa"
+                  ? `${baseUrl}/`
+                  : c.type === "campaign"
+                    ? `${baseUrl}/kampanya/${c.slug}`
+                    : `${baseUrl}/${c.slug}`;
+              const graph = await buildPageSchemaGraph({
+                siteId: me.siteId,
+                siteName: localized.name,
+                siteUrl: baseUrl,
+                locale,
+                pageUrl,
+                organization: org,
+                content: {
+                  id: c.id,
+                  title: c.title,
+                  tldr: c.tldr,
+                  schemaType: c.schemaType,
+                  schemaAttributes: c.schemaAttributes,
+                  authorName: resolvePublishing(c.schemaAttributes).authorName || c.authorName,
+                  updatedAt: c.updatedAt,
+                  publishedAt: c.publishedAt ?? c.createdAt ?? null,
+                  blocks: c.blocks as never,
+                },
+              }).catch(() => null);
+              return {
+                id: c.id,
+                contentId: c.contentId,
+                slug: c.slug,
+                type: c.type,
+                title: c.title,
+                tldr: c.tldr,
+                noIndex: c.noIndex,
+                schemaType: c.schemaType,
+                schemaAttributes: c.schemaAttributes,
+                blocks: c.blocks as never,
+                markdownCache: c.markdownCache ?? "",
+                authorName: c.authorName,
+                schemaNodes: graph?.["@graph"],
+              };
+            })
+          );
+          return runDeepSiteAudit({
+            contents: deepInputs,
+            authors: users
+              .filter((u) => u.name.trim())
+              .map((u) => ({ slug: authorSlug(u.name), name: u.name.trim(), profile: authorProfileFromRow(u) })),
+            ragHealth: {
+              activeModel: activeRagProvider.model,
+              activeSemantic: activeRagProvider.semantic,
+              chunkModels: ragStats.models.map((m) => ({ model: m.model, count: m.chunks })),
+              indexedContents: ragStats.contents,
+              totalPublished: contents.length,
+            },
+          });
+        })()
+      : null;
+
+  const quickWins =
+    activeTab === "quickwins"
+      ? extractSeoQuickWins(
+          (await getIntelRepository(me.siteId).listSignals(300).catch(() => [])).map((sig) => ({
+            keyword: sig.keyword,
+            source: sig.source,
+            clicks: sig.clicks,
+            impressions: sig.impressions,
+            position: sig.position10 ? sig.position10 / 10 : null,
+          })),
+          contents.map((c) => c.title)
+        )
+      : [];
+
+  const [existingPairs, linkSuggestions] =
+    activeTab === "links"
+      ? [
+          (await repo.listEntityLinks().catch(() => [])).map((l) => `${l.sourceContentId}:${l.targetContentId}`),
+          suggestInternalLinks(
+            contents.map((c) => ({
+              id: c.id,
+              slug: c.slug,
+              title: c.title,
+              locale,
+              focusKeyword: resolvePublishing(c.schemaAttributes).focusKeyword ?? "",
+              markdown: c.markdownCache ?? "",
+            })),
+            { maxSuggestions: 12 }
+          ),
+        ]
+      : [[], []];
+
   const report = auditSeo(
     contents.map((c) => ({
       id: c.id,
@@ -146,31 +175,19 @@ export default async function SeoAuditPage({
     ? report.rows.filter((r) => r.issues.some((i) => i.id === issue))
     : report.rows;
 
-  const linkSuggestions = suggestInternalLinks(
-    contents.map((c) => ({
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      locale,
-      focusKeyword: resolvePublishing(c.schemaAttributes).focusKeyword ?? "",
-      markdown: c.markdownCache ?? "",
-    })),
-    { maxSuggestions: 12 }
-  );
   const s = report.summary;
   const q = (extra: string) => `/admin/seo/audit?locale=${locale}${extra}`;
-  const deepCount = deepReport.summary.errors + deepReport.summary.warnings;
   const tabs: Array<{ id: AuditTabId; label: string; count?: string | number; tone?: "rose" | "amber" | "emerald" | "blue"; icon: React.ReactNode }> = [
     { id: "pages", label: "Sayfa Denetimi", count: s.pages, icon: <FileSearch className="h-3.5 w-3.5" /> },
     {
       id: "deep",
       label: "Derin Şema & GEO",
-      count: `${deepReport.summary.score}/100`,
-      tone: deepReport.summary.errors > 0 ? "rose" : deepCount > 0 ? "amber" : "emerald",
+      count: deepReport ? `${deepReport.summary.score}/100` : undefined,
+      tone: deepReport ? (deepReport.summary.errors > 0 ? "rose" : deepReport.summary.warnings > 0 ? "amber" : "emerald") : undefined,
       icon: <ShieldCheck className="h-3.5 w-3.5" />,
     },
-    { id: "quickwins", label: "Hızlı Kazanımlar", count: quickWins.length, tone: quickWins.length > 0 ? "blue" : undefined, icon: <Sparkles className="h-3.5 w-3.5" /> },
-    { id: "links", label: "İç Bağlantı & Bilgi Ağı", count: linkSuggestions.length, icon: <Link2 className="h-3.5 w-3.5" /> },
+    { id: "quickwins", label: "Hızlı Kazanımlar", count: activeTab === "quickwins" ? quickWins.length : undefined, tone: quickWins.length > 0 ? "blue" : undefined, icon: <Sparkles className="h-3.5 w-3.5" /> },
+    { id: "links", label: "İç Bağlantı & Bilgi Ağı", count: activeTab === "links" ? linkSuggestions.length : undefined, icon: <Link2 className="h-3.5 w-3.5" /> },
     { id: "external", label: "Dış Bağlantı Tarayıcı", icon: <ExternalLink className="h-3.5 w-3.5" /> },
   ];
 
@@ -189,6 +206,7 @@ export default async function SeoAuditPage({
                   role="tab"
                   aria-selected={l === locale}
                   href={`/admin/seo/audit?locale=${l}&tab=${activeTab}`}
+                  prefetch={false}
                   className={`rounded-md px-3 py-1 ${l === locale ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground"}`}
                 >
                   {l.toUpperCase()}
@@ -254,6 +272,7 @@ export default async function SeoAuditPage({
             <Link
               key={tab.id}
               href={q(`&tab=${tab.id}`)}
+              prefetch={false}
               aria-current={isActive ? "page" : undefined}
               className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition ${
                 isActive
@@ -279,6 +298,7 @@ export default async function SeoAuditPage({
           <div className="flex flex-wrap gap-1.5 text-[12px]">
             <Link
               href={q("&tab=pages")}
+              prefetch={false}
               aria-current={!issue ? "page" : undefined}
               className={`rounded-full border px-3 py-1 font-medium transition ${
                 !issue
@@ -294,6 +314,7 @@ export default async function SeoAuditPage({
                 <Link
                   key={id}
                   href={q(`&tab=pages&issue=${id}`)}
+                  prefetch={false}
                   aria-current={issue === id ? "page" : undefined}
                   className={`rounded-full border px-3 py-1 font-medium transition ${
                     issue === id
@@ -310,7 +331,7 @@ export default async function SeoAuditPage({
         </div>
       )}
 
-      {activeTab === "deep" && <DeepAuditPanel report={deepReport} />}
+      {activeTab === "deep" && deepReport && <DeepAuditPanel report={deepReport} />}
 
       {activeTab === "quickwins" && <SeoQuickWinsPanel wins={quickWins} />}
 

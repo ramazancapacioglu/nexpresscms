@@ -109,7 +109,7 @@ export function KpiStatCard({
 
   if (href) {
     return (
-      <Link href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl">
+      <Link href={href} prefetch={false} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl">
         {inner}
       </Link>
     );
@@ -293,7 +293,7 @@ export function HealthBarRow({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 text-[12px]">
         {href ? (
-          <Link href={href} className="truncate font-medium text-foreground hover:text-blue-600 hover:underline">
+          <Link href={href} prefetch={false} className="truncate font-medium text-foreground hover:text-blue-600 hover:underline">
             {label}
           </Link>
         ) : (
