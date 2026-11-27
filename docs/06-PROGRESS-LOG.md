@@ -27,6 +27,7 @@
 - **Mağaza rotası eklenti kapısı (`apps/cms/src/app/(public)/[locale]/magaza/page.tsx`):** `@nexpress/commerce` eklentisi veya mağaza ayarı kapalıysa `/magaza` doğrudan `404` (`notFound()`) döner; açıkken markalı başlık (`Mağaza — Site Adı`) ve `alternates.canonical` üretir.
 - **Markdown ↔ HTML tam eşliği (`packages/core/src/markdown-compiler.ts`):** `software_product_card` bloğunda sayısal fiyat (`price > 0`) varken atlanan `priceLabel` (taksit/ödeme notu), `campaignBadge`, `releaseDate`, `priceValidUntil` ve fiyat tablosu satır notları (`row.note`) artık eksiksiz Markdown'a derlenir.
 - **Teklif geçerlilik tarihi (`packages/seo-core/src/engine.ts`):** `software_product_card` JSON-LD üretiminde (`Offer` ve `AggregateOffer`) `priceValidUntil` alanı desteklenir.
+- **Sekmeli SEO Denetim ekranı (`apps/cms/src/app/admin/seo/audit/page.tsx`):** Alt alta uzayan kartlar `?tab=pages|deep|quickwins|links|external` yapısıyla 5 sekmeye (`Sayfa Denetimi`, `Derin Şema & GEO`, `Hızlı Kazanımlar`, `İç Bağlantı & Bilgi Ağı`, `Dış Bağlantı Tarayıcı`) ayrıldı.
 
 ### [2026-11-25] — Toplu IndexNow Gönderimi & Tek Dilli Kanonik URL Bildirimi
 - **Toplu IndexNow (`apps/cms/src/lib/indexnow.ts`, `actions.ts`, `content-list-bulk-bar.tsx`, `use-content-list.tsx`):** `submitIndexNowUrls` tek dilli sitede `/tr` ön ekini temizleyip toplu bildirim yapar; Sayfalar, Yazılar, Sorular ve Tüm İçerikler toplu seçim çubuğuna **IndexNow'a Gönder** düğmesi eklendi; SEO ayarlarındaki otomatik yayın/güncelleme IndexNow seçeneğinin etiketi netleştirildi.

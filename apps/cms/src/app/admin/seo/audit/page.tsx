@@ -25,17 +25,23 @@ import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { ExternalLinkAudit } from "@/components/admin/seo/external-link-audit";
 import { KpiStatCard } from "@/components/admin/ui/saas-charts";
 import { SeoAuditTableClient } from "@/components/admin/seo/seo-audit-table-client";
-import { AlertCircle, AlertTriangle, CheckCircle2, Gauge } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, ExternalLink, FileSearch, Gauge, Link2, ShieldCheck, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+type AuditTabId = "pages" | "deep" | "quickwins" | "links" | "external";
 
 export default async function SeoAuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ issue?: string; locale?: string }>;
+  searchParams: Promise<{ issue?: string; locale?: string; tab?: string }>;
 }) {
   const me = await requireUser();
   const sp = await searchParams;
+  const activeTab: AuditTabId =
+    sp.tab === "deep" || sp.tab === "quickwins" || sp.tab === "links" || sp.tab === "external"
+      ? sp.tab
+      : "pages";
   const repo = getScopedRepository(me.siteId);
   const site = await repo.getSite();
   const locales = site?.supportedLocales ?? ["tr"];
@@ -153,6 +159,20 @@ export default async function SeoAuditPage({
   );
   const s = report.summary;
   const q = (extra: string) => `/admin/seo/audit?locale=${locale}${extra}`;
+  const deepCount = deepReport.summary.errors + deepReport.summary.warnings;
+  const tabs: Array<{ id: AuditTabId; label: string; count?: string | number; tone?: "rose" | "amber" | "emerald" | "blue"; icon: React.ReactNode }> = [
+    { id: "pages", label: "Sayfa Denetimi", count: s.pages, icon: <FileSearch className="h-3.5 w-3.5" /> },
+    {
+      id: "deep",
+      label: "Derin Şema & GEO",
+      count: `${deepReport.summary.score}/100`,
+      tone: deepReport.summary.errors > 0 ? "rose" : deepCount > 0 ? "amber" : "emerald",
+      icon: <ShieldCheck className="h-3.5 w-3.5" />,
+    },
+    { id: "quickwins", label: "Hızlı Kazanımlar", count: quickWins.length, tone: quickWins.length > 0 ? "blue" : undefined, icon: <Sparkles className="h-3.5 w-3.5" /> },
+    { id: "links", label: "İç Bağlantı & Bilgi Ağı", count: linkSuggestions.length, icon: <Link2 className="h-3.5 w-3.5" /> },
+    { id: "external", label: "Dış Bağlantı Tarayıcı", icon: <ExternalLink className="h-3.5 w-3.5" /> },
+  ];
 
   return (
     <div className="space-y-5">
@@ -168,7 +188,7 @@ export default async function SeoAuditPage({
                   key={l}
                   role="tab"
                   aria-selected={l === locale}
-                  href={`/admin/seo/audit?locale=${l}`}
+                  href={`/admin/seo/audit?locale=${l}&tab=${activeTab}`}
                   className={`rounded-md px-3 py-1 ${l === locale ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground"}`}
                 >
                   {l.toUpperCase()}
@@ -216,45 +236,92 @@ export default async function SeoAuditPage({
         />
       </div>
 
-      <DeepAuditPanel report={deepReport} />
-      <SeoQuickWinsPanel wins={quickWins} />
-
-      {/* Sorun Türü Hızlı Filtre Rozetleri */}
-      <div className="flex flex-wrap gap-1.5 text-[12px]">
-        <Link
-          href={q("")}
-          aria-current={!issue ? "page" : undefined}
-          className={`rounded-full border px-3 py-1 font-medium transition ${
-            !issue
-              ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-              : "border-border bg-card text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Tümü ({s.pages})
-        </Link>
-        {(Object.entries(s.byIssue) as Array<[SeoIssueId, number]>)
-          .sort((a, b) => b[1] - a[1])
-          .map(([id, n]) => (
+      {/* Alt Denetim Sekmeleri (Raporlar sayfası düzeni) */}
+      <nav aria-label="SEO Denetim Sekmeleri" className="flex flex-wrap items-center gap-1.5 border-b border-border pb-2.5">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const badgeClass =
+            tab.tone === "rose"
+              ? "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+              : tab.tone === "amber"
+                ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+                : tab.tone === "emerald"
+                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                  : tab.tone === "blue"
+                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
+                    : "bg-muted text-muted-foreground";
+          return (
             <Link
-              key={id}
-              href={q(`&issue=${id}`)}
-              aria-current={issue === id ? "page" : undefined}
+              key={tab.id}
+              href={q(`&tab=${tab.id}`)}
+              aria-current={isActive ? "page" : undefined}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition ${
+                isActive
+                  ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300 shadow-2xs"
+                  : "border-transparent bg-muted/40 text-muted-foreground hover:border-border hover:bg-muted/70 hover:text-foreground"
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              {tab.count !== undefined && (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${badgeClass}`}>
+                  {tab.count}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {activeTab === "pages" && (
+        <div className="space-y-4">
+          {/* Sorun Türü Hızlı Filtre Rozetleri */}
+          <div className="flex flex-wrap gap-1.5 text-[12px]">
+            <Link
+              href={q("&tab=pages")}
+              aria-current={!issue ? "page" : undefined}
               className={`rounded-full border px-3 py-1 font-medium transition ${
-                issue === id
+                !issue
                   ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              {SEO_ISSUE_LABELS[id]} ({n})
+              Tümü ({s.pages})
             </Link>
-          ))}
-      </div>
+            {(Object.entries(s.byIssue) as Array<[SeoIssueId, number]>)
+              .sort((a, b) => b[1] - a[1])
+              .map(([id, n]) => (
+                <Link
+                  key={id}
+                  href={q(`&tab=pages&issue=${id}`)}
+                  aria-current={issue === id ? "page" : undefined}
+                  className={`rounded-full border px-3 py-1 font-medium transition ${
+                    issue === id
+                      ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {SEO_ISSUE_LABELS[id]} ({n})
+                </Link>
+              ))}
+          </div>
 
-      <SeoAuditTableClient rows={rows} locale={locale} />
+          <SeoAuditTableClient rows={rows} locale={locale} />
+        </div>
+      )}
 
-      <EntityLinkSuggestions suggestions={linkSuggestions} existingPairs={existingPairs} locale={locale} />
-      <LinkAuditCard contents={contents} locales={locales} />
-      <ExternalLinkAudit />
+      {activeTab === "deep" && <DeepAuditPanel report={deepReport} />}
+
+      {activeTab === "quickwins" && <SeoQuickWinsPanel wins={quickWins} />}
+
+      {activeTab === "links" && (
+        <div className="space-y-5">
+          <EntityLinkSuggestions suggestions={linkSuggestions} existingPairs={existingPairs} locale={locale} />
+          <LinkAuditCard contents={contents} locales={locales} />
+        </div>
+      )}
+
+      {activeTab === "external" && <ExternalLinkAudit />}
     </div>
   );
 }
