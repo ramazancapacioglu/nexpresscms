@@ -609,13 +609,21 @@ export function buildPlacementExtraProps(
   return out;
 }
 
-/** `mode: "additional"` kurallarından `@graph` içine eklenecek bağlı JSON-LD düğümlerini üretir. */
+/** `mode: "additional"` kurallarından `@graph` içine eklenecek bağlı JSON-LD düğümlerini üretir.
+ * Aynı sayfada aynı `@type` için birden fazla ek kural eşleşirse yalnızca en yüksek öncelikli ilk kural basılır. */
 export function buildAdditionalSchemaNodes(
   rules: SchemaPlacement[],
   vars: SchemaTemplateVars
 ): Array<Record<string, unknown>> {
   const siteRoot = vars.siteUrl.replace(/\/$/, "");
-  return rules.map((rule) => {
+  const seenTypes = new Set<string>();
+  const uniqueRules = rules.filter((rule) => {
+    const key = rule.schemaType.trim().toLowerCase();
+    if (seenTypes.has(key)) return false;
+    seenTypes.add(key);
+    return true;
+  });
+  return uniqueRules.map((rule) => {
     const extra = buildPlacementExtraProps(rule, vars);
     const node: Record<string, unknown> = {
       "@type": rule.schemaType,

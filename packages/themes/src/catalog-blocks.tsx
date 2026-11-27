@@ -69,7 +69,7 @@ export function renderStudioCatalogBlock(
         <>
           {imgUrl ? (
             <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-nx-subtle p-1.5">
-              <img src={imgUrl} alt={text(p.title)} loading="lazy" className="h-full w-full object-contain" />
+              <img src={imgUrl} alt={text(p.title)} width={48} height={48} loading="lazy" className="h-full w-full object-contain" />
             </div>
           ) : iconPath ? (
             <div

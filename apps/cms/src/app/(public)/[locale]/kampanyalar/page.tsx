@@ -8,9 +8,11 @@ import { getScopedRepository } from "@nexpress/database";
 import {
   resolveCampaignData,
   buildCampaignsItemListJsonLd,
+  resolveLocalizedSiteIdentity,
   type ResolvedCampaign,
 } from "@nexpress/core";
-import { jsonLdString } from "@nexpress/seo-core";
+import { buildPageSchemaGraph, jsonLdString } from "@nexpress/seo-core";
+import { organizationFor } from "@/lib/organization-schema";
 import { INDEXABLE_ROBOTS } from "@/lib/robots-meta";
 
 export const dynamic = "force-dynamic";
@@ -76,22 +78,48 @@ export default async function PublicCampaignsArchivePage({
   const activeCampaigns = campaigns.filter((c) => !c.isExpired);
   const expiredCampaigns = campaigns.filter((c) => c.isExpired);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const archiveUrl = `${baseUrl}${lb}/kampanyalar`;
+  const localized = resolveLocalizedSiteIdentity(site, locale);
 
   const itemListJsonLd = buildCampaignsItemListJsonLd(activeCampaigns, {
     localeBase: lb,
     archiveUrl,
     siteUrl: baseUrl,
-    name: `${site?.name ?? "NexPress"} Güncel Kampanyalar`,
+    name: `${localized.name || "NexPress"} Güncel Kampanyalar`,
   });
+
+  const graph = await buildPageSchemaGraph({
+    siteId,
+    siteName: localized.name || site?.name || "NexPress",
+    siteUrl: baseUrl,
+    locale,
+    pageUrl: archiveUrl,
+    breadcrumbs: [
+      { name: "Ana sayfa", url: `${baseUrl}${lb || "/"}` },
+      { name: "Kampanyalar", url: archiveUrl },
+    ],
+    organization: organizationFor(localized.seo),
+    content: {
+      id: "campaigns:index",
+      title: "Güncel Kampanyalar",
+      tldr: `${localized.name || "Sitemiz"} güncel yazılım, e-ticaret ve lisans kampanyaları, indirimler ve hediye avantajları.`,
+      schemaType: "CollectionPage",
+    },
+  });
+  const graphNodes = graph["@graph"] as Array<Record<string, unknown>>;
+  const collectionNode = graphNodes.find((n) => n["@type"] === "CollectionPage");
+  const { "@context": _ctx, ...itemListNode } = itemListJsonLd as Record<string, unknown>;
+  const listId = `${archiveUrl}#itemlist`;
+  if (collectionNode) collectionNode.mainEntity = { "@id": listId };
+  graphNodes.push({ ...itemListNode, "@id": listId });
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-      {/* Schema.org ItemList JSON-LD */}
+      {/* Schema.org @graph (Organization, WebSite, CollectionPage, ItemList, BreadcrumbList) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(graph) }}
       />
 
       {/* Hero Header */}
