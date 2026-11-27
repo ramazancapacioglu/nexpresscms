@@ -501,7 +501,8 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
     case "comparison_table":
     case "data_table": {
       const title = typeof p.title === "string" && p.title.trim() ? `## ${p.title.trim()}\n\n` : "";
-      const cols = Array.isArray(p.columns) ? p.columns.map((c) => String(c ?? "").trim()) : [];
+      const rawCols = Array.isArray(p.headers) && p.headers.length > 0 ? p.headers : Array.isArray(p.columns) ? p.columns : [];
+      const cols = rawCols.map((c) => String(c ?? "").trim()).filter(Boolean);
       const rows = Array.isArray(p.rows) ? p.rows : [];
       if (cols.length === 0 && rows.length === 0) return "";
       const out: string[] = [];

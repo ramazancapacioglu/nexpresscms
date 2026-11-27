@@ -393,7 +393,7 @@ export function SiteFooter({
     ...allBottom.filter((link) => socialKind(link.href, link.label)).map((link) => ({ href: link.href, label: link.label })),
   ].filter((item, index, list) => list.findIndex((other) => other.href === item.href) === index);
   return (
-    <footer className="nx-footer mt-16">
+    <footer className="nx-footer mt-16 pb-20 sm:pb-0">
       {/* Mobilde ilk sütun (iletişim) açık, diğer sütunlar akordiyon (onay kutusu + etiket, betik yok); masaüstünde 12'li ızgara ve düz başlık */}
       <style>{`.nx-fcol{grid-column:1/-1}.nx-fchk{position:absolute;opacity:0;pointer-events:none}.nx-fhead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.nx-fhead::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;opacity:.7}.nx-fchk:checked+.nx-fhead::after{transform:rotate(-135deg)}.nx-fchk:focus-visible+.nx-fhead{outline:2px solid currentColor;outline-offset:2px}.nx-fchk:not(:checked)~.nx-fbody{display:none}.nx-fbody{padding-top:14px}@media(max-width:767px){.nx-fgrid{row-gap:0!important}.nx-fhead{padding-right:40px}.nx-fbody{padding-bottom:14px}}@media(min-width:768px){.nx-fcol{grid-column:span var(--nx-span)/span var(--nx-span)}.nx-fhead{min-height:0;cursor:default;border:0;font-size:12px;letter-spacing:.08em;opacity:.85;pointer-events:none;margin-bottom:10px}.nx-fhead::after{display:none}.nx-fchk:not(:checked)~.nx-fbody{display:block}.nx-fbody{padding-top:0}}`}</style>
       {footer?.topBanner?.enabled ? (

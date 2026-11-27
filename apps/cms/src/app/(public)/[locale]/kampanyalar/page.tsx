@@ -149,7 +149,7 @@ export default async function PublicCampaignsArchivePage({
                     <span />
                   )}
 
-                  {camp.discount && (
+                  {camp.discount && (!camp.badge || !camp.badge.toLowerCase().includes(camp.discount.toLowerCase())) && (
                     <span className="rounded-md bg-[var(--nx-primary,#0c644e)] text-white text-xs font-extrabold px-2 py-1 shadow-sm">
                       {camp.discount}
                     </span>

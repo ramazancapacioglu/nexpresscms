@@ -15,7 +15,15 @@ import { templateFor } from "@/lib/templates";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return { title: createTranslator(locale)("search.title"), robots: { index: false, follow: true } };
+  const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
+  const [site, lb] = await Promise.all([getPublicSite(siteId), siteLocaleBase(siteId, locale)]);
+  const origin = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const label = createTranslator(locale)("search.title");
+  return {
+    title: site?.name ? `${label} — ${site.name}` : label,
+    alternates: { canonical: `${origin}${lb}/ara` },
+    robots: { index: false, follow: true },
+  };
 }
 
 const MAX_QUERY = 120;

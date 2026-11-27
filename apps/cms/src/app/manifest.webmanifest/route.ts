@@ -8,11 +8,22 @@ export async function GET(request: Request) {
   const site = await getPublicSite(siteId);
   const settings = resolveSiteSettings(site?.settings);
   if (!settings.seo.siteIcon) return new NextResponse(null, { status: 404 });
-  const name = site?.name ?? "NexPress";
+  const name = (site?.name ?? "NexPress").trim();
+  const shortName = (() => {
+    if (name.length <= 16) return name;
+    const words = name.split(/\s+/);
+    let acc = "";
+    for (const w of words) {
+      const next = acc ? `${acc} ${w}` : w;
+      if (next.length > 16) break;
+      acc = next;
+    }
+    return acc || name.slice(0, 12).trim();
+  })();
   return NextResponse.json(
     {
       name,
-      short_name: name.length > 12 ? name.slice(0, 12).trim() : name,
+      short_name: shortName,
       start_url: "/",
       display: "browser",
       theme_color: site?.designTokens?.colors.primary ?? "#2563eb",

@@ -191,21 +191,21 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
     case "tldr_box": {
       if (themeId === CR_THEME_ID) {
         return (
-          <aside aria-label="Kısa yanıt" className="nx-cr-tldr">
+          <aside aria-label="Kısa yanıt" className="nx-tldr nx-cr-tldr">
             <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
           </aside>
         );
       }
       if (themeId === SA_THEME_ID) {
         return (
-          <aside aria-label="Kısa yanıt" className="nx-sa-tldr">
+          <aside aria-label="Kısa yanıt" className="nx-tldr nx-sa-tldr">
             <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
           </aside>
         );
       }
       if (themeId === KA_THEME_ID) {
         return (
-          <aside aria-label="Kısa yanıt" className="nx-ka-tldr">
+          <aside aria-label="Kısa yanıt" className="nx-tldr nx-ka-tldr">
             <RichBlock as="div" className="nx-rich" html={p.html} text={p.summary ?? p.text} />
           </aside>
         );
@@ -218,7 +218,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
             backgroundColor: tokens.colors.muted,
             borderRadius: tokens.geometry.borderRadius,
           }}
-          className="border-l-4 p-6"
+          className="nx-tldr border-l-4 p-6"
         >
           <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase mb-2" style={{ color: tokens.colors.primary }}>
             <span>⚡ {createTranslator(locale ?? "tr")("blocks.tldr")}</span>

@@ -75,8 +75,8 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: content.canonicalUrl || url },
-    // Diğer sayfalarla aynı robots sözleşmesi (büyük görsel ve sınırsız özet); süresi dolan kampanya arşiv olarak dizinde kalır, yalnızca site haritasından çıkar
-    robots: { index: !content.noIndex, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+    // Süresi dolan kampanya arşiv olarak yayında kalır ancak arama motoru dizinine girmez (noindex, follow)
+    robots: { index: !content.noIndex && !camp.isExpired, follow: true, "max-image-preview": "large", "max-snippet": -1 },
     openGraph: {
       title,
       description,

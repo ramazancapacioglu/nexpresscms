@@ -252,7 +252,7 @@ export const WIDGET_CATALOG: WidgetCatalogEntry[] = [
     defaultTitle: "Arama Yap",
     defaultSettings: {
       placeholder: "Yazı, kategori veya ürün ara…",
-      popularKeywords: "Performans, SEO, E-Ticaret, Kurumsal",
+      popularKeywords: "",
     },
   },
   {
