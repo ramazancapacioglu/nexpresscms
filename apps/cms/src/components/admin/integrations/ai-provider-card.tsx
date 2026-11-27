@@ -26,10 +26,15 @@ interface AiProviderCardProps {
   };
 }
 
+interface ModelOption {
+  value: string;
+  label: string;
+}
+
 const DEFAULTS: Record<AiProviderKind, { baseUrl: string; chatModel: string; deepChatModel: string; embeddingModel: string }> = {
   openai: {
     baseUrl: "https://api.openai.com/v1",
-    chatModel: "gpt-4o-mini",
+    chatModel: "gpt-4.1-mini",
     deepChatModel: "gpt-4.1",
     embeddingModel: "text-embedding-3-small",
   },
@@ -47,8 +52,113 @@ const DEFAULTS: Record<AiProviderKind, { baseUrl: string; chatModel: string; dee
   },
 };
 
+const FAST_MODELS: Record<AiProviderKind, ModelOption[]> = {
+  openai: [
+    { value: "gpt-4.1-mini", label: "gpt-4.1-mini — Önerilen (Hızlı, Ekonomik, Araçlarda Güçlü)" },
+    { value: "gpt-4.1-nano", label: "gpt-4.1-nano — Ultra Ekonomik & En Hızlı" },
+    { value: "gpt-4o-mini", label: "gpt-4o-mini — Klasik Ekonomik" },
+    { value: "gpt-5-mini", label: "gpt-5-mini — Yeni Nesil Hızlı" },
+  ],
+  gemini: [
+    { value: "gemini-flash-latest", label: "gemini-flash-latest — Önerilen (Hızlı, Geniş Bağlam)" },
+    { value: "gemini-flash-lite-latest", label: "gemini-flash-lite-latest — Ultra Ekonomik" },
+    { value: "gemini-2.5-flash-lite", label: "gemini-2.5-flash-lite — Hafif & Hızlı" },
+  ],
+  custom: [],
+};
+
+const DEEP_MODELS: Record<AiProviderKind, ModelOption[]> = {
+  openai: [
+    { value: "gpt-4.1", label: "gpt-4.1 — Önerilen (SEO/GEO Analiz, İçerik & Tasarım)" },
+    { value: "gpt-5", label: "gpt-5 — En Güçlü Uzman Muhakeme & Strateji" },
+    { value: "gpt-4o", label: "gpt-4o — Dengeli Çok Yönlü" },
+    { value: "o4-mini", label: "o4-mini — Hızlı Teknik Akıl Yürütme" },
+  ],
+  gemini: [
+    { value: "gemini-2.5-pro", label: "gemini-2.5-pro — Önerilen (Derin Analiz & Uzun İçerik)" },
+    { value: "gemini-pro-latest", label: "gemini-pro-latest — Güncel Pro Sürümü" },
+    { value: "gemini-flash-latest", label: "gemini-flash-latest — Hızlı & Ekonomik" },
+  ],
+  custom: [],
+};
+
+const EMBED_MODELS: Record<AiProviderKind, ModelOption[]> = {
+  openai: [
+    { value: "text-embedding-3-small", label: "text-embedding-3-small — Önerilen (1536d, Ekonomik)" },
+    { value: "text-embedding-3-large", label: "text-embedding-3-large — Yüksek Hassasiyet (1536d)" },
+  ],
+  gemini: [
+    { value: "gemini-embedding-001", label: "gemini-embedding-001 — Önerilen (1536d, Türkçe Güçlü)" },
+  ],
+  custom: [],
+};
+
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 const field = `h-8 w-full rounded-md border ${border} bg-transparent px-2.5 text-[12px] outline-none focus:border-blue-600`;
+
+function ModelPicker({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  bgClass = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  options: ModelOption[];
+  placeholder: string;
+  bgClass?: string;
+}) {
+  const isPreset = options.some((o) => o.value === value);
+  const [customMode, setCustomMode] = useState(options.length === 0 || (Boolean(value) && !isPreset));
+  const effectiveCustom = options.length === 0 || customMode;
+
+  return (
+    <label className="block space-y-1 font-medium">
+      <span className="flex items-center justify-between gap-2">
+        <span>{label}</span>
+        {options.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              if (effectiveCustom) {
+                setCustomMode(false);
+                if (!isPreset && options[0]) onChange(options[0].value);
+              } else {
+                setCustomMode(true);
+              }
+            }}
+            className="text-[10px] font-normal text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {effectiveCustom ? "Listeden seç" : "Özel ad yaz"}
+          </button>
+        )}
+      </span>
+      {effectiveCustom ? (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`${field} ${bgClass} font-mono`}
+        />
+      ) : (
+        <select
+          value={isPreset ? value : options[0]?.value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className={`${field} ${bgClass}`}
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      )}
+    </label>
+  );
+}
 
 export function AiProviderCard({ initial }: AiProviderCardProps) {
   const [pending, start] = useTransition();
@@ -56,9 +166,11 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
   const [provider, setProvider] = useState<AiProviderKind>(initial.provider);
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial.baseUrl);
-  const [chatModel, setChatModel] = useState(initial.chatModel);
-  const [deepChatModel, setDeepChatModel] = useState(initial.deepChatModel);
-  const [embeddingModel, setEmbeddingModel] = useState(initial.embeddingModel);
+  const [chatModel, setChatModel] = useState(initial.chatModel || DEFAULTS[initial.provider].chatModel);
+  const [deepChatModel, setDeepChatModel] = useState(initial.deepChatModel || DEFAULTS[initial.provider].deepChatModel);
+  const [embeddingModel, setEmbeddingModel] = useState(
+    initial.embeddingModel || DEFAULTS[initial.separateEmbedding ? initial.embeddingProvider : initial.provider].embeddingModel
+  );
   const [hasKey, setHasKey] = useState(initial.hasKey);
 
   const [separateEmbedding, setSeparateEmbedding] = useState(initial.separateEmbedding);
@@ -117,8 +229,8 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
           <label className="block space-y-1 font-medium">
             Sağlayıcı
             <select value={provider} onChange={(e) => switchProvider(e.target.value as AiProviderKind)} className={field}>
-              <option value="openai">OpenAI (GPT-4o / GPT-4.1)</option>
-              <option value="gemini">Google Gemini (OpenAI uyumlu)</option>
+              <option value="openai">OpenAI (GPT-4.1 / GPT-5 / o4)</option>
+              <option value="gemini">Google Gemini (Flash / 2.5 Pro)</option>
               <option value="custom">Özel OpenAI-Uyumlu (OpenRouter, Groq, vLLM)</option>
             </select>
           </label>
@@ -149,25 +261,21 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
             />
           </label>
 
-          <label className="block space-y-1 font-medium">
-            Hızlı / Standart Sohbet Modeli
-            <input
-              value={chatModel}
-              onChange={(e) => setChatModel(e.target.value)}
-              placeholder={DEFAULTS[provider].chatModel || "gpt-4o-mini"}
-              className={`${field} font-mono`}
-            />
-          </label>
+          <ModelPicker
+            label="Hızlı / Standart Sohbet Modeli"
+            value={chatModel}
+            onChange={setChatModel}
+            options={FAST_MODELS[provider]}
+            placeholder={DEFAULTS[provider].chatModel || "gpt-4.1-mini"}
+          />
 
-          <label className="block space-y-1 font-medium">
-            Derin Analiz &amp; İçerik Modeli
-            <input
-              value={deepChatModel}
-              onChange={(e) => setDeepChatModel(e.target.value)}
-              placeholder={DEFAULTS[provider].deepChatModel || "gpt-4.1"}
-              className={`${field} font-mono`}
-            />
-          </label>
+          <ModelPicker
+            label="Derin Analiz, Tasarım & İçerik Modeli"
+            value={deepChatModel}
+            onChange={setDeepChatModel}
+            options={DEEP_MODELS[provider]}
+            placeholder={DEFAULTS[provider].deepChatModel || "gpt-4.1"}
+          />
 
           <label className="block space-y-1 font-medium">
             Sohbet API Taban Adresi (Base URL)
@@ -215,7 +323,7 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
                 className={`${field} bg-white dark:bg-[#15171C]`}
               >
                 <option value="gemini">Google Gemini (gemini-embedding-001)</option>
-                <option value="openai">OpenAI (text-embedding-3-small)</option>
+                <option value="openai">OpenAI (text-embedding-3)</option>
                 <option value="custom">Özel OpenAI-Uyumlu</option>
               </select>
             </label>
@@ -244,15 +352,14 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
               />
             </label>
 
-            <label className="block space-y-1 font-medium">
-              RAG Gömme (Embedding) Modeli
-              <input
-                value={embeddingModel}
-                onChange={(e) => setEmbeddingModel(e.target.value)}
-                placeholder={DEFAULTS[embeddingProvider].embeddingModel || "gemini-embedding-001"}
-                className={`${field} bg-white dark:bg-[#15171C] font-mono`}
-              />
-            </label>
+            <ModelPicker
+              label="RAG Gömme (Embedding) Modeli"
+              value={embeddingModel}
+              onChange={setEmbeddingModel}
+              options={EMBED_MODELS[embeddingProvider]}
+              placeholder={DEFAULTS[embeddingProvider].embeddingModel || "gemini-embedding-001"}
+              bgClass="bg-white dark:bg-[#15171C]"
+            />
 
             <label className="block space-y-1 font-medium sm:col-span-2">
               Embedding API Taban Adresi (Base URL)
@@ -266,15 +373,14 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block space-y-1 font-medium">
-              RAG Gömme (Embedding) Modeli (Ana sağlayıcı üzerinden)
-              <input
-                value={embeddingModel}
-                onChange={(e) => setEmbeddingModel(e.target.value)}
-                placeholder={DEFAULTS[provider].embeddingModel || "text-embedding-3-small"}
-                className={`${field} bg-white dark:bg-[#15171C] font-mono`}
-              />
-            </label>
+            <ModelPicker
+              label="RAG Gömme (Embedding) Modeli (Ana sağlayıcı üzerinden)"
+              value={embeddingModel}
+              onChange={setEmbeddingModel}
+              options={EMBED_MODELS[provider]}
+              placeholder={DEFAULTS[provider].embeddingModel || "text-embedding-3-small"}
+              bgClass="bg-white dark:bg-[#15171C]"
+            />
             <p className="self-end pb-1 text-[11px] text-muted-foreground">
               İsterseniz yukarıdaki kutuyu işaretleyip RAG için Google Gemini, sohbet/içerik için OpenAI gibi iki farklı sağlayıcıyı birlikte çalıştırabilirsiniz.
             </p>

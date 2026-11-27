@@ -21,7 +21,7 @@ export interface ResolvedAiConfig {
 const PRESETS: Record<AiProviderKind, { baseUrl: string; chatModel: string; deepChatModel: string; embeddingModel: string }> = {
   openai: {
     baseUrl: "https://api.openai.com/v1",
-    chatModel: "gpt-4o-mini",
+    chatModel: "gpt-4.1-mini",
     deepChatModel: "gpt-4.1",
     embeddingModel: "text-embedding-3-small",
   },

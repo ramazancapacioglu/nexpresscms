@@ -101,7 +101,7 @@ export async function testAiConnectionAction(draft?: {
   const saved = await resolveSiteAiConfig(me.siteId);
   const provider: AiProviderKind = draft?.provider && PROVIDERS.includes(draft.provider) ? draft.provider : saved.provider;
   const presetBase = BASE_PRESETS[provider] ?? BASE_PRESETS.openai;
-  const presetModel = provider === "gemini" ? "gemini-flash-latest" : "gpt-4o-mini";
+  const presetModel = provider === "gemini" ? "gemini-flash-latest" : "gpt-4.1-mini";
 
   const apiKey = draft?.apiKey?.trim() || saved.apiKey;
   const baseUrl = (draft?.baseUrl?.trim() || (draft?.provider ? presetBase : saved.baseUrl) || presetBase).replace(/\/$/, "");
