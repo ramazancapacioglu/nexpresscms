@@ -128,7 +128,7 @@ export default async function AdminSeoPage() {
     keyword: sig.keyword,
     clicks: sig.clicks,
     impressions: sig.impressions,
-    ctrPct: sig.ctr100 / 100,
+    ctrPct: sig.impressions > 0 ? (sig.clicks / sig.impressions) * 100 : sig.ctr100 / 100,
     position: sig.position10 / 10,
     prevPosition: (sig.prevPosition10 ?? 0) / 10,
     detail: sig.detail ?? "",
