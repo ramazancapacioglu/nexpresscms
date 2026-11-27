@@ -300,7 +300,10 @@ export async function buildPageSchemaGraph(
         : {}),
       ...(c.keywords && c.keywords.length > 0 ? { keywords: c.keywords.join(", ") } : {}),
       ...(c.articleSection ? { articleSection: c.articleSection } : {}),
-      ...(input.aggregateRating && input.aggregateRating.reviewCount > 0
+      // Google Review Snippet politikası: aggregateRating yalnızca desteklenen üst düğüm türlerinde basılır (Article/BlogPosting/TechArticle/WebPage hariç — GSC "<parent_node>" hatasını önler)
+      ...(input.aggregateRating &&
+      input.aggregateRating.reviewCount > 0 &&
+      ["Product", "SoftwareApplication", "LocalBusiness", "Organization", "Course", "Event", "Book", "Recipe", "Movie", "HowTo", "Game"].includes(c.schemaType)
         ? {
             aggregateRating: {
               "@type": "AggregateRating",
