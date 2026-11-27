@@ -9,6 +9,17 @@ function clientIp(h: Headers): string | null {
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
 }
 
+/** Tek dilli (ön eksiz) sitede middleware'in iç yeniden yazım `/tr` ön ekini rapordan temizler. */
+function publicLogPath(h: Headers, rawPath: string): string {
+  const normalized = normalizeReferralPath(rawPath);
+  if (h.get("x-nexpress-prefixless") !== "1") return normalized;
+  const locale = h.get("x-nexpress-locale");
+  if (!locale) return normalized;
+  if (normalized === `/${locale}`) return "/";
+  if (normalized.startsWith(`/${locale}/`)) return normalized.slice(locale.length + 1) || "/";
+  return normalized;
+}
+
 /**
  * Bilinen bir bot isteğini yanıttan SONRA (`after`) günlük sayaca işler.
  * İnsan trafiğinde yalnızca tek düzenli ifade çalışır; IP ve UA saklanmaz.
@@ -26,7 +37,7 @@ export async function trackBotVisit(kind: BotRequestKind, explicitPath?: string)
     h.get("x-nexpress-path") ??
     h.get("x-nexpress-pathname") ??
     (kind === "llms" ? "/llms.txt" : kind === "sitemap" ? "/sitemap.xml" : kind === "mcp" ? "/api/mcp" : kind === "robots" ? "/robots.txt" : "/");
-  const path = normalizeReferralPath(rawPath);
+  const path = publicLogPath(h, rawPath);
 
   after(async () => {
     try {
@@ -49,7 +60,7 @@ export async function trackAiReferral(): Promise<void> {
   const source = detectAiReferrer(h.get("referer"), h.get("x-nexpress-utm-source"));
   if (!source) return;
   const siteId = h.get("x-nexpress-site-id") ?? "default";
-  const path = normalizeReferralPath(h.get("x-nexpress-path") ?? "/");
+  const path = publicLogPath(h, h.get("x-nexpress-path") ?? "/");
 
   after(async () => {
     try {
