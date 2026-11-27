@@ -50,8 +50,8 @@ export function createOpenAiProvider(config: OpenAiProviderConfig): EmbeddingPro
           model: modelName,
           input,
           encoding_format: "float",
-          // text-embedding-3 modelleri boyut kısaltmayı destekler; şema 1536 bekler
-          ...(modelName.startsWith("text-embedding-3") ? { dimensions: EMBEDDING_DIMENSIONS } : {}),
+          // text-embedding-3 ve gemini-embedding modelleri Matryoshka boyut kısaltmayı destekler; şema 1536 bekler
+          ...(modelName.startsWith("text-embedding-3") || modelName.startsWith("gemini-embedding") ? { dimensions: EMBEDDING_DIMENSIONS } : {}),
         }),
         signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
       });
