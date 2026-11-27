@@ -8,8 +8,8 @@ import { MAX_UPLOAD_BYTES, inspectUpload } from "@/lib/media/process";
 import { prewarmVariants } from "@/lib/media/prewarm";
 import { putOriginal } from "@/lib/media/storage";
 
-/** Görsel olmayan dosyalar (PDF, video, ses) için üst sınır. */
-const MAX_FILE_BYTES = 40 * 1024 * 1024;
+/** Görsel olmayan dosyalar (PDF, ZIP, video, ses) için üst sınır. */
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 const fail = (error: string, status: number) => NextResponse.json({ ok: false, error }, { status });
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   if (origin && new URL(origin).host !== request.headers.get("host")) return fail("Geçersiz köken.", 403);
 
   const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_FILE_BYTES + 64 * 1024) return fail("Dosya 40 MB sınırını aşıyor.", 413);
+  if (length > MAX_FILE_BYTES + 64 * 1024) return fail("Dosya 100 MB sınırını aşıyor.", 413);
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   const data = Buffer.from(await file.arrayBuffer());
   // Görsel olmayan türler içerik başlığından tanınır (uzantıya güvenilmez); tanınmazsa görsel olarak doğrulanır
   const fileMime = sniffFileMime(data);
-  if (fileMime && data.length > MAX_FILE_BYTES) return fail("Dosya 40 MB sınırını aşıyor.", 413);
+  if (fileMime && data.length > MAX_FILE_BYTES) return fail("Dosya 100 MB sınırını aşıyor.", 413);
   let info: Awaited<ReturnType<typeof inspectUpload>> | null = null;
   if (!fileMime) {
     try {

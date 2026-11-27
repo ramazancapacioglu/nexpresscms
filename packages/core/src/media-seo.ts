@@ -7,6 +7,7 @@ export type MediaKind = "image" | "document" | "video" | "audio";
 /** Görsel olmayan yüklemelerde kabul edilen türler (içerik başlığına bakılarak doğrulanır, uzantıya değil). */
 export const FILE_KINDS: Record<string, { kind: Exclude<MediaKind, "image">; ext: string; inline: boolean }> = {
   "application/pdf": { kind: "document", ext: "pdf", inline: true },
+  "application/zip": { kind: "document", ext: "zip", inline: false },
   "video/mp4": { kind: "video", ext: "mp4", inline: true },
   "video/webm": { kind: "video", ext: "webm", inline: true },
   "audio/mpeg": { kind: "audio", ext: "mp3", inline: true },
@@ -19,6 +20,7 @@ export function sniffFileMime(b: Uint8Array): string | null {
   const ascii = (a: number, n: number) => String.fromCharCode(...b.subarray(a, a + n));
   if (b.length < 12) return null;
   if (ascii(0, 5) === "%PDF-") return "application/pdf";
+  if (b[0] === 0x50 && b[1] === 0x4b && (b[2] === 0x03 || b[2] === 0x05) && (b[3] === 0x04 || b[3] === 0x06)) return "application/zip";
   if (ascii(4, 4) === "ftyp") return /^(avif|avis|heic|heix|hevc|mif1|msf1)$/.test(ascii(8, 4)) ? null : "video/mp4"; // AVIF/HEIF görseldir
   if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return "video/webm";
   if (ascii(0, 3) === "ID3" || (b[0] === 0xff && (b[1]! & 0xe0) === 0xe0)) return "audio/mpeg";

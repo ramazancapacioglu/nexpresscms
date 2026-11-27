@@ -26,8 +26,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const variant = parseVariantFile(file);
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
 
-  // Belge/video/ses: `/media/{id}/{seo-adi}.{uzantı}` — tür kayıttan gelir, ad yalnızca SEO içindir
-  if (!variant && isValidMediaId(id) && /^[a-z0-9][a-z0-9-]{0,79}\.(pdf|mp4|webm|mp3|ogg|wav)$/.test(file)) {
+  // Belge/arşiv/video/ses: `/media/{id}/{seo-adi}.{uzantı}` — tür kayıttan gelir, ad yalnızca SEO içindir
+  if (!variant && isValidMediaId(id) && /^[a-z0-9][a-z0-9-]{0,79}\.(pdf|zip|mp4|webm|mp3|ogg|wav)$/.test(file)) {
     const asset = await getScopedRepository(siteId).findMediaAsset(id);
     if (!asset || asset.kind === "image" || !asset.url.endsWith(`.${file.split(".").pop()}`)) return new NextResponse("Not found", { status: 404 });
     const data = await getOriginal(siteId, id);

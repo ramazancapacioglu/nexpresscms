@@ -5,10 +5,10 @@ import type { MediaAssetDto } from "@nexpress/database";
 import { Upload } from "lucide-react";
 
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
-const MAX_FILE_BYTES = 40 * 1024 * 1024;
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
 const MAX_FILES = 100;
 const CONCURRENCY = 3;
-const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,application/pdf,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav";
+const ACCEPT = "image/jpeg,image/png,image/webp,image/avif,application/pdf,application/zip,application/x-zip-compressed,.zip,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav";
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
 
 interface Item { name: string; state: "waiting" | "uploading" | "done" | "error"; message?: string }
@@ -23,7 +23,7 @@ export function MediaBulkUpload({ folderId, folderName, onUploaded }: { folderId
   const running = items.some((i) => i.state === "waiting" || i.state === "uploading");
 
   const start = async (picked: File[]) => {
-    const files = picked.filter((f) => ACCEPT.split(",").includes(f.type) || /\.(jpe?g|png|webp|avif|pdf|mp4|webm|mp3|ogg|wav)$/i.test(f.name));
+    const files = picked.filter((f) => ACCEPT.split(",").includes(f.type) || /\.(jpe?g|png|webp|avif|pdf|zip|mp4|webm|mp3|ogg|wav)$/i.test(f.name));
     const skipped = picked.length - files.length;
     const batch = files.slice(0, MAX_FILES);
     setNote([skipped ? `${skipped} dosya desteklenmeyen türde olduğu için atlandı.` : "", files.length > MAX_FILES ? `En çok ${MAX_FILES} dosya birden yüklenir; ${files.length - MAX_FILES} dosya atlandı.` : ""].filter(Boolean).join(" "));

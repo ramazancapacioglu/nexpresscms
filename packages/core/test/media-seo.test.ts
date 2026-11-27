@@ -7,6 +7,7 @@ const str = (s: string, at = 0) => { const b = new Uint8Array(16); [...s].forEac
 
 test("içerik başlığından tür tanıma; uzantıya güvenilmez, bilinmeyen null", () => {
   assert.equal(sniffFileMime(str("%PDF-1.7")), "application/pdf");
+  assert.equal(sniffFileMime(bytes(0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00)), "application/zip");
   assert.equal(sniffFileMime(str("ftypisom", 4)), "video/mp4");
   assert.equal(sniffFileMime(Uint8Array.from([0, 0, 0, 24, ...[..."ftypavif"].map((c) => c.charCodeAt(0)), 0, 0, 0, 0])), null, "AVIF görsel video sayılmaz");
   assert.equal(sniffFileMime(bytes(0x1a, 0x45, 0xdf, 0xa3)), "video/webm");
