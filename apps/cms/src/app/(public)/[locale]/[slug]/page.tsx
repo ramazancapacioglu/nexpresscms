@@ -360,10 +360,10 @@ export default async function PublicDynamicContentPage({
   const contentBlocks = autoFields ? [{ id: "cf_auto", type: "custom_fields" as const, props: { title: t("content.fieldsTitle") } }, ...demotedBlocks] : demotedBlocks;
   const authorName = pub.authorName || content.authorName;
   const authored = isAuthoredType(content.type);
-  const authorHref = authored && authorName ? `${lb}/yazar/${authorSlug(authorName)}` : null;
-  // Yazar profili (E-E-A-T): doluysa yazı altında yazar kutusu ve şemada zenginleştirilmiş Person/Organization
+  // Yazar profili (E-E-A-T): yalnızca sitede kayıtlı kullanıcı profili varsa `/yazar/...` bağlantısı üretilir (404 koruması)
   const publicAuthors = authored ? await getPublicAuthors(siteId) : {};
   const authorEntry = authored && authorName ? publicAuthors[authorSlug(authorName)] : undefined;
+  const authorHref = authored && authorName && authorEntry ? `${lb}/yazar/${authorSlug(authorName)}` : null;
   const authorProfile = authorEntry && hasAuthorProfile(authorEntry.profile) ? authorEntry.profile : null;
   const rawRichTech = ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.rich?.tech ??
     ((content.schemaAttributes as Record<string, unknown> | undefined)?.richSchema as Record<string, any> | undefined)?.tech;

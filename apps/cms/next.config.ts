@@ -79,6 +79,11 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
+        // İçerik müzakeresi (HTML ↔ Markdown): Next.js App Router rewrite yanıtlarında Vary: Accept korunur
+        source: "/((?!_next|api|admin|media|sitemaps|wp-content|login).*)",
+        headers: [{ key: "Vary", value: "Accept" }],
+      },
+      {
         // Tema görselleri (logo, demo çizimleri) public/ altından gelir ve varsayılan olarak `max-age=0` ile gider;
         // her sayfa gezintisinde yeniden indirilmesin
         source: "/(demo|images)/:path*",

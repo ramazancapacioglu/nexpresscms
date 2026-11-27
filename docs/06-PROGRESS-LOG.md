@@ -21,6 +21,13 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-27] — Canlı SEO/GEO/LLM Sertleştirme: `Vary: Accept`, Yazar 404 Koruması, `/magaza` Kapısı, Markdown Eşliği & `priceValidUntil`
+- **İçerik müzakeresi `Vary: Accept` (`apps/cms/next.config.ts`):** Next.js App Router rewrite yanıtlarında `Vary: Accept` başlığının korunması için `headers()` kuralı eklendi; CDN/vekil önünde HTML ↔ Markdown önbellek karışması kalıcı olarak engellendi.
+- **Yazar bağlantısı 404 koruması (`apps/cms/src/app/(public)/[locale]/[slug]/page.tsx`):** `authorHref` artık yalnızca sitede kayıtlı bir kullanıcı profili (`publicAuthors[authorSlug]`) mevcutsa üretilir; kayıt dışı yazar adları düz metin basar ve kırık `/yazar/...` bağlantısı üretmez.
+- **Mağaza rotası eklenti kapısı (`apps/cms/src/app/(public)/[locale]/magaza/page.tsx`):** `@nexpress/commerce` eklentisi veya mağaza ayarı kapalıysa `/magaza` doğrudan `404` (`notFound()`) döner; açıkken markalı başlık (`Mağaza — Site Adı`) ve `alternates.canonical` üretir.
+- **Markdown ↔ HTML tam eşliği (`packages/core/src/markdown-compiler.ts`):** `software_product_card` bloğunda sayısal fiyat (`price > 0`) varken atlanan `priceLabel` (taksit/ödeme notu), `campaignBadge`, `releaseDate`, `priceValidUntil` ve fiyat tablosu satır notları (`row.note`) artık eksiksiz Markdown'a derlenir.
+- **Teklif geçerlilik tarihi (`packages/seo-core/src/engine.ts`):** `software_product_card` JSON-LD üretiminde (`Offer` ve `AggregateOffer`) `priceValidUntil` alanı desteklenir.
+
 ### [2026-11-25] — Toplu IndexNow Gönderimi & Tek Dilli Kanonik URL Bildirimi
 - **Toplu IndexNow (`apps/cms/src/lib/indexnow.ts`, `actions.ts`, `content-list-bulk-bar.tsx`, `use-content-list.tsx`):** `submitIndexNowUrls` tek dilli sitede `/tr` ön ekini temizleyip toplu bildirim yapar; Sayfalar, Yazılar, Sorular ve Tüm İçerikler toplu seçim çubuğuna **IndexNow'a Gönder** düğmesi eklendi; SEO ayarlarındaki otomatik yayın/güncelleme IndexNow seçeneğinin etiketi netleştirildi.
 

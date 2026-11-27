@@ -694,6 +694,10 @@ export function deriveAutoSchemaNodes(
         : [];
       const offerUrl = typeof p.demoUrl === "string" && p.demoUrl.startsWith("http") ? p.demoUrl : pageUrl;
       const sellerObj = typeof p.seller === "string" && p.seller.trim() ? { seller: { "@type": "Organization", name: p.seller.trim() } } : {};
+      const validUntil =
+        typeof p.priceValidUntil === "string" && /^\d{4}-\d{2}-\d{2}/.test(p.priceValidUntil.trim())
+          ? { priceValidUntil: p.priceValidUntil.trim().slice(0, 10) }
+          : {};
       const offer: Record<string, unknown> =
         priceRows.length >= 2
           ? {
@@ -705,6 +709,7 @@ export function deriveAutoSchemaNodes(
               lowPrice: hasVisiblePrice ? priceNum : Math.min(...priceRows),
               highPrice: hasVisiblePrice ? Math.max(priceNum, ...priceRows) : Math.max(...priceRows),
               offerCount: priceRows.length,
+              ...validUntil,
               ...sellerObj,
             }
           : {
@@ -712,6 +717,7 @@ export function deriveAutoSchemaNodes(
               url: offerUrl,
               availability: "https://schema.org/InStock",
               ...(hasVisiblePrice ? { price: priceNum, priceCurrency: currency } : { priceCurrency: currency }),
+              ...validUntil,
               ...sellerObj,
             };
       const node: SchemaGraphNode = {

@@ -15,6 +15,7 @@ import { getPublicSite } from "@/lib/public-data";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
+import { COMMERCE_PLUGIN_ID, pluginEnabled } from "@/lib/plugin-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,26 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return { title: `${createTranslator(locale)("shop.title")} | ${locale.toUpperCase()}` };
+  const reqHeaders = await headers();
+  const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
+  const [shopPluginOn, settings, site, lb] = await Promise.all([
+    pluginEnabled(siteId, COMMERCE_PLUGIN_ID),
+    getCommerceRepository(siteId).getCommerceSettings(),
+    getPublicSite(siteId),
+    siteLocaleBase(siteId, locale),
+  ]);
+  if (!shopPluginOn || !settings.enabled) {
+    return { robots: { index: false, follow: false } };
+  }
+  const t = createTranslator(locale);
+  const siteName = site?.name?.trim() || "NexPress";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = shopBasePath(settings, lb);
+  return {
+    title: `${t("shop.title")} — ${siteName}`,
+    description: t("shop.subtitle"),
+    alternates: { canonical: `${baseUrl}${base}` },
+  };
 }
 
 export default async function ShopIndexPage({
@@ -38,13 +58,14 @@ export default async function ShopIndexPage({
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const lb = await siteLocaleBase(siteId, locale);
   const repo = getCommerceRepository(siteId);
-  const [settings, products, cart] = await Promise.all([
+  const [shopPluginOn, settings, products, cart] = await Promise.all([
+    pluginEnabled(siteId, COMMERCE_PLUGIN_ID),
     repo.getCommerceSettings(),
     repo.listProducts({ status: "published" }),
     readCartFromCookies(),
   ]);
 
-  if (!settings.enabled) notFound();
+  if (!shopPluginOn || !settings.enabled) notFound();
 
   const base = shopBasePath(settings, await siteLocaleBase(siteId, locale));
   const count = cartItemCount(cart);

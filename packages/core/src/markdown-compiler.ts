@@ -395,16 +395,20 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
       const pricingMode = s(p.pricingMode) || "quote";
       const meta: string[] = [];
       if (s(p.version)) meta.push(`- **Güncel Sürüm:** ${s(p.version)}`);
+      if (s(p.releaseDate)) meta.push(`- **Sürüm Tarihi:** ${s(p.releaseDate)}`);
       if (s(p.sku)) meta.push(`- **Ürün Kodu:** ${s(p.sku)}`);
       if (s(p.vendor)) meta.push(`- **Yazılım Üreticisi:** ${s(p.vendor)}`);
       if (s(p.seller)) meta.push(`- **Yetkili Satış & Destek:** ${s(p.seller)}`);
+      if (s(p.campaignBadge)) meta.push(`- **Kampanya:** ${s(p.campaignBadge)}`);
       if ((pricingMode === "fixed" || pricingMode === "starting") && priceNum > 0) {
         const listPart = listPriceNum > priceNum ? ` (Liste Fiyatı: ${fmtMoney(listPriceNum)})` : "";
         const vatPart = s(p.vatNote) ? ` ${s(p.vatNote)}` : "";
         meta.push(`- **${pricingMode === "starting" ? "Başlangıç Kampanya Fiyatı" : "Lisans Fiyatı"}:** ${fmtMoney(priceNum)}${vatPart}${listPart}`);
-      } else if (s(p.priceLabel)) {
-        meta.push(`- **Fiyatlandırma:** ${s(p.priceLabel)}`);
       }
+      if (s(p.priceLabel)) {
+        meta.push(`- **Fiyat / Ödeme Notu:** ${s(p.priceLabel)}`);
+      }
+      if (s(p.priceValidUntil)) meta.push(`- **Fiyat Geçerlilik Tarihi:** ${s(p.priceValidUntil)}`);
       if (s(p.operatingSystem)) meta.push(`- **Platform / İşletim Sistemi:** ${s(p.operatingSystem)}`);
       if (s(p.database)) meta.push(`- **Veritabanı:** ${s(p.database)}`);
       if (s(p.deployment)) meta.push(`- **Kurulum Modeli:** ${s(p.deployment)}`);
@@ -427,7 +431,8 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
           const lp = num(r.listPrice);
           const cp = num(r.campaignPrice);
           const pct = lp > 0 && cp > 0 && cp < lp ? ` (%${Math.round(((lp - cp) / lp) * 100)} indirim)` : "";
-          lines.push(`| ${rName} | ${rGroup} | ${lp > 0 ? fmtMoney(lp) : "Dahil"} | ${cp > 0 ? `${fmtMoney(cp)}${pct}` : "Ücretsiz / Dahil"} |`);
+          const notePart = s(r.note) ? ` — ${s(r.note)}` : "";
+          lines.push(`| ${rName}${notePart} | ${rGroup} | ${lp > 0 ? fmtMoney(lp) : "Dahil"} | ${cp > 0 ? `${fmtMoney(cp)}${pct}` : "Ücretsiz / Dahil"} |`);
         }
         if (s(p.priceFootNote)) lines.push("", `*${s(p.priceFootNote)}*`);
       }
