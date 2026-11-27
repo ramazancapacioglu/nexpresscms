@@ -60,9 +60,14 @@ export function SearchIndexCard({
         </div>
       </dl>
 
+      {(active?.chunks ?? 0) === 0 && stale.length > 0 && (
+        <div role="alert" className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-3 py-2 text-[11px] font-medium text-rose-800 dark:text-rose-300">
+          <strong>Kritik RAG Model Uyuşmazlığı:</strong> Veritabanındaki {stale.reduce((n, m) => n + m.chunks, 0)} parça farklı bir modelle ({stale.map((m) => m.model).join(", ")}) üretilmiş; aktif model <code>{activeModel}</code> için 0 parça var. Entegrasyonlar ekranından AI anahtarını bağlayın veya &ldquo;Dizini yeniden oluştur&rdquo; butonuna tıklayın.
+        </div>
+      )}
       {!semantic && (
         <p className="text-[11px] text-amber-800 dark:text-amber-400">
-          Yerel gömme yalnızca ortak sözcüklere bakar; eş anlamlıları yakalamaz. Anlamsal arama için <code>OPENAI_API_KEY</code> tanımlayıp dizini yeniden oluşturun.
+          Yerel gömme yalnızca ortak sözcüklere bakar; eş anlamlıları yakalamaz. Anlamsal arama için <a href="/admin/integrations" className="underline font-medium">Entegrasyonlar</a> ekranından OpenAI/Gemini anahtarı tanımlayıp dizini yeniden oluşturun.
         </p>
       )}
       {stale.length > 0 && (

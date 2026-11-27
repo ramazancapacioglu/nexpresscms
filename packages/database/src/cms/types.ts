@@ -4,6 +4,7 @@ export interface SiteSettingsPatch {
   seo?: Partial<SiteSettings["seo"]>;
   general?: Partial<SiteSettings["general"]>;
   email?: Partial<SiteSettings["email"]>;
+  ai?: Partial<SiteSettings["ai"]>;
   customizer?: {
     typography?: Partial<SiteSettings["customizer"]["typography"]>;
     layout?: Partial<SiteSettings["customizer"]["layout"]>;

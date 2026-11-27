@@ -475,4 +475,39 @@ export class CmsContentWriteRepository extends CmsRevisionRepository {
       .where(and(eq(t.contents.id, contentId), eq(t.contents.siteId, this.siteId)));
     return true;
   }
+
+  /** Kiracıya kapalı varlık bağı (`content_entity_links`) ekler; aynı kaynak→hedef bağı zaten varsa yinelenmez. */
+  public async upsertEntityLink(input: {
+    sourceContentId: string;
+    targetContentId: string;
+    relationType?: string;
+    anchorText?: string | null;
+  }): Promise<{ created: boolean }> {
+    if (!input.sourceContentId || !input.targetContentId || input.sourceContentId === input.targetContentId) {
+      return { created: false };
+    }
+    const { db, t } = this.backend;
+    const existing = await db
+      .select({ id: t.contentEntityLinks.id })
+      .from(t.contentEntityLinks)
+      .where(
+        and(
+          eq(t.contentEntityLinks.siteId, this.siteId),
+          eq(t.contentEntityLinks.sourceContentId, input.sourceContentId),
+          eq(t.contentEntityLinks.targetContentId, input.targetContentId)
+        )
+      )
+      .limit(1);
+    if (existing.length > 0) return { created: false };
+    await db.insert(t.contentEntityLinks).values({
+      id: `lnk_${crypto.randomUUID().slice(0, 12)}`,
+      siteId: this.siteId,
+      sourceContentId: input.sourceContentId,
+      targetContentId: input.targetContentId,
+      relationType: (input.relationType ?? "mentions").slice(0, 40),
+      anchorText: input.anchorText ? input.anchorText.slice(0, 120) : null,
+      createdAt: new Date(),
+    });
+    return { created: true };
+  }
 }

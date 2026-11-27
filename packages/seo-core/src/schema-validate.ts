@@ -15,17 +15,29 @@ const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !
 const filled = (v: unknown): boolean => (typeof v === "string" ? v.trim().length > 0 : v !== undefined && v !== null && !(Array.isArray(v) && v.length === 0));
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : v === undefined || v === null ? [] : [v]);
 const typesOf = (n: SchemaGraphNode): string[] => (Array.isArray(n["@type"]) ? n["@type"] : [n["@type"]]).filter((t): t is string => typeof t === "string");
+const numOf = (v: unknown): number | null => {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = Number(v.replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+};
 
 const ARTICLE = new Set(["Article", "BlogPosting", "NewsArticle", "TechArticle"]);
 
 /**
- * JSON-LD düğümlerini sık kullanılan zengin sonuç kurallarına göre denetler (tam Schema.org doğrulayıcısı değildir).
- * `error`: Google'ın zengin sonuç için gerekli saydığı alan eksik veya yapı bozuk. `warning`: önerilen alan eksik.
+ * JSON-LD düğümlerini zengin sonuç ve yapısal tutarlılık kurallarına göre denetler.
+ * `error`: Arama motorlarının zengin sonuç için gerekli saydığı alan eksik veya yapı bozuk (ör. çift FAQPage).
+ * `warning`: Önerilen veya E-E-A-T / GEO kalitesini artıran alan eksik.
  */
 export function validateSchemaGraph(nodes: SchemaGraphNode[]): SchemaIssue[] {
   const issues: SchemaIssue[] = [];
+  const counts = new Map<string, number>();
+
   for (const node of nodes) {
     const types = typesOf(node);
+    for (const t of types) counts.set(t, (counts.get(t) ?? 0) + 1);
     const label = types.join("/") || "(türsüz)";
     const add = (level: SchemaIssueLevel, message: string) => issues.push({ level, type: label, message });
     if (types.length === 0) {
@@ -42,6 +54,25 @@ export function validateSchemaGraph(nodes: SchemaGraphNode[]): SchemaIssue[] {
       need("datePublished", "warning");
       need("author", "warning");
       need("image", "warning");
+    }
+    if (types.includes("TechArticle")) {
+      need("proficiencyLevel", "warning");
+      need("dependencies", "warning");
+      need("about", "warning");
+      need("articleSection", "warning");
+    }
+    if (types.includes("SoftwareApplication")) {
+      need("name");
+      need("applicationCategory", "warning");
+      need("operatingSystem", "warning");
+      const offers = arr(node.offers).filter(isObj);
+      for (const o of offers) {
+        const low = numOf(o.lowPrice ?? o.price);
+        const high = numOf(o.highPrice);
+        if (low !== null && low <= 0) add("warning", `Teklif fiyatı 0 veya negatif (${low}).`);
+        if (low !== null && high !== null && low > high) add("error", `AggregateOffer lowPrice (${low}) > highPrice (${high}).`);
+        if ((low !== null || high !== null) && !filled(o.priceCurrency)) add("error", `Teklifte "priceCurrency" eksik.`);
+      }
     }
     if (types.includes("FAQPage")) {
       const qs = arr(node.mainEntity);
@@ -69,6 +100,16 @@ export function validateSchemaGraph(nodes: SchemaGraphNode[]): SchemaIssue[] {
         if (!filled(o.priceCurrency)) add("error", `Teklif: "priceCurrency" eksik.`);
         if (!filled(o.availability)) add("warning", `Teklif: "availability" eksik.`);
       }
+    }
+    if (types.includes("ProfilePage")) {
+      need("mainEntity", "error");
+    }
+    if (types.includes("CollectionPage")) {
+      need("name", "warning");
+    }
+    if (types.includes("ItemList")) {
+      const items = arr(node.itemListElement);
+      if (items.length === 0) add("warning", `"itemListElement" boş.`);
     }
     if (types.includes("Review")) {
       if (!isObj(node.itemReviewed) || !filled(node.itemReviewed.name)) add("error", `"itemReviewed.name" eksik.`);
@@ -99,5 +140,20 @@ export function validateSchemaGraph(nodes: SchemaGraphNode[]): SchemaIssue[] {
     }
     if (types.includes("WebPage")) need("name", "warning");
   }
+
+  // Tekil olması gereken şema düğümlerinde çakışma kontrolü
+  if ((counts.get("FAQPage") ?? 0) > 1) {
+    issues.push({ level: "error", type: "FAQPage", message: `Aynı sayfada ${counts.get("FAQPage")} adet FAQPage düğümü var; tek düğümde birleştirilmeli.` });
+  }
+  if ((counts.get("WebSite") ?? 0) > 1) {
+    issues.push({ level: "error", type: "WebSite", message: `Aynı sayfada ${counts.get("WebSite")} adet WebSite düğümü var.` });
+  }
+  if ((counts.get("SoftwareApplication") ?? 0) > 1) {
+    issues.push({ level: "warning", type: "SoftwareApplication", message: `Aynı sayfada ${counts.get("SoftwareApplication")} adet SoftwareApplication düğümü var; tek ana ürün düğümünde birleştirin.` });
+  }
+  if ((counts.get("Service") ?? 0) > 1) {
+    issues.push({ level: "warning", type: "Service", message: `Aynı sayfada ${counts.get("Service")} adet Service düğümü var; şema kuralı çakışması olabilir.` });
+  }
+
   return issues;
 }

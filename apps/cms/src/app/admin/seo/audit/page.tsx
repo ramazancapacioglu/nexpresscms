@@ -2,16 +2,25 @@ import React from "react";
 import Link from "next/link";
 import {
   auditSeo,
+  authorProfileFromRow,
   countImagesMissingAlt,
+  resolveLocalizedSiteIdentity,
   resolvePublishing,
   SEO_ISSUE_LABELS,
   suggestInternalLinks,
   type SeoIssueId,
 } from "@nexpress/core";
-import { getScopedRepository } from "@nexpress/database";
+import { getChunkRepository, getIntelRepository, getScopedRepository, getUserRepository } from "@nexpress/database";
+import { buildPageSchemaGraph, extractSeoQuickWins, runDeepSiteAudit } from "@nexpress/seo-core";
 import { requireUser } from "@/lib/auth/session";
+import { resolveSiteEmbeddingProvider } from "@/lib/ai-config";
+import { authorSlug } from "@/lib/author-slug";
+import { organizationFor } from "@/lib/organization-schema";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
+import { DeepAuditPanel } from "@/components/admin/seo/deep-audit-panel";
+import { SeoQuickWinsPanel } from "@/components/admin/seo/seo-quick-wins-panel";
+import { EntityLinkSuggestions } from "@/components/admin/seo/entity-link-suggestions";
 import { LinkAuditCard } from "@/components/admin/seo/link-audit-card";
 import { ExternalLinkAudit } from "@/components/admin/seo/external-link-audit";
 import { KpiStatCard } from "@/components/admin/ui/saas-charts";
@@ -31,7 +40,83 @@ export default async function SeoAuditPage({
   const site = await repo.getSite();
   const locales = site?.supportedLocales ?? ["tr"];
   const locale = sp.locale && locales.includes(sp.locale) ? sp.locale : site?.defaultLocale ?? "tr";
-  const contents = await repo.listContents({ locale, status: "published" });
+  const [contents, users, ragStats, entityLinks, signals] = await Promise.all([
+    repo.listContents({ locale, status: "published" }),
+    getUserRepository(me.siteId).list(),
+    getChunkRepository(me.siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
+    repo.listEntityLinks().catch(() => []),
+    getIntelRepository(me.siteId).listSignals(300).catch(() => []),
+  ]);
+  const quickWins = extractSeoQuickWins(
+    signals.map((sig) => ({
+      keyword: sig.keyword,
+      source: sig.source,
+      clicks: sig.clicks,
+      impressions: sig.impressions,
+      position: sig.position10 ? sig.position10 / 10 : null,
+    })),
+    contents.map((c) => c.title)
+  );
+  const existingPairs = entityLinks.map((l) => `${l.sourceContentId}:${l.targetContentId}`);
+  const activeRagProvider = await resolveSiteEmbeddingProvider(me.siteId).catch(() => ({
+    model: "local:hash:1536",
+    semantic: false,
+  }));
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const localized = resolveLocalizedSiteIdentity(site, locale);
+  const org = organizationFor(localized.seo);
+  const deepInputs = await Promise.all(
+    contents.map(async (c) => {
+      const pageUrl = c.slug === "ana-sayfa" ? `${baseUrl}/` : c.type === "campaign" ? `${baseUrl}/kampanya/${c.slug}` : `${baseUrl}/${c.slug}`;
+      const graph = await buildPageSchemaGraph({
+        siteId: me.siteId,
+        siteName: localized.name,
+        siteUrl: baseUrl,
+        locale,
+        pageUrl,
+        organization: org,
+        content: {
+          id: c.id,
+          title: c.title,
+          tldr: c.tldr,
+          schemaType: c.schemaType,
+          schemaAttributes: c.schemaAttributes,
+          authorName: resolvePublishing(c.schemaAttributes).authorName || c.authorName,
+          updatedAt: c.updatedAt,
+          publishedAt: c.publishedAt ?? c.createdAt ?? null,
+          blocks: c.blocks as never,
+        },
+      }).catch(() => null);
+      return {
+        id: c.id,
+        contentId: c.contentId,
+        slug: c.slug,
+        type: c.type,
+        title: c.title,
+        tldr: c.tldr,
+        noIndex: c.noIndex,
+        schemaType: c.schemaType,
+        schemaAttributes: c.schemaAttributes,
+        blocks: c.blocks as never,
+        markdownCache: c.markdownCache ?? "",
+        authorName: c.authorName,
+        schemaNodes: graph?.["@graph"],
+      };
+    })
+  );
+  const deepReport = runDeepSiteAudit({
+    contents: deepInputs,
+    authors: users
+      .filter((u) => u.name.trim())
+      .map((u) => ({ slug: authorSlug(u.name), name: u.name.trim(), profile: authorProfileFromRow(u) })),
+    ragHealth: {
+      activeModel: activeRagProvider.model,
+      activeSemantic: activeRagProvider.semantic,
+      chunkModels: ragStats.models.map((m) => ({ model: m.model, count: m.chunks })),
+      indexedContents: ragStats.contents,
+      totalPublished: contents.length,
+    },
+  });
   const report = auditSeo(
     contents.map((c) => ({
       id: c.id,
@@ -131,6 +216,9 @@ export default async function SeoAuditPage({
         />
       </div>
 
+      <DeepAuditPanel report={deepReport} />
+      <SeoQuickWinsPanel wins={quickWins} />
+
       {/* Sorun Türü Hızlı Filtre Rozetleri */}
       <div className="flex flex-wrap gap-1.5 text-[12px]">
         <Link
@@ -164,39 +252,7 @@ export default async function SeoAuditPage({
 
       <SeoAuditTableClient rows={rows} locale={locale} />
 
-      {linkSuggestions.length > 0 && (
-        <section className="space-y-2.5 pt-2">
-          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-            İç Bağlantı Fırsatları (Topic Cluster)
-          </h2>
-          <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/80 bg-card shadow-2xs">
-            {linkSuggestions.map((item) => (
-              <li key={`${item.fromId}:${item.toId}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[12px]">
-                <div>
-                  <Link href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`} className="font-semibold text-foreground hover:underline">
-                    {item.fromTitle}
-                  </Link>
-                  <span className="text-muted-foreground"> içinde </span>
-                  <span className="rounded bg-blue-500/10 px-1.5 py-0.5 font-mono text-[11px] text-blue-700 dark:text-blue-300">
-                    “{item.matchedPhrase}”
-                  </span>
-                  <span className="text-muted-foreground"> geçiyor ancak </span>
-                  <Link href={`/admin/contents?id=${encodeURIComponent(item.toId)}&locale=${locale}`} className="font-semibold text-foreground hover:underline">
-                    /{item.toSlug}
-                  </Link>
-                  <span className="text-muted-foreground"> sayfasına bağlantı verilmemiş.</span>
-                </div>
-                <Link
-                  href={`/admin/contents?id=${encodeURIComponent(item.fromId)}&locale=${locale}`}
-                  className="rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted transition"
-                >
-                  Stüdyoda Bağla →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <EntityLinkSuggestions suggestions={linkSuggestions} existingPairs={existingPairs} locale={locale} />
       <LinkAuditCard contents={contents} locales={locales} />
       <ExternalLinkAudit />
     </div>

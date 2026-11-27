@@ -5,6 +5,7 @@ import { evaluateEnv, isPluginModuleEnabled } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import "@/plugins/register";
 import { requireAdminPage } from "@/lib/auth/session";
+import { AiProviderCard } from "@/components/admin/integrations/ai-provider-card";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,8 @@ export default async function IntegrationsPage() {
   const me = await requireAdminPage();
   const site = await getScopedRepository(me.siteId).getSite();
   const email = site?.settings.email;
+  const ai = site?.settings.ai;
+  const aiConfigured = Boolean((ai?.enabled && ai?.apiKey) || has("OPENAI_API_KEY"));
   const [designOn, writerOn, mcpOn] = await Promise.all([
     isPluginModuleEnabled(me.siteId, "@nexpress-pro/ai-design", "generator"),
     isPluginModuleEnabled(me.siteId, "@nexpress-pro/agentic-seo", "ai-writer"),
@@ -32,7 +35,7 @@ export default async function IntegrationsPage() {
     {
       title: "Yapay zeka",
       rows: [
-        { name: "OpenAI anahtarı", state: has("OPENAI_API_KEY") ? "ok" : "missing", detail: has("OPENAI_API_KEY") ? "Tanımlı: AI yazım asistanı ve AI tasarım çalışır." : "Tanımlı değil: AI yazım ve AI tasarım kapalı; arama dizini yerel vektöre düşer.", how: "apps/cms/.env → OPENAI_API_KEY (isteğe bağlı OPENAI_BASE_URL, AI_WRITER_MODEL, AI_DESIGN_MODEL)" },
+        { name: "AI Sağlayıcı Anahtarı", state: aiConfigured ? "ok" : "missing", detail: aiConfigured ? "Tanımlı: RAG anlamsal arama, AI yazım asistanı ve site içi yanıtlar aktif." : "Tanımlı değil: yukarıdaki karttan OpenAI/Gemini anahtarınızı kaydedin; aksi halde arama yerel vektöre düşer.", how: "Yukarıdaki AI Sağlayıcı kartı veya .env → OPENAI_API_KEY" },
         { name: "AI Tasarım Pro", state: designOn ? "ok" : "off", detail: designOn ? "Etkin: tasarım kütüphanesinde AI ile üretim açık." : "Kapalı veya kurulu değil.", how: "Eklentiler sayfasından açılır", href: "/admin/plugins" },
         { name: "AI yazım asistanı", state: writerOn ? "ok" : "off", detail: writerOn ? "Etkin: editör SEO sekmesinde öneri üretir." : "Kapalı.", how: "Agentic SEO Pro → ai-writer modülü", href: "/admin/plugins" },
         { name: "Arama dizini (gömme)", state: has("EMBEDDING_PROVIDER") || has("OPENAI_API_KEY") ? "ok" : "off", detail: has("EMBEDDING_PROVIDER") ? "Sağlayıcı seçilmiş." : has("OPENAI_API_KEY") ? "OpenAI gömmesi kullanılır." : "Yerel (sözcüksel) arama kullanılır.", how: "EMBEDDING_PROVIDER / EMBEDDING_MODEL", href: "/admin/system" },
@@ -70,6 +73,17 @@ export default async function IntegrationsPage() {
         <h1 className="text-[18px] font-semibold tracking-tight">Entegrasyonlar</h1>
         <p className="text-[12px] text-[#5F6570] dark:text-[#8C9099]">Ortam anahtarlarının durumu (yapay zeka, e-posta, IndexNow). Değerler burada gösterilmez ve değiştirilmez. Search Console ve Analytics formları <Link href="/admin/seo/integrations" className="underline">Webmaster ve analitik</Link> sayfasındadır. Sağlık denetimi için <Link href="/admin/system" className="underline">Sistem durumu</Link>.</p>
       </div>
+      <AiProviderCard
+        initial={{
+          enabled: Boolean(ai?.enabled),
+          provider: ai?.provider ?? "openai",
+          hasKey: Boolean(ai?.apiKey),
+          hasEnvKey: has("OPENAI_API_KEY"),
+          baseUrl: ai?.baseUrl ?? "",
+          chatModel: ai?.chatModel ?? "",
+          embeddingModel: ai?.embeddingModel ?? "",
+        }}
+      />
       {groups.map((g) => (
         <section key={g.title} aria-labelledby={`g-${g.title}`}>
           <h2 id={`g-${g.title}`} className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">{g.title}</h2>

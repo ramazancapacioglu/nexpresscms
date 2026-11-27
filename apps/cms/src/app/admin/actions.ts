@@ -648,9 +648,11 @@ export type ReindexResult = { ok: true; model: string; semantic: boolean; summar
 export async function reindexSearchAction(): Promise<ReindexResult> {
   const session = await requireAdmin("cms.reindexSearch");
   try {
-    const provider = providerFromEnv();
+    const { resolveSiteEmbeddingProvider } = await import("@/lib/ai-config");
+    const provider = await resolveSiteEmbeddingProvider(session.siteId);
     const summary = await reindexSite(session.siteId, "tr", provider);
     await revalidatePath("/admin/seo");
+    await revalidatePath("/admin/seo/audit");
     return { ok: true, model: provider.model, semantic: provider.semantic, summary };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Dizin oluşturulamadı." };

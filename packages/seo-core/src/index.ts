@@ -6,6 +6,8 @@ import { buildBreadcrumbNode, deriveAutoSchemaNodes, plainFaqText } from "./engi
 export * from "./engine";
 export * from "./feed";
 export * from "./schema-validate";
+export * from "./site-self-audit";
+export * from "./quick-wins";
 export * from "./commerce-schema";
 export * from "./search-console";
 export * from "./analytics-integrations";

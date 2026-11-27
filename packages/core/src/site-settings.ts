@@ -290,8 +290,30 @@ export interface EmailSettings {
 
 export const DEFAULT_EMAIL_SETTINGS: EmailSettings = { enabled: false, host: "", port: 587, secure: false, user: "", password: "", fromName: "", fromEmail: "" };
 
+/** Yapay zekâ ve RAG sağlayıcı ayarları. `apiKey` veritabanında `secret-box` ile şifreli saklanır ve panele geri verilmez. */
+export type AiProviderKind = "openai" | "gemini" | "custom";
+
+export interface AiSettings {
+  enabled: boolean;
+  provider: AiProviderKind;
+  apiKey: string;
+  baseUrl: string;
+  chatModel: string;
+  embeddingModel: string;
+}
+
+export const DEFAULT_AI_SETTINGS: AiSettings = {
+  enabled: false,
+  provider: "openai",
+  apiKey: "",
+  baseUrl: "",
+  chatModel: "",
+  embeddingModel: "",
+};
+
 export interface SiteSettings {
   email: EmailSettings;
+  ai: AiSettings;
   seo: SeoEngineSettings;
   customizer: SiteCustomizerSettings;
   general: GeneralSettings;
@@ -366,6 +388,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       contentTypes: sanitizeContentTypes(generalRaw.contentTypes),
     },
     email: mergeSection(DEFAULT_EMAIL_SETTINGS, r.email),
+    ai: mergeSection(DEFAULT_AI_SETTINGS, r.ai),
     customizer: {
       ...(typeof c.activePaletteId === "string" ? { activePaletteId: c.activePaletteId } : { activePaletteId: d.activePaletteId }),
       darkMode: c.darkMode === "auto" ? "auto" : "off",

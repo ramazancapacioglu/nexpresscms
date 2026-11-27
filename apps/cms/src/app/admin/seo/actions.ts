@@ -3,7 +3,7 @@
 import { revalidatePath } from "@/lib/cache";
 import { getScopedRepository } from "@nexpress/database";
 import { recordAudit } from "@/lib/audit";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireAdmin, requireUser } from "@/lib/auth/session";
 import { clearWebmasterCaches } from "@/lib/webmaster/connection";
 import {
   extractMetrikaCounterId,
@@ -131,4 +131,29 @@ export async function saveSeoIntegrationsAction(
   await revalidatePath("/admin/seo/integrations");
   await revalidatePath("/");
   return { ok: true, message: "Entegrasyon ayarları kaydedildi." };
+}
+
+/** Önerilen iç bağlantıları kiracıya kapalı Bilgi Ağına (`content_entity_links`) tek tıkla ekler. */
+export async function applyEntityLinksAction(
+  links: Array<{ sourceContentId: string; targetContentId: string; relationType?: string; anchorText?: string }>
+): Promise<{ ok: boolean; created: number; message: string }> {
+  const me = await requireUser({ audit: "seo.entityLink" });
+  const repo = getScopedRepository(me.siteId);
+  let created = 0;
+  for (const item of links.slice(0, 30)) {
+    const res = await repo.upsertEntityLink({
+      sourceContentId: item.sourceContentId,
+      targetContentId: item.targetContentId,
+      relationType: item.relationType ?? "mentions",
+      anchorText: item.anchorText,
+    });
+    if (res.created) created += 1;
+  }
+  await revalidatePath("/admin/seo/audit");
+  await revalidatePath("/admin/seo");
+  return {
+    ok: true,
+    created,
+    message: created > 0 ? `${created} varlık bağı Bilgi Ağına eklendi.` : "Seçili bağlar zaten Bilgi Ağında mevcut.",
+  };
 }

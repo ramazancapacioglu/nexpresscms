@@ -106,6 +106,7 @@ export class CmsSiteRepository extends CmsRepositoryBase {
       seo: { ...current.seo, ...(patch.seo ?? {}) },
       general: { ...current.general, ...(patch.general ?? {}) },
       email: { ...current.email, ...(patch.email ?? {}) },
+      ai: { ...current.ai, ...(patch.ai ?? {}) },
       customizer: Object.fromEntries(
         Object.entries(current.customizer).map(([k, v]) => {
           const p = (patch.customizer as Record<string, unknown> | undefined)?.[k];

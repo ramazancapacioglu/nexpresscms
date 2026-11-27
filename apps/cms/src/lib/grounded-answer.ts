@@ -1,24 +1,25 @@
 import "server-only";
 import { createChatClient, createRateLimiter, groundedAnswerRequest, parseGroundedAnswer, synthesizeSearchAnswer, type DirectAnswerSource, type SynthesizedSearchAnswer } from "@nexpress/core";
+import { resolveSiteAiConfig } from "./ai-config";
 
 /** Site başına saatte 20 model çağrısı. Dolunca özete düşülür; ziyaretçi hata görmez. */
 const groundedLimit = createRateLimiter(20, 60 * 60 * 1000);
 
 /**
- * Site içi yanıt. `OPENAI_API_KEY` varsa model yalnızca bulunan sayfalardan yazar.
+ * Site içi yanıt. Siteye özel şifreli AI anahtarı veya `OPENAI_API_KEY` varsa model yalnızca bulunan sayfalardan yazar.
  * Anahtar yoksa, süre dolarsa veya çıktı kaynaklara bağlanamazsa mevcut özete düşer.
  * Ziyaretçiye betik eklemez.
  */
 export async function answerFromSite(siteId: string, query: string, docs: DirectAnswerSource[]): Promise<SynthesizedSearchAnswer | null> {
   const fallback = synthesizeSearchAnswer(docs, query);
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const ai = await resolveSiteAiConfig(siteId);
   const request = groundedAnswerRequest(query, docs);
-  if (!apiKey || !request || !groundedLimit.take(siteId)) return fallback;
+  if (!ai.apiKey || !request || !groundedLimit.take(siteId)) return fallback;
   try {
     const client = createChatClient({
-      apiKey,
-      baseUrl: process.env.OPENAI_BASE_URL,
-      model: process.env.OPENAI_CHAT_MODEL,
+      apiKey: ai.apiKey,
+      baseUrl: ai.baseUrl,
+      model: ai.chatModel,
       timeoutMs: 4_000,
       maxRetries: 0,
     });

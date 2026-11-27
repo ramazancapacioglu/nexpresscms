@@ -102,11 +102,22 @@ async function embedQuery(provider: EmbeddingProvider, query: string): Promise<F
 export async function searchCorpus(siteId: string, query: string, provider: EmbeddingProvider, options: CorpusSearchOptions = {}): Promise<CorpusSearchResult> {
   const repo = getChunkRepository(siteId);
   const base = { model: provider.model, semantic: provider.semantic };
+  const limit = options.limit ?? 5;
   const stats = await repo.stats();
   if (!stats.models.some((m) => m.model === provider.model && m.chunks > 0)) {
+    if (options.hybrid !== false) {
+      const corpus = await keywordCorpus(siteId, options.locale ?? "tr", options.types);
+      const bm25 = bm25Rank(corpus.docs, query, limit);
+      const fallbackContents = bm25
+        .map((hit) => {
+          const doc = corpus.meta.get(hit.id);
+          return doc ? { ...doc, fusedScore: hit.score } : null;
+        })
+        .filter((x): x is NonNullable<typeof x> => Boolean(x));
+      return { indexed: false, ...base, passages: [], contents: fallbackContents, ranking: "hybrid" };
+    }
     return { indexed: false, ...base, passages: [], contents: [], ranking: "vector" };
   }
-  const limit = options.limit ?? 5;
   const passages = await repo.search(await embedQuery(provider, query), provider.model, { limit: limit * 3, locale: options.locale, types: options.types });
   const best = new Map<string, CorpusSearchResult["contents"][number]>();
   for (const p of passages) {

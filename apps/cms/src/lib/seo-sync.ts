@@ -71,6 +71,12 @@ export async function runSeoSync(siteId: string): Promise<SeoSyncReport> {
     notes.push("Yandex anahtarı yok.");
   }
 
+  const cluster = await pluginActions.run("intel.cluster", { siteId, userId: "cron", input: {} });
+  if (cluster.ok) {
+    const cCount = cluster.data && typeof cluster.data === "object" && "clusters" in cluster.data ? Number(cluster.data.clusters) : 0;
+    notes.push(`Otomatik kümeleme: ${cCount} küme`);
+  }
+
   const recheck = await pluginActions.run("source.recheck", { siteId, userId: "cron", input: {} });
   const changed = recheck.ok && recheck.data && typeof recheck.data === "object" && "changed" in recheck.data ? Number(recheck.data.changed) : 0;
   notes.push(recheck.ok ? `Kaynak denetimi: ${changed} değişti` : "Kaynak denetimi kapalı.");
