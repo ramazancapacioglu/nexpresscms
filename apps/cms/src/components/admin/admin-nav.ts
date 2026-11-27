@@ -66,6 +66,13 @@ const ALL_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
         shortcut: "G O",
       },
       {
+        href: "/admin/ai",
+        label: "AI Uzman Sohbet",
+        icon: Sparkles,
+        count: "Asistan",
+        shortcut: "G A",
+      },
+      {
         href: "/admin/plugins",
         label: "Eklentiler",
         icon: Blocks,
@@ -403,7 +410,7 @@ export function navVisibleForRole(item: Pick<NavItem, "adminOnly" | "limited" | 
 }
 
 export const WORKSPACE_SECTIONS: Array<{ label: string; items: NavItem[] }> = [
-  { label: "Genel", items: pick(["/admin", "/admin/notifications"]) },
+  { label: "Genel", items: pick(["/admin", "/admin/ai", "/admin/notifications"]) },
   { label: "İçerik", items: pick(["/admin/my-content", "/admin/pages", "/admin/posts", "/admin/qa", "/admin/contents", "/admin/content-types", "/admin/taxonomies", "/admin/media", "/admin/comments", "/admin/questions", "/admin/translations", "/admin/schedule", "/admin/trash"], { "/admin/contents": { label: "İçerik editörü", count: undefined } }) },
   { label: "Etkileşim & Satış", items: pick(["/admin/campaigns", "/admin/forms", "/admin/requests", "/admin/commerce", "/admin/marketplaces"]) },
   {

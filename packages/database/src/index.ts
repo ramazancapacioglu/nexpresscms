@@ -30,3 +30,4 @@ export * from "./schema/sqlite";
 export { pushSchema } from "./scripts/push";
 export { migrationStatus } from "./scripts/migrate";
 export * from "./mcp-log-repository";
+export * from "./ai-chat-repository";

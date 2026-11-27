@@ -98,7 +98,11 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
             type="password"
             autoComplete="new-password"
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setApiKey(val);
+              if (val.trim() && !enabled) setEnabled(true);
+            }}
             placeholder={hasKey ? "•••••••••••••••• (mevcut anahtar korunur)" : provider === "gemini" ? "AIza..." : "sk-..."}
             className={`${field} font-mono`}
           />
@@ -146,7 +150,7 @@ export function AiProviderCard({ initial }: AiProviderCardProps) {
           disabled={pending}
           onClick={() =>
             start(async () => {
-              const res = await testAiConnectionAction();
+              const res = await testAiConnectionAction({ provider, apiKey, baseUrl, chatModel });
               setStatus(res.ok ? { ok: true, text: res.message } : { ok: false, text: res.error });
             })
           }

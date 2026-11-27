@@ -1184,3 +1184,41 @@ export const sqliteContentImports = sqliteTable(
   },
   (t) => [index("content_imports_site_id_idx").on(t.siteId, t.fetchedAt)]
 );
+
+
+/** Panel AI Asistan kalıcı sohbet oturumları (kiracı + kullanıcı bazlı hafıza). */
+export const sqliteAiConversations = sqliteTable(
+  "ai_conversations",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    userId: text("user_id").notNull(),
+    title: text("title").default("Yeni Sohbet").notNull(),
+    /** general | seo | design | content */
+    persona: text("persona").default("general").notNull(),
+    summary: text("summary").default("").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("ai_conversations_site_updated_idx").on(t.siteId, t.updatedAt)]
+);
+
+/** Panel AI Asistan kalıcı mesaj geçmişi ve çalıştırılan araç izleri. */
+export const sqliteAiMessages = sqliteTable(
+  "ai_messages",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => sqliteAiConversations.id, { onDelete: "cascade" }),
+    /** user | assistant */
+    role: text("role").notNull(),
+    content: text("content").notNull(),
+    toolsUsed: text("tools_used", { mode: "json" }).$type<Array<{ name: string; ok: boolean; summary: string }>>().default([]).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    index("ai_messages_site_conv_idx").on(t.siteId, t.conversationId, t.createdAt),
+  ]
+);

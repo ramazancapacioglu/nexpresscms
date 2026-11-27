@@ -55,34 +55,50 @@ export async function saveAiSettingsAction(input: {
   return { ok: true, message: "AI sağlayıcı ayarları şifreli olarak kaydedildi." };
 }
 
-export async function testAiConnectionAction(): Promise<AiActionResult> {
+export async function testAiConnectionAction(draft?: {
+  provider?: AiProviderKind;
+  apiKey?: string;
+  baseUrl?: string;
+  chatModel?: string;
+}): Promise<AiActionResult> {
   const me = await requireAdmin("integrations.ai.test");
-  const cfg = await resolveSiteAiConfig(me.siteId);
-  if (!cfg.apiKey) {
-    return { ok: false, error: "Kayıtlı bir AI API anahtarı bulunamadı. Önce anahtar girip kaydedin." };
+  const saved = await resolveSiteAiConfig(me.siteId);
+  const provider: AiProviderKind = draft?.provider && PROVIDERS.includes(draft.provider) ? draft.provider : saved.provider;
+  const presetBase =
+    provider === "gemini"
+      ? "https://generativelanguage.googleapis.com/v1beta/openai"
+      : "https://api.openai.com/v1";
+  const presetModel = provider === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini";
+
+  const apiKey = draft?.apiKey?.trim() || saved.apiKey;
+  const baseUrl = (draft?.baseUrl?.trim() || (draft?.provider ? presetBase : saved.baseUrl) || presetBase).replace(/\/$/, "");
+  const chatModel = draft?.chatModel?.trim() || (draft?.provider ? presetModel : saved.chatModel) || presetModel;
+
+  if (!apiKey) {
+    return { ok: false, error: "Test için bir API anahtarı girin veya önce kaydedin." };
   }
   try {
     const client = createChatClient({
-      apiKey: cfg.apiKey,
-      baseUrl: cfg.baseUrl,
-      model: cfg.chatModel,
-      timeoutMs: 12_000,
+      apiKey,
+      baseUrl,
+      model: chatModel,
+      timeoutMs: 15_000,
       maxRetries: 0,
     });
     const out = await client.completeJson({
-      system: 'Return strictly {"ok":true}',
-      user: "ping",
+      system: 'Return a valid JSON object strictly as {"ok":true}',
+      user: "Respond with JSON ping ok.",
       temperature: 0,
-      maxTokens: 20,
+      maxTokens: 32,
     });
     return {
       ok: true,
-      message: `Bağlantı başarılı (${cfg.provider} / ${cfg.chatModel}) — yanıt alındı: ${out.slice(0, 40)}`,
+      message: `Bağlantı başarılı (${provider} / ${chatModel}) — yanıt: ${out.slice(0, 40)}`,
     };
   } catch (err) {
     return {
       ok: false,
-      error: `Bağlantı başarısız: ${err instanceof Error ? err.message.slice(0, 160) : String(err)}`,
+      error: `Bağlantı başarısız (${provider} / ${chatModel}): ${err instanceof Error ? err.message.slice(0, 180) : String(err)}`,
     };
   }
 }

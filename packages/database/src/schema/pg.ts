@@ -1177,3 +1177,39 @@ export const pgContentImports = pgTable(
   },
   (t) => [index("content_imports_site_id_idx").on(t.siteId, t.fetchedAt)]
 );
+
+
+/** Panel AI Asistan kalıcı sohbet oturumları (kiracı + kullanıcı bazlı hafıza). */
+export const pgAiConversations = pgTable(
+  "ai_conversations",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    userId: text("user_id").notNull(),
+    title: text("title").default("Yeni Sohbet").notNull(),
+    persona: text("persona").default("general").notNull(),
+    summary: text("summary").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("ai_conversations_site_updated_idx").on(t.siteId, t.updatedAt)]
+);
+
+/** Panel AI Asistan kalıcı mesaj geçmişi ve çalıştırılan araç izleri. */
+export const pgAiMessages = pgTable(
+  "ai_messages",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").default("default").notNull(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => pgAiConversations.id, { onDelete: "cascade" }),
+    role: text("role").notNull(),
+    content: text("content").notNull(),
+    toolsUsed: jsonb("tools_used").$type<Array<{ name: string; ok: boolean; summary: string }>>().default([]).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("ai_messages_site_conv_idx").on(t.siteId, t.conversationId, t.createdAt),
+  ]
+);
