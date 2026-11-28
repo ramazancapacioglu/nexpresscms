@@ -155,3 +155,9 @@ main[data-nx-width="wide"] > article, main[data-nx-width="full"] > article { max
 .nx-public-header[data-nx-overlay] a, .nx-public-header[data-nx-overlay] summary, .nx-public-header[data-nx-overlay] .nx-logo span { color: inherit; }
 /* Boş boşluk blokları dikey ritmi bozmaz: kaplar zaten aralık verir */
 .nx-block:has(> .nx-spacer) { display: none; }
+/* Uzun rehber ve ürün sayfalarında ekran altı bölümler için 0-KB render hızlandırması */
+article > section:nth-of-type(n+3),
+.nx-below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}

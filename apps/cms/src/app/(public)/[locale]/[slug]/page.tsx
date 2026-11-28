@@ -5,9 +5,10 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, isAuthoredType, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, selectPublicFamily, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, isAuthoredType, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContentSummaries, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
+import { resolvePublicPageRelations } from "@/lib/public-page-relations";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
@@ -371,59 +372,22 @@ export default async function PublicDynamicContentPage({
   const reviewerName = typeof rawRichTech?.reviewedBy === "string" ? rawRichTech.reviewedBy.trim() : "";
   const reviewerSlug = reviewerName ? authorSlug(reviewerName) : "";
   const reviewedByUrl = reviewerSlug && publicAuthors[reviewerSlug] ? `${baseUrl}${lb}/yazar/${reviewerSlug}` : undefined;
-  const needsSummaries = Boolean(
-    pub.parentId ||
-    pub.pillar ||
-    content.type === "post" ||
-    content.type === "page" ||
-    content.type === "ai_prompt"
-  );
-  const publicSummaries = needsSummaries ? await listPublishedContentSummaries(siteId, locale) : [];
-  const { parent, children } = selectPublicFamily(publicSummaries, content.id, { parentId: pub.parentId, pillar: pub.pillar });
-  // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
-  const scoped = getScopedRepository(siteId);
-  const taxonomyRows = content.type === "post" ? await scoped.listTaxonomies() : [];
-  const termName = (kind: "category" | "tag", slug: string) => taxonomyRows.find((row) => row.taxonomyType === kind && row.slug === slug)?.name ?? slug;
-  const crumbs = [
-    { name: t("taxonomy.home"), url: `${baseUrl}${lb || "/"}` },
-    ...(content.type === "post"
-      ? [
-          { name: t("content.blogCrumb"), url: `${baseUrl}${lb}/${postsPageSlug || "blog"}` },
-          ...(categories[0] ? [{ name: termName("category", categories[0]), url: `${baseUrl}${lb}/kategori/${categories[0]}` }] : []),
-        ]
-      : []),
-    ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
-    { name: content.title, url: pageUrl },
-  ];
-  // Önceki / sonraki ve benzer yazılar (yalnızca herkese açık, yayında yazılar; gövdesiz önbellekli özet havuzundan)
-  const peers =
-    content.type === "post"
-      ? publicSummaries
-          .filter((row) => row.type === "post")
-          .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
-      : [];
-  const asPeer = (row: (typeof peers)[number]) => ({ slug: row.slug, title: row.title, image: row.featuredImage ?? null, date: row.publishedAt ? new Date(row.publishedAt) : null });
-  const peerAt = peers.findIndex((row) => row.id === content.id);
-  const prevPost = peerAt >= 0 && peers[peerAt + 1] ? asPeer(peers[peerAt + 1]!) : null;
-  const nextPost = peerAt > 0 && peers[peerAt - 1] ? asPeer(peers[peerAt - 1]!) : null;
-  const asCandidate = <R extends { id: string; title: string; schemaAttributes: Record<string, unknown> | null }>(row: R) => {
-    const pub = resolvePublishing(row.schemaAttributes);
-    return { row, id: row.id, title: row.title, categories: pub.categories, tags: pub.tags };
-  };
-  const me = { id: content.id, title: content.title, categories, tags };
-  // Benzer yazılar: ortak etiket/kategori/başlık sözcüğü; eşitlikte hedefe göre değişen sıra (iç bağlantılar bir avuç yazıda toplanmaz)
-  const relatedPosts = rankRelated(me, peers.map(asCandidate), 3, 0).map((c) => asPeer(c.row));
-  // Sayfa, yazı ve soru-cevap içeriklerinde ilgili sayfa/yazılar: ilgisizse hiç gösterilmez. Yazılar zaten "Benzer yazılar" gösterir; onlara yalnızca ürün/çözüm sayfaları önerilir
-  const relatedLinks =
-    content.type === "page" || content.type === "post" || content.type === "ai_prompt"
-      ? rankRelated(
-          me,
-          publicSummaries
-            .filter((row) => (row.type === "page" || (content.type !== "post" && row.type === "post")) && row.slug !== "ana-sayfa")
-            .map(asCandidate),
-          6,
-        ).map((c) => ({ slug: c.row.slug, title: c.row.title, image: c.row.featuredImage ?? null, tldr: c.row.tldr ?? null }))
-      : [];
+  const { parent, children, crumbs, termName, prevPost, nextPost, relatedPosts, relatedLinks } =
+    await resolvePublicPageRelations({
+      siteId,
+      locale,
+      baseUrl,
+      lb,
+      pageUrl,
+      postsPageSlug,
+      homeLabel: t("taxonomy.home"),
+      blogLabel: t("content.blogCrumb"),
+      content: { id: content.id, type: content.type, title: content.title, slug: content.slug },
+      categories,
+      tags,
+      parentId: pub.parentId,
+      pillar: pub.pillar,
+    });
 
   const schemaMedia = await schemaImagesFor(siteId, content.blocks, featuredImageUrl);
   const schemaVars = {

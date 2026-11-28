@@ -1,10 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { slotRegistry } from "@nexpress/core";
+import { buildGeoRoiFunnel, slotRegistry } from "@nexpress/core";
 import {
+  getAiReferralRepository,
   getBotStatsRepository,
   getChunkRepository,
+  getFormSubmissionRepository,
   getIntelRepository,
   getRedirectRepository,
   getScopedRepository,
@@ -13,6 +15,7 @@ import {
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SeoTabs } from "@/components/admin/section-tabs";
 import { BotCrawlReport } from "@/components/admin/seo/bot-crawl-report";
+import { GeoRoiFunnel } from "@/components/admin/seo/geo-roi-funnel";
 import { KpiStatCard } from "@/components/admin/ui/saas-charts";
 import { Activity, Bot, Calendar, Database, Search } from "lucide-react";
 
@@ -24,6 +27,12 @@ const GROUPS = [
     slot: null,
     title: "AI Bot Taramaları",
     detail: "AI ve arama motoru botlarının tarih aralığına göre hangi sayfaları hangi formatta (HTML / Markdown / LLMs / MCP) taradığı.",
+  },
+  {
+    id: "geo-roi",
+    slot: null,
+    title: "GEO ROI Hunisi",
+    detail: "Sayfa bazında AI bot taraması → AI yönlendirme ziyareti → teklif/iletişim formu dönüşümü hunisi.",
   },
   {
     id: "visibility",
@@ -76,7 +85,7 @@ export default async function AdminSeoReportsPage({
   const [reqHeaders, sp] = await Promise.all([headers(), searchParams]);
   const siteId = reqHeaders.get("x-nexpress-site-id") ?? "default";
   const activeId: GroupId =
-    sp.group === "bots" || sp.group === "content" || sp.group === "queries" || sp.group === "visibility"
+    sp.group === "bots" || sp.group === "geo-roi" || sp.group === "content" || sp.group === "queries" || sp.group === "visibility"
       ? sp.group
       : "bots";
   const active = GROUPS.find((g) => g.id === activeId) ?? GROUPS[0];
@@ -89,17 +98,41 @@ export default async function AdminSeoReportsPage({
   const locale = site?.defaultLocale ?? "tr";
   const botRepo = getBotStatsRepository(siteId);
 
-  const [contents, signals, botSummary, botDaily, botPages, ragStats, notFoundCount] = await Promise.all([
-    repo.listContents({ locale, status: "published" }),
+  const [contents, signals, botSummary, botDaily, botPages, aiRefSummary, formRows, ragStats, notFoundCount] = await Promise.all([
+    repo.listContentSummaries({ locale, status: "published" }),
     getIntelRepository(siteId).listSignals(500).catch(() => []),
     botRepo.summaryInRange(dateRange.fromDay, dateRange.toDay).catch(() => []),
     active.id === "bots" ? botRepo.dailySeriesInRange(dateRange.fromDay, dateRange.toDay).catch(() => []) : Promise.resolve([]),
-    active.id === "bots"
-      ? botRepo.pageHitsInRange(dateRange.fromDay, dateRange.toDay, { botId: activeBot || undefined, kind: activeKind || undefined, limit: 100 }).catch(() => [])
+    active.id === "bots" || active.id === "geo-roi"
+      ? botRepo.pageHitsInRange(dateRange.fromDay, dateRange.toDay, { botId: active.id === "bots" ? (activeBot || undefined) : undefined, kind: active.id === "bots" ? (activeKind || undefined) : undefined, limit: 200 }).catch(() => [])
+      : Promise.resolve([]),
+    active.id === "geo-roi"
+      ? getAiReferralRepository(siteId).summaryInRange(dateRange.fromDay, dateRange.toDay, 100).catch(() => ({ total: 0, bySource: [], topPaths: [] }))
+      : Promise.resolve({ total: 0, bySource: [], topPaths: [] }),
+    active.id === "geo-roi"
+      ? getFormSubmissionRepository(siteId).list({ limit: 500 }).catch(() => [])
       : Promise.resolve([]),
     getChunkRepository(siteId).stats().catch(() => ({ chunks: 0, contents: 0, models: [] })),
     getRedirectRepository(siteId).countNotFound().catch(() => 0),
   ]);
+
+  const geoRoi =
+    active.id === "geo-roi"
+      ? buildGeoRoiFunnel({
+          botPages: botPages.flatMap((p) => {
+            const entries = Object.entries(p.byKind ?? {});
+            return entries.length > 0
+              ? entries.map(([kind, hits]) => ({ path: p.path, hits, kind }))
+              : [{ path: p.path, hits: p.total, kind: "page" }];
+          }),
+          aiPaths: aiRefSummary.topPaths,
+          forms: formRows.filter((f) => {
+            const d = utcDay(f.createdAt);
+            return d >= dateRange.fromDay && d <= dateRange.toDay;
+          }),
+          defaultLocale: locale,
+        })
+      : null;
 
   const avgSeo =
     contents.length > 0
@@ -281,6 +314,13 @@ export default async function AdminSeoReportsPage({
           summary={botSummary}
           dailySeries={botDaily}
           pages={botPages}
+        />
+      ) : active.id === "geo-roi" && geoRoi ? (
+        <GeoRoiFunnel
+          fromDay={dateRange.fromDay}
+          toDay={dateRange.toDay}
+          summary={geoRoi}
+          topSources={aiRefSummary.bySource}
         />
       ) : slotEntries.length === 0 ? (
         <div className="rounded-xl border border-border bg-card px-6 py-12 text-center text-[13px] text-muted-foreground">

@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildGeoRoiFunnel,
   chunkMarkdown,
   compileBlocksToMarkdown,
   extractProductPricingFromBlocks,
   isPublicListable,
   markdownCacheControl,
+  normalizeRoiPath,
   resolveSiteOrigin,
   selectPublicFamily,
 } from "../src/index";
@@ -150,4 +152,35 @@ test("P1 · extractProductPricingFromBlocks: WebMCP için yapısal ürün fiyat 
   assert.equal(products[0]!.priceList.length, 3);
   assert.equal(products[0]!.priceList[1]!.campaignPrice, 0);
   assert.equal(products[0]!.priceList[2]!.campaignPrice, null);
+});
+
+test("GEO ROI Hunisi: bot taramaları, AI yönlendirmeleri ve spam dışı form dönüşümlerini yol bazında birleştirir", () => {
+  assert.equal(normalizeRoiPath("/tr/wolvox-erp/?utm_source=chatgpt", "tr"), "/wolvox-erp");
+  assert.equal(normalizeRoiPath("/tr", "tr"), "/");
+
+  const funnel = buildGeoRoiFunnel({
+    defaultLocale: "tr",
+    botPages: [
+      { path: "/tr/wolvox-erp", hits: 14, kind: "markdown" },
+      { path: "/wolvox-erp", hits: 20, kind: "page" },
+      { path: "/e-fatura", hits: 8, kind: "page" },
+    ],
+    aiPaths: [
+      { path: "/tr/wolvox-erp", hits: 5 },
+      { path: "/e-fatura", hits: 2 },
+    ],
+    forms: [
+      { pagePath: "/wolvox-erp", status: "new" },
+      { pagePath: "/tr/wolvox-erp", status: "read" },
+      { pagePath: "/wolvox-erp", status: "spam" },
+    ],
+  });
+
+  assert.equal(funnel.totalBotHits, 42);
+  assert.equal(funnel.totalMarkdownHits, 14);
+  assert.equal(funnel.totalAiVisits, 7);
+  assert.equal(funnel.totalConversions, 2);
+  assert.equal(funnel.rows[0]!.path, "/wolvox-erp");
+  assert.equal(funnel.rows[0]!.conversions, 2);
+  assert.equal(funnel.rows[0]!.conversionRatePct, 40);
 });

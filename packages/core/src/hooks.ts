@@ -63,6 +63,10 @@ export interface HookPayloads {
     agent?: string | null;
     response: Record<string, unknown>;
   };
+  "design:brandContext": {
+    siteId: string;
+    brand: Record<string, unknown>;
+  };
 }
 
 export type HookName = keyof HookPayloads;

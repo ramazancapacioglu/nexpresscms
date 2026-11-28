@@ -1,8 +1,9 @@
 import { bm25Rank, contentPath, makeSnippet, resolveSiteSettings } from "@nexpress/core";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { getScopedRepository } from "@nexpress/database";
 import { siteLocaleBase } from "@/lib/locale-url";
-import { getPublicSite, listPublicKeywordDocs } from "@/lib/public-data";
+import { getPublicSite } from "@/lib/public-data";
 
 const quiet = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" };
 
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
   const locale = (hinted && site?.supportedLocales?.includes(hinted) ? hinted : null) || site?.defaultLocale || "tr";
   const lb = await siteLocaleBase(siteId, locale);
   const types = resolveSiteSettings(site?.settings).general.contentTypes;
-  const docs = await listPublicKeywordDocs(siteId, locale);
+  const docs = await getScopedRepository(siteId).searchKeywordDocs(q, { locale, limit: 32 });
   const byId = new Map(docs.map((c) => [c.contentId, c]));
   const hits = bm25Rank(
     docs.map((c) => ({ id: c.contentId, title: c.title, body: c.markdownCache })),

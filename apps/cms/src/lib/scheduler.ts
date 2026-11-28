@@ -5,6 +5,7 @@ import { invalidateSite } from "./cache";
 import { notify, syncSystemNotifications } from "./notify";
 import { contentPath, localeBase, resolveSiteSettings } from "@nexpress/core";
 import { dispatchPluginWebhooks, processDueWebhookDeliveries } from "./plugin-webhooks";
+import { siteOriginFor } from "./site-origin";
 
 const lastRun = new Map<string, number>();
 const MIN_INTERVAL_MS = 60_000;
@@ -30,7 +31,7 @@ export async function runScheduler(siteId: string, force = false): Promise<{ pub
         const site = await repo.getSite();
         const locale = site?.defaultLocale ?? "tr";
         const types = resolveSiteSettings(site?.settings).general.contentTypes;
-        const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+        const appUrl = siteOriginFor(site);
         for (const id of published) {
           const c = await repo.getContentById(id, locale);
           if (c) await dispatchPluginWebhooks(siteId, "content.published", { contentId: c.contentId, type: c.type, slug: c.slug, title: c.title, url: `${appUrl}${localeBase(site, locale)}${contentPath(types, c)}`, status: "published", locale });

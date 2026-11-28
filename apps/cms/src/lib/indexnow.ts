@@ -3,6 +3,7 @@ import { cmsHooks, isPrefixless, resolveSiteSettings } from "@nexpress/core";
 import { decryptSecret } from "@nexpress/core/secret-box";
 import { getScopedRepository } from "@nexpress/database";
 import { notify } from "./notify";
+import { siteOriginFor } from "./site-origin";
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const PLUGIN_ID = "@nexpress/indexnow";
@@ -52,7 +53,7 @@ export async function submitIndexNowUrls(
     return { ok: true, submitted: 0 };
   }
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = siteOriginFor(site);
   const defaultLocale = site?.defaultLocale ?? "tr";
   const prefixless = isPrefixless(site, defaultLocale);
   const localeRe = new RegExp(`^/${defaultLocale}(?=/|$)`);

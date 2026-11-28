@@ -1,5 +1,5 @@
 import type { ContentSummaryDto, ContentWithTranslationDto, EntityLinkDto } from "./types";
-import { eq, and, desc, ne } from "drizzle-orm";
+import { eq, and, desc, ne, or, sql } from "drizzle-orm";
 import { mergeLocalizedAttributes, resolvePublishing, type ContentStatus, type ContentType } from "@nexpress/core";
 import { CmsTaxonomyRepository } from "./taxonomy";
 
@@ -235,6 +235,105 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
         );
         return resolvePublishing(merged).visibility === "public";
       })
+      .map((r) => ({
+        contentId: r.contentId,
+        title: r.title,
+        slug: r.slug,
+        type: r.type as ContentType,
+        tldr: r.tldr ?? null,
+        markdownCache: r.markdownCache ?? "",
+      }));
+  }
+
+  /**
+   * Ölçeklenebilir veritabanı tam metin ön-araması:
+   * - PostgreSQL'de `to_tsvector('turkish', ...)` + `plainto_tsquery` ve `ILIKE` ile doğrudan DB motorunda daraltır.
+   * - SQLite'ta `LIKE` ön-filtresiyle yalnızca eşleşen satırları (`LIMIT`) çeker; 5.000+ içerikte tüm tabloyu belleğe yüklemez.
+   */
+  public async searchKeywordDocs(
+    query: string,
+    options?: { locale?: string; types?: ContentType[]; limit?: number }
+  ): Promise<Array<{ contentId: string; title: string; slug: string; type: ContentType; tldr: string | null; markdownCache: string }>> {
+    const clean = query.trim().slice(0, 120);
+    if (clean.length < 2) return [];
+    const locale = options?.locale ?? "tr";
+    const limit = Math.min(100, Math.max(8, options?.limit ?? 40));
+    const { db, t } = this.backend;
+
+    const terms = clean
+      .split(/\s+/)
+      .map((w) => w.replace(/[%_\\]/g, "").trim())
+      .filter((w) => w.length >= 2)
+      .slice(0, 6);
+    if (terms.length === 0) return [];
+
+    const matchCondition =
+      this.dialect !== "sqlite"
+        ? or(
+            sql`to_tsvector('turkish', coalesce(${t.contentTranslations.title}, '') || ' ' || coalesce(${t.contentTranslations.tldr}, '') || ' ' || coalesce(${t.contentTranslations.markdownCache}, '')) @@ plainto_tsquery('turkish', ${clean})`,
+            ...terms.map((term) => {
+              const pat = `%${term}%`;
+              return or(
+                sql`${t.contentTranslations.title} ILIKE ${pat}`,
+                sql`coalesce(${t.contentTranslations.tldr}, '') ILIKE ${pat}`,
+                sql`coalesce(${t.contentTranslations.markdownCache}, '') ILIKE ${pat}`
+              );
+            })
+          )
+        : or(
+            ...terms.map((term) => {
+              const pat = `%${term.toLowerCase()}%`;
+              return or(
+                sql`lower(${t.contentTranslations.title}) LIKE ${pat}`,
+                sql`lower(coalesce(${t.contentTranslations.tldr}, '')) LIKE ${pat}`,
+                sql`lower(coalesce(${t.contentTranslations.markdownCache}, '')) LIKE ${pat}`
+              );
+            })
+          );
+
+    const rows = await db
+      .select({
+        contentId: t.contents.id,
+        type: t.contents.type,
+        schemaAttributes: t.contents.schemaAttributes,
+        translationAttributes: t.contentTranslations.attributes,
+        title: t.contentTranslations.title,
+        slug: t.contentTranslations.slug,
+        tldr: t.contentTranslations.tldr,
+        markdownCache: t.contentTranslations.markdownCache,
+        noIndex: t.contentTranslations.noIndex,
+      })
+      .from(t.contents)
+      .innerJoin(
+        t.contentTranslations,
+        and(
+          eq(t.contentTranslations.contentId, t.contents.id),
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale)
+        )
+      )
+      .where(
+        and(
+          eq(t.contents.siteId, this.siteId),
+          ne(t.contents.type, "template"),
+          eq(t.contents.status, "published"),
+          eq(t.contentTranslations.translationStatus, "published"),
+          matchCondition
+        )
+      )
+      .limit(limit * 2);
+
+    return rows
+      .filter((r) => {
+        if (Boolean(r.noIndex)) return false;
+        if (options?.types?.length && !options.types.includes(r.type as ContentType)) return false;
+        const merged = mergeLocalizedAttributes(
+          (r.schemaAttributes ?? {}) as Record<string, unknown>,
+          r.translationAttributes as Record<string, unknown> | null | undefined
+        );
+        return resolvePublishing(merged).visibility === "public";
+      })
+      .slice(0, limit)
       .map((r) => ({
         contentId: r.contentId,
         title: r.title,

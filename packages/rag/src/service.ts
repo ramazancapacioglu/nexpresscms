@@ -134,7 +134,7 @@ export async function searchCorpus(siteId: string, query: string, provider: Embe
   const stats = await repo.stats();
   if (!stats.models.some((m) => m.model === provider.model && m.chunks > 0)) {
     if (options.hybrid !== false) {
-      const corpus = await keywordCorpus(siteId, options.locale ?? "tr", options.types);
+      const corpus = await keywordCorpus(siteId, query, options.locale ?? "tr", options.types);
       const bm25 = bm25Rank(corpus.docs, query, limit);
       const fallbackContents = bm25
         .map((hit) => {
@@ -156,7 +156,7 @@ export async function searchCorpus(siteId: string, query: string, provider: Embe
   let contents: CorpusSearchResult["contents"] = vectorContents.slice(0, limit);
   let ranking: CorpusSearchResult["ranking"] = "vector";
   if (options.hybrid !== false) {
-    const corpus = await keywordCorpus(siteId, options.locale ?? "tr", options.types);
+    const corpus = await keywordCorpus(siteId, query, options.locale ?? "tr", options.types);
     const keyword = bm25Rank(corpus.docs, query, limit * 3);
     if (keyword.length > 0) {
       const byId = new Map(vectorContents.map((c) => [c.contentId, c]));
@@ -176,9 +176,9 @@ interface KeywordCorpus {
   meta: Map<string, { contentId: string; title: string; slug: string; type: ContentType; similarity: number }>;
 }
 
-/** Yayındaki içeriklerin düz metni (BM25 için); `blocks` taşınmaz, önbellek yok (yayından kaldırılan/noindex içerik anında düşmeli). */
-async function keywordCorpus(siteId: string, locale: string, types?: ContentType[]): Promise<KeywordCorpus> {
-  const wanted = await getScopedRepository(siteId).listKeywordDocs({ locale, types });
+/** Yayındaki içeriklerin düz metni (BM25 için); DB ön-filtresiyle (`searchKeywordDocs`) yalnızca aday satırları çeker, `blocks` taşınmaz. */
+async function keywordCorpus(siteId: string, query: string, locale: string, types?: ContentType[]): Promise<KeywordCorpus> {
+  const wanted = await getScopedRepository(siteId).searchKeywordDocs(query, { locale, types, limit: 48 });
   return {
     docs: wanted.map((c) => ({ id: c.contentId, title: c.title, body: c.markdownCache })),
     meta: new Map(wanted.map((c) => [c.contentId, { contentId: c.contentId, title: c.title, slug: c.slug, type: c.type, similarity: 0 }])),

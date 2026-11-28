@@ -183,3 +183,12 @@ Ara katman (`middleware.ts`), tek dilli ön eksiz yönlendirmeleri (`/tr/x → 3
 
 - `INTERNAL_APP_URL` boş bırakılırsa ara katman `http://127.0.0.1:${PORT}` adresini dener; farklı bir portta çalışan testlerde `PORT` ve `INTERNAL_APP_URL` mutlaka eşleştirilmelidir.
 - Ters vekil (Nginx/Caddy) `Host`, `X-Forwarded-Host` ve `X-Forwarded-Proto` başlıklarını iletmeli, Markdown içerik müzakeresi için `Vary: Accept` başlığını korumalıdır.
+
+### Nginx `103 Early Hints` (Opsiyonel LCP Hızlandırması)
+
+Nginx 1.29+ veya Cloudflare proxy arkasında ana font ve kritik stil için `103 Early Hints` etkinleştirilerek mobil LCP süresi düşürülebilir:
+
+```nginx
+# Cloudflare / Nginx Early Hints (HTTP/2 & HTTP/3)
+add_header Link "</api/fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin" always;
+```

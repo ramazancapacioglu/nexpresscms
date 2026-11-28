@@ -90,3 +90,4 @@ export * from "./alt-text";
 export * from "./link-suggestions";
 export * from "./crawl-hygiene";
 export * from "./schema-rules";
+export * from "./geo-roi";

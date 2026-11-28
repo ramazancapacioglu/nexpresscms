@@ -21,6 +21,12 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-28] — GEO ROI Hunisi, Veritabanı Tam Metin Araması, Open-Core Temizliği & 0-KB `content-visibility: auto`
+- **GEO ROI Hunisi (`packages/core/src/geo-roi.ts`, `apps/cms/src/components/admin/seo/geo-roi-funnel.tsx`, `/admin/seo/reports`):** Sayfa bazında AI bot taramaları, AI yönlendirme ziyaretleri ve spam dışı teklif/iletişim formu dönüşümlerini tek hunide birleştiren `buildGeoRoiFunnel` çekirdek modülü (birim testli) ve `/admin/seo/reports?group=geo-roi` sekmesi eklendi.
+- **Ölçeklenebilir Veritabanı Tam Metin Araması (`packages/database/src/cms/content-read.ts`, `/api/search`, `packages/rag/src/service.ts`):** `searchKeywordDocs` eklendi — PostgreSQL'de `to_tsvector('turkish', ...)` + `plainto_tsquery`, SQLite'ta `LIKE` + `LIMIT` ön-filtresiyle tüm tabloyu belleğe çekmeden yalnızca aday satırları getirir.
+- **Çok Kiracılı Origin & Open-Core Temizliği (`indexnow.ts`, `scheduler.ts`, `design-context.ts`, `packages/core/src/hooks.ts`):** `indexnow.ts` ve `scheduler.ts` `siteOriginFor(site)` ile çok kiracılı hale getirildi; `design-context.ts` içindeki Pro eklenti kimliği kaldırılıp `sites.brandVoice` + `design:brandContext` kancasına taşındı.
+- **0-KB Render Hızı & Kural 7 Sadeleştirmesi (`public.css`, `docs/19-DEPLOYMENT.md`, `public-page-relations.ts`, `[slug]/page.tsx`):** Ekran altı bölümler için `content-visibility: auto` eklendi, `docs/19` içine Nginx `103 Early Hints` kılavuzu işlendi, `[slug]/page.tsx` ilişki/kırıntı hesaplaması `public-page-relations.ts` modülüne ayrıldı ve `docs/28` güncellendi.
+
 ### [2026-11-28] — WebMCP Sertleştirme, Canlı Arama URL Düzeltmesi, Kalan Çok Kiracılı Kökenler & 0-KB Speculation Rules API
 - **P1 · Çekirdek WebMCP Gizlilik, `inputSchema`, Rate Limit & Yapısal Ürün Fiyat Aracı (`packages/core/src/software-reference.ts`, `apps/cms/src/app/api/mcp/route.ts`):** `extractProductPricingFromBlocks` eklendi; `POST /api/mcp` içine 60/dk IP+kiracı oran sınırı (`429`), tüm 3 araç (`nexpress_search_corpus`, `nexpress_fetch_markdown`, `nexpress_get_product_pricing`) için JSON Schema `inputSchema` ve yalnızca `isPublicListable` + `!noIndex` kayıtları döndüren gizlilik kapısı eklendi.
 - **P1 · Canlı Arama (`/api/search`) Önekli URL & Hafif Havuz (`apps/cms/src/app/api/search/route.ts`, `public-data.ts`, `content-read.ts`):** `listPublicKeywordDocs` önbellekli ve `blocks`'suz havuz eklendi; sonuç adresleri `contentPath(types, c)` (kampanyalar için `/kampanya/<slug>`) ile doğru üretilir.
