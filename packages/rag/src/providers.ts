@@ -38,10 +38,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function endpointPrefix(baseUrl: string): string {
   try {
-    const host = new URL(baseUrl).hostname.toLowerCase();
-    if (host === "api.openai.com") return "openai";
+    const u = new URL(baseUrl);
+    const host = u.hostname.toLowerCase();
+    const path = u.pathname.replace(/\/+$/, "");
+    if (host === "api.openai.com" && (path === "" || path === "/v1")) return "openai";
     if (host === "generativelanguage.googleapis.com") return "gemini";
-    return `openai@${host}`;
+    const authority = u.host.toLowerCase();
+    const suffix = path && path !== "/v1" ? path.toLowerCase() : "";
+    return `openai@${authority}${suffix}`;
   } catch {
     return "openai";
   }

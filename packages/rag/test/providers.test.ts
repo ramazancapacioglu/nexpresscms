@@ -30,6 +30,14 @@ test("OpenAI sağlayıcısı: istek biçimi, yetki başlığı, boyut parametres
     createOpenAiProvider({ apiKey: "k", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-embedding-001", fetchImpl: impl }).model,
     "gemini:gemini-embedding-001:1536"
   );
+  assert.notEqual(
+    createOpenAiProvider({ apiKey: "k", baseUrl: "http://localhost:8000/v1", fetchImpl: impl }).model,
+    createOpenAiProvider({ apiKey: "k", baseUrl: "http://localhost:8001/v1", fetchImpl: impl }).model
+  );
+  assert.notEqual(
+    createOpenAiProvider({ apiKey: "k", baseUrl: "https://proxy.test/team-a/v1", fetchImpl: impl }).model,
+    createOpenAiProvider({ apiKey: "k", baseUrl: "https://proxy.test/team-b/v1", fetchImpl: impl }).model
+  );
   assert.equal(p.semantic, true);
   const norm = Math.sqrt(out[0]!.reduce((s, x) => s + x * x, 0));
   assert.ok(Math.abs(norm - 1) < 1e-4, "vektör birim uzunluğa getirilir");

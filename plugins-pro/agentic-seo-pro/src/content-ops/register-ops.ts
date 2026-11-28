@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { lookup } from "node:dns/promises";
 import { createChatClient, createRateLimiter, isPluginModuleEnabled, pluginActions, slugFromTitle } from "@nexpress/core";
 import { getIntelRepository, getScopedRepository, type IntelSource } from "@nexpress/database";
-import { providerFromEnv } from "@nexpress/rag";
+import { resolveEmbeddingProvider } from "@nexpress/rag";
 import { isPublicIp } from "@nexpress/wp-importer";
 import { PLUGIN_ID } from "../module-gate";
 import { composeText } from "../ai/compose";
@@ -152,7 +152,7 @@ export function registerContentOpsActions(): void {
     let method: "cosine" | "jaccard" = "jaccard";
     let grouped = clusterKeywords(items);
     try {
-      const provider = providerFromEnv();
+      const provider = await resolveEmbeddingProvider(siteId);
       if (provider.semantic && items.length > 0 && items.length <= 24) {
         const vectors = await provider.embed(items.map((item) => item.keyword));
         grouped = clusterByVectors(items, vectors.map((vector) => Array.from(vector)), 0.82);

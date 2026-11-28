@@ -1,5 +1,5 @@
 import React from "react";
-import { providerFromEnv, similarityReport } from "@nexpress/rag";
+import { resolveEmbeddingProvider, similarityReport } from "@nexpress/rag";
 import { DEFAULT_FORBIDDEN_PHRASES } from "./guardrails";
 
 const border = "border-[#E6E7EA] dark:border-[#23262E]";
@@ -9,9 +9,9 @@ const muted = "text-[#5C5F66] dark:text-[#9CA3AF]";
  * Editör yan çekmecesi: kayıtlı içeriğin dizin vektörlerinden gerçek kanibalizasyon ve
  * iç bağlantı önerisi. Yeni (kaydedilmemiş) içerikte veya dizin yoksa bunu açıkça söyler.
  */
-export async function CopilotCard({ siteId, contentId }: { siteId: string; contentId?: string }) {
-  const provider = providerFromEnv();
-  const report = contentId ? await similarityReport(siteId, contentId, "tr", provider, 5) : null;
+export async function CopilotCard({ siteId, contentId, locale = "tr" }: { siteId: string; contentId?: string; locale?: string }) {
+  const provider = await resolveEmbeddingProvider(siteId);
+  const report = contentId ? await similarityReport(siteId, contentId, locale, provider, 5) : null;
 
   return (
     <div className={`border-t ${border} pt-4 space-y-3`}>
@@ -43,7 +43,7 @@ export async function CopilotCard({ siteId, contentId }: { siteId: string; conte
             <ul className="space-y-1">
               {report.similar.map((s) => (
                 <li key={s.contentId} className="flex items-start justify-between gap-2">
-                  <a href={`/tr/${s.slug}`} target="_blank" className="min-w-0 truncate hover:underline">
+                  <a href={`/${locale}/${s.slug}`} target="_blank" className="min-w-0 truncate hover:underline">
                     {s.title}
                   </a>
                   <span className={`shrink-0 font-mono text-[10px] ${s.cannibalizing ? "text-red-600" : muted}`}>

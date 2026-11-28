@@ -20,7 +20,7 @@ export async function indexContent(siteId: string, contentId: string, locale: st
 
   const visibility = resolvePublishing(content.schemaAttributes).visibility;
   if (content.noIndex || visibility !== "public") {
-    await getChunkRepository(siteId).replaceForContent(contentId, locale, provider.model, []).catch(() => undefined);
+    await getChunkRepository(siteId).replaceForContent(contentId, locale, provider.model, []);
     return { status: "skipped", reason: "restricted" };
   }
 

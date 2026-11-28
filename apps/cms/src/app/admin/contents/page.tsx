@@ -83,7 +83,7 @@ export default async function AdminContentsEditorPage({
         <PluginSlot
           name="editor.sidebar.tabs"
           siteId={siteId}
-          context={{ contentId: sp.id }}
+          context={{ contentId: sp.id, locale }}
           fallback={
             <div className="border-t border-[#E6E7EA] dark:border-[#23262E] pt-3 space-y-1.5 text-[11px]">
               <div className="font-semibold uppercase tracking-wider text-[#5F6570] dark:text-[#8C9099]">

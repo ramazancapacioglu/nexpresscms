@@ -173,9 +173,9 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
     locale = "tr",
     options?: { publicOnly?: boolean; type?: string }
   ): Promise<{ content: ContentWithTranslationDto; isRedirect: boolean } | null> {
-    const all = (await this.visibleContents(locale, options?.publicOnly)).filter((item) => !options?.type || item.type === options.type);
-    const direct = all.find((item) => item.slug === slug);
+    const direct = await this.getContentBySlug(slug, locale, options);
     if (direct) return { content: direct, isRedirect: false };
+    const all = (await this.visibleContents(locale, options?.publicOnly)).filter((item) => !options?.type || item.type === options.type);
     const old = all.find((item) => resolvePublishing(item.schemaAttributes).slugHistory.includes(slug));
     return old ? { content: old, isRedirect: true } : null;
   }

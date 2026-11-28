@@ -32,11 +32,14 @@ export function registerContentOps(): void {
     pluginId: PLUGIN_ID,
     slot: "editor.sidebar.tabs",
     priority: 10,
-    render: ({ siteId, context }) => (
-      <ModuleGate siteId={siteId} module="copilot">
-        <CopilotCard siteId={siteId} contentId={(context as { contentId?: string } | undefined)?.contentId} />
-      </ModuleGate>
-    ),
+    render: ({ siteId, context }) => {
+      const ctx = context as { contentId?: string; locale?: string } | undefined;
+      return (
+        <ModuleGate siteId={siteId} module="copilot">
+          <CopilotCard siteId={siteId} contentId={ctx?.contentId} locale={ctx?.locale} />
+        </ModuleGate>
+      );
+    },
   });
 
   // İçerik açığı: SEO raporları / içerik
