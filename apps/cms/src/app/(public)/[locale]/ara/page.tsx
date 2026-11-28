@@ -9,6 +9,7 @@ import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 import { Link } from "@/components/public/link";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { buildTemplateContext } from "@/lib/template-context";
 import { recordSupportMiss } from "@/lib/support-miss";
 import { templateFor } from "@/lib/templates";
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const [site, lb] = await Promise.all([getPublicSite(siteId), siteLocaleBase(siteId, locale)]);
-  const origin = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const origin = siteOriginFor(site);
   const label = createTranslator(locale)("search.title");
   return {
     title: site?.name ? `${label} — ${site.name}` : label,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   chunkMarkdown,
   compileBlocksToMarkdown,
+  extractProductPricingFromBlocks,
   isPublicListable,
   markdownCacheControl,
   resolveSiteOrigin,
@@ -108,4 +109,45 @@ test("P1 · compileBlocksToMarkdown (software_product_card): EUR, KDV dahil, ond
   assert.match(md, /Teklif alınız/);
   assert.doesNotMatch(md, /\bTL\b/);
   assert.doesNotMatch(md, /KDV hariç/);
+});
+
+test("P1 · extractProductPricingFromBlocks: WebMCP için yapısal ürün fiyat verisini sıfır kayıpla çıkarır", () => {
+  const products = extractProductPricingFromBlocks([
+    {
+      id: "sec1",
+      type: "section",
+      props: {},
+      children: [
+        {
+          id: "spc1",
+          type: "software_product_card",
+          props: {
+            name: "Wolvox ERP",
+            sku: "WOL9",
+            version: "9.04",
+            pricingMode: "starting",
+            currency: "TRY",
+            vatNote: "+ KDV",
+            price: 17290,
+            listPrice: 26600,
+            priceValidUntil: "2026-12-31",
+            priceList: [
+              { name: "Ana Paket", listPrice: 26600, campaignPrice: 17290 },
+              { name: "Kurulum", listPrice: 0, campaignPrice: 0 },
+              { name: "Özel Geliştirme" },
+            ],
+          },
+        },
+      ],
+    },
+  ]);
+
+  assert.equal(products.length, 1);
+  assert.equal(products[0]!.name, "Wolvox ERP");
+  assert.equal(products[0]!.currency, "TRY");
+  assert.equal(products[0]!.vatNote, "+ KDV");
+  assert.equal(products[0]!.price, 17290);
+  assert.equal(products[0]!.priceList.length, 3);
+  assert.equal(products[0]!.priceList[1]!.campaignPrice, 0);
+  assert.equal(products[0]!.priceList[2]!.campaignPrice, null);
 });

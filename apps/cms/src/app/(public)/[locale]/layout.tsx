@@ -71,10 +71,7 @@ export default async function PublicLocaleLayout({
   if (maintenance.maintenanceEnabled && !(await getSession())) {
     return <MaintenanceView locale={locale} message={maintenance.maintenanceMessage} />;
   }
-  const [nav, widgetFeed] = await Promise.all([
-    getPublicNavigation(siteId, locale),
-    getPublicWidgetFeed(siteId, locale),
-  ]);
+  const nav = await getPublicNavigation(siteId, locale);
 
   // Tanımsız dil kökü ana sayfayı kopyalamasın: yalnızca site dilleri 200 döner.
   // Tek segmentli bilinmeyen yollar (`/eski-adres`) buraya düşer: yönlendirme kuralı varsa uygula, yoksa 404 izleyiciye yaz
@@ -304,6 +301,39 @@ export default async function PublicLocaleLayout({
     effectiveSidebarPos !== "none" &&
     Boolean(sidebarTpl || (activeSidebarArea && activeSidebarArea.enabled !== false));
   const sidebarWidth = activeSidebarArea?.width || resolvedCustomizer.layout.sidebarWidth || "288px";
+  const footerHasWidgets =
+    pageOpts.footer !== "hidden" &&
+    !(footerTpl && tplCtx && !isYf) &&
+    Boolean(
+      nav?.footerConfig &&
+        Array.isArray((nav.footerConfig as unknown as { widgetColumns?: unknown[] }).widgetColumns) &&
+        (nav.footerConfig as unknown as { widgetColumns?: Array<{ widgets?: unknown[] }> }).widgetColumns!.some(
+          (col) => Array.isArray(col?.widgets) && col.widgets.length > 0
+        )
+    );
+  const widgetFeed = hasSidebar || footerHasWidgets ? await getPublicWidgetFeed(siteId, locale) : undefined;
+  const speculationRules =
+    !embed && !preview
+      ? JSON.stringify({
+          prerender: [
+            {
+              where: {
+                and: [
+                  { href_matches: "/*" },
+                  { not: { href_matches: "/admin*" } },
+                  { not: { href_matches: "/api*" } },
+                  { not: { href_matches: "/login*" } },
+                  { not: { href_matches: "/magaza/sepet*" } },
+                  { not: { href_matches: "/magaza/odeme*" } },
+                  { not: { href_matches: "*\\?*format=md*" } },
+                  { not: { selector_matches: "[data-no-prerender]" } },
+                ],
+              },
+              eagerness: "moderate",
+            },
+          ],
+        })
+      : null;
 
   return (
     <div
@@ -455,6 +485,8 @@ export default async function PublicLocaleLayout({
         ) : null;
       })()}
       {consentSettings.enabled && !embed ? <CookieConsent settings={consentSettings} visible={consentBannerVisible(consentSettings, consentValue)} t={t} /> : null}
+      {/* 0-KB deklaratif Speculation Rules: Chromium tarayıcılarda hover üzerine anlık (<50ms) sayfa geçişi */}
+      {speculationRules ? <script type="speculationrules" dangerouslySetInnerHTML={{ __html: speculationRules }} /> : null}
     </div>
   );
 }

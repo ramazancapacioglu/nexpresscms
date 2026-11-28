@@ -11,7 +11,7 @@ export async function loadDesignSiteContext(siteId: string): Promise<DesignSiteC
   const site = await repo.getSite();
   const locale = site?.defaultLocale ?? "tr";
   const [contents, media, forms, brand] = await Promise.all([
-    repo.listContents({ locale, status: "published" }),
+    repo.listContentSummaries({ locale, status: "published" }),
     repo.listMediaAssets(),
     getFormDefinitionRepository(siteId).list(),
     getPluginSettings(siteId, "@nexpress-pro/agentic-seo"),

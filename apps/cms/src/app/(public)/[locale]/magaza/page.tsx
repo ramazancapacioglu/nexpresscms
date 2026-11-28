@@ -12,6 +12,7 @@ import { shopBasePath } from "@/lib/commerce/shop-paths";
 import { getThemeManifest, RscBlockRenderer } from "@nexpress/themes";
 import { templateHasBlock } from "@nexpress/core";
 import { getPublicSite } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { getResolvedMenu } from "@/lib/menu-data";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
@@ -38,7 +39,7 @@ export async function generateMetadata({
   }
   const t = createTranslator(locale);
   const siteName = site?.name?.trim() || "NexPress";
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const baseUrl = siteOriginFor(site);
   const base = shopBasePath(settings, lb);
   return {
     title: `${t("shop.title")} — ${siteName}`,

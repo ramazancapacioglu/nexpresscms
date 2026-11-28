@@ -49,6 +49,11 @@ export const listPublishedContentSummaries = cachedRead("published-summaries", a
   )
 );
 
+/** Canlı arama ve çekirdek WebMCP için `blocks` taşımayan, yalnızca yayında + herkese açık + `!noIndex` belge havuzu. */
+export const listPublicKeywordDocs = cachedRead("keyword-docs", async (siteId: string, locale: string) =>
+  getScopedRepository(siteId).listKeywordDocs({ locale })
+);
+
 /** Bir içeriğin tüm dil çevirileri (hreflang ve dil değiştirici için); yayın filtresi çağıranda. */
 export const getPublicTranslations = cachedRead("translations", (siteId: string, contentId: string) =>
   getScopedRepository(siteId).getTranslationsForContent(contentId)

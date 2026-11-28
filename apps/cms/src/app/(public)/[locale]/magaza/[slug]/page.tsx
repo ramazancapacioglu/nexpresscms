@@ -1,5 +1,6 @@
 import React from "react";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { resolvePublicSiteOrigin } from "@/lib/site-origin";
 import { createTranslator } from "@nexpress/i18n";
 import type { Metadata } from "next";
 import { Link } from "@/components/public/link";
@@ -66,7 +67,7 @@ export default async function ShopProductPage({
   const description = sanitizeInlineHtml(product.descriptionHtml);
 
   // Product şeması (JSON-LD): yalnızca gerçek veri; puan yalnızca bağlı içeriğin onaylı yorumlarından
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const appUrl = await resolvePublicSiteOrigin(siteId);
   const productUrl = `${appUrl}${base}/${product.slug}`;
   const approved = product.contentId ? (await listPublicReviews(siteId, product.contentId)).filter((r) => r.status === "approved") : [];
   const schemaJson = jsonLdString(

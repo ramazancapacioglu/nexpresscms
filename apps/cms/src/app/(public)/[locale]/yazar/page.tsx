@@ -7,9 +7,8 @@ import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { organizationFor } from "@/lib/organization-schema";
 import { getPublicAuthors, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { robotsMeta } from "@/lib/robots-meta";
-
-const baseOf = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -20,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: `Yazarlar & Uzman Ekibimiz${localized.name ? ` — ${localized.name}` : ""}`,
     description: `${localized.name || "Sitemiz"} bünyesindeki uzman yazarlar, teknik editörler ve yayın ekibi profilleri.`,
-    alternates: { canonical: `${baseOf()}${lb}/yazar` },
+    alternates: { canonical: `${siteOriginFor(site)}${lb}/yazar` },
     robots: robotsMeta(Object.keys(authors).length > 0),
   };
 }
@@ -38,7 +37,7 @@ export default async function AuthorsIndexPage({ params }: { params: Promise<{ l
   const lb = await siteLocaleBase(siteId, locale);
   const tokens = site?.designTokens ?? getThemeManifest(site?.activeThemeId ?? "corporate-aurora").tokens;
   const localized = resolveLocalizedSiteIdentity(site, locale);
-  const base = baseOf();
+  const base = siteOriginFor(site);
   const pageUrl = `${base}${lb}/yazar`;
 
   // Her yazarın yayındaki herkese açık yazı sayısını ve son yazı başlığını hesapla

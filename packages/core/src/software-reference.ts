@@ -1,3 +1,6 @@
+import { flattenBlocks } from "./block-tree";
+import type { BlockNode } from "./types";
+
 /**
  * Katalog/teklif içindeki yazılım göndermesi. Google `SoftwareApplication` zengin sonucu için `offers` (fiyat + para birimi)
  * zorunludur: fiyat + (kategori veya işletim sistemi) varsa geçerli `SoftwareApplication`, yoksa geçerli `Thing` göndermesi yazılır.
@@ -48,4 +51,108 @@ export function normalizeAppCategory(value: string | undefined | null): string |
   const exact = GOOGLE_APP_CATEGORIES.find((c) => c.toLowerCase() === raw.toLowerCase());
   if (exact) return exact;
   return /finance|financ|accounting|muhasebe|fatura/i.test(raw) ? "FinanceApplication" : "BusinessApplication";
+}
+
+export interface StructuredProductPricing {
+  name: string;
+  sku?: string;
+  version?: string;
+  pricingMode: string;
+  currency: string;
+  vatNote?: string;
+  price: number | null;
+  listPrice: number | null;
+  priceLabel?: string;
+  priceValidUntil?: string;
+  lastVerified?: string;
+  priceList: Array<{
+    name: string;
+    code?: string;
+    group?: string;
+    listPrice: number | null;
+    campaignPrice: number | null;
+    note?: string;
+  }>;
+  packages: Array<{
+    name: string;
+    badge?: string;
+    listPrice?: string;
+    price?: string;
+    period?: string;
+  }>;
+}
+
+const optNum = (v: unknown): number | null => {
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number") return Number.isFinite(v) && v >= 0 ? v : null;
+  const cleaned = String(v).trim().replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  const norm =
+    cleaned.includes(",") && cleaned.includes(".")
+      ? cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "")
+      : cleaned.includes(",")
+        ? cleaned.replace(",", ".")
+        : cleaned;
+  const n = Number(norm);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+};
+
+/**
+ * Bir içeriğin blok ağacındaki `software_product_card` bloklarından AI ajanları (WebMCP) için
+ * doğrulanmış, halüsinasyonsuz yapısal fiyat ve paket bilgisini çıkarır.
+ */
+export function extractProductPricingFromBlocks(blocks: BlockNode[]): StructuredProductPricing[] {
+  const s = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+  const out: StructuredProductPricing[] = [];
+  for (const { block } of flattenBlocks(blocks)) {
+    if (block.type !== "software_product_card") continue;
+    const p = block.props ?? {};
+    const name = s(p.name);
+    if (!name) continue;
+    const currency = (s(p.currency) ?? "TRY").toUpperCase();
+    const pricingMode = s(p.pricingMode) ?? "quote";
+    const priceList = Array.isArray(p.priceList)
+      ? p.priceList
+          .filter((r): r is Record<string, unknown> => Boolean(r && typeof r === "object"))
+          .map((r) => ({
+            name: s(r.name) ?? "",
+            ...(s(r.code) ? { code: s(r.code) } : {}),
+            ...(s(r.group) ? { group: s(r.group) } : {}),
+            listPrice: optNum(r.listPrice),
+            campaignPrice: optNum(r.campaignPrice),
+            ...(s(r.note) ? { note: s(r.note) } : {}),
+          }))
+          .filter((r) => r.name.length > 0)
+      : [];
+    const packages = Array.isArray(p.packages)
+      ? p.packages
+          .filter((pk): pk is Record<string, unknown> => Boolean(pk && typeof pk === "object"))
+          .map((pk) => ({
+            name: s(pk.name) ?? "",
+            ...(s(pk.badge) ? { badge: s(pk.badge) } : {}),
+            ...(s(pk.listPrice) ? { listPrice: s(pk.listPrice) } : {}),
+            ...(s(pk.price) ? { price: s(pk.price) } : {}),
+            ...(s(pk.period) ? { period: s(pk.period) } : {}),
+          }))
+          .filter((pk) => pk.name.length > 0)
+      : [];
+    out.push({
+      name,
+      ...(s(p.sku) ? { sku: s(p.sku) } : {}),
+      ...(s(p.version) ? { version: s(p.version) } : {}),
+      pricingMode,
+      currency,
+      ...(s(p.vatNote) ? { vatNote: s(p.vatNote) } : {}),
+      price: optNum(p.price),
+      listPrice: optNum(p.listPrice),
+      ...(s(p.priceLabel) ? { priceLabel: s(p.priceLabel) } : {}),
+      ...(s(p.priceValidUntil) ? { priceValidUntil: s(p.priceValidUntil) } : {}),
+      ...(s(p.lastVerified) ? { lastVerified: s(p.lastVerified) } : {}),
+      priceList,
+      packages,
+    });
+  }
+  return out;
 }

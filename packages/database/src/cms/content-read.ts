@@ -192,7 +192,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
   public async listKeywordDocs(options?: {
     locale?: string;
     types?: ContentType[];
-  }): Promise<Array<{ contentId: string; title: string; slug: string; type: ContentType; markdownCache: string }>> {
+  }): Promise<Array<{ contentId: string; title: string; slug: string; type: ContentType; tldr: string | null; markdownCache: string }>> {
     const locale = options?.locale ?? "tr";
     const { db, t } = this.backend;
     const rows = await db
@@ -203,6 +203,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
         translationAttributes: t.contentTranslations.attributes,
         title: t.contentTranslations.title,
         slug: t.contentTranslations.slug,
+        tldr: t.contentTranslations.tldr,
         markdownCache: t.contentTranslations.markdownCache,
         noIndex: t.contentTranslations.noIndex,
       })
@@ -239,6 +240,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
         title: r.title,
         slug: r.slug,
         type: r.type as ContentType,
+        tldr: r.tldr ?? null,
         markdownCache: r.markdownCache ?? "",
       }));
   }

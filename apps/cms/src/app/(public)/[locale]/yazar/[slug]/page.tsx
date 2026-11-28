@@ -9,9 +9,9 @@ import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { organizationFor } from "@/lib/organization-schema";
 import { getPublicAuthors, getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { INDEXABLE_ROBOTS, metaDescription } from "@/lib/robots-meta";
 
-const baseOf = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const PAGE_SIZE = 12;
 
 function socialLabel(url: string): string {
@@ -33,7 +33,8 @@ function socialLabel(url: string): string {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
-  const person = (await getPublicAuthors(siteId))[slug];
+  const [authors, site] = await Promise.all([getPublicAuthors(siteId), getPublicSite(siteId)]);
+  const person = authors[slug];
   if (!person) return { title: slug, robots: { index: false, follow: true } };
   const lb = await siteLocaleBase(siteId, locale);
   const description = person.profile.bio
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: person.profile.jobTitle ? `${person.name} — ${person.profile.jobTitle}` : person.name,
     ...(description ? { description } : {}),
-    alternates: { canonical: `${baseOf()}${lb}/yazar/${slug}` },
+    alternates: { canonical: `${siteOriginFor(site)}${lb}/yazar/${slug}` },
     robots: INDEXABLE_ROBOTS,
   };
 }
@@ -86,7 +87,7 @@ export default async function AuthorPage({
   const paged = paginate(posts, pageNum, PAGE_SIZE);
   const profile = person.profile;
   const isOrg = profile.authorType === "Organization";
-  const base = baseOf();
+  const base = siteOriginFor(site);
   const canonicalUrl = `${base}${lb}/yazar/${slug}`;
   const localized = resolveLocalizedSiteIdentity(site, locale);
   const siteName = localized.name;

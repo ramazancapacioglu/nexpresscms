@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { resolvePublicSiteOrigin } from "@/lib/site-origin";
 
 export async function GET(request: NextRequest) {
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = await resolvePublicSiteOrigin(siteId);
 
   return NextResponse.json(
     {
