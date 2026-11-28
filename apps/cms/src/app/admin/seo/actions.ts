@@ -8,10 +8,13 @@ import { clearWebmasterCaches } from "@/lib/webmaster/connection";
 import {
   extractMetrikaCounterId,
   measurementIdOk,
+  mergeBingAiSnapshots,
   metrikaCounterOk,
   normalizeWebmasterVerification,
+  parseBingAiPerformanceCsv,
   scriptPlacement,
   validateMetrikaHtml,
+  type BingAiPerformanceSnapshot,
   type WebmasterVerification,
   resolveSiteSettings,
 } from "@nexpress/core";
@@ -156,4 +159,82 @@ export async function applyEntityLinksAction(
     created,
     message: created > 0 ? `${created} varlık bağı Bilgi Ağına eklendi.` : "Seçili bağlar zaten Bilgi Ağında mevcut.",
   };
+}
+
+const MAX_BING_CSV_BYTES = 2 * 1024 * 1024;
+
+/** Bing Webmaster Tools → AI Performance (Cited Pages / Grounding Queries) CSV verisini kiracıya özel kaydeder. */
+export async function importBingAiPerformanceCsvAction(input: {
+  csvText: string;
+  fileName?: string;
+  mode?: "merge" | "replace";
+}): Promise<ActionResponse<BingAiPerformanceSnapshot>> {
+  const me = await requireUser({ audit: "seo.bingAiCsv.import" });
+  const raw = typeof input?.csvText === "string" ? input.csvText : "";
+  if (!raw.trim()) {
+    return { ok: false, error: "CSV içeriği boş. Lütfen Bing Webmaster Tools'dan indirilen CSV dosyasını seçin." };
+  }
+  if (Buffer.byteLength(raw, "utf8") > MAX_BING_CSV_BYTES) {
+    return { ok: false, error: "CSV dosyası 2 MB sınırını aşıyor." };
+  }
+
+  const repo = getScopedRepository(me.siteId);
+  const site = await repo.getSite();
+  const currentSeo = resolveSiteSettings(site?.settings).seo;
+  const parsed = parseBingAiPerformanceCsv(raw, {
+    defaultLocale: site?.defaultLocale ?? "tr",
+    fileName: input.fileName,
+  });
+
+  if (parsed.citedPages.length === 0 && parsed.groundingQueries.length === 0) {
+    return {
+      ok: false,
+      error: "Geçerli Bing AI Performance sütunu bulunamadı. 'Page URL' / 'Query' ve 'Citations' sütunlarını içeren CSV yükleyin.",
+    };
+  }
+
+  const next =
+    input.mode === "replace" ? parsed : mergeBingAiSnapshots(currentSeo.bingAiPerformance, parsed);
+
+  await repo.saveSiteSettings({
+    seo: {
+      ...currentSeo,
+      bingAiPerformance: next,
+    },
+  });
+
+  await recordAudit({ id: me.sub, email: me.email }, "seo.bingAiCsv.imported", {
+    target: "seo_bing_ai_csv",
+    detail: `Dosya: ${input.fileName ?? "-"}, Sayfa: ${next.citedPages.length}, Sorgu: ${next.groundingQueries.length}, Atıf: ${next.totalCitations}`,
+  });
+
+  await revalidatePath("/admin/seo/reports");
+  return {
+    ok: true,
+    data: next,
+    message: `${parsed.citedPages.length} sayfa ve ${parsed.groundingQueries.length} grounding sorgusu içe aktarıldı.`,
+  };
+}
+
+/** Kayıtlı Bing AI Performance CSV verisini temizler. */
+export async function clearBingAiPerformanceAction(): Promise<ActionResponse> {
+  const me = await requireUser({ audit: "seo.bingAiCsv.clear" });
+  const repo = getScopedRepository(me.siteId);
+  const site = await repo.getSite();
+  const currentSeo = resolveSiteSettings(site?.settings).seo;
+
+  await repo.saveSiteSettings({
+    seo: {
+      ...currentSeo,
+      bingAiPerformance: null,
+    },
+  });
+
+  await recordAudit({ id: me.sub, email: me.email }, "seo.bingAiCsv.cleared", {
+    target: "seo_bing_ai_csv",
+    detail: "Bing AI Performance CSV verisi temizlendi.",
+  });
+
+  await revalidatePath("/admin/seo/reports");
+  return { ok: true, message: "Bing AI Performance CSV verisi temizlendi." };
 }

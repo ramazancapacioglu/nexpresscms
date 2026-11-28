@@ -7,7 +7,9 @@ import {
   extractProductPricingFromBlocks,
   isPublicListable,
   markdownCacheControl,
+  mergeBingAiSnapshots,
   normalizeRoiPath,
+  parseBingAiPerformanceCsv,
   resolveSiteOrigin,
   selectPublicFamily,
 } from "../src/index";
@@ -183,4 +185,53 @@ test("GEO ROI Hunisi: bot taramaları, AI yönlendirmeleri ve spam dışı form 
   assert.equal(funnel.rows[0]!.path, "/wolvox-erp");
   assert.equal(funnel.rows[0]!.conversions, 2);
   assert.equal(funnel.rows[0]!.conversionRatePct, 40);
+});
+
+test("Bing AI Performance CSV: Cited Pages ve Grounding Queries CSV'lerini ayrıştırır, birleştirir ve GEO ROI hunisine ekler", () => {
+  const pagesCsv = [
+    "Page URL,Citations,Last Seen",
+    "https://www.akinsoftizmir.com.tr/wolvox-erp,18,2026-11-27",
+    "\"https://www.akinsoftizmir.com.tr/tr/wolvox-erp/?ref=bing\",4,2026-11-28",
+    "https://www.akinsoftizmir.com.tr/servis-yonetimi,9,2026-11-26",
+  ].join("\n");
+
+  const queriesCsv = "\uFEFFGrounding Query;Atıf;Ort Sıra\r\nwolvox erp fiyatları 2026;14;1,5\r\nakınsoft teknik servis programı;8;2,0\r\n";
+
+  const pagesSnap = parseBingAiPerformanceCsv(pagesCsv, {
+    defaultLocale: "tr",
+    fileName: "bing-cited-pages.csv",
+    nowIso: "2026-11-28T12:00:00Z",
+  });
+  assert.equal(pagesSnap.citedPages.length, 2);
+  assert.equal(pagesSnap.citedPages[0]!.path, "/wolvox-erp");
+  assert.equal(pagesSnap.citedPages[0]!.citations, 22);
+  assert.equal(pagesSnap.totalCitations, 31);
+
+  const queriesSnap = parseBingAiPerformanceCsv(queriesCsv, {
+    defaultLocale: "tr",
+    fileName: "bing-grounding-queries.csv",
+    nowIso: "2026-11-28T12:05:00Z",
+  });
+  assert.equal(queriesSnap.groundingQueries.length, 2);
+  assert.equal(queriesSnap.groundingQueries[0]!.query, "wolvox erp fiyatları 2026");
+  assert.equal(queriesSnap.groundingQueries[0]!.citations, 14);
+  assert.equal(queriesSnap.groundingQueries[0]!.avgPosition, 1.5);
+
+  const merged = mergeBingAiSnapshots(pagesSnap, queriesSnap);
+  assert.equal(merged.citedPages.length, 2);
+  assert.equal(merged.groundingQueries.length, 2);
+  assert.equal(merged.totalCitations, 31);
+
+  const funnel = buildGeoRoiFunnel({
+    defaultLocale: "tr",
+    botPages: [{ path: "/wolvox-erp", hits: 10, kind: "page" }],
+    aiPaths: [{ path: "/wolvox-erp", hits: 3 }],
+    forms: [],
+    bingCitations: merged.citedPages,
+  });
+  assert.equal(funnel.totalBingCitations, 31);
+  assert.equal(funnel.rows[0]!.path, "/wolvox-erp");
+  assert.equal(funnel.rows[0]!.bingCitations, 22);
+  assert.equal(funnel.rows[1]!.path, "/servis-yonetimi");
+  assert.equal(funnel.rows[1]!.bingCitations, 9);
 });

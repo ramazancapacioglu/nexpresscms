@@ -1,18 +1,26 @@
 import React from "react";
-import type { GeoRoiSummary } from "@nexpress/core";
+import type { BingAiPerformanceSnapshot, GeoRoiSummary } from "@nexpress/core";
 import { ArrowUpRight, Bot, FileText, Sparkles, Target } from "lucide-react";
+import { BingAiCsvImport } from "./bing-ai-csv-import";
 
 interface GeoRoiFunnelProps {
   fromDay: string;
   toDay: string;
   summary: GeoRoiSummary;
   topSources: Array<{ source: string; hits: number }>;
+  bingAiPerformance?: BingAiPerformanceSnapshot | null;
 }
 
 /**
- * GEO ROI Hunisi: sayfa bazında AI bot taraması → AI yönlendirmesi → teklif/form dönüşümü.
+ * GEO ROI Hunisi: sayfa bazında AI bot taraması → Bing AI atıf → AI yönlendirmesi → teklif/form dönüşümü.
  */
-export function GeoRoiFunnel({ fromDay, toDay, summary, topSources }: GeoRoiFunnelProps) {
+export function GeoRoiFunnel({
+  fromDay,
+  toDay,
+  summary,
+  topSources,
+  bingAiPerformance = null,
+}: GeoRoiFunnelProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -63,7 +71,11 @@ export function GeoRoiFunnel({ fromDay, toDay, summary, topSources }: GeoRoiFunn
           <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">
             {summary.activePages.toLocaleString("tr-TR")}
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">Bot, AI trafik veya form etkileşimi alan sayfalar</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {summary.totalBingCitations > 0
+              ? `${summary.totalBingCitations.toLocaleString("tr-TR")} Bing AI atıf · ${summary.activePages} aktif sayfa`
+              : "Bot, AI trafik veya form etkileşimi alan sayfalar"}
+          </p>
         </div>
       </div>
 
@@ -89,6 +101,7 @@ export function GeoRoiFunnel({ fromDay, toDay, summary, topSources }: GeoRoiFunn
                   <th className="px-4 py-2.5 font-semibold">Sayfa Adresi</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Bot Taraması</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Markdown / LLMs</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Bing AI Atıf</th>
                   <th className="px-3 py-2.5 text-right font-semibold">AI Ziyareti</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Teklif / Form</th>
                   <th className="px-4 py-2.5 text-right font-semibold">İşlem</th>
@@ -101,6 +114,9 @@ export function GeoRoiFunnel({ fromDay, toDay, summary, topSources }: GeoRoiFunn
                     <td className="px-3 py-2.5 text-right font-mono">{row.botHits.toLocaleString("tr-TR")}</td>
                     <td className="px-3 py-2.5 text-right font-mono text-muted-foreground">
                       {row.markdownHits.toLocaleString("tr-TR")}
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-mono font-semibold text-sky-600 dark:text-sky-400">
+                      {row.bingCitations > 0 ? row.bingCitations.toLocaleString("tr-TR") : "—"}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono font-semibold text-blue-600 dark:text-blue-400">
                       {row.aiVisits.toLocaleString("tr-TR")}
@@ -135,6 +151,8 @@ export function GeoRoiFunnel({ fromDay, toDay, summary, topSources }: GeoRoiFunn
           </div>
         )}
       </div>
+
+      <BingAiCsvImport snapshot={bingAiPerformance} />
     </div>
   );
 }

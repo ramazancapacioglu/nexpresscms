@@ -21,6 +21,10 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-28] — Bing AI Performance CSV İçe Aktarma (GEO ROI Hunisi)
+- **Bing AI Performance CSV Ayrıştırıcı & Birleştirici (`packages/core/src/geo-roi.ts`, `packages/core/src/site-settings.ts`, `packages/core/test/p1-audit-regressions.test.ts`):** Microsoft Bing Webmaster Tools → **AI Performance** ekranından indirilen *Cited Pages* ve *Grounding Queries* CSV dosyalarını (UTF-8 BOM, `,` / `;` / `\t` ayırıcı, İngilizce ve Türkçe başlıklar) ayrıştıran `parseBingAiPerformanceCsv`, ayrı CSV'leri birbirini ezmeden birleştiren `mergeBingAiSnapshots` ve `sanitizeBingAiSnapshot` çekirdek modülleri eklendi (birim testli); `buildGeoRoiFunnel` çıktısına sayfa bazlı `bingCitations` sütunu ve `totalBingCitations` eklendi.
+- **Panel İçe Aktarma & Grounding Sorguları Tablosu (`apps/cms/src/app/admin/seo/actions.ts`, `apps/cms/src/components/admin/seo/bing-ai-csv-import.tsx`, `geo-roi-funnel.tsx`, `/admin/seo/reports`):** `requireUser({ audit: "seo.bingAiCsv.import" })` ve `recordAudit` korumalı sunucu eylemleriyle CSV verisi kiracıya özel `sites.settings.seo.bingAiPerformance` altında kalıcı saklanır; `/admin/seo/reports?group=geo-roi` ekranında **Birleştir / Üzerine Yaz / Temizle** denetimleri, sayfa bazlı **Bing AI Atıf** sütunu ve **Bing AI Grounding Sorguları** tablosu eklendi.
+
 ### [2026-11-28] — AI Arama & GEO Trafik Rehberi (`docs/29`)
 - **Yeni Başvuru Dokümanı (`docs/29-AI-ARAMA-VE-GEO-TRAFIK-REHBERI.md`):** Google AI Overviews/AI Mode, OpenAI (`OAI-SearchBot`/`GPTBot`/`ChatGPT-User`), Microsoft Bing & Copilot (`IndexNow`, `AI Performance`, *Grounding Queries*), Perplexity, Anthropic Claude, Yandex Neuro ve Apple Intelligence için resmi bot haritası, önerilen `robots.txt` politikası, Query Fan-Out / Passage-Level Grounding mekanizmaları, 6 trafik artırma stratejisi ve NexPress teknik hazırlık kontrol listesi dokümante edildi.
 

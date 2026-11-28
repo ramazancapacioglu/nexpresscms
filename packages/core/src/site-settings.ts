@@ -9,6 +9,7 @@ import type { ContentType } from "./types";
 import type { WebmasterVerification } from "./webmaster-connect";
 import { sanitizeOrganizationSchema } from "./organization-schema";
 import { sanitizeCrawlHygiene, type CrawlHygiene } from "./crawl-hygiene";
+import { sanitizeBingAiSnapshot, type BingAiPerformanceSnapshot } from "./geo-roi";
 import {
   sanitizeSchemaPlacements,
   schemaPlacementFor,
@@ -116,6 +117,8 @@ export interface SeoEngineSettings {
   minWordCount: number;
   /** Kalıcı bağlantı yapısı. Varsayılan `postname` (`/{slug}`). */
   permalinkStructure?: PermalinkStructure;
+  /** Bing Webmaster Tools → AI Performance CSV içe aktarım özeti (Cited Pages + Grounding Queries). */
+  bingAiPerformance?: BingAiPerformanceSnapshot | null;
 }
 
 export type ButtonCase = "none" | "uppercase";
@@ -388,6 +391,7 @@ export function resolveSiteSettings(raw: unknown): SiteSettings {
       organizationSchema: sanitizeOrganizationSchema(seoRaw.organizationSchema),
       crawlHygiene: sanitizeCrawlHygiene(seoRaw.crawlHygiene),
       permalinkStructure: sanitizePermalinkStructure(seoRaw.permalinkStructure),
+      bingAiPerformance: sanitizeBingAiSnapshot(seoRaw.bingAiPerformance),
     },
     general: {
       ...mergeSection(DEFAULT_GENERAL_SETTINGS, r.general),

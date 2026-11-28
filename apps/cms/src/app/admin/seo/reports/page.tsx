@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { buildGeoRoiFunnel, slotRegistry } from "@nexpress/core";
+import { buildGeoRoiFunnel, resolveSiteSettings, slotRegistry } from "@nexpress/core";
 import {
   getAiReferralRepository,
   getBotStatsRepository,
@@ -116,6 +116,8 @@ export default async function AdminSeoReportsPage({
     getRedirectRepository(siteId).countNotFound().catch(() => 0),
   ]);
 
+  const bingAiPerformance = resolveSiteSettings(site?.settings).seo.bingAiPerformance ?? null;
+
   const geoRoi =
     active.id === "geo-roi"
       ? buildGeoRoiFunnel({
@@ -125,6 +127,7 @@ export default async function AdminSeoReportsPage({
               ? entries.map(([kind, hits]) => ({ path: p.path, hits, kind }))
               : [{ path: p.path, hits: p.total, kind: "page" }];
           }),
+          bingCitations: bingAiPerformance?.citedPages ?? [],
           aiPaths: aiRefSummary.topPaths,
           forms: formRows.filter((f) => {
             const d = utcDay(f.createdAt);
@@ -321,6 +324,7 @@ export default async function AdminSeoReportsPage({
           toDay={dateRange.toDay}
           summary={geoRoi}
           topSources={aiRefSummary.bySource}
+          bingAiPerformance={bingAiPerformance}
         />
       ) : slotEntries.length === 0 ? (
         <div className="rounded-xl border border-border bg-card px-6 py-12 text-center text-[13px] text-muted-foreground">
