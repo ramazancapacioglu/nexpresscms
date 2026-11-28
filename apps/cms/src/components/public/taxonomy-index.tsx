@@ -8,6 +8,7 @@ import { getScopedRepository } from "@nexpress/database";
 import { getThemeManifest } from "@nexpress/themes";
 import { getDynamicCandidates } from "@/lib/dynamic-content";
 import { getPublicSite } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 
 type Kind = "category" | "tag";
 
@@ -27,7 +28,7 @@ export async function taxonomyIndexMetadata(kind: Kind, params: Promise<{ locale
   const { locale } = await params;
   const t = createTranslator(locale);
   const { site, rows } = await load(kind, locale);
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = siteOriginFor(site);
   const title = kind === "category" ? t("taxonomy.categoriesTitle") : t("taxonomy.tagsTitle");
   return {
     title: `${title}${site?.name ? ` — ${site.name}` : ""}`,

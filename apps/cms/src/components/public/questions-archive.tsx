@@ -1,12 +1,13 @@
 import React from "react";
 import type { Metadata } from "next";
-import { isPluginModuleEnabled, resolveLocalizedSiteIdentity, sanitizeQaState } from "@nexpress/core";
+import { isPluginModuleEnabled, resolveLocalizedSiteIdentity, resolvePublishing, sanitizeQaState } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
 import { createTranslator } from "@nexpress/i18n";
 import { siteLocaleBase } from "@/lib/locale-url";
 import { Link } from "@/components/public/link";
 import { QA_PLUGIN_ID } from "@/plugins/qa";
 import { getPublicSite } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { INDEXABLE_ROBOTS, titleWithSite } from "@/lib/robots-meta";
 
 export async function questionsArchiveOn(siteId: string): Promise<boolean> {
@@ -17,8 +18,8 @@ export async function questionsArchiveMetadata(siteId: string, locale: string): 
   if (!(await questionsArchiveOn(siteId))) return null;
   const t = createTranslator(locale);
   const lb = await siteLocaleBase(siteId, locale);
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const site = await getPublicSite(siteId);
+  const base = siteOriginFor(site);
   return {
     // "Sorular" tek başına çok kısa: site adı eklenir
     title: titleWithSite(t("qa.archiveTitle"), resolveLocalizedSiteIdentity(site, locale).name),
@@ -32,7 +33,8 @@ export async function questionsArchiveMetadata(siteId: string, locale: string): 
 export async function QuestionsArchive({ siteId, locale }: { siteId: string; locale: string }) {
   const t = createTranslator(locale);
   const lb = await siteLocaleBase(siteId, locale);
-  const rows = await getScopedRepository(siteId).listContents({ locale, type: "ai_prompt", status: "published" });
+  const rows = (await getScopedRepository(siteId).listContents({ locale, type: "ai_prompt", status: "published" }))
+    .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public");
   const items = rows
     .map((row) => ({ slug: row.slug, title: row.title, tldr: row.tldr ?? "", votes: sanitizeQaState((row.schemaAttributes as Record<string, unknown>)._qa).upvotes }))
     .sort((a, b) => b.votes - a.votes || a.title.localeCompare(b.title, locale));

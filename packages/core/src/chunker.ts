@@ -154,7 +154,8 @@ export function chunkMarkdown(markdown: string, options: ChunkOptions = {}): Chu
       headingPath: block.headingPath,
       text,
       wordCount: wordsOf(text).length,
-      hash: fnv1a64(`${block.headingPath}\n${text}`),
+      // Özet, başlık dahil embedding sağlayıcısına giden gerçek girdiyi kapsar
+      hash: fnv1a64(embeddingInputOf({ headingPath: block.headingPath, text }, options.title)),
     };
   });
 }

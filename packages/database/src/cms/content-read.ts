@@ -1,4 +1,4 @@
-import type { ContentWithTranslationDto, EntityLinkDto } from "./types";
+import type { ContentSummaryDto, ContentWithTranslationDto, EntityLinkDto } from "./types";
 import { eq, and, desc, ne } from "drizzle-orm";
 import { mergeLocalizedAttributes, resolvePublishing, type ContentStatus, type ContentType } from "@nexpress/core";
 import { CmsTaxonomyRepository } from "./taxonomy";
@@ -89,6 +89,161 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
   }
 
   /**
+   * Gövdesiz (`blocks`, `markdownCache`, `gapFindings` çekilmeden) içerik özeti listesi.
+   * İlgili içerik, önceki/sonraki, üst/alt sayfa ilişkileri ve kenar çubuğu akışları için düşük bellekli/hızlı sorgu.
+   */
+  public async listContentSummaries(options?: {
+    locale?: string;
+    type?: ContentType;
+    status?: ContentStatus;
+  }): Promise<ContentSummaryDto[]> {
+    const locale = options?.locale ?? "tr";
+    const { db, t } = this.backend;
+    const rows = await db
+      .select({
+        id: t.contents.id,
+        siteId: t.contents.siteId,
+        type: t.contents.type,
+        status: t.contents.status,
+        importanceScore: t.contents.importanceScore,
+        schemaType: t.contents.schemaType,
+        schemaAttributes: t.contents.schemaAttributes,
+        featuredImage: t.contents.featuredImage,
+        authorName: t.contents.authorName,
+        publishedAt: t.contents.publishedAt,
+        createdAt: t.contents.createdAt,
+        translationId: t.contentTranslations.id,
+        translationStatus: t.contentTranslations.translationStatus,
+        sourceLocale: t.contentTranslations.sourceLocale,
+        sourceHash: t.contentTranslations.sourceHash,
+        locale: t.contentTranslations.locale,
+        region: t.contentTranslations.region,
+        slug: t.contentTranslations.slug,
+        title: t.contentTranslations.title,
+        excerpt: t.contentTranslations.excerpt,
+        tldr: t.contentTranslations.tldr,
+        metaTitle: t.contentTranslations.metaTitle,
+        metaDescription: t.contentTranslations.metaDescription,
+        canonicalUrl: t.contentTranslations.canonicalUrl,
+        noIndex: t.contentTranslations.noIndex,
+        seoScore: t.contentTranslations.seoScore,
+        updatedAt: t.contentTranslations.updatedAt,
+        translationAttributes: t.contentTranslations.attributes,
+      })
+      .from(t.contents)
+      .innerJoin(
+        t.contentTranslations,
+        and(
+          eq(t.contentTranslations.contentId, t.contents.id),
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale)
+        )
+      )
+      .where(
+        and(
+          eq(t.contents.siteId, this.siteId),
+          options?.type ? eq(t.contents.type, options.type) : ne(t.contents.type, "template"),
+          options?.status === "published" ? eq(t.contents.status, "published") : undefined,
+          options?.status === "published" ? eq(t.contentTranslations.translationStatus, "published") : undefined
+        )
+      )
+      .orderBy(desc(t.contents.importanceScore), desc(t.contents.updatedAt));
+
+    const mapped: ContentSummaryDto[] = rows.map((row) => ({
+      id: row.id,
+      contentId: row.id,
+      siteId: row.siteId,
+      type: row.type as ContentType,
+      status: (row.status === "trashed" ? "trashed" : row.translationStatus === "draft" ? "draft" : row.status) as ContentStatus,
+      importanceScore: row.importanceScore,
+      schemaType: row.schemaType,
+      schemaAttributes: mergeLocalizedAttributes((row.schemaAttributes ?? {}) as Record<string, unknown>, row.translationAttributes as Record<string, unknown> | null | undefined),
+      featuredImage: row.featuredImage ?? null,
+      authorName: row.authorName,
+      publishedAt: row.publishedAt ?? null,
+      createdAt: row.createdAt,
+      translationId: row.translationId,
+      translationStatus: row.translationStatus,
+      sourceLocale: row.sourceLocale ?? null,
+      sourceHash: row.sourceHash ?? null,
+      locale: row.locale,
+      region: row.region,
+      slug: row.slug,
+      title: row.title,
+      excerpt: row.excerpt ?? null,
+      tldr: row.tldr ?? null,
+      metaTitle: row.metaTitle ?? null,
+      metaDescription: row.metaDescription ?? null,
+      canonicalUrl: row.canonicalUrl ?? null,
+      noIndex: Boolean(row.noIndex),
+      seoScore: row.seoScore,
+      updatedAt: row.updatedAt,
+    }));
+
+    if (options?.status === "trashed") return mapped.filter((c) => c.status === "trashed");
+    const live = mapped.filter((c) => c.status !== "trashed");
+    return options?.status && options.status !== "published" ? live.filter((c) => c.status === options.status) : live;
+  }
+
+  /**
+   * RAG hibrit anahtar kelime araması (BM25) için dar sütunlu sorgu: `blocks` JSON AST çekilmez,
+   * yalnızca yayında, dizine açık ve herkese açık kayıtların başlık + `markdownCache` alanları döner.
+   */
+  public async listKeywordDocs(options?: {
+    locale?: string;
+    types?: ContentType[];
+  }): Promise<Array<{ contentId: string; title: string; slug: string; type: ContentType; markdownCache: string }>> {
+    const locale = options?.locale ?? "tr";
+    const { db, t } = this.backend;
+    const rows = await db
+      .select({
+        contentId: t.contents.id,
+        type: t.contents.type,
+        schemaAttributes: t.contents.schemaAttributes,
+        translationAttributes: t.contentTranslations.attributes,
+        title: t.contentTranslations.title,
+        slug: t.contentTranslations.slug,
+        markdownCache: t.contentTranslations.markdownCache,
+        noIndex: t.contentTranslations.noIndex,
+      })
+      .from(t.contents)
+      .innerJoin(
+        t.contentTranslations,
+        and(
+          eq(t.contentTranslations.contentId, t.contents.id),
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale)
+        )
+      )
+      .where(
+        and(
+          eq(t.contents.siteId, this.siteId),
+          ne(t.contents.type, "template"),
+          eq(t.contents.status, "published"),
+          eq(t.contentTranslations.translationStatus, "published")
+        )
+      );
+
+    return rows
+      .filter((r) => {
+        if (Boolean(r.noIndex)) return false;
+        if (options?.types?.length && !options.types.includes(r.type as ContentType)) return false;
+        const merged = mergeLocalizedAttributes(
+          (r.schemaAttributes ?? {}) as Record<string, unknown>,
+          r.translationAttributes as Record<string, unknown> | null | undefined
+        );
+        return resolvePublishing(merged).visibility === "public";
+      })
+      .map((r) => ({
+        contentId: r.contentId,
+        title: r.title,
+        slug: r.slug,
+        type: r.type as ContentType,
+        markdownCache: r.markdownCache ?? "",
+      }));
+  }
+
+  /**
    * `publicOnly`: ziyaretçiye açılabilecek içerikler. Taslak, zamanlanmış ve arşivlenmiş içerik ile
    * `private` görünürlüklü içerik ziyaretçiye hiçbir zaman verilmez (yayında olsa bile).
    * `restricted` durum, sayfada kısıtlı bildirimiyle gösterilir.
@@ -166,7 +321,8 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
 
   /**
    * SEO Motoru — Otomatik 301: Geçerli slug yoksa `slugHistory` içinde eski adresi arar.
-   * Dönen `isRedirect=true` ise çağıran taraf güncel slug'a kalıcı yönlendirme yapmalıdır.
+   * Gövde (`blocks`/`markdownCache`) taşımadan yalnızca meta/özellik sütunlarını tarar;
+   * eşleşirse tek satır `getContentById` ile tam içeriği getirir.
    */
   public async resolveContentBySlug(
     slug: string,
@@ -175,9 +331,53 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
   ): Promise<{ content: ContentWithTranslationDto; isRedirect: boolean } | null> {
     const direct = await this.getContentBySlug(slug, locale, options);
     if (direct) return { content: direct, isRedirect: false };
-    const all = (await this.visibleContents(locale, options?.publicOnly)).filter((item) => !options?.type || item.type === options.type);
-    const old = all.find((item) => resolvePublishing(item.schemaAttributes).slugHistory.includes(slug));
-    return old ? { content: old, isRedirect: true } : null;
+
+    const { db, t } = this.backend;
+    const candidates = await db
+      .select({
+        id: t.contents.id,
+        type: t.contents.type,
+        status: t.contents.status,
+        schemaAttributes: t.contents.schemaAttributes,
+        translationStatus: t.contentTranslations.translationStatus,
+        translationAttributes: t.contentTranslations.attributes,
+      })
+      .from(t.contents)
+      .innerJoin(
+        t.contentTranslations,
+        and(
+          eq(t.contentTranslations.contentId, t.contents.id),
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale)
+        )
+      )
+      .where(
+        and(
+          eq(t.contents.siteId, this.siteId),
+          options?.type ? eq(t.contents.type, options.type as ContentType) : ne(t.contents.type, "template")
+        )
+      );
+
+    for (const row of candidates) {
+      const effectiveStatus = (row.status === "trashed" ? "trashed" : row.translationStatus === "draft" ? "draft" : row.status) as ContentStatus;
+      if (effectiveStatus === "trashed") continue;
+      const merged = mergeLocalizedAttributes(
+        (row.schemaAttributes ?? {}) as Record<string, unknown>,
+        row.translationAttributes as Record<string, unknown> | null | undefined
+      );
+      if (options?.publicOnly) {
+        if ((effectiveStatus !== "published" && effectiveStatus !== "restricted") || resolvePublishing(merged).visibility === "private") {
+          continue;
+        }
+      }
+      if (resolvePublishing(merged).slugHistory.includes(slug)) {
+        const full = await this.getContentById(row.id, locale);
+        if (full && (!options?.publicOnly || this.isPubliclyVisible(full))) {
+          return { content: full, isRedirect: true };
+        }
+      }
+    }
+    return null;
   }
 
   /**

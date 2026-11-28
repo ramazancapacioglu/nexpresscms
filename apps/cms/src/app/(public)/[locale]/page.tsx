@@ -1,5 +1,6 @@
 import { hasDynamicQueryParams, pickFrontSlug, softwareFactsOf, resolveLocalizedSiteIdentity, resolvePublishing, resolveSiteSettings } from "@nexpress/core";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { siteOriginFor } from "@/lib/site-origin";
 import React from "react";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
@@ -28,8 +29,8 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const sp0 = await searchParams;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const lb = await siteLocaleBase(siteId, locale);
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const site = await getPublicSite(siteId);
+  const baseUrl = siteOriginFor(site);
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
   const themeId = site?.activeThemeId ?? "corporate-aurora";
   const home = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, themeId, locale, site?.settings), locale);
@@ -106,7 +107,7 @@ export default async function PublicHomePage({
   const homeContent = await getPublicContentBySlug(siteId, await resolveHomeSlug(siteId, activeTheme.id, locale, site?.settings), locale);
   const mediaFocal = await getPublicMediaFocal(siteId);
   const allContents = isInk || isYf ? [] : await listPublishedContents(siteId, locale);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = siteOriginFor(site);
   const switcher = homeContent ? <LanguageSwitcher alternates={await localeSwitcherLinks(siteId, homeContent.contentId, locale)} /> : null;
 
   const homeImageUrl = homeContent?.featuredImage ?? (homeContent ? `${baseUrl}/og?title=${encodeURIComponent(homeContent.title)}&site=${encodeURIComponent(localizedSite.name)}` : null);

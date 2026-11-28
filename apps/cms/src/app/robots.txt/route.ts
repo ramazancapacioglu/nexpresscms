@@ -3,6 +3,7 @@ import { buildRobotsTxt, cmsHooks, resolveSiteSettings } from "@nexpress/core";
 import "@/plugins/register";
 
 import { getPublicSite } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { trackBotVisit } from "@/lib/bot-log";
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
   const site = await getPublicSite(siteId);
   const seo = resolveSiteSettings(site?.settings).seo;
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = siteOriginFor(site);
   const indexing = seo.searchIndexing !== false;
   const hooked = await cmsHooks.runFilter("robots:buildTxt", { siteId, groupLines: [], botPolicy: seo.botPolicy ?? {} });
   const body = buildRobotsTxt({ baseUrl: base, botPolicy: seo.botPolicy, extra: seo.robotsTxtExtra, groupLines: hooked.groupLines, indexing });

@@ -240,9 +240,7 @@ export default async function PublicLocaleLayout({
       contentSidebarPos = "none";
     }
   } else if (isSingleContent) {
-    const slug = decodeURIComponent(segs[1]!);
-    const resolvedCont = await resolvePublicContent(siteId, slug, locale);
-    const content = resolvedCont?.content;
+    const content = pageContent;
     const customSidebar = (content?.schemaAttributes as Record<string, unknown> | undefined)?._sidebar as
       | { position?: "none" | "left" | "right"; sidebarId?: string }
       | undefined;

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Bakım", { status: 503, headers: { "Retry-After": "3600", "X-Robots-Tag": "noindex" } });
   }
   const { files } = await loadSitemap(siteId);
-  const base = sitemapBaseUrl();
+  const base = sitemapBaseUrl(site);
   const html = sitemapWantsHtmlFrom(request);
   return sitemapHttpResponse(html ? buildSitemapIndexPage(base, files) : buildSitemapIndex(base, files), html, siteId);
 }

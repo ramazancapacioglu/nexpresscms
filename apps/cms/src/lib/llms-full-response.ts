@@ -4,6 +4,7 @@ import { contentPath, isPluginModuleEnabled, localeBase, resolveCampaignData, re
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
 import { listPublishedContents } from "./public-data";
 import { requestLocale } from "./request-locale";
+import { siteOriginFor } from "./site-origin";
 import "@/plugins/register";
 import { trackBotVisit } from "./bot-log";
 
@@ -15,8 +16,9 @@ export async function llmsFullResponse(request: NextRequest, forcedLocale?: stri
     return new NextResponse("llms-full.txt kapalı.\n", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
   const { site, locale } = await requestLocale(request, siteId, forcedLocale);
-  const contents = await listPublishedContents(siteId, locale);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  // AI keşif politikası: noIndex işaretli içerikler llms-full.txt tam metin beslemesine alınmaz
+  const contents = (await listPublishedContents(siteId, locale)).filter((item) => !item.noIndex);
+  const baseUrl = siteOriginFor(site);
 
   const settings = resolveSiteSettings(site?.settings);
   const lb = localeBase(site, locale);

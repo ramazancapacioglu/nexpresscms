@@ -6,9 +6,10 @@ import { getDynamicCandidates } from "./dynamic-content";
 import { getPublicAuthors, getPublicMediaMeta, getPublicSite, listPublishedContents, listSitemapEntries } from "./public-data";
 import { authorSitemapEntries, builtInHubEntries } from "./sitemap-hubs";
 import { QA_PLUGIN_ID } from "@/plugins/qa";
+import { siteOriginFor, type SiteOriginRecord } from "./site-origin";
 
-export function sitemapBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+export function sitemapBaseUrl(site?: SiteOriginRecord | null): string {
+  return siteOriginFor(site);
 }
 
 /** Site haritası dosyalarının ortak kaynağı: indeks ve parça rotaları aynı bölmeyi kullanır. */

@@ -1,5 +1,6 @@
 import React from "react";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { siteOriginFor } from "@/lib/site-origin";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -68,7 +69,7 @@ export async function generateMetadata({
   const title = `${camp.title} | ${siteName}`;
   const description = camp.tldr || `${camp.title} fırsat detayları, indirim oranları ve başvuru şartları.`;
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const origin = siteOriginFor(site);
   const lb = await siteLocaleBase(siteId, locale);
   const url = `${origin}${lb}/kampanya/${camp.slug}`;
   return {
@@ -133,7 +134,7 @@ export default async function PublicCampaignDetailPage({
 
   const camp = resolveCampaignData(content);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = siteOriginFor(site);
   const pageUrl = `${baseUrl}${lb}/kampanya/${camp.slug}`;
   const siteName = site?.name ?? "NexPress CMS";
   const activeTheme = getThemeManifest(site?.activeThemeId ?? "corporate-aurora");

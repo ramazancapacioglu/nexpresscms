@@ -374,24 +374,39 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
 
     case "software_product_card": {
       const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-      const num = (v: unknown) => {
-        if (typeof v === "number" && Number.isFinite(v)) return v;
+      const parseOpt = (v: unknown): number | null => {
+        if (v === null || v === undefined || v === "") return null;
+        if (typeof v === "number") return Number.isFinite(v) && v >= 0 ? v : null;
         if (typeof v === "string") {
-          const n = Number(v.replace(/[^\d.]/g, ""));
-          return Number.isFinite(n) ? n : 0;
+          const cleaned = v.trim().replace(/[^\d.,-]/g, "");
+          if (!cleaned) return null;
+          const norm =
+            cleaned.includes(",") && cleaned.includes(".")
+              ? cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")
+                ? cleaned.replace(/\./g, "").replace(",", ".")
+                : cleaned.replace(/,/g, "")
+              : cleaned.includes(",")
+                ? cleaned.replace(",", ".")
+                : cleaned;
+          const n = Number(norm);
+          return Number.isFinite(n) && n >= 0 ? n : null;
         }
-        return 0;
+        return null;
       };
-      const curSym = (s(p.currency) || "TRY") === "TRY" ? "TL" : s(p.currency);
-      const fmtMoney = (n: number) => `${n.toLocaleString("tr-TR")} ${curSym}`;
+      const curCode = (s(p.currency) || "TRY").toUpperCase();
+      const curSym = curCode === "TRY" ? "TL" : curCode;
+      const fmtMoney = (n: number) => {
+        const isWhole = Math.abs(n - Math.round(n)) < 1e-9;
+        return `${n.toLocaleString("tr-TR", { minimumFractionDigits: isWhole ? 0 : 2, maximumFractionDigits: isWhole ? 0 : 2 })} ${curSym}`;
+      };
       const lines: string[] = [];
       const name = s(p.name) || "Yazılım Ürünü";
       lines.push(`## ${name}`);
       if (s(p.tagline)) lines.push(`*${s(p.tagline)}*`);
       if (s(p.shortDescription)) lines.push("", s(p.shortDescription));
 
-      const priceNum = num(p.price);
-      const listPriceNum = num(p.listPrice);
+      const priceNum = parseOpt(p.price) ?? 0;
+      const listPriceNum = parseOpt(p.listPrice) ?? 0;
       const pricingMode = s(p.pricingMode) || "quote";
       const meta: string[] = [];
       if (s(p.version)) meta.push(`- **Güncel Sürüm:** ${s(p.version)}`);
@@ -421,18 +436,21 @@ function renderBlockNodeToMarkdown(block: BlockNode): string {
 
       const priceList = Array.isArray(p.priceList) ? p.priceList : [];
       if (priceList.length > 0) {
-        lines.push("", "### Güncel Liste ve Kampanya Fiyatları", "", "| Paket / Modül | Kategori | Liste Fiyatı | Kampanya Fiyatı |", "| --- | --- | --- | --- |");
+        const vatPart = s(p.vatNote) ? ` · ${s(p.vatNote)}` : "";
+        lines.push("", "### Güncel Liste ve Kampanya Fiyatları", "", `*Para birimi: ${curSym}${vatPart}*`, "", "| Paket / Modül | Kategori | Liste Fiyatı | Kampanya Fiyatı |", "| --- | --- | --- | --- |");
         for (const row of priceList) {
           if (!row || typeof row !== "object") continue;
           const r = row as Record<string, unknown>;
           const rName = s(r.name);
           if (!rName) continue;
           const rGroup = s(r.group) || (s(r.code) ? `Kod: ${s(r.code)}` : "Modül");
-          const lp = num(r.listPrice);
-          const cp = num(r.campaignPrice);
-          const pct = lp > 0 && cp > 0 && cp < lp ? ` (%${Math.round(((lp - cp) / lp) * 100)} indirim)` : "";
+          const lp = parseOpt(r.listPrice);
+          const cp = parseOpt(r.campaignPrice);
+          const pct = lp !== null && cp !== null && lp > 0 && cp > 0 && cp < lp ? ` (%${Math.round(((lp - cp) / lp) * 100)} indirim)` : "";
           const notePart = s(r.note) ? ` — ${s(r.note)}` : "";
-          lines.push(`| ${rName}${notePart} | ${rGroup} | ${lp > 0 ? fmtMoney(lp) : "Dahil"} | ${cp > 0 ? `${fmtMoney(cp)}${pct}` : "Ücretsiz / Dahil"} |`);
+          const lpCell = lp !== null && lp > 0 ? fmtMoney(lp) : lp === 0 ? "Dahil" : "—";
+          const cpCell = cp !== null && cp > 0 ? `${fmtMoney(cp)}${pct}` : cp === 0 ? "Ücretsiz / Dahil" : "Teklif alınız";
+          lines.push(`| ${rName}${notePart} | ${rGroup} | ${lpCell} | ${cpCell} |`);
         }
         if (s(p.priceFootNote)) lines.push("", `*${s(p.priceFootNote)}*`);
       }

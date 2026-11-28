@@ -1,4 +1,5 @@
 import type { ContentStatus, ContentVisibility } from "./types";
+import { resolvePublishing } from "./site-settings";
 
 /**
  * Parola ve üye korumalı içerik erişim denetimi (Web Crypto + sabit süreli karşılaştırma).
@@ -118,5 +119,61 @@ export function evaluateContentAccess(input: ContentAccessCheckInput): ContentAc
     return input.hasMemberSession ? { allowed: true, gate: "none" } : { allowed: false, gate: "members_only" };
   }
   return { allowed: true, gate: "none" };
+}
+
+/**
+ * Markdown (`?format=md` / `Accept: text/markdown`) yanıtının `Cache-Control` politikası.
+ * Yalnızca erişime açık, yayında (`published`) ve herkese açık (`public`) içerikler paylaşımlı önbelleğe girebilir.
+ * Parola, üye, özel (`private`) veya kısıtlı (`restricted`) içeriklerin başarılı yanıtları asla paylaşımlı önbellekte tutulmaz.
+ */
+export function markdownCacheControl(input: {
+  status: ContentStatus;
+  visibility: ContentVisibility;
+  allowed: boolean;
+}): string {
+  if (input.allowed && input.status === "published" && input.visibility === "public") {
+    return "public, s-maxage=3600, stale-while-revalidate=86400";
+  }
+  return "private, no-store";
+}
+
+/**
+ * Ziyaretçi listelerinde (üst/alt sayfa, kırıntı, konu merkezi, kenar çubuğu, ilgili içerik)
+ * gösterilebilecek kayıt: şablon olmayan, yayında ve herkese açık (`visibility === "public"`).
+ */
+export function isPublicListable(item: {
+  status: string;
+  schemaAttributes?: Record<string, unknown> | null;
+  type?: string;
+}): boolean {
+  return (
+    item.type !== "template" &&
+    item.status === "published" &&
+    resolvePublishing(item.schemaAttributes).visibility === "public"
+  );
+}
+
+/**
+ * Ziyaretçi sayfası için görünür üst sayfa (`parent`) ve konu merkezi alt sayfalarını (`children`) seçer.
+ * Yalnızca `isPublicListable` koşulunu sağlayan kayıtlar döner; özel/parolalı/üye sayfalarının başlık ve adresleri
+ * kırıntı, üst sayfa bağlantısı veya alt sayfa listesine sızmaz.
+ */
+export function selectPublicFamily<
+  T extends { id: string; status: string; schemaAttributes?: Record<string, unknown> | null; type?: string },
+>(
+  items: readonly T[],
+  currentId: string,
+  options: { parentId?: string | null; pillar?: boolean }
+): { parent: T | undefined; children: T[] } {
+  const visible = items.filter((item) => isPublicListable(item));
+  const parent = options.parentId
+    ? visible.find((item) => item.id === options.parentId && item.id !== currentId)
+    : undefined;
+  const children = options.pillar
+    ? visible.filter(
+        (item) => item.id !== currentId && resolvePublishing(item.schemaAttributes).parentId === currentId
+      )
+    : [];
+  return { parent, children };
 }
 

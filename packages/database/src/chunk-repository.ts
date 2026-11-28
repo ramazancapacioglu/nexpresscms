@@ -276,6 +276,36 @@ export class ChunkRepository {
       .slice(0, fetch);
   }
 
+  /**
+   * Aynı modelle daha önce gömülmüş parçaları `chunkHash → Float32Array` olarak döndürür.
+   * Artımlı yeniden dizinlemede değişmeyen parçaların tekrar embedding API'sine gönderilmesini önler.
+   */
+  public async existingVectorsByHash(contentId: string, locale: string, model: string): Promise<Map<string, Float32Array>> {
+    const map = new Map<string, Float32Array>();
+    if (this.dialect === "sqlite") {
+      const { db } = getSqliteClient();
+      const t = sqliteContentChunks;
+      const rows = await db
+        .select({ hash: t.chunkHash, v: t.embeddingJson })
+        .from(t)
+        .where(and(eq(t.siteId, this.siteId), eq(t.contentId, contentId), eq(t.locale, locale), eq(t.embeddingModel, model)));
+      for (const r of rows) {
+        if (r.hash && r.v) map.set(r.hash, decodeVector(r.v));
+      }
+      return map;
+    }
+    const { db } = getPgClient();
+    const t = pgContentChunks;
+    const rows = await db
+      .select({ hash: t.chunkHash, e: t.embedding })
+      .from(t)
+      .where(and(eq(t.siteId, this.siteId), eq(t.contentId, contentId), eq(t.locale, locale), eq(t.embeddingModel, model)));
+    for (const r of rows) {
+      if (r.hash && r.e) map.set(r.hash, Float32Array.from(r.e));
+    }
+    return map;
+  }
+
   /** Bir içeriğin kayıtlı parça vektörleri (başka içeriklerle benzerlik için). */
   public async vectorsOf(contentId: string, locale: string, model: string): Promise<Array<{ headingPath: string; embedding: Float32Array }>> {
     if (this.dialect === "sqlite") {

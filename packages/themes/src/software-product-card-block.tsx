@@ -1,5 +1,6 @@
 import React from "react";
 import type { DesignTokens } from "@nexpress/core";
+import { createTranslator } from "@nexpress/i18n";
 
 export interface SoftwareProductPackage {
   name: string;
@@ -17,8 +18,9 @@ export interface SoftwareProductPriceRow {
   name: string;
   code?: string;
   group?: string;
-  listPrice?: number;
-  campaignPrice?: number;
+  /** `null` = fiyat girilmemiş (teklif); `0` = açıkça ücretsiz/dahil; `> 0` = tutar. */
+  listPrice: number | null;
+  campaignPrice: number | null;
   note?: string;
 }
 
@@ -31,26 +33,57 @@ export interface SoftwareProductCardProps {
   id?: string;
   tokens: DesignTokens;
   props: Record<string, unknown>;
+  locale?: string;
 }
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "");
-const num = (v: unknown): number => {
-  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
-  const n = Number(String(v ?? "").replace(/[^\d.]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+
+const parseOptionalPrice = (v: unknown): number | null => {
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number") return Number.isFinite(v) && v >= 0 ? v : null;
+  const cleaned = String(v).trim().replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  // Hem `1.250,50` hem `1250.50` biçimlerini güvenli çöz
+  const normalized =
+    cleaned.includes(",") && cleaned.includes(".")
+      ? cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "")
+      : cleaned.includes(",")
+        ? cleaned.replace(",", ".")
+        : cleaned;
+  const n = Number(normalized);
+  return Number.isFinite(n) && n >= 0 ? n : null;
 };
+
 const strArr = (v: unknown): string[] =>
   Array.isArray(v) ? v.map((x) => str(x)).filter(Boolean) : [];
-const fmtTry = (n: number): string => `${Math.round(n).toLocaleString("tr-TR")} TL`;
+
+function currencyLabel(currency: string, locale: string): string {
+  const code = currency.toUpperCase();
+  if (code === "TRY" && locale.toLowerCase().startsWith("tr")) return "TL";
+  return code;
+}
+
+export function formatProductMoney(amount: number, currency: string, locale = "tr"): string {
+  const isWhole = Math.abs(amount - Math.round(amount)) < 1e-9;
+  const numberLocale = locale.toLowerCase().startsWith("tr") ? "tr-TR" : locale;
+  const formatted = amount.toLocaleString(numberLocale, {
+    minimumFractionDigits: isWhole ? 0 : 2,
+    maximumFractionDigits: isWhole ? 0 : 2,
+  });
+  return `${formatted} ${currencyLabel(currency, locale)}`;
+}
 
 /**
  * 0-KB RSC Yazılım / Ürün Bilgi, Fiyat Listesi & Otomatik Şema Kartı.
  * Özellikler, Modüller, Paketler, Fiyat Listesi, Sistem Gereksinimleri ve Uyumlu Entegrasyonlar
- * saf CSS radio-input sekmeleriyle (0 KB istemci JS, tam SSR HTML DOM) sunulur.
+ * saf CSS native radio grubuyla (0 KB istemci JS, tam SSR HTML DOM, klavye odak halkası ve ekran okuyucu uyumlu) sunulur.
  */
-export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: SoftwareProductCardProps) {
+export function SoftwareProductCardBlock({ id = "spc", tokens, props: p, locale = "tr" }: SoftwareProductCardProps) {
+  const t = createTranslator(locale);
   const safeId = `nxspc_${id.replace(/[^a-zA-Z0-9_]/g, "")}`;
-  const name = str(p.name) || "Yazılım Ürünü";
+  const name = str(p.name) || t("productCard.defaultName");
   const tagline = str(p.tagline);
   const shortDescription = str(p.shortDescription);
   const version = str(p.version);
@@ -65,19 +98,22 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
   const supportSla = str(p.supportSla);
   const sku = str(p.sku);
   const pricingMode = str(p.pricingMode) || "quote";
-  const priceNum = num(p.price);
-  const listPriceNum = num(p.listPrice);
+  const priceNum = parseOptionalPrice(p.price) ?? 0;
+  const listPriceNum = parseOptionalPrice(p.listPrice) ?? 0;
   const campaignBadge = str(p.campaignBadge);
-  const currency = str(p.currency) || "TRY";
-  const vatNote = str(p.vatNote) || "+ KDV";
+  const currency = (str(p.currency) || "TRY").toUpperCase();
+  const hasExplicitVat = typeof p.vatNote === "string" && p.vatNote.trim().length > 0;
+  const vatNote = hasExplicitVat ? str(p.vatNote) : "";
   const priceLabel = str(p.priceLabel);
+  const priceValidUntil = str(p.priceValidUntil);
   const priceFootNote = str(p.priceFootNote);
   const demoUrl = str(p.demoUrl);
-  const demoLabel = str(p.demoLabel) || "Ücretsiz Demo İste";
+  const demoLabel = str(p.demoLabel) || t("productCard.demoLabel");
   const downloadUrl = str(p.downloadUrl);
-  const downloadLabel = str(p.downloadLabel) || "Kurulum Dosyasını İndir";
+  const downloadLabel = str(p.downloadLabel) || t("productCard.downloadLabel");
   const downloadSize = str(p.downloadSize);
   const brochureUrl = str(p.brochureUrl);
+  const brochureLabel = str(p.brochureLabel) || t("productCard.brochureLabel");
   const lastVerified = str(p.lastVerified);
 
   const highlights = strArr(p.highlights);
@@ -112,44 +148,52 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
           name: str(r.name),
           code: str(r.code) || undefined,
           group: str(r.group) || undefined,
-          listPrice: num(r.listPrice) || undefined,
-          campaignPrice: num(r.campaignPrice) || undefined,
+          listPrice: parseOptionalPrice(r.listPrice),
+          campaignPrice: parseOptionalPrice(r.campaignPrice),
           note: str(r.note) || undefined,
         }))
         .filter((r) => r.name)
     : [];
 
-  const curSym = currency === "TRY" ? "TL" : currency;
+  const curSym = currencyLabel(currency, locale);
+  const fmtMoney = (n: number) => formatProductMoney(n, currency, locale);
   const hasVisiblePrice = (pricingMode === "fixed" || pricingMode === "starting") && priceNum > 0;
   const formattedPrice = hasVisiblePrice
-    ? `${priceNum.toLocaleString("tr-TR")} ${curSym}`
-    : priceLabel || "Modüler Lisans · İşletmeye Özel Teklif";
+    ? fmtMoney(priceNum)
+    : priceLabel || t("productCard.defaultQuote");
 
   const quickSpecs = [
-    version ? { k: "Güncel Sürüm", v: version } : null,
-    operatingSystem ? { k: "Platform", v: operatingSystem } : null,
-    database ? { k: "Veritabanı", v: database } : null,
-    deployment ? { k: "Kurulum Modeli", v: deployment } : null,
-    licenseModel ? { k: "Lisanslama", v: licenseModel } : null,
-    supportSla ? { k: "Destek & Kurulum", v: supportSla } : null,
+    version ? { k: t("productCard.currentVersion"), v: version } : null,
+    operatingSystem ? { k: t("productCard.platform"), v: operatingSystem } : null,
+    database ? { k: t("productCard.database"), v: database } : null,
+    deployment ? { k: t("productCard.deployment"), v: deployment } : null,
+    licenseModel ? { k: t("productCard.licenseModel"), v: licenseModel } : null,
+    supportSla ? { k: t("productCard.supportSla"), v: supportSla } : null,
   ].filter((x): x is { k: string; v: string } => Boolean(x));
 
-  // Build available tabs dynamically so empty tabs never show (Özellikler varsayılan ilk sekme)
+  // Boş sekmeler hiç gösterilmez (Özellikler varsayılan ilk sekme)
   const tabs: Array<{ key: string; label: string; count?: number }> = [];
-  if (highlights.length > 0) tabs.push({ key: "features", label: "Özellikler" });
-  if (priceList.length > 0) tabs.push({ key: "pricing", label: "Fiyat Listesi", count: priceList.length });
-  if (packages.length > 0) tabs.push({ key: "packages", label: "Paketler", count: packages.length });
-  if (modules.length > 0) tabs.push({ key: "modules", label: "Modüller", count: modules.length });
-  if (requirements.length > 0) tabs.push({ key: "requirements", label: "Sistem Gereksinimleri" });
-  if (integrations.length > 0) tabs.push({ key: "integrations", label: "Uyumlu Entegrasyonlar", count: integrations.length });
+  if (highlights.length > 0) tabs.push({ key: "features", label: t("productCard.tabFeatures") });
+  if (priceList.length > 0) tabs.push({ key: "pricing", label: t("productCard.tabPricing"), count: priceList.length });
+  if (packages.length > 0) tabs.push({ key: "packages", label: t("productCard.tabPackages"), count: packages.length });
+  if (modules.length > 0) tabs.push({ key: "modules", label: t("productCard.tabModules"), count: modules.length });
+  if (requirements.length > 0) tabs.push({ key: "requirements", label: t("productCard.tabRequirements") });
+  if (integrations.length > 0) tabs.push({ key: "integrations", label: t("productCard.tabIntegrations"), count: integrations.length });
 
   const tabCss = tabs
     .map(
-      (t, i) =>
+      (tab, i) =>
         `#${safeId}_t${i}:checked ~ .nxspc-bar label[for="${safeId}_t${i}"]{background:${tokens.colors.primary};color:${tokens.colors.primaryForeground};border-color:${tokens.colors.primary};}` +
-        `#${safeId}_t${i}:checked ~ .nxspc-panels [data-panel="${t.key}"]{display:block;}`
+        `#${safeId}_t${i}:focus-visible ~ .nxspc-bar label[for="${safeId}_t${i}"]{outline:2px solid ${tokens.colors.primary};outline-offset:2px;}` +
+        `#${safeId}_t${i}:checked ~ .nxspc-panels [data-panel="${tab.key}"]{display:block;}`
     )
     .join("");
+
+  const priceMetaParts = [
+    t("productCard.currencyNote", { currency: curSym }),
+    vatNote || null,
+    priceValidUntil ? t("productCard.validUntil", { date: priceValidUntil }) : null,
+  ].filter(Boolean);
 
   return (
     <section
@@ -177,7 +221,7 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                   {campaignBadge}
                 </span>
               ) : null}
-              {sku ? <span className="font-mono text-slate-400">Kod: {sku}</span> : null}
+              {sku ? <span className="font-mono text-slate-400">{t("productCard.code")}: {sku}</span> : null}
             </div>
 
             <h2 style={{ fontFamily: tokens.typography.headingFont }} className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -188,8 +232,8 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
 
             {(vendor || seller) ? (
               <div className="flex flex-wrap gap-x-5 gap-y-1 pt-1 text-xs text-slate-300">
-                {vendor ? <span><strong className="text-white">Yazılım Üreticisi:</strong> {vendor}</span> : null}
-                {seller ? <span><strong className="text-white">Yetkili Satış &amp; Destek:</strong> {seller}</span> : null}
+                {vendor ? <span><strong className="text-white">{t("productCard.vendor")}:</strong> {vendor}</span> : null}
+                {seller ? <span><strong className="text-white">{t("productCard.seller")}:</strong> {seller}</span> : null}
               </div>
             ) : null}
           </div>
@@ -197,9 +241,9 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
           <div className="lg:col-span-4 rounded-xl border border-white/15 bg-white/5 p-5 space-y-3.5">
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                <span>{pricingMode === "starting" ? "Başlangıç Kampanya Fiyatı" : "Lisans & Fiyatlandırma"}</span>
+                <span>{pricingMode === "starting" ? t("productCard.startingPrice") : t("productCard.licensePricing")}</span>
                 {listPriceNum > 0 && hasVisiblePrice && listPriceNum > priceNum ? (
-                  <span className="line-through text-slate-400 font-normal normal-case">{fmtTry(listPriceNum)}</span>
+                  <span className="line-through text-slate-400 font-normal normal-case">{fmtMoney(listPriceNum)}</span>
                 ) : null}
               </div>
               <div className="flex items-baseline gap-2 flex-wrap">
@@ -207,7 +251,7 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                 {hasVisiblePrice && vatNote ? <span className="text-xs font-medium text-slate-300">{vatNote}</span> : null}
               </div>
               {priceLabel && hasVisiblePrice ? <div className="text-[11px] text-slate-300">{priceLabel}</div> : null}
-              {releaseDate ? <div className="text-[11px] text-slate-400">Güncel Sürüm: {version || releaseDate}</div> : null}
+              {releaseDate ? <div className="text-[11px] text-slate-400">{t("productCard.currentVersion")}: {version || releaseDate}</div> : null}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -215,7 +259,7 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                 <a
                   href={demoUrl}
                   style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground, borderRadius: tokens.geometry.borderRadius }}
-                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold shadow-xs hover:opacity-95"
+                  className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold shadow-xs hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   {demoLabel} →
                 </a>
@@ -224,7 +268,7 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                 <a
                   href={downloadUrl}
                   style={{ borderRadius: tokens.geometry.borderRadius }}
-                  className="inline-flex w-full items-center justify-center gap-2 border border-white/25 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/15"
+                  className="inline-flex w-full items-center justify-center gap-2 border border-white/25 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <span>{downloadLabel}</span>
                   {downloadSize ? <span className="text-[11px] text-slate-300">({downloadSize})</span> : null}
@@ -235,9 +279,9 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
                   href={brochureUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-center text-xs font-medium text-sky-300 hover:underline pt-0.5"
+                  className="text-center text-xs font-medium text-sky-300 hover:underline pt-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
                 >
-                  Resmî Fiyat Hesaplayıcı (Abaküs) ↗
+                  {brochureLabel}
                 </a>
               ) : null}
             </div>
@@ -257,250 +301,258 @@ export function SoftwareProductCardBlock({ id = "spc", tokens, props: p }: Softw
         </div>
       ) : null}
 
-      {/* 0-KB CSS Sekmeli İçerik Alanı */}
+      {/* 0-KB CSS Erişilebilir Native Radio Sekme Alanı */}
       {tabs.length > 0 ? (
         <div className="p-5 sm:p-7">
           {/* eslint-disable-next-line react/no-danger */}
-          <style dangerouslySetInnerHTML={{ __html: `#${safeId} .nxspc-radio{position:absolute;opacity:0;pointer-events:none;}#${safeId} .nxspc-panels>[data-panel]{display:none;}${tabCss}` }} />
+          <style dangerouslySetInnerHTML={{ __html: `#${safeId} .nxspc-radio{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}#${safeId} .nxspc-panels>[data-panel]{display:none;}${tabCss}` }} />
 
-          {tabs.map((t, i) => (
-            <input
-              key={t.key}
-              type="radio"
-              name={`${safeId}_tabs`}
-              id={`${safeId}_t${i}`}
-              defaultChecked={i === 0}
-              className="nxspc-radio"
-            />
-          ))}
+          <fieldset className="relative border-0 p-0 m-0 min-w-0">
+            <legend className="sr-only">{t("productCard.tabsLabel", { name })}</legend>
 
-          {/* Sekme Başlık Çubuğu */}
-          <div
-            role="tablist"
-            aria-label={`${name} detay sekmeleri`}
-            className="nxspc-bar flex flex-wrap gap-2 border-b border-nx-line pb-4 mb-6"
-          >
-            {tabs.map((t, i) => (
-              <label
-                key={t.key}
-                htmlFor={`${safeId}_t${i}`}
-                style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
-                className="cursor-pointer select-none inline-flex items-center gap-1.5 border bg-nx-subtle/60 px-3.5 py-2 text-xs font-semibold text-nx-fg transition hover:bg-nx-subtle"
-              >
-                <span>{t.label}</span>
-                {typeof t.count === "number" ? (
-                  <span className="rounded-full bg-black/10 px-1.5 py-px text-[10px] font-bold">{t.count}</span>
-                ) : null}
-              </label>
+            {tabs.map((tab, i) => (
+              <input
+                key={tab.key}
+                type="radio"
+                name={`${safeId}_tabs`}
+                id={`${safeId}_t${i}`}
+                defaultChecked={i === 0}
+                className="nxspc-radio"
+              />
             ))}
-          </div>
 
-          {/* Sekme Panelleri */}
-          <div className="nxspc-panels">
-            {/* 1. Fiyat Listesi */}
-            {priceList.length > 0 ? (
-              <div data-panel="pricing" className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Sekme Seçenek Çubuğu */}
+            <div className="nxspc-bar flex flex-wrap gap-2 border-b border-nx-line pb-4 mb-6">
+              {tabs.map((tab, i) => (
+                <label
+                  key={tab.key}
+                  htmlFor={`${safeId}_t${i}`}
+                  style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+                  className="cursor-pointer select-none inline-flex items-center gap-1.5 border bg-nx-subtle/60 px-3.5 py-2 text-xs font-semibold text-nx-fg transition hover:bg-nx-subtle"
+                >
+                  <span>{tab.label}</span>
+                  {typeof tab.count === "number" ? (
+                    <span className="rounded-full bg-black/10 px-1.5 py-px text-[10px] font-bold">{tab.count}</span>
+                  ) : null}
+                </label>
+              ))}
+            </div>
+
+            {/* Sekme Panelleri */}
+            <div className="nxspc-panels">
+              {/* 1. Fiyat Listesi */}
+              {priceList.length > 0 ? (
+                <div data-panel="pricing" className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
+                      {t("productCard.priceListHeading")}
+                    </h3>
+                    <span className="text-xs text-nx-muted">{priceMetaParts.join(" · ")}</span>
+                  </div>
+                  <div style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }} className="overflow-x-auto border">
+                    <table className="w-full text-left text-xs sm:text-sm">
+                      <thead className="bg-nx-subtle/80 text-[11px] uppercase tracking-wider text-nx-muted border-b border-nx-line">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold">{t("productCard.colPackage")}</th>
+                          <th className="px-3 py-3 font-semibold hidden sm:table-cell">{t("productCard.colCategory")}</th>
+                          <th className="px-3 py-3 font-semibold text-right">{t("productCard.colListPrice")}</th>
+                          <th className="px-4 py-3 font-semibold text-right">{t("productCard.colCampaignPrice")}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-nx-line">
+                        {priceList.map((row, idx) => {
+                          const lp = row.listPrice;
+                          const cp = row.campaignPrice;
+                          const pct = lp !== null && cp !== null && lp > 0 && cp > 0 && cp < lp ? Math.round(((lp - cp) / lp) * 100) : 0;
+                          return (
+                            <tr key={idx} className={idx % 2 === 1 ? "bg-nx-subtle/30" : "bg-nx-card"}>
+                              <td className="px-4 py-3">
+                                <div className="font-semibold text-nx-fg">{row.name}</div>
+                                {row.note ? <div className="text-[11px] text-nx-muted mt-0.5">{row.note}</div> : null}
+                              </td>
+                              <td className="px-3 py-3 text-xs text-nx-muted hidden sm:table-cell">
+                                {row.group || (row.code ? `${t("productCard.code")}: ${row.code}` : t("productCard.moduleDefault"))}
+                              </td>
+                              <td className="px-3 py-3 text-right font-mono text-xs text-nx-muted">
+                                {lp !== null && lp > 0 ? (
+                                  <span className={cp !== null && cp > 0 && cp < lp ? "line-through" : ""}>{fmtMoney(lp)}</span>
+                                ) : lp === 0 ? (
+                                  t("productCard.included")
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                {cp !== null && cp > 0 ? (
+                                  <div className="inline-flex items-center gap-2 justify-end">
+                                    {pct > 0 ? (
+                                      <>
+                                        <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                                          %{pct}
+                                        </span>{" "}
+                                      </>
+                                    ) : null}
+                                    <span className="font-mono font-bold text-nx-fg">{fmtMoney(cp)}</span>
+                                  </div>
+                                ) : cp === 0 ? (
+                                  <span className="inline-flex rounded bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                    {t("productCard.freeIncluded")}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-nx-muted">{t("productCard.quoteOnRequest")}</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {priceFootNote ? <p className="text-xs text-nx-muted leading-relaxed">{priceFootNote}</p> : null}
+                </div>
+              ) : null}
+
+              {/* 2. Paketler */}
+              {packages.length > 0 ? (
+                <div data-panel="packages" className="space-y-4">
                   <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                    2026 Güncel Liste ve Kampanya Fiyatları
+                    {t("productCard.packagesHeading")}
                   </h3>
-                  <span className="text-xs text-nx-muted">Tüm fiyatlar TL cinsindendir · KDV hariçtir</span>
-                </div>
-                <div style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }} className="overflow-x-auto border">
-                  <table className="w-full text-left text-xs sm:text-sm">
-                    <thead className="bg-nx-subtle/80 text-[11px] uppercase tracking-wider text-nx-muted border-b border-nx-line">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold">Paket / Modül</th>
-                        <th className="px-3 py-3 font-semibold hidden sm:table-cell">Kategori</th>
-                        <th className="px-3 py-3 font-semibold text-right">Liste Fiyatı</th>
-                        <th className="px-4 py-3 font-semibold text-right">Kampanya Fiyatı</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-nx-line">
-                      {priceList.map((row, idx) => {
-                        const lp = row.listPrice ?? 0;
-                        const cp = row.campaignPrice ?? 0;
-                        const pct = lp > 0 && cp > 0 && cp < lp ? Math.round(((lp - cp) / lp) * 100) : 0;
-                        return (
-                          <tr key={idx} className={idx % 2 === 1 ? "bg-nx-subtle/30" : "bg-nx-card"}>
-                            <td className="px-4 py-3">
-                              <div className="font-semibold text-nx-fg">{row.name}</div>
-                              {row.note ? <div className="text-[11px] text-nx-muted mt-0.5">{row.note}</div> : null}
-                            </td>
-                            <td className="px-3 py-3 text-xs text-nx-muted hidden sm:table-cell">
-                              {row.group || (row.code ? `Kod: ${row.code}` : "Modül")}
-                            </td>
-                            <td className="px-3 py-3 text-right font-mono text-xs text-nx-muted">
-                              {lp > 0 ? <span className={cp > 0 && cp < lp ? "line-through" : ""}>{fmtTry(lp)}</span> : "Dahil"}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              {cp > 0 ? (
-                                <div className="inline-flex items-center gap-2 justify-end">
-                                  {pct > 0 ? (
-                                    <>
-                                      <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                                        %{pct}
-                                      </span>{" "}
-                                    </>
-                                  ) : null}
-                                  <span className="font-mono font-bold text-nx-fg">{fmtTry(cp)}</span>
-                                </div>
-                              ) : (
-                                <span className="inline-flex rounded bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                                  Ücretsiz / Dahil
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                {priceFootNote ? <p className="text-xs text-nx-muted leading-relaxed">{priceFootNote}</p> : null}
-              </div>
-            ) : null}
-
-            {/* 2. Paketler */}
-            {packages.length > 0 ? (
-              <div data-panel="packages" className="space-y-4">
-                <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                  Hazır Paket ve Lisans Seçenekleri
-                </h3>
-                <div className={`grid grid-cols-1 gap-4 ${packages.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-                  {packages.map((pk, idx) => (
-                    <div
-                      key={idx}
-                      style={{ borderRadius: tokens.geometry.borderRadius, borderColor: pk.badge ? tokens.colors.primary : tokens.colors.border }}
-                      className="flex flex-col justify-between gap-4 border bg-nx-subtle/40 p-5"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-bold text-nx-fg">{pk.name}</span>
-                          {pk.badge ? (
-                            <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-2 py-0.5 text-[10px] font-semibold">
-                              {pk.badge}
-                            </span>
+                  <div className={`grid grid-cols-1 gap-4 ${packages.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+                    {packages.map((pk, idx) => (
+                      <div
+                        key={idx}
+                        style={{ borderRadius: tokens.geometry.borderRadius, borderColor: pk.badge ? tokens.colors.primary : tokens.colors.border }}
+                        className="flex flex-col justify-between gap-4 border bg-nx-subtle/40 p-5"
+                      >
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-bold text-nx-fg">{pk.name}</span>
+                            {pk.badge ? (
+                              <span style={{ backgroundColor: tokens.colors.primary, color: tokens.colors.primaryForeground }} className="rounded-full px-2 py-0.5 text-[10px] font-semibold">
+                                {pk.badge}
+                              </span>
+                            ) : null}
+                          </div>
+                          {pk.price ? (
+                            <div className="space-y-0.5">
+                              {pk.listPrice ? <div className="text-xs text-nx-muted line-through">{pk.listPrice}</div> : null}
+                              <div className="text-lg font-extrabold text-nx-fg">
+                                {pk.price}
+                                {pk.period ? <span className="text-xs font-normal text-nx-muted"> {pk.period}</span> : null}
+                              </div>
+                            </div>
+                          ) : null}
+                          {pk.description ? <p className="text-xs text-nx-soft">{pk.description}</p> : null}
+                          {pk.highlights && pk.highlights.length > 0 ? (
+                            <ul className="space-y-1 text-xs text-nx-soft pt-1">
+                              {pk.highlights.map((h, hi) => (
+                                <li key={hi} className="flex items-start gap-1.5">
+                                  <span style={{ color: tokens.colors.primary }} className="font-bold">•</span>
+                                  <span>{h}</span>
+                                </li>
+                              ))}
+                            </ul>
                           ) : null}
                         </div>
-                        {pk.price ? (
-                          <div className="space-y-0.5">
-                            {pk.listPrice ? <div className="text-xs text-nx-muted line-through">{pk.listPrice}</div> : null}
-                            <div className="text-lg font-extrabold text-nx-fg">
-                              {pk.price}
-                              {pk.period ? <span className="text-xs font-normal text-nx-muted"> {pk.period}</span> : null}
-                            </div>
-                          </div>
-                        ) : null}
-                        {pk.description ? <p className="text-xs text-nx-soft">{pk.description}</p> : null}
-                        {pk.highlights && pk.highlights.length > 0 ? (
-                          <ul className="space-y-1 text-xs text-nx-soft pt-1">
-                            {pk.highlights.map((h, hi) => (
-                              <li key={hi} className="flex items-start gap-1.5">
-                                <span style={{ color: tokens.colors.primary }} className="font-bold">•</span>
-                                <span>{h}</span>
-                              </li>
-                            ))}
-                          </ul>
+                        {pk.ctaHref ? (
+                          <a
+                            href={pk.ctaHref}
+                            style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
+                            className="inline-flex w-full items-center justify-center border bg-nx-card px-3 py-2 text-xs font-semibold text-nx-fg hover:bg-nx-subtle"
+                          >
+                            {pk.ctaLabel || t("productCard.requestQuote")}
+                          </a>
                         ) : null}
                       </div>
-                      {pk.ctaHref ? (
-                        <a
-                          href={pk.ctaHref}
-                          style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }}
-                          className="inline-flex w-full items-center justify-center border bg-nx-card px-3 py-2 text-xs font-semibold text-nx-fg hover:bg-nx-subtle"
-                        >
-                          {pk.ctaLabel || "Teklif İste"}
-                        </a>
-                      ) : null}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {/* 3. Özellikler */}
-            {highlights.length > 0 ? (
-              <div data-panel="features" className="space-y-3">
-                <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                  Öne Çıkan Özellikler
-                </h3>
-                <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-sm text-nx-soft">
-                  {highlights.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 rounded-lg border border-nx-line/70 bg-nx-subtle/30 p-3">
-                      <span style={{ color: tokens.colors.primary }} className="mt-0.5 font-bold">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {/* 4. Modüller */}
-            {modules.length > 0 ? (
-              <div data-panel="modules" className="space-y-3">
-                <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                  Dahil &amp; Genişletilebilir Modüller
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {modules.map((mod, i) => (
-                    <span
-                      key={i}
-                      style={{ borderColor: tokens.colors.border }}
-                      className="rounded-lg border bg-nx-subtle px-3 py-1.5 text-xs font-medium text-nx-fg"
-                    >
-                      {mod}
-                    </span>
-                  ))}
+              {/* 3. Özellikler */}
+              {highlights.length > 0 ? (
+                <div data-panel="features" className="space-y-3">
+                  <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
+                    {t("productCard.featuresHeading")}
+                  </h3>
+                  <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-sm text-nx-soft">
+                    {highlights.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 rounded-lg border border-nx-line/70 bg-nx-subtle/30 p-3">
+                        <span style={{ color: tokens.colors.primary }} className="mt-0.5 font-bold">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {/* 5. Sistem Gereksinimleri */}
-            {requirements.length > 0 ? (
-              <div data-panel="requirements" className="space-y-3">
-                <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                  Sistem Gereksinimleri
-                </h3>
-                <div style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }} className="overflow-hidden border">
-                  <table className="w-full text-left text-xs sm:text-sm">
-                    <tbody className="divide-y divide-nx-line">
-                      {requirements.map((req, i) => (
-                        <tr key={i} className={i % 2 === 1 ? "bg-nx-subtle/40" : "bg-nx-card"}>
-                          <th className="w-44 px-4 py-3 font-semibold text-nx-fg">{req.label}</th>
-                          <td className="px-4 py-3 text-nx-soft">{req.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {/* 4. Modüller */}
+              {modules.length > 0 ? (
+                <div data-panel="modules" className="space-y-3">
+                  <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
+                    {t("productCard.modulesHeading")}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {modules.map((mod, i) => (
+                      <span
+                        key={i}
+                        style={{ borderColor: tokens.colors.border }}
+                        className="rounded-lg border bg-nx-subtle px-3 py-1.5 text-xs font-medium text-nx-fg"
+                      >
+                        {mod}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {/* 6. Uyumlu Entegrasyonlar */}
-            {integrations.length > 0 ? (
-              <div data-panel="integrations" className="space-y-3">
-                <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
-                  Uyumlu Entegrasyonlar
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {integrations.map((intg, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-800"
-                    >
-                      <span>✓</span>
-                      <span>{intg}</span>
-                    </span>
-                  ))}
+              {/* 5. Sistem Gereksinimleri */}
+              {requirements.length > 0 ? (
+                <div data-panel="requirements" className="space-y-3">
+                  <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
+                    {t("productCard.requirementsHeading")}
+                  </h3>
+                  <div style={{ borderRadius: tokens.geometry.borderRadius, borderColor: tokens.colors.border }} className="overflow-hidden border">
+                    <table className="w-full text-left text-xs sm:text-sm">
+                      <tbody className="divide-y divide-nx-line">
+                        {requirements.map((req, i) => (
+                          <tr key={i} className={i % 2 === 1 ? "bg-nx-subtle/40" : "bg-nx-card"}>
+                            <th className="w-44 px-4 py-3 font-semibold text-nx-fg">{req.label}</th>
+                            <td className="px-4 py-3 text-nx-soft">{req.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </div>
+              ) : null}
+
+              {/* 6. Uyumlu Entegrasyonlar */}
+              {integrations.length > 0 ? (
+                <div data-panel="integrations" className="space-y-3">
+                  <h3 style={{ fontFamily: tokens.typography.headingFont }} className="text-base font-bold text-nx-fg">
+                    {t("productCard.integrationsHeading")}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {integrations.map((intg, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-800"
+                      >
+                        <span>✓</span>
+                        <span>{intg}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </fieldset>
 
           {lastVerified ? (
             <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-nx-line pt-4 text-[11px] text-nx-muted">
-              <span>Fiyat ve teknik özellikler son kontrol: <strong>{lastVerified}</strong></span>
+              <span>{t("productCard.lastVerified")}: <strong>{lastVerified}</strong></span>
               {seller ? <span>{seller}</span> : null}
             </div>
           ) : null}

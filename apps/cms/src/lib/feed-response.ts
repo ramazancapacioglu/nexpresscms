@@ -3,6 +3,7 @@ import { resolvePublishing, resolveSiteSettings, localeBase } from "@nexpress/co
 import { buildAtomFeed, buildRssFeed, termMatches, type FeedItem } from "@nexpress/seo-core";
 import { listPublishedContents } from "@/lib/public-data";
 import { requestLocale } from "@/lib/request-locale";
+import { siteOriginFor } from "@/lib/site-origin";
 
 /** RSS/Atom yanıtı: yalnızca herkese açık, dizine açık blog yazıları. */
 export async function feedResponse(request: NextRequest, format: "rss" | "atom"): Promise<NextResponse> {
@@ -12,7 +13,7 @@ export async function feedResponse(request: NextRequest, format: "rss" | "atom")
     return new NextResponse("Bakım", { status: 503, headers: { "Retry-After": "3600", "X-Robots-Tag": "noindex" } });
   }
   const contents = await listPublishedContents(siteId, locale);
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = siteOriginFor(site);
   // Kategori/etiket beslemesi: ?category=ad veya ?tag=ad (yalnızca tek terim; sınırlı uzunluk)
   const q = new URL(request.url).searchParams;
   const category = (q.get("category") ?? "").trim().slice(0, 80);

@@ -42,6 +42,13 @@ export const listPublishedContents = cachedRead("published", async (siteId: stri
   )
 );
 
+/** Yayındaki herkese açık içeriklerin gövdesiz (`blocks`/`markdownCache` hariç) özeti; ilgili yazılar, üst/alt sayfa ve listeler için. */
+export const listPublishedContentSummaries = cachedRead("published-summaries", async (siteId: string, locale: string) =>
+  (await getScopedRepository(siteId).listContentSummaries({ locale, status: "published" })).filter(
+    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility === "public"
+  )
+);
+
 /** Bir içeriğin tüm dil çevirileri (hreflang ve dil değiştirici için); yayın filtresi çağıranda. */
 export const getPublicTranslations = cachedRead("translations", (siteId: string, contentId: string) =>
   getScopedRepository(siteId).getTranslationsForContent(contentId)
@@ -118,12 +125,12 @@ export const getPublicWidgetFeed = cachedRead("widget-feed", async (siteId: stri
   const repo = getScopedRepository(siteId);
   const [taxonomies, contents, comments] = await Promise.all([
     repo.listTaxonomies(),
-    repo.listContents({ locale, status: "published" }),
+    repo.listContentSummaries({ locale, status: "published" }),
     repo.listCommentsReviews(),
   ]);
 
   const publicContents = contents.filter(
-    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility !== "private"
+    (c) => c.type !== "template" && resolvePublishing(c.schemaAttributes).visibility === "public"
   );
 
   const catCounts = new Map<string, number>();

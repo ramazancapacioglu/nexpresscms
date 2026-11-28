@@ -3,7 +3,8 @@ import { siteLocaleBase } from "@/lib/locale-url";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Link } from "@/components/public/link";
-import { getPublicSite } from "@/lib/public-data";
+import { getPublicSite, listPublishedContents } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { getScopedRepository } from "@nexpress/database";
 import {
   resolveCampaignData,
@@ -30,7 +31,7 @@ export async function generateMetadata({
   const title = `Kampanyalar & Özel Fırsatlar | ${siteName}`;
   const description = `${siteName} güncel yazılım, e-ticaret ve lisans kampanyaları, indirimler ve hediye avantajları.`;
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const origin = siteOriginFor(site);
   const lb = await siteLocaleBase(siteId, locale);
   const url = `${origin}${lb}/kampanyalar`;
   return {
@@ -59,7 +60,7 @@ export default async function PublicCampaignsArchivePage({
   const site = await getPublicSite(siteId);
   const repo = getScopedRepository(siteId);
 
-  const allContents = await repo.listContents({ locale });
+  const allContents = await listPublishedContents(siteId, locale);
   const campaignContents = allContents.filter(
     (c) =>
       c.status === "published" &&
@@ -78,7 +79,7 @@ export default async function PublicCampaignsArchivePage({
   const activeCampaigns = campaigns.filter((c) => !c.isExpired);
   const expiredCampaigns = campaigns.filter((c) => c.isExpired);
 
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const baseUrl = siteOriginFor(site);
   const archiveUrl = `${baseUrl}${lb}/kampanyalar`;
   const localized = resolveLocalizedSiteIdentity(site, locale);
 

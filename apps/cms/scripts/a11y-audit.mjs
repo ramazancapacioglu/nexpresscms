@@ -24,8 +24,34 @@ const ADMIN_PATHS = [
   "/admin/translations", "/admin/users", "/admin/audit", "/admin/appearance/header", "/admin/appearance/menus", "/admin/appearance/templates", "/admin/appearance/footer", "/admin/appearance/sidebar", "/admin/plugins", "/admin/seo", "/admin/commerce",
   "/admin/design-library", "/admin/seo/audit", "/admin/integrations", "/admin/help", "/admin/contents?type=page&new=1", "/admin/themes/packages",
 ];
-const PUBLIC_PATHS = ["/tr", "/login", "/forgot-password", "/reset-password"];
+const STATIC_PUBLIC_PATHS = ["/tr", "/login", "/forgot-password", "/reset-password"];
 const BLOCKING = new Set(["critical", "serious"]);
+
+/** Ziyaretçi yolculuğunu gerçek içerik türleriyle (sayfa, yazı, ürün/rehber, iletişim) zenginleştirir. */
+async function discoverPublicPaths() {
+  const paths = [...STATIC_PUBLIC_PATHS];
+  try {
+    const res = await fetch(`${BASE}/ai-sitemap.json`);
+    if (res.ok) {
+      const data = await res.json();
+      const pickedTypes = new Set();
+      for (const item of data.items ?? []) {
+        const p = new URL(item.url).pathname || "/";
+        if (paths.includes(p)) continue;
+        // Her içerik türünden (page, post, product, kb_tech, campaign) en az 1 örnek ve varsa iletişim formu ekle
+        if (!pickedTypes.has(item.type) || /iletisim|contact/i.test(p)) {
+          pickedTypes.add(item.type);
+          paths.push(p);
+        }
+        if (paths.length >= STATIC_PUBLIC_PATHS.length + 5) break;
+      }
+    }
+  } catch {
+    /* ai-sitemap kapalıysa statik liste ile devam et */
+  }
+  return paths;
+}
+const PUBLIC_PATHS = await discoverPublicPaths();
 
 const browser = await chromium.launch({ executablePath: process.env.A11Y_CHROME || undefined, args: ["--no-sandbox"] });
 const report = { base: BASE, results: [] };

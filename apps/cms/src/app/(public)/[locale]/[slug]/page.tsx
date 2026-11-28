@@ -1,12 +1,13 @@
 import React from "react";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { siteOriginFor } from "@/lib/site-origin";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/components/public/link";
-import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, isAuthoredType, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, termSlug } from "@nexpress/core";
+import { contentPath, contentPrefix, contentWidthStyle, memberMeetsTier, displayFields, findTypeByArchiveSlug, fieldSchemaProps, findContentType, hasAuthorProfile, hasDynamicQueryParams, isAuthoredType, readPageOptions, resolveLocalizedSiteIdentity, resolvePublishing, rankRelated, resolveSiteSettings, sanitizeReadingSlug, resolveSchemaPlacements, buildPlacementExtraProps, buildAdditionalSchemaNodes, selectPublicFamily, termSlug } from "@nexpress/core";
 import { getScopedRepository } from "@nexpress/database";
-import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContents, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
+import { getPublicAuthors, getPublicMediaFocal, getPublicSite, listPublishedContentSummaries, loadPageForms, listPublicReviews, resolvePublicContent } from "@/lib/public-data";
 import { getThemeManifest, ResponsiveImage, RscBlockRenderer } from "@nexpress/themes";
 import { loadDynamicData } from "@/lib/dynamic-content";
 import { getResolvedMenu } from "@/lib/menu-data";
@@ -81,7 +82,7 @@ export async function generateMetadata({
   const content = resolved.content;
   const cPath = contentPath(types, content);
   const pub = resolvePublishing(content.schemaAttributes);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = siteOriginFor(site);
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
   const seoMeta = resolveSeoMeta({
@@ -229,10 +230,10 @@ export default async function PublicDynamicContentPage({
   const postsPageSlug = sanitizeReadingSlug(resolveSiteSettings(site?.settings).general.postsPageSlug);
   if (!draft && postsPageSlug && postsPageSlug === content.slug && content.type === "page") {
     // Blog dizini: CollectionPage + son yazıların ItemList'i (arama motoru ve yapay zekâ için yazı envanteri)
-    const indexBase = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const indexBase = siteOriginFor(site);
     const indexSite = resolveLocalizedSiteIdentity(site, locale);
     const indexUrl = `${indexBase}${lb}${cPath}`;
-    const latest = (await listPublishedContents(siteId, locale))
+    const latest = (await listPublishedContentSummaries(siteId, locale))
       .filter((c) => c.type === "post")
       .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
       .slice(0, 20);
@@ -260,7 +261,7 @@ export default async function PublicDynamicContentPage({
       </>
     );
   }
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = siteOriginFor(site);
   const pageUrl = `${baseUrl}${lb}${cPath}`;
   const localizedSite = resolveLocalizedSiteIdentity(site, locale);
 
@@ -370,8 +371,15 @@ export default async function PublicDynamicContentPage({
   const reviewerName = typeof rawRichTech?.reviewedBy === "string" ? rawRichTech.reviewedBy.trim() : "";
   const reviewerSlug = reviewerName ? authorSlug(reviewerName) : "";
   const reviewedByUrl = reviewerSlug && publicAuthors[reviewerSlug] ? `${baseUrl}${lb}/yazar/${reviewerSlug}` : undefined;
-  const family = pub.parentId || pub.pillar ? await getScopedRepository(siteId).listContents({ locale }) : [];
-  const parent = pub.parentId ? family.find((item) => item.id === pub.parentId && item.status === "published") : undefined;
+  const needsSummaries = Boolean(
+    pub.parentId ||
+    pub.pillar ||
+    content.type === "post" ||
+    content.type === "page" ||
+    content.type === "ai_prompt"
+  );
+  const publicSummaries = needsSummaries ? await listPublishedContentSummaries(siteId, locale) : [];
+  const { parent, children } = selectPublicFamily(publicSummaries, content.id, { parentId: pub.parentId, pillar: pub.pillar });
   // Kırıntı: ziyaretçiye görünen liste ve JSON-LD BreadcrumbList aynı kaynaktan gelir. Yazıda: Ana sayfa › Blog › Kategori › Yazı
   const scoped = getScopedRepository(siteId);
   const taxonomyRows = content.type === "post" ? await scoped.listTaxonomies() : [];
@@ -387,11 +395,11 @@ export default async function PublicDynamicContentPage({
     ...(parent ? [{ name: parent.title, url: `${baseUrl}${lb}/${parent.slug}` }] : []),
     { name: content.title, url: pageUrl },
   ];
-  // Önceki / sonraki ve benzer yazılar (yalnızca herkese açık, yayında yazılar)
+  // Önceki / sonraki ve benzer yazılar (yalnızca herkese açık, yayında yazılar; gövdesiz önbellekli özet havuzundan)
   const peers =
     content.type === "post"
-      ? (await scoped.listContents({ locale, type: "post", status: "published" }))
-          .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public")
+      ? publicSummaries
+          .filter((row) => row.type === "post")
           .sort((a, b) => new Date(b.publishedAt ?? b.createdAt).getTime() - new Date(a.publishedAt ?? a.createdAt).getTime())
       : [];
   const asPeer = (row: (typeof peers)[number]) => ({ slug: row.slug, title: row.title, image: row.featuredImage ?? null, date: row.publishedAt ? new Date(row.publishedAt) : null });
@@ -410,8 +418,8 @@ export default async function PublicDynamicContentPage({
     content.type === "page" || content.type === "post" || content.type === "ai_prompt"
       ? rankRelated(
           me,
-          [...(await scoped.listContents({ locale, type: "page", status: "published" })), ...(content.type === "post" ? [] : await scoped.listContents({ locale, type: "post", status: "published" }))]
-            .filter((row) => resolvePublishing(row.schemaAttributes).visibility === "public" && row.slug !== "ana-sayfa")
+          publicSummaries
+            .filter((row) => (row.type === "page" || (content.type !== "post" && row.type === "post")) && row.slug !== "ana-sayfa")
             .map(asCandidate),
           6,
         ).map((c) => ({ slug: c.row.slug, title: c.row.title, image: c.row.featuredImage ?? null, tldr: c.row.tldr ?? null }))
@@ -477,7 +485,6 @@ export default async function PublicDynamicContentPage({
     schemaGraph["@graph"].push(extraNode as never);
   }
 
-  const children = pub.pillar ? family.filter((item) => item.id !== content.id && item.status === "published" && resolvePublishing(item.schemaAttributes).parentId === content.id) : [];
   const pillarList = children.length > 0 ? (
     <section className="mx-auto max-w-4xl space-y-3 px-4 py-6">
       <h2 style={{ fontFamily: tokens.typography.headingFont }} className="text-xl font-bold">{t("content.pillarHeading")}</h2>

@@ -13,6 +13,7 @@ import { organizationFor } from "@/lib/organization-schema";
 import { templateFor } from "@/lib/templates";
 import { buildTemplateContext } from "@/lib/template-context";
 import { getPublicSite } from "@/lib/public-data";
+import { siteOriginFor } from "@/lib/site-origin";
 import { INDEXABLE_ROBOTS, metaDescription, NOINDEX_ROBOTS, titleWithSite } from "@/lib/robots-meta";
 
 type Kind = "category" | "tag";
@@ -40,7 +41,7 @@ export async function archiveMetadata(kind: Kind, params: Promise<{ locale: stri
   const data = await load(kind, locale, slug, page);
   if (!data) return { robots: { index: false, follow: false } };
   const lb = localeBase(data.site, locale);
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = siteOriginFor(data.site);
   const path = `${lb}/${kind === "category" ? "kategori" : "etiket"}/${slug}`;
   return {
     // Kısa terim adına ("Makaleler") site adı eklenir; uzun açıklama arama sonucunda kesilmesin diye kelime sınırında 160'a indirilir
@@ -64,7 +65,7 @@ export async function TaxonomyArchive({ kind, params, searchParams }: { kind: Ki
   const tokens = data.site?.designTokens ?? getThemeManifest(data.site?.activeThemeId ?? "corporate-aurora").tokens;
   const siteId = (await headers()).get("x-nexpress-site-id") ?? "default";
   const prefix = kind === "category" ? "kategori" : "etiket";
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const baseUrl = siteOriginFor(data.site);
   const pageUrl = `${baseUrl}${lb}/${prefix}/${slug}${data.paged.page > 1 ? `?sayfa=${data.paged.page}` : ""}`;
   const localized = resolveLocalizedSiteIdentity(data.site, locale);
   const schemaGraph = await buildPageSchemaGraph({

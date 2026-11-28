@@ -716,7 +716,7 @@ export function renderMarketingBlock({ block, themeId, tokens, isEditorial, isCo
     }
 
     case "software_product_card": {
-      return <SoftwareProductCardBlock id={block.id} tokens={tokens} props={p} />;
+      return <SoftwareProductCardBlock id={block.id} tokens={tokens} props={p} locale={locale} />;
     }
 
     case "sectors_grid": {

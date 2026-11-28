@@ -170,3 +170,16 @@ Bkz. `docs/12-ROADMAP.md`. Redis, S3 medya ve S3 yedek kopyası isteğe bağlıd
 - Uygulama kullanıcı sürecini elle başlatmak yerine `systemd` hizmetiyle çalışır (`/etc/systemd/system/<ad>.service`): site kullanıcısı, `EnvironmentFile=.env`, `PORT`, `ExecStart=node scripts/start.cjs`, `Restart=always`, PostgreSQL'den sonra başlar (`After=`/`Wants=postgresql.service`, `override.conf`). `systemctl enable` ile açılışta başlar; süreç çökerse 5 sn içinde yeniden kalkar. Dağıtım: `next build` (site kullanıcısı olarak, `.env` yüklü) → `systemctl restart <ad>`.
 - Plesk nginx `vhost_nginx.conf` içinde `proxy_pass http://127.0.0.1:<PORT>` tutar. Tercih edilen alan adı `www` ise `plesk bin site -u <alan> -seo-redirect www` çıplak adresi 301 ile `www`'ye yönlendirir; uygulama kanonik adresi `NEXT_PUBLIC_APP_URL` ile bilir (derleme zamanında gömülür: değişince yeniden derleyin), aksi hâlde `www` ↔ çıplak döngüsü oluşur.
 - Let's Encrypt: DNS yeni sunucuyu gösterdikten sonra Plesk'ten hem çıplak hem `www` için alınır.
+
+## Ters Vekil ve Yerel Dağıtım Yönlendirme Sözleşmesi
+
+Ara katman (`middleware.ts`), tek dilli ön eksiz yönlendirmeleri (`/tr/x → 308 /x`) ve indeks politikasını çözmek için dahili `/api/locale-mode` ucuna istek atar. 308 yönlendirme döngüsü yaşanmaması için şu üç değişkenin aynı topolojiyle hizalı olması gerekir:
+
+| Değişken | Amaç | Örnek (Canlı Nginx arkasında) | Örnek (Yerel üretim testi) |
+| --- | --- | --- | --- |
+| `PORT` | Next.js sunucusunun dinlediği yerel port | `3001` | `4168` |
+| `INTERNAL_APP_URL` | Ara katmanın kendi sürecine eriştiği yerel adres | `http://127.0.0.1:3001` | `http://127.0.0.1:4168` |
+| `NEXT_PUBLIC_APP_URL` | Ziyaretçiye dönen varsayılan yayın kökeni | `https://alanadiniz.com` | `http://127.0.0.1:4168` |
+
+- `INTERNAL_APP_URL` boş bırakılırsa ara katman `http://127.0.0.1:${PORT}` adresini dener; farklı bir portta çalışan testlerde `PORT` ve `INTERNAL_APP_URL` mutlaka eşleştirilmelidir.
+- Ters vekil (Nginx/Caddy) `Host`, `X-Forwarded-Host` ve `X-Forwarded-Proto` başlıklarını iletmeli, Markdown içerik müzakeresi için `Vary: Accept` başlığını korumalıdır.

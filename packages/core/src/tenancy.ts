@@ -118,3 +118,69 @@ export function getCmsContext(
     siteProfile: overrides?.siteProfile ?? active?.siteProfile,
   };
 }
+
+export interface SiteOriginInput {
+  siteId?: string | null;
+  domain?: string | null;
+  subdomain?: string | null;
+  appUrl?: string | null;
+  rootDomain?: string | null;
+  cmsMode?: CmsMode;
+}
+
+function isLocalHostname(hostname: string): boolean {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  return h === "localhost" || h === "127.0.0.1" || h === "::1" || h.endsWith(".localhost");
+}
+
+function parseOriginUrl(raw: string | null | undefined): URL | null {
+  const value = raw?.trim();
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Bir kiracı (`site`) için doğrulanmış mutlak yayın kökenini (`https://alanadi.com`) üretir.
+ * - Doğrulanmış kiracı `domain` (veya çok kiracılı kipte `subdomain` + `rootDomain`) süreç geneli
+ *   `NEXT_PUBLIC_APP_URL` değerinden önce gelir.
+ * - Tek kiracılı (`single`) kipte varsayılan kiracının veritabanında `localhost` kalmışsa ve
+ *   `NEXT_PUBLIC_APP_URL` gerçek bir yayın adresi taşıyorsa `NEXT_PUBLIC_APP_URL` korunur.
+ * - İstekten gelen ham `Host` başlığına körü körüne güvenilmez (Host Header Injection koruması).
+ */
+export function resolveSiteOrigin(input: SiteOriginInput): string {
+  const mode = input.cmsMode ?? getCmsMode();
+  const appParsed = parseOriginUrl(input.appUrl);
+  const fallbackOrigin = appParsed ? appParsed.origin : "http://localhost:3000";
+  const defaultProto = appParsed ? appParsed.protocol : "https:";
+  const isDefaultSingle = mode === "single" && (!input.siteId || input.siteId === "default");
+
+  const rawDomain = input.domain?.trim() ?? "";
+  if (rawDomain) {
+    const withScheme = /^https?:\/\//i.test(rawDomain)
+      ? parseOriginUrl(rawDomain)
+      : parseOriginUrl(`${isLocalHostname(rawDomain.split(":")[0] ?? "") ? "http:" : defaultProto}//${rawDomain.replace(/\/.*$/, "")}`);
+    if (withScheme) {
+      const domainIsLocal = isLocalHostname(withScheme.hostname);
+      const appIsPublic = Boolean(appParsed && !isLocalHostname(appParsed.hostname));
+      if (!(isDefaultSingle && domainIsLocal && appIsPublic)) {
+        return withScheme.origin;
+      }
+    }
+  }
+
+  const sub = input.subdomain?.trim().toLowerCase().replace(/[^a-z0-9-]/g, "") ?? "";
+  const root = (input.rootDomain?.trim() ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+  if (mode === "multi_subdomain" && sub && root) {
+    const proto = isLocalHostname(root.split(":")[0] ?? "") ? "http:" : defaultProto;
+    const built = parseOriginUrl(`${proto}//${sub}.${root}`);
+    if (built) return built.origin;
+  }
+
+  return fallbackOrigin;
+}

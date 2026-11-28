@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildUrlset, buildUrlsetPage, parseSitemapFileName } from "@nexpress/seo-core";
+import { getPublicSite } from "@/lib/public-data";
 import { loadSitemap, sitemapBaseUrl } from "@/lib/sitemap-source";
 import { sitemapHttpResponse, sitemapWantsHtmlFrom } from "@/lib/sitemap-response";
 import { trackBotVisit } from "@/lib/bot-log";
@@ -17,7 +18,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const file = files.find((f) => f.type === parsed.type && f.page === parsed.page);
   if (!file) return notFound();
 
-  const base = sitemapBaseUrl();
+  const site = await getPublicSite(siteId);
+  const base = sitemapBaseUrl(site);
   const html = sitemapWantsHtmlFrom(request);
   const body = html ? buildUrlsetPage(base, file, prefixless) : buildUrlset(base, file, entries, defaultLocale, prefixless);
   return sitemapHttpResponse(body, html, siteId);

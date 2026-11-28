@@ -2,8 +2,9 @@ import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
 import { contentPath, resolveCampaignData, resolveSiteSettings, localeBase } from "@nexpress/core";
 import { generateCoreLlmsTxt } from "@nexpress/seo-core";
-import { listPublishedContents } from "./public-data";
+import { listPublishedContentSummaries } from "./public-data";
 import { requestLocale } from "./request-locale";
+import { siteOriginFor } from "./site-origin";
 import "@/plugins/register";
 import { trackBotVisit } from "./bot-log";
 
@@ -14,8 +15,9 @@ export async function llmsTxtResponse(request: NextRequest, forcedLocale?: strin
   if (resolveSiteSettings(site?.settings).seo.enableLlmsTxt === false) {
     return new NextResponse("llms.txt kapalı.\n", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
-  const contents = await listPublishedContents(siteId, locale);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  // AI keşif politikası: noIndex işaretli içerikler llms.txt dizinine alınmaz
+  const contents = (await listPublishedContentSummaries(siteId, locale)).filter((item) => !item.noIndex);
+  const baseUrl = siteOriginFor(site);
 
   const txt = await generateCoreLlmsTxt({
     siteId,

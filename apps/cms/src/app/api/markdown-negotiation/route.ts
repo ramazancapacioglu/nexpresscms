@@ -3,6 +3,7 @@ import {
   contentAccessCookieName,
   evaluateContentAccess,
   findTypeByArchiveSlug,
+  markdownCacheControl,
   memberMeetsTier,
   readPageOptions,
   resolveCampaignData,
@@ -21,6 +22,7 @@ import { MEMBER_SESSION_COOKIE, getMembership, resolveMemberCookie } from "@/lib
 import { getPublicContentBySlug, getPublicSite } from "@/lib/public-data";
 import { trackBotVisit } from "@/lib/bot-log";
 import { siteLocaleBase } from "@/lib/locale-url";
+import { siteOriginFor } from "@/lib/site-origin";
 import { buildMarkdownFrontmatter, markdownCanonicalLink, markdownCanonicalUrl } from "@/lib/markdown-frontmatter";
 
 export async function GET(request: NextRequest) {
@@ -36,7 +38,8 @@ export async function GET(request: NextRequest) {
   const prefix = segments.length >= 3 ? segments[1] : undefined;
   const slug = segments[prefix ? 2 : 1] ?? "ana-sayfa";
   const isCampaign = prefix === "kampanya";
-  const prefixType = prefix && !isCampaign ? findTypeByArchiveSlug(resolveSiteSettings((await getPublicSite(siteId))?.settings).general.contentTypes, prefix) : undefined;
+  const site = await getPublicSite(siteId);
+  const prefixType = prefix && !isCampaign ? findTypeByArchiveSlug(resolveSiteSettings(site?.settings).general.contentTypes, prefix) : undefined;
   const content = prefix && !isCampaign && !prefixType?.prefixed ? null : await getPublicContentBySlug(siteId, slug, locale, isCampaign ? "campaign" : (prefixType?.id ?? ""));
 
   if (!content) {
@@ -87,7 +90,7 @@ export async function GET(request: NextRequest) {
 
   const camp = content.type === "campaign" ? resolveCampaignData(content) : null;
   // Kanonik: ziyaretçiye dönen HTML sayfası. Ana sayfa yalnızca dil kökünden oluşur.
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+  const origin = siteOriginFor(site);
   const lb = await siteLocaleBase(siteId, locale);
   const canonicalUrl = markdownCanonicalUrl(origin, lb, segments.length <= 1 ? [] : prefix ? [prefix, slug] : [slug]);
   const headerMeta = [
@@ -126,6 +129,12 @@ export async function GET(request: NextRequest) {
       : []),
   ].join("\n");
 
+  const cacheControl = markdownCacheControl({
+    status: content.status,
+    visibility: pub.visibility,
+    allowed: access.allowed,
+  });
+
   return new NextResponse(headerMeta + content.markdownCache, {
     status: 200,
     headers: {
@@ -135,7 +144,7 @@ export async function GET(request: NextRequest) {
       "Link": markdownCanonicalLink(canonicalUrl),
       "X-NexPress-Site-Id": siteId,
       "X-NexPress-Engine": "Zero-CPU-MarkdownCache",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      "Cache-Control": cacheControl,
     },
   });
 }

@@ -35,7 +35,28 @@ export async function indexContent(siteId: string, contentId: string, locale: st
     chunks.every((c) => state.find((s) => s.index === c.index)?.hash === c.hash);
   if (same) return { status: "unchanged", chunks: chunks.length };
 
-  const vectors = await provider.embed(chunks.map((c) => embeddingInputOf(c, content.title)));
+  // Artımlı gömme: aynı model ve aynı girdi özeti (`hash`) ile kayıtlı parçaların vektörünü yeniden kullan,
+  // yalnızca yeni veya değişmiş parçaları embedding sağlayıcısına gönder.
+  const reused = await repo.existingVectorsByHash(contentId, locale, provider.model);
+  const missingIndices: number[] = [];
+  const missingInputs: string[] = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const c = chunks[i]!;
+    if (!reused.has(c.hash)) {
+      missingIndices.push(i);
+      missingInputs.push(embeddingInputOf(c, content.title));
+    }
+  }
+  const freshVectors = missingInputs.length > 0 ? await provider.embed(missingInputs) : [];
+  const vectors: Float32Array[] = new Array(chunks.length);
+  for (let i = 0; i < chunks.length; i++) {
+    const existing = reused.get(chunks[i]!.hash);
+    if (existing) vectors[i] = existing;
+  }
+  for (let j = 0; j < missingIndices.length; j++) {
+    vectors[missingIndices[j]!] = freshVectors[j]!;
+  }
+
   await repo.replaceForContent(
     contentId,
     locale,
@@ -155,15 +176,12 @@ interface KeywordCorpus {
   meta: Map<string, { contentId: string; title: string; slug: string; type: ContentType; similarity: number }>;
 }
 
-/** Yayındaki içeriklerin düz metni (BM25 için); önbellek yok (yayından kaldırılan/noindex içerik anında düşmeli). */
+/** Yayındaki içeriklerin düz metni (BM25 için); `blocks` taşınmaz, önbellek yok (yayından kaldırılan/noindex içerik anında düşmeli). */
 async function keywordCorpus(siteId: string, locale: string, types?: ContentType[]): Promise<KeywordCorpus> {
-  const rows = await getScopedRepository(siteId).listContents({ locale, status: "published" });
-  const wanted = rows.filter(
-    (c) => !c.noIndex && resolvePublishing(c.schemaAttributes).visibility === "public" && (!types?.length || types.includes(c.type as ContentType))
-  );
+  const wanted = await getScopedRepository(siteId).listKeywordDocs({ locale, types });
   return {
     docs: wanted.map((c) => ({ id: c.contentId, title: c.title, body: c.markdownCache })),
-    meta: new Map(wanted.map((c) => [c.contentId, { contentId: c.contentId, title: c.title, slug: c.slug, type: c.type as ContentType, similarity: 0 }])),
+    meta: new Map(wanted.map((c) => [c.contentId, { contentId: c.contentId, title: c.title, slug: c.slug, type: c.type, similarity: 0 }])),
   };
 }
 

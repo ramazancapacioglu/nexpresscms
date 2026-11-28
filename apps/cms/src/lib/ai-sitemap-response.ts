@@ -1,8 +1,9 @@
 import { contentPath, localeBase, resolveSiteSettings } from "@nexpress/core";
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { listPublicEntityLinks, listPublishedContents } from "./public-data";
+import { listPublicEntityLinks, listPublishedContentSummaries } from "./public-data";
 import { contentUrl, requestLocale } from "./request-locale";
+import { siteOriginFor } from "./site-origin";
 import "@/plugins/register";
 import { trackBotVisit } from "./bot-log";
 
@@ -11,9 +12,10 @@ export async function aiSitemapResponse(request: NextRequest, forcedLocale?: str
   await trackBotVisit("ai-sitemap");
   const siteId = request.headers.get("x-nexpress-site-id") ?? "default";
   const { site, locale, supported } = await requestLocale(request, siteId, forcedLocale);
-  const contents = await listPublishedContents(siteId, locale);
+  // AI keşif politikası: noIndex işaretli içerikler RAG, RSS ve AI haritasından tutarlı biçimde çıkarılır
+  const contents = (await listPublishedContentSummaries(siteId, locale)).filter((item) => !item.noIndex);
   const entityLinks = await listPublicEntityLinks(siteId);
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = siteOriginFor(site);
   const types = resolveSiteSettings(site?.settings).general.contentTypes;
 
   const payload = {

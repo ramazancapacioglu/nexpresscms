@@ -70,6 +70,15 @@ export interface ContentWithTranslationDto {
 
 export type ContentDto = ContentWithTranslationDto;
 
+/**
+ * Gövdesiz (`blocks` ve `markdownCache` taşınmadan) hafif içerik özeti.
+ * İlgili yazılar, önceki/sonraki, üst/alt sayfa ilişkileri, kenar çubuğu ve arşiv listeleri için.
+ */
+export type ContentSummaryDto = Omit<
+  ContentWithTranslationDto,
+  "blocks" | "markdownCache" | "gapFindings"
+>;
+
 export interface TaxonomyDto {
   id: string;
   siteId: string;
