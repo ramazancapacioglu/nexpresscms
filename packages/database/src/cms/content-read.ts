@@ -4,6 +4,45 @@ import { mergeLocalizedAttributes, resolvePublishing, type ContentStatus, type C
 import { CmsTaxonomyRepository } from "./taxonomy";
 
 export class CmsContentReadRepository extends CmsTaxonomyRepository {
+  private mapContentRow(
+    content: any,
+    translation: any
+  ): ContentWithTranslationDto {
+    return {
+      id: content.id,
+      contentId: content.id,
+      siteId: content.siteId,
+      type: content.type,
+      status: (content.status === "trashed" ? "trashed" : translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
+      importanceScore: content.importanceScore,
+      schemaType: content.schemaType,
+      schemaAttributes: mergeLocalizedAttributes(content.schemaAttributes ?? {}, translation.attributes),
+      featuredImage: content.featuredImage ?? null,
+      authorName: content.authorName,
+      publishedAt: content.publishedAt ?? null,
+      createdAt: content.createdAt,
+      translationId: translation.id,
+      translationStatus: translation.translationStatus,
+      sourceLocale: translation.sourceLocale ?? null,
+      sourceHash: translation.sourceHash ?? null,
+      locale: translation.locale,
+      region: translation.region,
+      slug: translation.slug,
+      title: translation.title,
+      excerpt: translation.excerpt,
+      tldr: translation.tldr,
+      blocks: translation.blocks,
+      markdownCache: translation.markdownCache,
+      metaTitle: translation.metaTitle,
+      metaDescription: translation.metaDescription,
+      canonicalUrl: translation.canonicalUrl ?? null,
+      noIndex: Boolean(translation.noIndex),
+      seoScore: translation.seoScore,
+      gapFindings: translation.gapFindings,
+      updatedAt: translation.updatedAt,
+    };
+  }
+
   /**
    * Sitenin tüm içeriklerini çevirileriyle birlikte listeler (`siteId` korumalı).
    */
@@ -41,39 +80,7 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
       )
       .orderBy(desc(t.contents.importanceScore), desc(t.contents.updatedAt));
 
-    const mapped = rows.map(({ content, translation }) => ({
-      id: content.id,
-      contentId: content.id,
-      siteId: content.siteId,
-      type: content.type,
-      status: (content.status === "trashed" ? "trashed" : translation.translationStatus === "draft" ? "draft" : content.status) as ContentStatus,
-      importanceScore: content.importanceScore,
-      schemaType: content.schemaType,
-      schemaAttributes: mergeLocalizedAttributes(content.schemaAttributes ?? {}, translation.attributes),
-      featuredImage: content.featuredImage ?? null,
-      authorName: content.authorName,
-      publishedAt: content.publishedAt ?? null,
-      createdAt: content.createdAt,
-      translationId: translation.id,
-      translationStatus: translation.translationStatus,
-      sourceLocale: translation.sourceLocale ?? null,
-      sourceHash: translation.sourceHash ?? null,
-      locale: translation.locale,
-      region: translation.region,
-      slug: translation.slug,
-      title: translation.title,
-      excerpt: translation.excerpt,
-      tldr: translation.tldr,
-      blocks: translation.blocks,
-      markdownCache: translation.markdownCache,
-      metaTitle: translation.metaTitle,
-      metaDescription: translation.metaDescription,
-      canonicalUrl: translation.canonicalUrl ?? null,
-      noIndex: Boolean(translation.noIndex),
-      seoScore: translation.seoScore,
-      gapFindings: translation.gapFindings,
-      updatedAt: translation.updatedAt,
-    }));
+    const mapped = rows.map(({ content, translation }) => this.mapContentRow(content, translation));
     // Yayın dışı filtreler etkin durum üzerinden (çeviri taslağı içerik durumunu ezer)
     // Çöpteki içerik yalnızca açıkça istenince listelenir; hiçbir varsayılan listede görünmez
     if (options?.status === "trashed") return mapped.filter((c) => c.status === "trashed");
@@ -86,35 +93,75 @@ export class CmsContentReadRepository extends CmsTaxonomyRepository {
    * `private` görünürlüklü içerik ziyaretçiye hiçbir zaman verilmez (yayında olsa bile).
    * `restricted` durum, sayfada kısıtlı bildirimiyle gösterilir.
    */
+  private isPubliclyVisible(c: ContentWithTranslationDto): boolean {
+    return (c.status === "published" || c.status === "restricted") && resolvePublishing(c.schemaAttributes).visibility !== "private";
+  }
+
   private async visibleContents(locale: string, publicOnly?: boolean): Promise<ContentWithTranslationDto[]> {
     const all = await this.listContents({ locale });
     if (!publicOnly) return all;
-    return all.filter(
-      (c) => (c.status === "published" || c.status === "restricted") && resolvePublishing(c.schemaAttributes).visibility !== "private"
-    );
+    return all.filter((c) => this.isPubliclyVisible(c));
   }
 
   /**
-   * Tekil bir içeriği `slug` ve `locale` üzerinden getirir (Ön yüz 100/100 RSC ve `?format=md` için).
+   * Tekil bir içeriği `siteId + locale + slug` indeksiyle doğrudan tek satırda getirir
+   * (Ön yüz 100/100 RSC ve `?format=md` için tüm siteyi çekmeden).
    */
   public async getContentBySlug(
     slug: string,
     locale = "tr",
     options?: { publicOnly?: boolean; type?: string }
   ): Promise<ContentWithTranslationDto | null> {
-    const all = await this.visibleContents(locale, options?.publicOnly);
-    return all.find((item) => item.slug === slug && (!options?.type || item.type === options.type)) ?? null;
+    const { db, t } = this.backend;
+    const rows = await db
+      .select({ content: t.contents, translation: t.contentTranslations })
+      .from(t.contentTranslations)
+      .innerJoin(
+        t.contents,
+        and(eq(t.contents.id, t.contentTranslations.contentId), eq(t.contents.siteId, this.siteId))
+      )
+      .where(
+        and(
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale),
+          eq(t.contentTranslations.slug, slug),
+          options?.type ? eq(t.contents.type, options.type as ContentType) : ne(t.contents.type, "template")
+        )
+      )
+      .limit(1);
+    const row = rows[0];
+    if (!row) return null;
+    const dto = this.mapContentRow(row.content, row.translation);
+    if (dto.status === "trashed") return null;
+    if (options?.publicOnly && !this.isPubliclyVisible(dto)) return null;
+    return dto;
   }
 
   /**
-   * Tekil içeriği kimliğiyle (`contentId`) getirir.
+   * Tekil içeriği kimliğiyle (`siteId + contentId + locale`) doğrudan tek satırda getirir.
    */
   public async getContentById(
     contentId: string,
     locale = "tr"
   ): Promise<ContentWithTranslationDto | null> {
-    const all = await this.listContents({ locale });
-    return all.find((item) => item.id === contentId) ?? null;
+    const { db, t } = this.backend;
+    const rows = await db
+      .select({ content: t.contents, translation: t.contentTranslations })
+      .from(t.contents)
+      .innerJoin(
+        t.contentTranslations,
+        and(
+          eq(t.contentTranslations.contentId, t.contents.id),
+          eq(t.contentTranslations.siteId, this.siteId),
+          eq(t.contentTranslations.locale, locale)
+        )
+      )
+      .where(and(eq(t.contents.siteId, this.siteId), eq(t.contents.id, contentId), ne(t.contents.type, "template")))
+      .limit(1);
+    const row = rows[0];
+    if (!row) return null;
+    const dto = this.mapContentRow(row.content, row.translation);
+    return dto.status === "trashed" ? null : dto;
   }
 
   /**

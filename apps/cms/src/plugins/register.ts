@@ -1,6 +1,7 @@
 import "server-only";
 import { after } from "next/server";
-import { registerRagIndexing } from "@nexpress/rag";
+import { registerRagIndexing, registerSiteEmbeddingResolver } from "@nexpress/rag";
+import { resolveSiteEmbeddingProvider } from "@/lib/ai-config";
 import { registerAgenticSeoProPlugin } from "@nexpress-pro/agentic-seo";
 import { registerAiDesignProPlugin } from "@nexpress-pro/ai-design";
 import { registerIndexNow } from "@/lib/indexnow";
@@ -65,8 +66,10 @@ export function registerWorkspacePlugins(): void {
   installPluginGate();
   registerIndexNow();
   registerCdnPurge();
+  // Kiracı bazlı RAG gömme çözücüsü (panel, yayın kancası ve MCP aynı sağlayıcıyı kullanır)
+  registerSiteEmbeddingResolver(resolveSiteEmbeddingProvider);
   // Yayında içeriği dizinler; gömme çağrısı yanıttan sonra çalışır (kayıt akışını bekletmez)
-  registerRagIndexing({ runAfterResponse: (task) => after(task) });
+  registerRagIndexing({ runAfterResponse: (task) => after(task), provider: resolveSiteEmbeddingProvider });
   registerAgentRequestMail();
   registerAgenticSeoProPlugin();
   registerAiDesignProPlugin();

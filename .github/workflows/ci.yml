@@ -157,7 +157,7 @@ jobs:
 
   deploy:
     name: ileriseo.com
-    needs: verify
+    needs: [verify, a11y, pgvector]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30

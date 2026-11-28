@@ -650,7 +650,17 @@ export async function reindexSearchAction(): Promise<ReindexResult> {
   try {
     const { resolveSiteEmbeddingProvider } = await import("@/lib/ai-config");
     const provider = await resolveSiteEmbeddingProvider(session.siteId);
-    const summary = await reindexSite(session.siteId, "tr", provider);
+    const site = await getScopedRepository(session.siteId).getSite();
+    const locales = site?.supportedLocales?.length ? site.supportedLocales : [site?.defaultLocale ?? "tr"];
+    const summary: ReindexSummary = { indexed: 0, unchanged: 0, skipped: 0, failed: [], chunks: 0 };
+    for (const loc of locales) {
+      const part = await reindexSite(session.siteId, loc, provider);
+      summary.indexed += part.indexed;
+      summary.unchanged += part.unchanged;
+      summary.skipped += part.skipped;
+      summary.chunks += part.chunks;
+      summary.failed.push(...part.failed);
+    }
     await revalidatePath("/admin/seo");
     await revalidatePath("/admin/seo/audit");
     return { ok: true, model: provider.model, semantic: provider.semantic, summary };

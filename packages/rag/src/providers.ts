@@ -36,10 +36,35 @@ export interface OpenAiProviderConfig {
 const BATCH = 64;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+function endpointPrefix(baseUrl: string): string {
+  try {
+    const host = new URL(baseUrl).hostname.toLowerCase();
+    if (host === "api.openai.com") return "openai";
+    if (host === "generativelanguage.googleapis.com") return "gemini";
+    return `openai@${host}`;
+  } catch {
+    return "openai";
+  }
+}
+
+export type SiteEmbeddingResolver = (siteId: string) => Promise<EmbeddingProvider> | EmbeddingProvider;
+let siteResolver: SiteEmbeddingResolver | null = null;
+
+/** Uygulama kompozisyon kökünün kiracı bazlı (şifreli DB ayarı) embedding sağlayıcısını kaydetmesi için. */
+export function registerSiteEmbeddingResolver(resolver: SiteEmbeddingResolver): void {
+  siteResolver = resolver;
+}
+
+/** Kiracıya özel kayıtlı çözücü varsa onu, yoksa ortam/yerel sağlayıcıyı döndürür. */
+export async function resolveEmbeddingProvider(siteId: string): Promise<EmbeddingProvider> {
+  return siteResolver ? await siteResolver(siteId) : providerFromEnv();
+}
+
 export function createOpenAiProvider(config: OpenAiProviderConfig): EmbeddingProvider {
   const baseUrl = (config.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
   const modelName = config.model ?? "text-embedding-3-small";
   const doFetch = config.fetchImpl ?? fetch;
+  const prefix = endpointPrefix(baseUrl);
 
   async function embedBatch(input: string[]): Promise<Float32Array[]> {
     for (let attempt = 0; ; attempt++) {
@@ -73,7 +98,7 @@ export function createOpenAiProvider(config: OpenAiProviderConfig): EmbeddingPro
   }
 
   return {
-    model: `openai:${modelName}:${EMBEDDING_DIMENSIONS}`,
+    model: `${prefix}:${modelName}:${EMBEDDING_DIMENSIONS}`,
     semantic: true,
     cannibalThreshold: 0.82,
     async embed(texts) {

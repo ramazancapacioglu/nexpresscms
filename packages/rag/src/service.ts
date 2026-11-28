@@ -6,16 +6,23 @@ import type { EmbeddingProvider } from "./providers";
 export type IndexResult =
   | { status: "indexed"; chunks: number }
   | { status: "unchanged"; chunks: number }
-  | { status: "skipped"; reason: "not_found" | "not_published" | "empty" };
+  | { status: "skipped"; reason: "not_found" | "not_published" | "restricted" | "empty" };
 
 /**
  * İçeriği parçalar, gömer ve değiştirir. Parça özetleri ve model aynıysa hiç gömme çağrısı yapmaz.
- * Yalnızca yayınlanmış içerik dizinlenir; yayından kalkanlar aramada zaten süzülür.
+ * Yalnızca herkese açık (`visibility === "public"`), `noIndex` olmayan ve yayınlanmış içerik dizinlenir;
+ * kısıtlı/gizli/noindex içerik harici embedding sağlayıcısına ASLA gönderilmez ve eski parçaları temizlenir.
  */
 export async function indexContent(siteId: string, contentId: string, locale: string, provider: EmbeddingProvider): Promise<IndexResult> {
   const content = await getScopedRepository(siteId).getContentById(contentId, locale);
   if (!content) return { status: "skipped", reason: "not_found" };
   if (content.status !== "published") return { status: "skipped", reason: "not_published" };
+
+  const visibility = resolvePublishing(content.schemaAttributes).visibility;
+  if (content.noIndex || visibility !== "public") {
+    await getChunkRepository(siteId).replaceForContent(contentId, locale, provider.model, []).catch(() => undefined);
+    return { status: "skipped", reason: "restricted" };
+  }
 
   const chunks = chunkMarkdown(content.markdownCache ?? "", { title: content.title, tldr: content.tldr });
   if (chunks.length === 0) return { status: "skipped", reason: "empty" };

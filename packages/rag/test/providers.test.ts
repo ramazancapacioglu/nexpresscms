@@ -25,7 +25,11 @@ test("OpenAI sağlayıcısı: istek biçimi, yetki başlığı, boyut parametres
   assert.equal(calls[0]!.url, "https://example.test/v1/embeddings");
   assert.equal((calls[0]!.init.headers as Record<string, string>).authorization, "Bearer sk-test");
   assert.deepEqual(calls[0]!.body, { model: "text-embedding-3-small", input: ["a", "b"], encoding_format: "float", dimensions: 1536 });
-  assert.equal(p.model, "openai:text-embedding-3-small:1536");
+  assert.equal(p.model, "openai@example.test:text-embedding-3-small:1536");
+  assert.equal(
+    createOpenAiProvider({ apiKey: "k", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-embedding-001", fetchImpl: impl }).model,
+    "gemini:gemini-embedding-001:1536"
+  );
   assert.equal(p.semantic, true);
   const norm = Math.sqrt(out[0]!.reduce((s, x) => s + x * x, 0));
   assert.ok(Math.abs(norm - 1) < 1e-4, "vektör birim uzunluğa getirilir");

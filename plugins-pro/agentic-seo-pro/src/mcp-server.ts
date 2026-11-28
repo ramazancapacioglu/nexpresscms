@@ -1,6 +1,6 @@
 import { cmsHooks, contentPath, isPluginModuleEnabled, localeBase, pickLocale, resolvePublishing, resolveSiteSettings, type ContentType } from "@nexpress/core";
 import { safeEqual } from "@nexpress/core/password";
-import { providerFromEnv, searchCorpus } from "@nexpress/rag";
+import { resolveEmbeddingProvider, searchCorpus } from "@nexpress/rag";
 import { getAgentRequestRepository, getScopedRepository } from "@nexpress/database";
 import { KIND_LABEL, validateAgentRequest, type AgentKind } from "./agent/requests";
 import { createRateLimiter } from "@nexpress/core";
@@ -126,7 +126,7 @@ export async function handleWebMcpJsonRpc(
     if (!query) return { jsonrpc: "2.0", id: rpc.id ?? null, error: { code: -32602, message: "params.query gerekli." } };
     const limit = Math.min(Math.max(Number(rpc.params?.limit ?? 5) || 5, 1), 10);
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-    const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale });
+    const found = await searchCorpus(siteId, query, await resolveEmbeddingProvider(siteId), { limit, locale });
     const types = resolveSiteSettings(site?.settings).general.contentTypes;
     const published = (await repo.listContents({ locale, status: "published" })).map((c) => ({
       ...c,
@@ -172,7 +172,7 @@ export async function handleWebMcpJsonRpc(
 
       // 1) Vektör araması (dizin varsa): parça düzeyinde alıntılar + içerik özeti
       if (query) {
-        const found = await searchCorpus(siteId, query, providerFromEnv(), { limit, locale, types: type ? [type] : undefined });
+        const found = await searchCorpus(siteId, query, await resolveEmbeddingProvider(siteId), { limit, locale, types: type ? [type] : undefined });
         if (found.indexed) {
           return asText({
             retrieval: found.semantic ? "semantic" : "lexical-vector",
