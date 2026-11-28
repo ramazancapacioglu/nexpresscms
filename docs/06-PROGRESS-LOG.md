@@ -21,6 +21,9 @@
 
 ## 📝 Detaylı Günlük
 
+### [2026-11-28] — AI Arama & GEO Trafik Rehberi (`docs/29`)
+- **Yeni Başvuru Dokümanı (`docs/29-AI-ARAMA-VE-GEO-TRAFIK-REHBERI.md`):** Google AI Overviews/AI Mode, OpenAI (`OAI-SearchBot`/`GPTBot`/`ChatGPT-User`), Microsoft Bing & Copilot (`IndexNow`, `AI Performance`, *Grounding Queries*), Perplexity, Anthropic Claude, Yandex Neuro ve Apple Intelligence için resmi bot haritası, önerilen `robots.txt` politikası, Query Fan-Out / Passage-Level Grounding mekanizmaları, 6 trafik artırma stratejisi ve NexPress teknik hazırlık kontrol listesi dokümante edildi.
+
 ### [2026-11-28] — GEO ROI Hunisi, Veritabanı Tam Metin Araması, Open-Core Temizliği & 0-KB `content-visibility: auto`
 - **GEO ROI Hunisi (`packages/core/src/geo-roi.ts`, `apps/cms/src/components/admin/seo/geo-roi-funnel.tsx`, `/admin/seo/reports`):** Sayfa bazında AI bot taramaları, AI yönlendirme ziyaretleri ve spam dışı teklif/iletişim formu dönüşümlerini tek hunide birleştiren `buildGeoRoiFunnel` çekirdek modülü (birim testli) ve `/admin/seo/reports?group=geo-roi` sekmesi eklendi.
 - **Ölçeklenebilir Veritabanı Tam Metin Araması (`packages/database/src/cms/content-read.ts`, `/api/search`, `packages/rag/src/service.ts`):** `searchKeywordDocs` eklendi — PostgreSQL'de `to_tsvector('turkish', ...)` + `plainto_tsquery`, SQLite'ta `LIKE` + `LIMIT` ön-filtresiyle tüm tabloyu belleğe çekmeden yalnızca aday satırları getirir.
